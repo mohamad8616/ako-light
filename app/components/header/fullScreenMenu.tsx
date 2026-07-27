@@ -92,7 +92,7 @@ lg:grid-cols-4
           </div>
 
           {/* Bottom */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{
@@ -138,7 +138,7 @@ lg:grid-cols-4
               <p className="self-end text-sm text-neutral-600">Credits</p>
             </motion.div>
             <p className="text-neutral-600">Credits</p>
-          </motion.div>
+          </motion.div> */}
         </motion.div>
       )}
     </AnimatePresence>

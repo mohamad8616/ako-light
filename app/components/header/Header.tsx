@@ -47,8 +47,10 @@ export default function Header() {
           </div>
         </div>
         <div className=" text-start z-30 text-slate-100 hover:cursor-pointer px-8 md:px-14 lg:px-20 space-y-3 uppercase">
-          <h1 className="text-6xl font-bold">2026 Collection</h1>
-          <h3 className="text-2xl font-semibold">Ritual Gravity</h3>
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold">
+            2026 Collection
+          </h1>
+          <h3 className="text-xl lg:text-3xl font-semibold">Ritual Gravity</h3>
           <button className="group flex items-center gap-2 uppercase">
             <span
               className="
