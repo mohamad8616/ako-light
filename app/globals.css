@@ -1,2 +1,17 @@
 @import "tailwindcss";
 
+@layer components {
+  .menu-link {
+    @apply relative inline-block w-fit uppercase text-white;
+  }
+
+  .menu-link::after {
+    content: "";
+    @apply absolute left-0 -bottom-1 h-px w-full origin-left scale-x-0 bg-white transition-transform duration-500;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .menu-link:hover::after {
+    @apply scale-x-100;
+  }
+}

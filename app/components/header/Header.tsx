@@ -46,11 +46,24 @@ export default function Header() {
             </button>
           </div>
         </div>
-        <div className=" text-start z-30 text-slate-100 hover:cursor-pointer px-8 md:px-14 lg:px-20">
+        <div className=" text-start z-30 text-slate-100 hover:cursor-pointer px-8 md:px-14 lg:px-20 space-y-3 uppercase">
           <h1 className="text-6xl font-bold">2026 Collection</h1>
           <h3 className="text-2xl font-semibold">Ritual Gravity</h3>
-          <button>
-            <span className="hover:scale-90">+</span>read more
+          <button className="group flex items-center gap-2 uppercase">
+            <span
+              className="
+      inline-block
+      text-2xl
+      transition-transform
+      duration-300
+      ease-in-out
+      group-hover:rotate-90
+    "
+            >
+              +
+            </span>
+
+            <span>Read more</span>
           </button>
         </div>
       </motion.header>

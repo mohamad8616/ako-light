@@ -16,10 +16,9 @@ export default function HomePage() {
       <div className="absolute inset-0 bg-black/50" />
 
       {/* Hero Content */}
-      <div className="mt-30 w-full h-3/5 bg-blue-500 z-50">
+      <div className="md:mt-30 w-full h-3/5 z-50">
         <Header />
       </div>
-   
     </main>
   );
 }

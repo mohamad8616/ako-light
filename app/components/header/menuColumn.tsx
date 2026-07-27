@@ -20,30 +20,44 @@ export default function MenuColumn({ title, links, delay }: Props) {
     >
       <h2
         className="
-        mb-10
-        text-5xl
-        font-light
-        tracking-tight
-        text-zinc-700
-        uppercase
-        "
+  mb-5
+
+  text-[28px]
+  md:text-[56px]
+
+  font-light
+  uppercase
+
+  text-zinc-700
+
+  tracking-tight
+  "
       >
         {title}
       </h2>
 
-      <ul className="space-y-6">
+      <ul className="space-y-4 md:space-y-6">
+        {" "}
         {links.map((item) => (
           <li key={item}>
             <a
               href="#"
               className="
-              text-white
-              text-lg
-              uppercase
-              tracking-wider
-              transition
-              hover:text-neutral-400
-              "
+              menu-link 
+  text-sm
+  md:text-lg
+
+  font-medium
+
+  tracking-[0.12em]
+
+  text-white
+
+  transition-colors
+  duration-300
+
+  hover:text-neutral-400
+  "
             >
               {item}
             </a>
