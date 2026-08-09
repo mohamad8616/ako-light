@@ -1,13 +1,13 @@
+import Footer from "@/components/footer/footer";
+import NewsletterSection from "@/components/footer/newsLetterSection";
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
 import { Oswald } from "next/font/google";
+import "./globals.css";
 
 export const oswald = Oswald({
   subsets: ["latin"],
   weight: ["200", "300", "400", "500"],
 });
-
 
 export const metadata: Metadata = {
   title: "Ako lighting",
@@ -20,11 +20,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={` ${oswald} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" className={` ${oswald} h-full antialiased`}>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <NewsletterSection />
+        <Footer />
+      </body>
     </html>
   );
 }
