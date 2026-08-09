@@ -15,3 +15,11 @@
     @apply scale-x-100;
   }
 }
+@theme inline{
+  --color-background:#171719;
+}
+
+/* Smooth transition for progress bar when ready */
+.transition-duration-200 {
+  transition-duration: 200ms;
+}

@@ -14,8 +14,7 @@ export default function NewsletterSection() {
         {/* Left */}
         <div>
           <h2
-            className="
-              max-w-100
+            className="max-w-100
               font-[Arial_Narrow,sans-serif]
               text-[40px]
               font-normal
