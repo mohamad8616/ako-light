@@ -1,5 +1,27 @@
 @import "tailwindcss";
 
+@theme inline {
+  --color-background: #171719;
+  --font-sans: var(--font-oswald), sans-serif;
+  --font-persian: var(--font-vazirmatn), sans-serif;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: var(--font-oswald), sans-serif;
+  }
+
+  /* Persian font applied when RTL */
+  html[dir="rtl"] body,
+  html[dir="rtl"] .font-persian {
+    font-family: var(--font-vazirmatn), sans-serif;
+  }
+}
+
 @layer components {
   .menu-link {
     @apply relative inline-block w-fit uppercase text-white;
@@ -14,12 +36,23 @@
   .menu-link:hover::after {
     @apply scale-x-100;
   }
-}
-@theme inline{
-  --color-background:#171719;
+
+  /* RTL-aware underline for menu links */
+  html[dir="rtl"] .menu-link::after {
+    @apply left-auto right-0 origin-right;
+  }
 }
 
 /* Smooth transition for progress bar when ready */
 .transition-duration-200 {
   transition-duration: 200ms;
+}
+
+/* Hide scrollbar for carousels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

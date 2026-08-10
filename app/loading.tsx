@@ -1,7 +1,7 @@
-// app/loading.tsx
 "use client";
 
 import { useEffect, useState } from "react";
+import HengeLogo from "@/components/ui/HengeLogo";
 
 export default function Loading() {
   const [progress, setProgress] = useState(0);
@@ -40,33 +40,16 @@ export default function Loading() {
         ${isReady ? "opacity-0" : "opacity-100"}
       `}
     >
-      {/* Logo */}
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 200 40"
-        className="w-35 sm:w-40 md:w-45 lg:w-50 h-auto fill-white transition-opacity duration-500 ease-out"
-      >
-        <text
-          x="0"
-          y="30"
-          fontFamily="Arial, Helvetica, sans-serif"
-          fontSize="28"
-          fontWeight="bold"
-          fill="currentColor"
-          letterSpacing="2"
-        >
-          AKO Lighting
-        </text>
-      </svg>
+      {/* HENGE Logo */}
+      <HengeLogo className="w-20 h-auto fill-white transition-opacity duration-500 ease-out" />
 
       {/* Progress Bar */}
       <div
         className={`
-          w-35 sm:w-40 md:w-45 lg:w-50 
+          w-20 
           h-0.5 
           bg-white 
-          mt-4 sm:mt-5 
-          rounded-full
+          mt-4 
           origin-left
           transition-transform duration-100 ease-out
           ${isReady ? "transition-duration-200" : ""}

@@ -1,24 +1,27 @@
-import Header from "../components/header/Header";
+import HeroSection from "@/components/home/HeroSection";
+import SliderSection from "@/components/home/SliderSection";
+import TimelessTablesBanner from "@/components/home/TimelessTablesBanner";
+import HengeParisBanner from "@/components/home/HengeParisBanner";
+import VideoSection from "@/components/home/VideoSection";
+import CatalogueSection from "@/components/home/CatalogueSection";
+import HomeCollectionBanner from "@/components/home/HomeCollectionBanner";
+import HIstraBanner from "@/components/home/HIstraBanner";
+import Vocla2026Section from "@/components/home/Vocla2026Section";
+import HomeCarousel from "@/components/home/HomeCarousel";
 
 export default function HomePage() {
   return (
-    <main className="relative h-screen overflow-hidden w-full">
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 h-full w-full object-cover "
-      >
-        <source src="/hero.mp4" type="video/mp4" />
-      </video>
-
-      <div className="absolute inset-0 bg-black/50" />
-
-      {/* Hero Content */}
-      <div className="md:mt-30 w-full h-3/5 z-50">
-        <Header />
-      </div>
+    <main className="w-full">
+      <HeroSection />
+      <SliderSection />
+      <TimelessTablesBanner />
+      <HengeParisBanner />
+      <VideoSection />
+      <CatalogueSection />
+      <HomeCollectionBanner />
+      <HIstraBanner />
+      <Vocla2026Section />
+      <HomeCarousel />
     </main>
   );
 }

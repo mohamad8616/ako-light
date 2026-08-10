@@ -3,11 +3,10 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect } from "react";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import HengeLogo from "@/components/ui/HengeLogo";
 import { menu } from "./data";
 import MenuColumn from "./menuColumn";
-
-// import MenuColumn from "./MenuColumn";
-// import { menu } from "./MenuData";
 
 interface Props {
   open: boolean;
@@ -15,6 +14,8 @@ interface Props {
 }
 
 export default function FullscreenMenu({ open, onClose }: Props) {
+  const { t } = useLanguage();
+
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "auto";
 
@@ -49,38 +50,20 @@ export default function FullscreenMenu({ open, onClose }: Props) {
           className="fixed inset-0 z-999 bg-black text-white overflow-y-auto"
         >
           {/* Top */}
-
           <div className="flex items-center justify-between px-8 pt-8 md:px-20 md:pt-10">
-            <h1 className="select-none text-xl font-semibold tracking-[0.22em] md:text-3xl">
-              HENGE
-            </h1>
+            <HengeLogo className="w-24 h-auto fill-white" />
 
-            <button onClick={onClose} className="transition hover:opacity-70">
+            <button
+              onClick={onClose}
+              className="transition hover:opacity-70 cursor-pointer"
+              aria-label={t("nav.close")}
+            >
               <X className="h-5 w-5 md:h-6 md:w-6" />
             </button>
           </div>
 
           {/* Menu */}
-
-          <div
-            className="
-mx-auto
-mt-16
-grid
-max-w-7xl
-
-grid-cols-2
-
-gap-x-10
-gap-y-14
-
-px-8
-
-md:mt-24
-md:px-20
-lg:grid-cols-4
-"
-          >
+          <div className="mx-auto mt-16 grid max-w-7xl grid-cols-2 gap-x-10 gap-y-14 px-8 md:mt-24 md:px-20 lg:grid-cols-4">
             {menu.map((section, index) => (
               <MenuColumn
                 key={section.title}
@@ -90,55 +73,6 @@ lg:grid-cols-4
               />
             ))}
           </div>
-
-          {/* Bottom */}
-          {/* <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{
-              delay: 0.55,
-            }}
-            className="
-            absolute
-            bottom-8
-            left-8
-            right-8
-            flex
-            items-end
-            justify-between
-
-            lg:left-20
-            lg:right-20
-            "
-          >
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.55 }}
-              className="
-    mt-20
-    flex
-    justify-between
-    px-8
-    pb-8
-
-    md:absolute
-    md:bottom-8
-    md:left-20
-    md:right-20
-    md:px-0
-    md:pb-0
-  "
-            >
-              <div>
-                <p className="text-sm text-white">English</p>
-                <p className="mt-2 text-sm text-neutral-500">Italiano</p>
-              </div>
-
-              <p className="self-end text-sm text-neutral-600">Credits</p>
-            </motion.div>
-            <p className="text-neutral-600">Credits</p>
-          </motion.div> */}
         </motion.div>
       )}
     </AnimatePresence>
