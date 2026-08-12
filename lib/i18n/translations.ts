@@ -64,6 +64,8 @@ export const translations = {
     // Catalogue
     "catalogue.kicker": "HENGE CATALOGUE",
     "catalogue.title": "S34/5",
+    "catalogue.description":
+      "Ritual Gravity is not only a collection of new products, it is the expansion of a brand universe. From the master bedroom to the table, from light to the domestic lounge, from private space to collective experience, Henge continues to define places where every piece is given its own weight, its own gesture, its ownreason to be.",
 
     // Home Collection
     "homeCollection.title": "Home Collection",
@@ -209,6 +211,8 @@ export const translations = {
     // Catalogue
     "catalogue.kicker": "کاتالوگ هنژ",
     "catalogue.title": "اس۳۴/۵",
+    "catalogue.description":
+      "«ریچوال گراویتی» نه تنها مجموعه‌ای از محصولات جدید است، بلکه گسترش جهانی از برند است. از اتاق خواب اصلی گرفته تا میز، از نور گرفته تا سالن نشیمن خانگی، از فضای خصوصی گرفته تا تجربه جمعی، هِنگه همچنان به تعریف مکان‌هایی می‌پردازد که در آن‌ها به هر قطعه وزن، ژست و دلیل وجودی خاص خود داده می‌شود.",
 
     // Home Collection
     "homeCollection.title": "کلکسیون خانه",

@@ -36,7 +36,7 @@ export default function NewsletterSection() {
             }}
           >
             {/* Email */}
-            <div className="flex h-20 w-full items-center rounded-full bg-white p-1.5 pl-10 shadow-none">
+            <div className="flex h-20 w-full items-center rounded-full bg-background-secondary p-1.5 pl-10 shadow-none">
               <input
                 type="email"
                 required

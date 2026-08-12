@@ -1,73 +1,130 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { homepageSections } from "@/lib/data/homepage";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { homepageSections } from "@/lib/data/homepage";
-import Reveal from "@/components/ui/Reveal";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function HengeParisBanner() {
   const { t } = useLanguage();
   const { paris } = homepageSections;
 
   return (
-    <section className="w-full border-t border-white/10 bg-background py-24 md:py-32">
+    <section className="w-full bg-background-secondary py-20 md:py-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
-        {/* Kicker */}
-        <Reveal>
-          <p className="text-sm font-medium uppercase tracking-[0.3em] text-white/50">
-            {t("paris.kicker")}
-          </p>
-        </Reveal>
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
+          {/* Left: image, with peeking "next" card below it */}
+          <div className="relative lg:col-span-5">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.1, ease: EASE }}
+              className="group relative aspect-4/5 w-full overflow-hidden lg:aspect-3/4"
+            >
+              <img
+                src={paris.image}
+                alt={t("paris.title")}
+                className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+              />
 
-        {/* Title */}
-        <Reveal delay={0.1}>
-          <h2 className="mt-4 text-4xl font-light uppercase tracking-tight text-white md:text-7xl">
-            {t("paris.title")}
-          </h2>
-        </Reveal>
+              {/* Small circular badge, top-left */}
+              <div className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-background text-white">
+                <span className="text-[10px] font-light">H</span>
+              </div>
+            </motion.div>
 
-        {/* Image */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.97 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-14 aspect-[16/9] w-full overflow-hidden"
-        >
-          <img
-            src={paris.image}
-            alt={t("paris.title")}
-            className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-          />
-        </motion.div>
+            {/* Peeking "next" preview card */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 0.4, ease: EASE }}
+              className="absolute -bottom-8 left-0 z-10 flex w-[60%] max-w-55 items-center gap-3 bg-background-secondary pr-3 md:-bottom-10"
+            >
+              <span className="text-xs font-medium uppercase leading-tight tracking-[0.08em] text-background">
+                {t("paris.nextLabel") || "Next Project"}
+              </span>
+              <div className="h-14 w-16 shrink-0 overflow-hidden">
+                <img
+                  src={homepageSections.catalogue.image}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            </motion.div>
+          </div>
 
-        {/* Body */}
-        <div className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-24">
-          <Reveal>
-            <p className="text-base font-light leading-relaxed text-white/70 md:text-lg">
-              {t("paris.p1")}
-            </p>
-          </Reveal>
-          <Reveal delay={0.15}>
-            <p className="text-base font-light leading-relaxed text-white/70 md:text-lg">
-              {t("paris.p2")}
-            </p>
-          </Reveal>
+          {/* Right: kicker, title, two-column body, CTA */}
+          <div className="lg:col-span-7">
+            <motion.span
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, ease: EASE }}
+              className="block text-xs font-medium uppercase tracking-[0.25em] text-background/50"
+            >
+              {t("paris.kicker")}
+            </motion.span>
+
+            <div className="overflow-hidden">
+              <motion.h2
+                initial={{ y: "100%" }}
+                whileInView={{ y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.1, ease: EASE }}
+                className="mt-2 text-5xl font-bold uppercase leading-[0.95] tracking-tight text-background md:text-7xl"
+              >
+                {t("paris.title")}
+              </motion.h2>
+            </div>
+
+            <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10">
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
+                className="text-[15px] font-light leading-relaxed text-background/75 md:text-base"
+              >
+                {t("paris.p1")}
+              </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: 0.3, ease: EASE }}
+                className="text-[15px] font-light leading-relaxed text-background/75 md:text-base"
+              >
+                {t("paris.p2")}
+              </motion.p>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.45, ease: EASE }}
+              className="mt-12"
+            >
+              <Link
+                href="/hlife/henge-paris"
+                className="group inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.2em] text-background transition-colors duration-300 hover:text-background/60"
+              >
+                <span className="inline-block text-lg leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90">
+                  +
+                </span>
+                <span className="relative">
+                  {t("paris.discover")}
+                  <span className="absolute -bottom-1 left-0 h-px w-0 bg-background transition-[width] duration-300 group-hover:w-full" />
+                </span>
+              </Link>
+            </motion.div>
+          </div>
         </div>
-
-        {/* CTA */}
-        <Reveal delay={0.3}>
-          <Link
-            href="/hlife/henge-paris"
-            className="group mt-12 inline-flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-white transition-colors hover:text-white/70"
-          >
-            <span>{t("paris.discover")}</span>
-            <span className="inline-block text-xl transition-transform duration-300 group-hover:rotate-90">
-              +
-            </span>
-          </Link>
-        </Reveal>
       </div>
     </section>
   );

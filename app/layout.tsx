@@ -1,5 +1,7 @@
 import Footer from "@/components/footer/footer";
 import NewsletterSection from "@/components/footer/newsLetterSection";
+import Navbar from "@/components/navbar/Navbar";
+import PageTransition from "@/components/ui/PageTransition";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import type { Metadata } from "next";
 import { Oswald, Vazirmatn } from "next/font/google";
@@ -35,7 +37,8 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-white">
         <LanguageProvider>
-          {children}
+          <Navbar />
+          <PageTransition>{children}</PageTransition>
           <NewsletterSection />
           <Footer />
         </LanguageProvider>

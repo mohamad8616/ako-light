@@ -21,6 +21,7 @@ export const homepageSections = {
     kicker: "HENGE CATALOGUE",
     title: "S34/5",
     image: "https://www.henge07.com/app/uploads/2026/07/H-S345-2.jpg",
+    description: "DISCOVER ALL PRODUCTS",
   },
   homeCollection: {
     image:

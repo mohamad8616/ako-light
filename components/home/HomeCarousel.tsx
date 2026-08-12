@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { homepageSections } from "@/lib/data/homepage";
 
@@ -15,58 +15,86 @@ const carouselKeys: Record<string, string> = {
   "WHY HENGE": "carousel.whyHenge",
 };
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 export default function HomeCarousel() {
   const { t } = useLanguage();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [maxDrag, setMaxDrag] = useState(0);
 
   const carouselItems = homepageSections.carousel;
 
+  useEffect(() => {
+    const measure = () => {
+      const el = containerRef.current;
+      if (!el) return;
+      setMaxDrag(Math.max(0, el.scrollWidth - el.clientWidth));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
+
   return (
-    <section className="w-full border-t border-white/10 bg-background py-24 md:py-32">
-      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
-        <motion.h2
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+    <section className="w-full overflow-hidden border-y border-white/10 bg-background-secondary py-20 md:py-28 lg:py-32">
+      {/* Heading row */}
+      <div className="mx-auto mb-10 flex max-w-[1900px] items-end justify-between px-6 md:mb-14 md:px-12 lg:px-20 xl:px-[8.5vw]">
+
+
+        <motion.span
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="text-4xl font-light uppercase tracking-tight text-white md:text-6xl"
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="hidden text-xs font-light uppercase tracking-[0.2em] text-white/35 md:block"
         >
-          Henge World
-        </motion.h2>
+          Drag to explore →
+        </motion.span>
       </div>
 
       {/* Horizontal Scroll Carousel */}
       <motion.div
         ref={containerRef}
-        className="no-scrollbar mt-14 flex cursor-grab gap-6 overflow-x-auto px-6 md:px-12 lg:px-20 xl:px-[8.5vw] active:cursor-grabbing"
+        className="no-scrollbar flex cursor-grab gap-5 overflow-x-auto px-6 pb-2 active:cursor-grabbing sm:gap-6 md:px-12 lg:gap-8 lg:px-20 xl:px-[8.5vw]"
         drag="x"
-        dragConstraints={{ left: -800, right: 0 }}
-        dragElastic={0.1}
+        dragConstraints={{ left: -maxDrag, right: 0 }}
+        dragElastic={0.06}
+        dragTransition={{ power: 0.25, timeConstant: 200 }}
       >
         {carouselItems.map((item, index) => (
           <motion.div
             key={item.title}
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: index * 0.1 }}
-            className="group relative w-[280px] shrink-0 overflow-hidden md:w-[350px]"
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.6, delay: index * 0.08, ease: EASE }}
+            className="group relative w-[68vw] shrink-0 xs:w-[56vw] sm:w-[40vw] md:w-[31vw] lg:w-[24vw] xl:w-[20vw]"
           >
             <Link href="/hlife" className="block">
-              <div className="relative aspect-square w-full overflow-hidden">
+              <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#111]">
                 <img
                   src={item.image}
                   alt={item.title}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  draggable={false}
+                  className="h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/20" />
+                <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
               </div>
-              <p className="mt-4 text-sm font-light uppercase tracking-[0.15em] text-white/70 transition-colors group-hover:text-white">
-                {t(carouselKeys[item.title])}
-              </p>
+
+              <div className="mt-5 flex items-center gap-2">
+                <span className="inline-block text-base leading-none text-white/50 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-90 group-hover:text-white">
+                  +
+                </span>
+                <p className="truncate text-[11px] font-light uppercase tracking-[0.14em] text-white/70 transition-colors duration-300 group-hover:text-white sm:text-[13px] sm:tracking-[0.15em]">
+                  {t(carouselKeys[item.title])}
+                </p>
+              </div>
             </Link>
           </motion.div>
         ))}
+
+        {/* trailing spacer so the last card can be dragged fully into view */}
+        <div className="w-2 shrink-0 sm:w-4" aria-hidden="true" />
       </motion.div>
     </section>
   );

@@ -11,13 +11,13 @@ export default function SliderSection() {
 
   return (
     <section className="relative w-full overflow-hidden bg-background">
-      <div className="relative h-[70vh] min-h-[500px] w-full">
-        {/* Background Image */}
+      <div className="relative h-[80vh] min-h-[600px] w-full">
+        {/* Background Image with slow Ken Burns */}
         <motion.div
-          initial={{ scale: 1.15, opacity: 0 }}
+          initial={{ scale: 1.2, opacity: 0 }}
           whileInView={{ scale: 1, opacity: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 2, ease: [0.22, 1, 0.36, 1] }}
           className="absolute inset-0"
         >
           <img
@@ -25,44 +25,59 @@ export default function SliderSection() {
             alt={slider.tag}
             className="h-full w-full object-cover"
           />
-          <div className="absolute inset-0 bg-black/40" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-background" />
         </motion.div>
 
         {/* Content */}
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-6 text-center text-white">
-          <motion.h2
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
+          {/* Tag */}
+          <motion.span
+            initial={{ opacity: 0, letterSpacing: "0.5em" }}
+            whileInView={{ opacity: 1, letterSpacing: "0.3em" }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-6xl font-light tracking-tight md:text-8xl"
+            transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="text-sm font-light uppercase text-white/60"
           >
             {t("slider.title")}
-          </motion.h2>
+          </motion.span>
 
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
+          {/* Title */}
+          <motion.h2
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="mt-6 text-lg font-light uppercase tracking-[0.3em] text-white/80 md:text-xl"
+            transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-6 text-5xl font-light tracking-tight md:text-7xl lg:text-8xl"
           >
             {t("slider.subtitle")}
-          </motion.p>
+          </motion.h2>
 
+          {/* Divider line */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ scaleX: 0 }}
+            whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-8 h-px w-24 bg-white/40"
+          />
+
+          {/* CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.6 }}
+            transition={{ duration: 0.8, delay: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="mt-10"
           >
             <Link
               href="/products"
-              className="group flex items-center gap-3 text-sm font-medium uppercase tracking-[0.2em] text-white transition-colors hover:text-white/70"
+              className="group inline-flex items-center gap-4 text-sm font-medium uppercase tracking-[0.25em] text-white transition-colors duration-300 hover:text-white/70"
             >
-              <span>{t("slider.cta")}</span>
-              <span className="inline-block text-xl transition-transform duration-300 group-hover:rotate-90">
+              <span className="relative">
+                {t("slider.cta")}
+                <span className="absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 bg-white transition-transform duration-500 group-hover:scale-x-100" />
+              </span>
+              <span className="inline-block text-xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-90">
                 +
               </span>
             </Link>
