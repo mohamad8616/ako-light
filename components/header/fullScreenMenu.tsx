@@ -1,11 +1,10 @@
 "use client";
 
+import HengeLogo from "@/components/ui/HengeLogo";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import Link from "next/link";
 import { useEffect } from "react";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import HengeLogo from "@/components/ui/HengeLogo";
 import { menu } from "./data";
 import MenuColumn from "./menuColumn";
 
@@ -14,15 +13,6 @@ interface Props {
   onClose: () => void;
 }
 
-const topNavLinks = [
-  { key: "nav.hengeWorld", href: "/about" },
-  { key: "nav.products", href: "/products" },
-  { key: "nav.collections", href: "/collections" },
-  { key: "nav.projects", href: "/projects" },
-  { key: "nav.designers", href: "/designers" },
-  { key: "nav.hLife", href: "/hlife" },
-  { key: "nav.contacts", href: "/contact" },
-] as const;
 
 export default function FullscreenMenu({ open, onClose }: Props) {
   const { t, lang, toggleLang } = useLanguage();
@@ -72,36 +62,6 @@ export default function FullscreenMenu({ open, onClose }: Props) {
               <X className="h-5 w-5 md:h-6 md:w-6" />
             </button>
           </div>
-
-          {/* Top-level Nav Links */}
-          <nav className="mx-auto mt-14 max-w-7xl px-8 md:mt-20 md:px-20">
-            <ul className="flex flex-wrap gap-x-10 gap-y-4">
-              {topNavLinks.map((link, i) => (
-                <motion.li
-                  key={link.key}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.1 + i * 0.06 }}
-                >
-                  <Link
-                    href={link.href}
-                    onClick={onClose}
-                    className="text-lg font-light uppercase tracking-[0.15em] text-white/80 transition-colors duration-300 hover:text-white md:text-xl"
-                  >
-                    {t(link.key)}
-                  </Link>
-                </motion.li>
-              ))}
-            </ul>
-          </nav>
-
-          {/* Divider */}
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mx-auto mt-10 h-px max-w-7xl bg-white/10 px-8 md:px-20"
-          />
 
           {/* Menu Columns */}
           <div className="mx-auto mt-12 grid max-w-7xl grid-cols-2 gap-x-10 gap-y-14 px-8 md:mt-16 md:px-20 lg:grid-cols-4">

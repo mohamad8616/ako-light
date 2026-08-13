@@ -50,7 +50,7 @@ export default function Navbar() {
               <HengeLogo className="w-24 h-auto fill-white transition-all duration-500 group-hover:opacity-70 md:w-28" />
             </Link>
 
-            {/* Right Side — only Search + Menu */}
+            {/* Right Side — only Search + Menu + products*/}
             <div className="flex items-center gap-6 md:gap-8">
               <button
                 aria-label={t("nav.search")}

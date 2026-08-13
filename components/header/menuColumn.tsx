@@ -14,7 +14,7 @@ interface Props {
 export default function MenuColumn({ title, links, delay }: Props) {
   const { t } = useLanguage();
 
-  const titleKey = `menu.${title.toLowerCase()}` as const;
+  const titleKey = `${title.toLowerCase()}` as const;
 
   return (
     <motion.div
@@ -32,7 +32,7 @@ export default function MenuColumn({ title, links, delay }: Props) {
       <ul className="space-y-4 md:space-y-6">
         {links.map((item) => {
           const isExternal = item.href.startsWith("http");
-          const linkKey = `menu.${item.label
+          const linkKey = `${item.label
             .toLowerCase()
             .replace(/[^a-z0-9]/g, "")}` as const;
 
