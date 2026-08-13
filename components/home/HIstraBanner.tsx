@@ -5,72 +5,66 @@ import Link from "next/link";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { homepageSections } from "@/lib/data/homepage";
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 export default function HIstraBanner() {
   const { t } = useLanguage();
   const { istra } = homepageSections;
 
   return (
-    <section className="w-full bg-background py-24 md:py-36">
+    <section className="relative w-full bg-[#f0efec] pb-0 pt-20 md:pt-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
-        {/* Header */}
-        <div className="flex flex-col items-start justify-between gap-8 md:flex-row md:items-end">
-          <div>
-            <motion.span
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="text-sm font-light uppercase tracking-[0.3em] text-white/50"
-            >
-              {t("istra.kicker")}
-            </motion.span>
-
-            <motion.h2
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-4 text-5xl font-light uppercase tracking-tight text-white md:text-7xl"
-            >
-              {t("istra.title")}
-            </motion.h2>
-          </div>
-
-          {/* CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+        {/* Title */}
+        <div className="overflow-hidden">
+          <motion.h2
+            initial={{ y: "100%" }}
+            whileInView={{ y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.8, ease: EASE }}
+            className="text-5xl font-bold uppercase leading-[0.95] tracking-tight text-[#171719] md:text-7xl"
           >
-            <Link
-              href="/projects/h-istra"
-              className="group inline-flex items-center gap-4 text-sm font-medium uppercase tracking-[0.25em] text-white transition-colors duration-300 hover:text-white/70"
-            >
-              <span className="relative">
-                {t("istra.discover")}
-                <span className="absolute -bottom-1 left-0 h-px w-full origin-left scale-x-0 bg-white transition-transform duration-500 group-hover:scale-x-100" />
-              </span>
-              <span className="inline-block text-xl transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-90">
-                +
-              </span>
-            </Link>
-          </motion.div>
+            {t("istra.title")}
+          </motion.h2>
         </div>
 
-        {/* Image */}
+        {/* Image — kept inside the same page container as the title (not
+            full viewport width), but bled below this section's own box via
+            a negative bottom margin so it spills onto whatever follows. */}
         <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, scale: 0.98 }}
+          whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 1.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="relative mt-16 aspect-[16/9] w-full overflow-hidden"
+          transition={{ duration: 1.2, delay: 0.15, ease: EASE }}
+          className="group relative z-10 mt-10 -mb-16 aspect-[16/10] w-full overflow-hidden sm:aspect-[16/9] md:mt-14 md:-mb-24 lg:-mb-32"
         >
           <img
             src={istra.image}
             alt={t("istra.title")}
-            className="h-full w-full object-cover transition-transform duration-[1.5s] ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
           />
+
+
+          {/* Discover CTA, anchored to the image's bottom-right */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.55, ease: EASE }}
+            className="absolute bottom-4 right-4 md:bottom-6 md:right-6"
+          >
+            <Link
+              href="/projects/h-istra"
+              className="group/cta inline-flex items-center gap-2 bg-[#f0efec]/90 px-4 py-2 text-sm font-medium uppercase tracking-[0.2em] text-[#171719] backdrop-blur-sm transition-colors duration-300 hover:text-[#171719]/60"
+            >
+              <span className="inline-block text-lg leading-none transition-transform duration-300 ease-in-out group-hover/cta:rotate-90">
+                +
+              </span>
+              <span className="relative">
+                {t("istra.discover")}
+                <span className="absolute -bottom-1 left-0 h-px w-0 bg-[#171719] transition-[width] duration-300 group-hover/cta:w-full" />
+              </span>
+            </Link>
+          </motion.div>
         </motion.div>
       </div>
     </section>

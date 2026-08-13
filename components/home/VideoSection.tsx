@@ -1,61 +1,85 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { motion } from "framer-motion";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+
+const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function VideoSection() {
-  const { t } = useLanguage();
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Becomes true once the section scrolls into view — this is what
+  // triggers the (possibly large) video source to actually start loading.
+  const [shouldLoad, setShouldLoad] = useState(false);
+  // Becomes true once the video reports it's actually playing, so we
+  // know it's safe to fade the "AKO LIGHTING" placeholder out.
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          videoRef.current?.play().catch(() => {
+            // Autoplay can be blocked in rare cases (e.g. low-power mode);
+            // the placeholder just stays visible until the user interacts.
+          });
+        } else {
+          videoRef.current?.pause();
+        }
+      },
+      { threshold: 0.25 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <section className="relative flex h-[90vh] w-full items-center justify-center overflow-hidden bg-black">
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 h-full w-full object-cover opacity-50"
-      >
-        <source src="/hero.mp4" type="video/mp4" />
-      </video>
+    <section className="w-full bg-background-secondary py-20 md:py-28">
+      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
+        <div ref={sectionRef} className="relative">
+          <div className="relative aspect-video w-full overflow-hidden bg-background">
+            {/* Placeholder shown until the video is actually playing */}
+            <AnimatePresence>
+              {!isPlaying && (
+                <motion.div
+                  initial={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.8, ease: EASE }}
+                  className="absolute inset-0 z-10 flex items-center justify-center bg-background"
+                >
+                  <span className="text-sm font-light uppercase tracking-[0.4em] text-background-secondary md:text-base">
+                    AKO LIGHTING
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-      {/* Gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background" />
-
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 px-6 text-center"
-      >
-        <motion.span
-          initial={{ opacity: 0, letterSpacing: "0.5em" }}
-          whileInView={{ opacity: 1, letterSpacing: "0.3em" }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-          className="text-sm font-light uppercase text-white/50"
-        >
-          Henge
-        </motion.span>
-
-        <motion.h2
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 1, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="mt-6 text-5xl font-light uppercase tracking-[0.15em] text-white md:text-7xl"
-        >
-          {t("video.title")}
-        </motion.h2>
-
-        <motion.div
-          initial={{ scaleX: 0 }}
-          whileInView={{ scaleX: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
-          className="mx-auto mt-8 h-px w-24 bg-white/40"
-        />
-      </motion.div>
+            {/* Video only gets a source once it's scrolled into view, so a
+                large file is never fetched before it's needed. */}
+            {shouldLoad && (
+              <video
+                ref={videoRef}
+                muted
+                loop
+                playsInline
+                preload="none"
+                onPlaying={() => setIsPlaying(true)}
+                onPause={() => setIsPlaying(false)}
+                className="h-full w-full object-cover"
+              >
+                <source src="/afterhenge.mp4" type="video/mp4" />
+              </video>
+            )}
+          </div>
+        </div>
+      </div>
     </section>
   );
 }

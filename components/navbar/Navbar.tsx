@@ -1,12 +1,12 @@
 "use client";
 
+import FullscreenMenu from "@/components/header/fullScreenMenu";
+import HengeLogo from "@/components/ui/HengeLogo";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { Menu, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import HengeLogo from "@/components/ui/HengeLogo";
-import FullscreenMenu from "@/components/header/fullScreenMenu";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -19,6 +19,7 @@ export default function Navbar() {
     const prev = scrollY.getPrevious() ?? 0;
     const isScrollingDown = latest > prev;
     const atTop = latest < 50;
+    // const { t } = useLanguage();
 
     // Hide navbar when scrolling down (past 120px), show when scrolling up
     setHidden(isScrollingDown && latest > 120);
@@ -38,7 +39,9 @@ export default function Navbar() {
       >
         <div
           className={`transition-colors duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-            scrolled ? "bg-[#171719]/90 backdrop-blur-md border-b border-white/5" : "bg-transparent"
+            scrolled
+              ? "bg-background/90 backdrop-blur-md border-b border-white/5"
+              : "bg-transparent"
           }`}
         >
           <div className="mx-auto flex h-20 max-w-[1600px] items-center justify-between px-6 md:h-24 md:px-12 lg:px-20 xl:px-[8.5vw]">
@@ -55,7 +58,7 @@ export default function Navbar() {
               >
                 <Search size={18} strokeWidth={2.2} />
               </button>
-
+              <span> products </span>
               <button
                 onClick={() => setOpen(true)}
                 aria-label={t("nav.menu")}

@@ -58,7 +58,7 @@ export default function FullscreenMenu({ open, onClose }: Props) {
             duration: 0.75,
             ease: [0.22, 1, 0.36, 1],
           }}
-          className="fixed inset-0 z-999 bg-[#171719] text-white overflow-y-auto"
+          className="fixed inset-0 z-999 bg-background text-background-secondary overflow-y-auto"
         >
           {/* Top */}
           <div className="flex items-center justify-between px-8 pt-8 md:px-20 md:pt-10">

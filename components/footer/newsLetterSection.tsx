@@ -11,11 +11,11 @@ export default function NewsletterSection() {
   const [agreed, setAgreed] = useState(false);
 
   return (
-    <section className="bg-[#f1f1f0] px-6 py-24 md:px-12 lg:px-20 xl:px-[8.5vw]">
+    <section className="bg-background-secondary h-screen flex px-6 py-24 md:px-12 lg:px-20 xl:px-[8.5vw]">
       <div className="mx-auto grid max-w-[1600px] items-center gap-16 lg:grid-cols-[0.9fr_1fr] lg:gap-24">
         {/* Left */}
         <div>
-          <h2 className="max-w-100 font-[Arial_Narrow,sans-serif] text-[40px] font-normal uppercase leading-[0.98] tracking-[-1.5px] text-[#1a1a1a] md:text-[46px] lg:text-[50px]">
+          <h2 className="max-w-100 font-[Arial_Narrow,sans-serif] text-[40px] font-normal uppercase leading-[0.98] tracking-[-1.5px] text-background md:text-[46px] lg:text-[50px]">
             {t("newsletter.title1")}
             <br />
             {t("newsletter.title2")}

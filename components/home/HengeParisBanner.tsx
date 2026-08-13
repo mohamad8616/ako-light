@@ -37,25 +37,7 @@ export default function HengeParisBanner() {
               </div>
             </motion.div>
 
-            {/* Peeking "next" preview card */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.4, ease: EASE }}
-              className="absolute -bottom-8 left-0 z-10 flex w-[60%] max-w-55 items-center gap-3 bg-background-secondary pr-3 md:-bottom-10"
-            >
-              <span className="text-xs font-medium uppercase leading-tight tracking-[0.08em] text-background">
-                {t("paris.nextLabel") || "Next Project"}
-              </span>
-              <div className="h-14 w-16 shrink-0 overflow-hidden">
-                <img
-                  src={homepageSections.catalogue.image}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </motion.div>
+
           </div>
 
           {/* Right: kicker, title, two-column body, CTA */}

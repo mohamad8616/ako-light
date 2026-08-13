@@ -5,7 +5,6 @@ import HIstraBanner from "@/components/home/HIstraBanner";
 import HomeCarousel from "@/components/home/HomeCarousel";
 import HomeCollectionBanner from "@/components/home/HomeCollectionBanner";
 import SliderSection from "@/components/home/SliderSection";
-import TimelessTablesBanner from "@/components/home/TimelessTablesBanner";
 import VideoSection from "@/components/home/VideoSection";
 import Vocla2026Section from "@/components/home/Vocla2026Section";
 
@@ -15,13 +14,13 @@ export default function HomePage() {
       <HeroSection />
       <HomeCarousel />
       <HengeParisBanner />
+      <VideoSection />
       <CatalogueSection />
       <SliderSection />
-      <TimelessTablesBanner />
-      <VideoSection />
+      {/* <TimelessTablesBanner /> */}
       <HomeCollectionBanner />
-      <Vocla2026Section />
       <HIstraBanner />
+      <Vocla2026Section />
     </main>
   );
 }
