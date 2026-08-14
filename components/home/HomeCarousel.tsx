@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { motion } from "framer-motion";
@@ -71,7 +72,7 @@ export default function HomeCarousel() {
             className="group relative w-[68vw] shrink-0 xs:w-[56vw] sm:w-[40vw] md:w-[31vw] lg:w-[24vw] xl:w-[20vw]"
           >
             <Link href="/hlife" className="block">
-              <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#111]">
+              <div className="relative aspect-4/5 w-full overflow-hidden bg-[#111]">
                 <img
                   src={item.image}
                   alt={item.title}
@@ -85,7 +86,7 @@ export default function HomeCarousel() {
                 <span className="inline-block text-base leading-none text-white/50 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:rotate-90 group-hover:text-white">
                   +
                 </span>
-                <p className="truncate text-[11px] font-light uppercase tracking-[0.14em] text-white/70 transition-colors duration-300 group-hover:text-white sm:text-[13px] sm:tracking-[0.15em]">
+                <p className="truncate text-[11px] font-light uppercase tracking-[0.14em] text-background transition-colors duration-300 group-hover:text-white sm:text-[13px] sm:tracking-[0.15em]">
                   {t(carouselKeys[item.title])}
                 </p>
               </div>
