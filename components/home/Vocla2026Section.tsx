@@ -1,9 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { homepageSections } from "@/lib/data/homepage";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { homepageSections } from "@/lib/data/homepage";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -12,23 +13,41 @@ export default function Vocla2026Section() {
   const { vocla } = homepageSections;
 
   return (
-    <section className="w-full bg-background py-20 md:py-28">
-      <div className="mx-auto max-w-[1900px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
+    <section className="relative z-20 w-full bg-background py-20 md:py-28">
+      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {/* H-Life wordmark */}
         <motion.span
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, ease: EASE }}
-          className="block font-serif text-3xl italic text-white md:text-4xl"
+          className="mb-12 block font-serif text-3xl italic text-white md:mb-16 md:text-4xl"
         >
           H-Life
         </motion.span>
 
-        <div className="mt-12 grid grid-cols-1 gap-10 md:mt-16 lg:grid-cols-3 lg:gap-14">
-          
-          {/* Title + first paragraph */}
-          <div>
+        {/* Same proven image-left / text-right structure as HengeParisBanner */}
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
+          {/* Image column, with peeking "next project" card */}
+          <div className="relative lg:col-span-5">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.97 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.1, ease: EASE }}
+              className="group relative aspect-4/5 w-full overflow-hidden bg-[#1c1c1e] lg:aspect-3/4"
+            >
+              <img
+                src={vocla.image}
+                alt={t("vocla.title")}
+                className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+              />
+            </motion.div>
+
+          </div>
+
+          {/* Text column: title, then p1/p2 side-by-side, then CTA */}
+          <div className="lg:col-span-7">
             <div className="overflow-hidden">
               <motion.h2
                 initial={{ y: "100%" }}
@@ -41,23 +60,33 @@ export default function Vocla2026Section() {
               </motion.h2>
             </div>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.25, ease: EASE }}
-              className="mt-8 text-[15px] font-light leading-relaxed text-background-secondary md:text-base"
-            >
-              {t("vocla.p1")}
-            </motion.p>
+            <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10">
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
+                className="text-[15px] font-light leading-relaxed text-background-secondary md:text-base"
+              >
+                {t("vocla.p1")}
+              </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.7, delay: 0.3, ease: EASE }}
+                className="text-[15px] font-light leading-relaxed text-background-secondary md:text-base"
+              >
+                {t("vocla.p2")}
+              </motion.p>
+            </div>
 
-            {/* CTA under title/p1 column */}
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.5, ease: EASE }}
-              className="mt-14 md:mt-20"
+              transition={{ duration: 0.7, delay: 0.45, ease: EASE }}
+              className="mt-12"
             >
               <Link
                 href="/hlife/vocla-2026"
@@ -73,17 +102,6 @@ export default function Vocla2026Section() {
               </Link>
             </motion.div>
           </div>
-
-          {/* Second paragraph */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7, delay: 0.35, ease: EASE }}
-            className="text-[15px] font-light leading-relaxed text-background-secondary md:text-base"
-          >
-            {t("vocla.p2")}
-          </motion.p>
         </div>
       </div>
     </section>
