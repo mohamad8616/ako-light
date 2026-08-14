@@ -2,6 +2,7 @@
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
+import ScrollIndicator from "../ui/ScrollIndicator";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -62,6 +63,9 @@ export default function HeroSection() {
             <span className="absolute -bottom-1 left-0 h-px w-0 bg-white transition-[width] duration-300 group-hover:w-full" />
           </span>
         </motion.button>
+
+        {/* Scroll indicator */}
+        <ScrollIndicator />
       </div>
     </section>
   );
