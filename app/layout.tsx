@@ -1,6 +1,7 @@
 import Footer from "@/components/footer/footer";
 import NewsletterSection from "@/components/footer/newsLetterSection";
 import Navbar from "@/components/navbar/Navbar";
+import SmoothScroll from "@/components/smoothScroll";
 import PageTransition from "@/components/ui/PageTransition";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import type { Metadata } from "next";
@@ -36,12 +37,14 @@ export default function RootLayout({
       className={`${oswald.variable} ${vazirmatn.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-white">
-        <LanguageProvider>
-          <Navbar />
-          <PageTransition>{children}</PageTransition>
-          <NewsletterSection />
-          <Footer />
-        </LanguageProvider>
+        <SmoothScroll>
+          <LanguageProvider>
+            <Navbar />
+            <PageTransition>{children}</PageTransition>
+            <NewsletterSection />
+            <Footer />
+          </LanguageProvider>
+        </SmoothScroll>
       </body>
     </html>
   );

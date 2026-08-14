@@ -57,3 +57,16 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Lenis requires this */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
