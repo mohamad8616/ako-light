@@ -5,6 +5,7 @@ import { homepageSections } from "@/lib/data/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import HomepageSection from "../ui/HomepageSection";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -14,13 +15,7 @@ export default function HIstraBanner() {
 
   return (
     <section className="relative w-full bg-background-secondary pb-0 pt-20 md:pt-28">
-      <motion.div
-        initial={{ opacity: 0, y: "30%" }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{}}
-        transition={{ duration: 1, ease: EASE }}
-        className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]"
-      >
+      <HomepageSection className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {/* Title */}
         <div className="overflow-hidden">
           <motion.h2
@@ -72,7 +67,7 @@ export default function HIstraBanner() {
             </Link>
           </motion.div>
         </motion.div>
-      </motion.div>
+      </HomepageSection>
     </section>
   );
 }

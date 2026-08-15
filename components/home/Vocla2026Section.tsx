@@ -1,10 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { homepageSections } from "@/lib/data/homepage";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { homepageSections } from "@/lib/data/homepage";
+import HomepageSection from "../ui/HomepageSection";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -13,7 +14,7 @@ export default function Vocla2026Section() {
   const { vocla } = homepageSections;
 
   return (
-    <section className="relative z-20 w-full bg-background py-20 md:py-28">
+    <HomepageSection className="relative z-20 w-full bg-background py-20 md:py-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {/* H-Life wordmark */}
         <motion.span
@@ -43,7 +44,6 @@ export default function Vocla2026Section() {
                 className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
               />
             </motion.div>
-
           </div>
 
           {/* Text column: title, then p1/p2 side-by-side, then CTA */}
@@ -104,6 +104,6 @@ export default function Vocla2026Section() {
           </div>
         </div>
       </div>
-    </section>
+    </HomepageSection>
   );
 }

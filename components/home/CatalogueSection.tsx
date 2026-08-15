@@ -5,15 +5,16 @@ import { homepageSections } from "@/lib/data/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
+import HomepageSection from "../ui/HomepageSection";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function CatalogueSection() {
   const { catalogue } = homepageSections;
-  const {t} = useLanguage();
+  const { t } = useLanguage();
 
   return (
-    <section className="w-full bg-background-secondary py-20 md:py-28">
+    <HomepageSection className="w-full bg-background-secondary py-20 md:py-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
           {/* Text column */}
@@ -111,6 +112,6 @@ export default function CatalogueSection() {
           </div>
         </div>
       </div>
-    </section>
+    </HomepageSection>
   );
 }

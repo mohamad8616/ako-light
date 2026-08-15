@@ -36,7 +36,7 @@ export default function RootLayout({
       dir="ltr"
       className={`${oswald.variable} ${vazirmatn.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-background text-white">
+      <body className="min-h-full flex flex-col bg-background-secondary text-background-secondary font-sans text-sm leading-normal  md:text-base">
         <SmoothScroll>
           <LanguageProvider>
             <Navbar />

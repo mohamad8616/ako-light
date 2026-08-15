@@ -1,11 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { motion } from "framer-motion";
+import { homepageSections } from "@/lib/data/homepage";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { easeIn, motion } from "framer-motion";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { homepageSections } from "@/lib/data/homepage";
+import HomepageSection from "../ui/HomepageSection";
 
 const carouselKeys: Record<string, string> = {
   "Breccia Medicea": "carousel.breccia",
@@ -37,11 +38,11 @@ export default function HomeCarousel() {
   }, []);
 
   return (
-    <section className="w-full overflow-hidden border-y border-white/10 bg-background-secondary py-20 md:py-28 lg:py-32">
+    <HomepageSection
+      className="w-full overflow-hidden border-y border-white/10 bg-background-secondary py-20 md:py-28 lg:py-32"
+    >
       {/* Heading row */}
       <div className="mx-auto mb-10 flex max-w-[1900px] items-end justify-between px-6 md:mb-14 md:px-12 lg:px-20 xl:px-[8.5vw]">
-
-
         <motion.span
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
@@ -97,6 +98,6 @@ export default function HomeCarousel() {
         {/* trailing spacer so the last card can be dragged fully into view */}
         <div className="w-2 shrink-0 sm:w-4" aria-hidden="true" />
       </motion.div>
-    </section>
+    </HomepageSection>
   );
 }

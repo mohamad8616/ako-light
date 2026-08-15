@@ -3,6 +3,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import HomepageSection from "../ui/HomepageSection";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -41,7 +42,7 @@ export default function VideoSection() {
   }, []);
 
   return (
-    <section className="w-full bg-background-secondary py-20 md:py-28">
+    <HomepageSection className="w-full bg-background-secondary py-20 md:py-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         <div ref={sectionRef} className="relative">
           <div className="relative aspect-video w-full overflow-hidden bg-background">
@@ -80,6 +81,6 @@ export default function VideoSection() {
           </div>
         </div>
       </div>
-    </section>
+    </HomepageSection>
   );
 }

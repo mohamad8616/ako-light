@@ -5,6 +5,7 @@ import { homepageSections } from "@/lib/data/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import HomepageSection from "../ui/HomepageSection";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -13,7 +14,7 @@ export default function HengeParisBanner() {
   const { paris } = homepageSections;
 
   return (
-    <section className="w-full bg-background-secondary py-20 md:py-28">
+    <HomepageSection className="w-full bg-background-secondary py-20 md:py-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
           {/* Left: image, with peeking "next" card below it */}
@@ -36,8 +37,6 @@ export default function HengeParisBanner() {
                 <span className="text-[10px] font-light">H</span>
               </div>
             </motion.div>
-
-
           </div>
 
           {/* Right: kicker, title, two-column body, CTA */}
@@ -108,6 +107,6 @@ export default function HengeParisBanner() {
           </div>
         </div>
       </div>
-    </section>
+    </HomepageSection>
   );
 }
