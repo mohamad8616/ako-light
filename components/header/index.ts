@@ -1,3 +1,3 @@
-export { default as FullscreenMenu } from "./fullScreenMenu";
-export { default as MenuColumn } from "./menuColumn";
+export { default as FullscreenMenu } from "../navbar/fullScreenMenu";
 export { menu } from "./data";
+export { default as MenuColumn } from "./menuColumn";
