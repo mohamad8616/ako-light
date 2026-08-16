@@ -71,7 +71,7 @@ export default function FullscreenMenu({ open, onClose }: Props) {
               {menu.map((section, index) => (
                 <div key={section.title}>
                   <MenuColumn
-                    title={section.title}
+                    titleKey={section.i18nKey}
                     links={section.links}
                     delay={0.5 + index * 0.12}
                     onLinkClick={onClose}

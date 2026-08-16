@@ -27,10 +27,16 @@ export const translations = {
     "menu.hFragrance": "H-Fragrance",
     "menu.mediaKit": "Media Kit",
     "menu.pressClippings": "Press Clippings",
+    "menu.aboutUs": "About Us",
     "menu.catalogues": "Catalogues",
+    "menu.collections": "Collections",
+    "menu.contacts": "Contacts",
+    "menu.designers": "Designers",
     "menu.flagships": "Flagships",
-    "menu.storeFinder": "Store Finder",
+    "menu.hLife": "H-Life",
+    "menu.projects": "Projects",
     "menu.s34": "S-34",
+    "menu.storeFinder": "Store Finder",
 
     // Hero
     "hero.collection": "2026 Collection",
@@ -174,10 +180,17 @@ export const translations = {
     "menu.hFragrance": "اچ-عطر",
     "menu.mediaKit": "کیت رسانه",
     "menu.pressClippings": "بریده‌های مطبوعاتی",
+    "menu.aboutUs": "درباره ما",
     "menu.catalogues": "کاتالوگ‌ها",
+    "menu.collections": "کلکسیون‌ها",
+    "menu.contacts": "تماس",
+    "menu.designers": "طراحان",
     "menu.flagships": "فروشگاه‌های اصلی",
-    "menu.storeFinder": "یافتن فروشگاه",
+    
+    "menu.hLife": "اچ-لایف",
+    "menu.projects": "پروژه‌ها",
     "menu.s34": "اس-۳۴",
+    "menu.storeFinder": "یافتن فروشگاه",
 
     // Hero
     "hero.collection": "کلکسیون ۲۰۲۶",

@@ -1,9 +1,11 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { EASE } from "../ui/HomepageSection";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
+
 
 const images = [
   "https://www.henge07.com/app/uploads/2023/04/H19_FOTO_01.jpg",
@@ -51,7 +53,11 @@ export default function ImageGalleryCarousel() {
   };
 
   return (
-    <section
+    <motion.section
+      initial={{ opacity: 0, y: "20%" }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 2, ease: EASE }}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
@@ -90,7 +96,7 @@ export default function ImageGalleryCarousel() {
               src={src}
               alt=""
               draggable={false}
-              className="aspect-[4/5] h-full w-full object-cover"
+              className="aspect-4/5 h-full w-full object-cover"
             />
           </motion.div>
         ))}
@@ -112,6 +118,6 @@ export default function ImageGalleryCarousel() {
         transition={{ duration: 0.4, ease: EASE }}
         className="pointer-events-none fixed z-50 hidden h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white mix-blend-difference md:block"
       />
-    </section>
+    </motion.section>
   );
 }

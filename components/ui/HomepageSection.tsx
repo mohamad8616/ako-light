@@ -1,7 +1,7 @@
 "use client";
 import { motion } from "framer-motion";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
+export const EASE = [0.22, 1, 0.36, 1] as const;
 
 const HomepageSection = ({
   children,

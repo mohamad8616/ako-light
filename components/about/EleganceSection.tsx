@@ -1,7 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import HomepageSection from "../ui/HomepageSection";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -25,8 +27,8 @@ const links = [
 
 export default function EleganceSection() {
   return (
-    <section className="w-full bg-background py-20 md:py-28">
-      <div className="mx-auto max-w-[900px] px-6 text-center md:px-12">
+    <HomepageSection className="w-full bg-background py-20 md:py-28">
+      <div className="mx-auto max-w-225 px-6 text-center md:px-12">
         <div className="overflow-hidden">
           <motion.h2
             initial={{ y: "100%" }}
@@ -50,8 +52,8 @@ export default function EleganceSection() {
           world, looking for their expression, giving value to their natural
           characteristics and production criteria. HENGE believes the core of
           Made in Italy is found in the small craft shops which maintain the
-          secrets of Italian excellence, adding the techniques impressed in
-          the hands of the best Italian artisans to the vision of the great
+          secrets of Italian excellence, adding the techniques impressed in the
+          hands of the best Italian artisans to the vision of the great
           designers it works with.
         </motion.p>
       </div>
@@ -65,7 +67,10 @@ export default function EleganceSection() {
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: i * 0.1, ease: EASE }}
           >
-            <Link href={href} className="group relative block aspect-[3/4] w-full overflow-hidden">
+            <Link
+              href={href}
+              className="group relative block aspect-3/4 w-full overflow-hidden"
+            >
               <img
                 src={image}
                 alt={label}
@@ -82,6 +87,6 @@ export default function EleganceSection() {
           </motion.div>
         ))}
       </div>
-    </section>
+    </HomepageSection>
   );
 }

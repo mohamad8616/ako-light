@@ -1,21 +1,24 @@
 "use client";
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import type { MenuLink } from "../header/data";
 
 interface Props {
-  title: string;
+  titleKey: string;
   links: MenuLink[];
   delay: number;
   onLinkClick?: () => void;
 }
 
-export default function MenuColumn({ title, links, delay, onLinkClick }: Props) {
+export default function MenuColumn({
+  titleKey,
+  links,
+  delay,
+  onLinkClick,
+}: Props) {
   const { t } = useLanguage();
-
-  const titleKey = `menu.${title.toLowerCase()}` as const;
 
   return (
     <motion.div
@@ -33,9 +36,7 @@ export default function MenuColumn({ title, links, delay, onLinkClick }: Props) 
       <ul className="space-y-3 md:space-y-4">
         {links.map((item) => {
           const isExternal = item.href.startsWith("http");
-          const linkKey = `${item.label
-            .toLowerCase()
-            .replace(/[^a-z0-9]/g, "")}` as const;
+          const linkKey = item.i18nKey;
 
           return (
             <li key={item.label}>
