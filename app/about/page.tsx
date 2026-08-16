@@ -1,17 +1,16 @@
 import AboutHero from "@/components/about/AboutHero";
+import AboutHeroVideo from "@/components/about/AboutHeroVideo";
 import AboutIntro from "@/components/about/AboutIntro";
-import MetaphysicsTeaser from "@/components/about/MetaphysicsTeaser";
 import BrandStory from "@/components/about/BrandStory";
-import ImageGalleryCarousel from "@/components/about/ImageGalleryCarousel";
 import EleganceSection from "@/components/about/EleganceSection";
-
+import ImageGalleryCarousel from "@/components/about/ImageGalleryCarousel";
 
 export default function AboutPage() {
   return (
     <main className="w-full bg-background">
       <AboutHero />
+      <AboutHeroVideo />
       <AboutIntro />
-      <MetaphysicsTeaser />
       <BrandStory />
       <ImageGalleryCarousel />
 
