@@ -7,6 +7,23 @@ import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import type { Metadata } from "next";
 import { Oswald, Vazirmatn } from "next/font/google";
 import "./globals.css";
+import localFont from "next/font/local";
+
+const jetBrainsMono = localFont({
+  src: [
+    {
+      path: "../public/fonts/JetBrainsMono-Light.woff2",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/JetBrainsMono-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+  ],
+  variable: "--font-jetbrains-mono",
+});
 
 export const oswald = Oswald({
   subsets: ["latin"],
@@ -34,7 +51,7 @@ export default function RootLayout({
     <html
       lang="en"
       dir="ltr"
-      className={`${oswald.variable} ${vazirmatn.variable} h-full antialiased`}
+      className={`${oswald.variable} ${vazirmatn.variable} ${jetBrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background-secondary text-background-secondary font-sans text-sm leading-normal  md:text-base">
         <SmoothScroll>

@@ -3,8 +3,8 @@
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { Play } from "lucide-react";
 import { useRef, useState } from "react";
-
-const EASE = [0.22, 1, 0.36, 1] as const;
+import { EASE } from "../ui/HomepageSection";
+import ScrollIndicator from "../ui/ScrollIndicator";
 
 export default function AboutHero() {
   const sectionRef = useRef<HTMLDivElement>(null);
@@ -38,11 +38,17 @@ export default function AboutHero() {
       onMouseLeave={() => setHovering(false)}
       className="relative h-screen w-full cursor-none overflow-hidden bg-black md:cursor-auto"
     >
-      <video autoPlay muted loop playsInline className="absolute inset-0 h-full w-full object-cover">
-        <source src="/hero.mp4" type="video/mp4" />
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
+      >
+        <source src="/videos/hero.mp4" type="video/mp4" />
       </video>
 
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
+      <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-black/40" />
 
       {/* Cursor-following play circle. Positioned with a HIGHER z-index
           than the video/overlay but LOWER than the global fixed Header
@@ -53,7 +59,10 @@ export default function AboutHero() {
           without needing any cross-component logic. */}
       <motion.div
         style={{ left: springX, top: springY }}
-        animate={{ scale: circleVisible ? 1 : 0, opacity: circleVisible ? 1 : 0 }}
+        animate={{
+          scale: circleVisible ? 1 : 0,
+          opacity: circleVisible ? 1 : 0,
+        }}
         transition={{ duration: 0.4, ease: EASE }}
         className="pointer-events-none absolute z-20 hidden h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white md:flex"
       >
@@ -100,6 +109,8 @@ export default function AboutHero() {
             <span className="absolute -bottom-1 left-0 h-px w-0 bg-white transition-[width] duration-300 group-hover:w-full" />
           </span>
         </motion.button>
+        {/* Scroll indicator */}
+        <ScrollIndicator />
       </div>
     </section>
   );
