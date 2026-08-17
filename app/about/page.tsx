@@ -7,7 +7,7 @@ import ImageGalleryCarousel from "@/components/about/ImageGalleryCarousel";
 
 export default function AboutPage() {
   return (
-    <main className="w-full bg-background">
+    <main className="w-full bg-background-secondary space-y-5 sm:space-y-10 md:space-y-12 lg:space-y-14">
       <AboutHero />
       <AboutHeroVideo />
       <AboutIntro />
