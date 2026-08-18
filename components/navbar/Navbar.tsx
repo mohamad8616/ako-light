@@ -41,25 +41,17 @@ export default function Navbar() {
             properties are listed explicitly so "height" is actually included —
             Tailwind's plain `transition` class does NOT animate height by
             default, only color/opacity/shadow/transform/filter. */}
-        {/* <div
-          className={`flex border-b items-end transition-[height,background-color,backdrop-filter,border-color] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-            scrolled
-              ? "h-14  border-white/5 bg-background md:h-18 items-center"
-              : "h-32 border-transparent bg-transparent backdrop-blur-0 md:h-52"
-          }`}
-        > */}
+
         <div
           className={`flex border-b transition-[height,width,background-color,backdrop-filter,border-color,border-radius] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             scrolled
-              ? "mx-auto h-24 w-[90%] items-center border-white/10 bg-background md:h-22 md:w-10/12"
-              : "h-32 w-full items-end border-transparent bg-transparent backdrop-blur-0 md:h-52"
+              ? "mx-auto h-24 w-full items-center border-white/10 md:h-22 "
+              : "mx-auto h-32 w-full items-end border-transparent backdrop-blur-0 md:h-52"
           }`}
         >
           <div
-            className={`mx-auto flex h-full w-full items-center justify-between ${
-              scrolled ? "px-6" : "px-6 md:px-12 lg:px-20 xl:px-[8.5vw]"
-            }
-          `}
+            className={`mx-auto flex h-full w-full items-center justify-between px-6 md:px-12 lg:px-20 xl:px-[8.5vw]
+              ${scrolled ? 'bg-background' : 'bg-transparent'}`}
           >
             {/* Logo */}
             <Link href="/" className="group cursor-pointer">

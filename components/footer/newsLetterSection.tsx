@@ -1,9 +1,11 @@
 "use client";
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { Paragraph } from "@/utility/Paragraph";
+import SectionTitle from "@/utility/SectionTitle";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 export default function NewsletterSection() {
   const { t } = useLanguage();
@@ -11,19 +13,17 @@ export default function NewsletterSection() {
   const [agreed, setAgreed] = useState(false);
 
   return (
-    <section className="bg-background-secondary h-screen flex px-6 py-24 md:px-12 lg:px-20 xl:px-[8.5vw]">
+    <section className="bg-background-secondary flex h-[75vh] px-6 py-24 md:px-12 lg:px-20 xl:px-[8.5vw]">
       <div className="mx-auto grid max-w-[1600px] items-center gap-16 lg:grid-cols-[0.9fr_1fr] lg:gap-24">
         {/* Left */}
         <div>
-          <h2 className="max-w-100 font-[Arial_Narrow,sans-serif] text-[40px] font-normal uppercase leading-[0.98] tracking-[-1.5px] text-background md:text-[46px] lg:text-[50px]">
+          <SectionTitle>
             {t("newsletter.title1")}
             <br />
             {t("newsletter.title2")}
-          </h2>
+          </SectionTitle>
 
-          <p className="mt-9 max-w-162.5 text-[16px] font-light leading-relaxed tracking-[0.3px] text-slate-600 md:text-[18px]">
-            {t("newsletter.description")}
-          </p>
+          <Paragraph className="mt-4">{t("newsletter.description")}</Paragraph>
         </div>
 
         {/* Right */}
@@ -36,7 +36,7 @@ export default function NewsletterSection() {
             }}
           >
             {/* Email */}
-            <div className="flex h-20 w-full items-center rounded-full bg-background-secondary p-1.5 pl-10 shadow-none">
+            <div className="flex h-16 w-full items-center rounded-full bg-white p-1.5 pl-10 shadow-none">
               <input
                 type="email"
                 required
@@ -49,12 +49,11 @@ export default function NewsletterSection() {
               <button
                 type="submit"
                 aria-label="Subscribe"
-                className="flex h-17 w-17 shrink-0 items-center justify-center rounded-full bg-[#111111] text-white transition-transform duration-300 hover:scale-[1.04]"
+                className="flex aspect-square h-full shrink-0 items-center justify-center rounded-full bg-[#111111] text-white transition-transform duration-300 hover:scale-[1.04]"
               >
                 <ArrowRight
-                  size={25}
                   strokeWidth={1.8}
-                  className="translate-x-px rtl:rotate-180"
+                  className="h-[45%] w-[45%] translate-x-px rtl:rotate-180"
                 />
               </button>
             </div>
