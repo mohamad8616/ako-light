@@ -3,9 +3,12 @@
 
 import { homepageSections } from "@/lib/data/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { Paragraph } from "@/utility/Paragraph";
+import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
 import HomepageSection from "../ui/HomepageSection";
+import PlusTextBtn from "../ui/PlusTextBtn";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -18,7 +21,7 @@ export default function CatalogueSection() {
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
           {/* Text column */}
-          <div className="order-2 flex flex-col justify-center lg:order-1 lg:col-span-6">
+          <div className="order-2 flex flex-col justify-start lg:order-1 lg:col-span-6">
             <motion.span
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -29,27 +32,11 @@ export default function CatalogueSection() {
               HENGE CATALOGUE
             </motion.span>
 
-            <div className="mt-3 overflow-hidden">
-              <motion.h2
-                initial={{ y: "100%" }}
-                whileInView={{ y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.1, ease: EASE }}
-                className="text-6xl font-bold uppercase leading-[0.95] tracking-tight text-background md:text-8xl"
-              >
-                S34/5
-              </motion.h2>
+            <div className="mt-3 overflow-hidden mb-5">
+              <SectionTitle>S34/5</SectionTitle>
             </div>
 
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: 0.25, ease: EASE }}
-              className="mt-8 max-w-md text-[15px] font-light leading-relaxed text-background/60 md:text-base"
-            >
-              {t("catalogue.description")}
-            </motion.p>
+            <Paragraph>{t("catalogue.description")}</Paragraph>
           </div>
 
           {/* Image column — small, portrait, matches the reference photo's proportions */}
@@ -93,20 +80,9 @@ export default function CatalogueSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: 0.3, ease: EASE }}
-                className="mt-8"
+                className="mt-8 "
               >
-                <a
-                  href="#"
-                  className="group inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.2em] text-background transition-colors duration-300 hover:text-background/60"
-                >
-                  <span className="inline-block text-lg leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90">
-                    +
-                  </span>
-                  <span className="relative">
-                    Download S34/5
-                    <span className="absolute -bottom-1 left-0 h-px w-0 bg-background transition-[width] duration-300 group-hover:w-full" />
-                  </span>
-                </a>
+                <PlusTextBtn text=" Download S34/5" textColor="text-background" href="#"/>
               </motion.div>
             </div>
           </div>

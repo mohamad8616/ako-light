@@ -82,7 +82,7 @@ export default function HomeCarousel() {
                 <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
               </div>
 
-              <PlusTextBtn text={item.title} textColor="text-background mt-5 bg-amber-300 ml-0"/>
+              <PlusTextBtn text={item.title} textColor="text-background" className="mt-7" />
             </Link>
           </motion.div>
         ))}

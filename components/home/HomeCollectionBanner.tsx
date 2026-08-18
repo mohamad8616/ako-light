@@ -1,11 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { motion } from "framer-motion";
-import Link from "next/link";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { homepageSections } from "@/lib/data/homepage";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { Paragraph } from "@/utility/Paragraph";
+import SectionTitle from "@/utility/SectionTitle";
+import { motion } from "framer-motion";
 import HomepageSection from "../ui/HomepageSection";
+import PlusTextBtn from "../ui/PlusTextBtn";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -32,33 +34,16 @@ export default function HomeCollectionBanner() {
                 className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
               />
             </motion.div>
-
           </div>
 
           {/* Content column — title pinned top, CTA pinned bottom to mirror the image height */}
           <div className="order-2 flex flex-col lg:col-span-5 lg:justify-between lg:py-2">
             <div>
-              <div className="overflow-hidden">
-                <motion.h2
-                  initial={{ y: "100%" }}
-                  whileInView={{ y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.8, ease: EASE }}
-                  className="text-4xl font-bold uppercase leading-[0.95] tracking-tight text-background md:text-6xl"
-                >
-                  {t("homeCollection.title")}
-                </motion.h2>
+              <div className="overflow-hidden mb-5">
+                <SectionTitle>{t("homeCollection.title")}</SectionTitle>
               </div>
 
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
-                className="mt-6 max-w-md text-[15px] font-light leading-relaxed text-background/70 md:text-base"
-              >
-                {t("homeCollection.description")}
-              </motion.p>
+              <Paragraph>{t("homeCollection.description")}</Paragraph>
             </div>
 
             <motion.div
@@ -68,20 +53,11 @@ export default function HomeCollectionBanner() {
               transition={{ duration: 0.7, delay: 0.35, ease: EASE }}
               className="mt-10 lg:mt-16"
             >
-              <Link
-                href="https://homecollection.henge07.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.2em] text-background transition-colors duration-300 hover:text-background/60"
-              >
-                <span className="inline-block text-lg leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90">
-                  +
-                </span>
-                <span className="relative">
-                  {t("homeCollection.discover")}
-                  <span className="absolute -bottom-1 left-0 h-px w-0 bg-background transition-[width] duration-300 group-hover:w-full" />
-                </span>
-              </Link>
+              <PlusTextBtn
+                href="/collection"
+                text={t("homeCollection.discover")}
+                textColor="text-background"
+              />
             </motion.div>
           </div>
         </div>
