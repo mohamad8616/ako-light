@@ -43,7 +43,7 @@ export default function Navbar() {
             default, only color/opacity/shadow/transform/filter. */}
 
         <div
-          className={`flex border-b transition-[height,width,background-color,backdrop-filter,border-color,border-radius] duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+          className={`flex border-b transition-[height,width,background-color,backdrop-filter,border-color,border-radius] duration-1500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             scrolled
               ? "mx-auto h-24 w-full items-center border-white/10 md:h-22 "
               : "mx-auto h-32 w-full items-end border-transparent backdrop-blur-0 md:h-52"

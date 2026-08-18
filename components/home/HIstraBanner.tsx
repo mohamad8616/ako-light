@@ -14,8 +14,8 @@ export default function HIstraBanner() {
   const { istra } = homepageSections;
 
   return (
-    <section className="relative w-full bg-background-secondary pb-0 pt-20 md:pt-28 h-screen">
-      <HomepageSection className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw] absolute lg:-bottom-82">
+    <section className="relative w-full bg-background-secondary pb-0 pt-20 md:pt-28 -bottom-18 lg:-bottom-80">
+      <HomepageSection className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {/* Title */}
         <div className="overflow-hidden">
           <SectionSubTitle>Henge Projects</SectionSubTitle>
@@ -31,7 +31,7 @@ export default function HIstraBanner() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
           transition={{ duration: 1.2, delay: 0.15, ease: EASE }}
-          className="group relative z-10 mt-10 -mb-16 aspect-16/10 w-full overflow-hidden sm:aspect-video md:mt-14 md:-mb-16 lg:-mb-18 "
+          className="group relative z-10 mt-10 -mb-16 aspect-16/10 w-full overflow-hidden sm:aspect-video md:mt-14 md:-mb-16 lg:-mb-18"
         >
           <img
             src={istra.image}
@@ -46,7 +46,7 @@ export default function HIstraBanner() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.55, ease: EASE }}
-          className="relative  z-20 mt-24"
+          className="relative z-20 mt-24"
         >
           <PlusTextBtn href={"#"} text={"Discover"} className="flex!" />
         </motion.div>

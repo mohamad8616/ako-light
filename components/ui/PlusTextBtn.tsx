@@ -15,7 +15,7 @@ const PlusTextBtn = ({
     return (
       <Link
         href={href}
-        className={`group hidden shrink-0 items-center gap-2 text-sm uppercase tracking-[0.15em] text-white transition duration-300 sm:flex ${className} ${textColor}`}
+        className={`group inline shrink-0 items-center gap-2 text-sm uppercase tracking-[0.15em] text-white transition duration-300 sm:inline-flex ${className} ${textColor}`}
       >
         <span
           className={`inline-flex  h-5 w-5 shrink-0 items-center justify-center text-lg leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90 ${textColor}`}
@@ -34,7 +34,7 @@ const PlusTextBtn = ({
   }
   return (
     <p
-      className={`group hidden shrink-0 items-center gap-2 text-sm uppercase text-white transition duration-300 sm:flex ${className} ${textColor}`}
+      className={`group inline-block shrink-0 items-center gap-2 text-sm uppercase text-white transition duration-300 sm:flex ${className} ${textColor}`}
     >
       <span
         className={`inline-flex h-5 w-5 shrink-0 items-center justify-center text-lg leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90 ${textColor}`}

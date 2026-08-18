@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @theme inline {
+  --breakpoint-xs: 480px;
   --color-background: #171719;
   --color-background-secondary: #f0efec;
   --font-sans: var(--font-oswald), sans-serif;

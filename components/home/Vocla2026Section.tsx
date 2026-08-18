@@ -16,7 +16,7 @@ export default function Vocla2026Section() {
   const { vocla } = homepageSections;
 
   return (
-    <HomepageSection className="relative  w-full bg-background py-20 md:py-80">
+    <HomepageSection className="relative  w-full bg-background py-40 md:py-80">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {/* H-Life wordmark */}
         <motion.span

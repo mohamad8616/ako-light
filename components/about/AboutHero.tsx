@@ -4,6 +4,7 @@ import { motion, useMotionValue, useSpring } from "framer-motion";
 import { Play } from "lucide-react";
 import { useRef, useState } from "react";
 import { EASE } from "../ui/HomepageSection";
+import PlusTextBtn from "../ui/PlusTextBtn";
 import ScrollIndicator from "../ui/ScrollIndicator";
 
 export default function AboutHero() {
@@ -38,16 +39,7 @@ export default function AboutHero() {
       onMouseLeave={() => setHovering(false)}
       className="relative h-screen w-full cursor-none overflow-hidden bg-black md:cursor-auto"
     >
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 h-full w-full object-cover"
-      >
-        <source src="/videos/hero.mp4" type="video/mp4" />
-      </video>
-
+      <Video />
       <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-black/40" />
 
       {/* Cursor-following play circle. Positioned with a HIGHER z-index
@@ -57,11 +49,12 @@ export default function AboutHero() {
           the pointer, firing mouseleave on this section) and is
           explicitly suppressed over the button via `overInteractive`,
           without needing any cross-component logic. */}
+
       <motion.div
         style={{ left: springX, top: springY }}
         animate={{
           scale: circleVisible ? 1 : 0,
-          opacity: circleVisible ? 1 : 0,
+          opacity: circleVisible ? 0.6 : 0,
         }}
         transition={{ duration: 0.4, ease: EASE }}
         className="pointer-events-none absolute z-20 hidden h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white md:flex"
@@ -71,13 +64,13 @@ export default function AboutHero() {
 
       {/* Hero copy — bottom-left, same alignment convention as the
           homepage hero */}
-      <div className="absolute inset-x-0 bottom-0 z-10 px-6 pb-16 md:px-12 md:pb-20 lg:px-20 lg:pb-24 xl:px-[8.5vw]">
-        <div className="overflow-hidden">
+      <div className="absolute inset-x-0 space-y-3 bottom-0 z-10 px-6 pb-16 md:px-12 md:pb-20 lg:px-20 lg:pb-24 xl:px-[8.5vw]">
+        <div className="overflow-hidden ">
           <motion.h1
             initial={{ y: "110%" }}
             animate={{ y: 0 }}
             transition={{ duration: 0.9, delay: 0.4, ease: EASE }}
-            className="text-4xl font-bold uppercase leading-[0.95] tracking-tight text-white md:text-6xl lg:text-7xl xl:text-8xl"
+            className="text-4xl font-din uppercase tracking-tighter leading-[0.95] text-white md:text-6xl lg:text-7xl xl:text-7xl"
           >
             The Metaphysics of Beauty
           </motion.h1>
@@ -87,7 +80,7 @@ export default function AboutHero() {
             initial={{ y: "110%" }}
             animate={{ y: 0 }}
             transition={{ duration: 0.9, delay: 0.55, ease: EASE }}
-            className="mt-2 text-lg font-medium uppercase leading-tight tracking-tight text-white md:text-2xl lg:text-3xl"
+            className="mt-2 text-lg uppercase font-din tracking-tight text-white md:text-2xl lg:text-3xl"
           >
             Henge&rsquo;s world is incredibly rich of unique materials
           </motion.h2>
@@ -99,19 +92,25 @@ export default function AboutHero() {
           transition={{ duration: 0.7, delay: 0.85, ease: EASE }}
           onMouseEnter={() => setOverInteractive(true)}
           onMouseLeave={() => setOverInteractive(false)}
-          className="group relative z-30 mt-6 flex items-center gap-2 uppercase text-white md:mt-8"
         >
-          <span className="inline-block text-2xl leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90">
-            +
-          </span>
-          <span className="relative text-sm font-medium tracking-[0.2em]">
-            Play
-            <span className="absolute -bottom-1 left-0 h-px w-0 bg-white transition-[width] duration-300 group-hover:w-full" />
-          </span>
+          <PlusTextBtn text={"play"} className="font-din"/>
         </motion.button>
         {/* Scroll indicator */}
         <ScrollIndicator />
       </div>
     </section>
+  );
+}
+function Video() {
+  return (
+    <video
+      autoPlay
+      muted
+      loop
+      playsInline
+      className="absolute inset-0 h-full w-full object-cover"
+    >
+      <source src="/videos/hero.mp4" type="video/mp4" />
+    </video>
   );
 }
