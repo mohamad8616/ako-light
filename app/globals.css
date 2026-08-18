@@ -6,6 +6,7 @@
   --font-sans: var(--font-oswald), sans-serif;
   --font-persian: var(--font-vazirmatn), sans-serif;
    --font-jetbrains: var(--font-jetbrains-mono);
+   --font-din: var(--font-dinnext), sans-serif;
 }
 
 @layer base {

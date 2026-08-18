@@ -25,6 +25,11 @@ const jetBrainsMono = localFont({
   variable: "--font-jetbrains-mono",
 });
 
+const dinNextLTPro = localFont({
+  src: "../public/fonts/dinnextltpro.woff2",
+  variable: "--font-dinnext",
+});
+
 export const oswald = Oswald({
   subsets: ["latin"],
   weight: ["200", "300", "400", "500"],
@@ -51,7 +56,7 @@ export default function RootLayout({
     <html
       lang="en"
       dir="ltr"
-      className={`${oswald.variable} ${vazirmatn.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={`${oswald.variable} ${vazirmatn.variable} ${jetBrainsMono.variable} ${dinNextLTPro.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background-secondary text-background-secondary font-sans text-sm leading-normal  md:text-base">
         <SmoothScroll>
