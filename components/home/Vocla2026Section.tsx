@@ -3,9 +3,11 @@
 
 import { homepageSections } from "@/lib/data/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { Paragraph } from "@/utility/Paragraph";
+import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
-import Link from "next/link";
 import HomepageSection from "../ui/HomepageSection";
+import PlusTextBtn from "../ui/PlusTextBtn";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -14,7 +16,7 @@ export default function Vocla2026Section() {
   const { vocla } = homepageSections;
 
   return (
-    <HomepageSection className="relative z-20 w-full bg-background py-20 md:py-28">
+    <HomepageSection className="relative  w-full bg-background py-20 md:py-80">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {/* H-Life wordmark */}
         <motion.span
@@ -22,7 +24,7 @@ export default function Vocla2026Section() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, ease: EASE }}
-          className="mb-12 block font-serif text-3xl italic text-white md:mb-16 md:text-4xl"
+          className="mb-12 block font-serif text-3xl  text-white md:mb-16 md:text-5xl"
         >
           H-Life
         </motion.span>
@@ -49,36 +51,18 @@ export default function Vocla2026Section() {
           {/* Text column: title, then p1/p2 side-by-side, then CTA */}
           <div className="lg:col-span-7">
             <div className="overflow-hidden">
-              <motion.h2
-                initial={{ y: "100%" }}
-                whileInView={{ y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: 0.1, ease: EASE }}
-                className="text-4xl font-bold uppercase leading-[0.95] tracking-tight text-white md:text-6xl"
-              >
+              <SectionTitle className="text-white">
                 {t("vocla.title")}
-              </motion.h2>
+              </SectionTitle>
             </div>
 
             <div className="mt-8 grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10">
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
-                className="text-[15px] font-light leading-relaxed text-background-secondary md:text-base"
-              >
+              <Paragraph textColor="text-background-secondary">
                 {t("vocla.p1")}
-              </motion.p>
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.3, ease: EASE }}
-                className="text-[15px] font-light leading-relaxed text-background-secondary md:text-base"
-              >
+              </Paragraph>
+              <Paragraph textColor="text-background-secondary">
                 {t("vocla.p2")}
-              </motion.p>
+              </Paragraph>
             </div>
 
             <motion.div
@@ -88,18 +72,7 @@ export default function Vocla2026Section() {
               transition={{ duration: 0.7, delay: 0.45, ease: EASE }}
               className="mt-12"
             >
-              <Link
-                href="/hlife/vocla-2026"
-                className="group inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.2em] text-white transition-colors duration-300 hover:text-white/60"
-              >
-                <span className="inline-block text-lg leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90">
-                  +
-                </span>
-                <span className="relative">
-                  {t("vocla.readMore")}
-                  <span className="absolute -bottom-1 left-0 h-px w-0 bg-white transition-[width] duration-300 group-hover:w-full" />
-                </span>
-              </Link>
+              <PlusTextBtn className="text-sm tracking-tight" text="Read more" href="#"/>
             </motion.div>
           </div>
         </div>

@@ -9,7 +9,7 @@ import Vocla2026Section from "@/components/home/Vocla2026Section";
 
 export default function HomePage() {
   return (
-    <main className="w-full">
+    <main className="w-full lg:space-y-60">
       <HeroSection />
       <HomeCarousel />
       <HengeParisBanner />

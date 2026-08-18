@@ -4,13 +4,12 @@
 import { homepageSections } from "@/lib/data/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { Paragraph } from "@/utility/Paragraph";
+import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
-import HomepageSection from "../ui/HomepageSection";
+import HomepageSection, { EASE } from "../ui/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
-
-const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function CatalogueSection() {
   const { catalogue } = homepageSections;
@@ -22,15 +21,8 @@ export default function CatalogueSection() {
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
           {/* Text column */}
           <div className="order-2 flex flex-col justify-start lg:order-1 lg:col-span-6">
-            <motion.span
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, ease: EASE }}
-              className="block text-xs font-medium uppercase tracking-[0.25em] text-background/50"
-            >
-              HENGE CATALOGUE
-            </motion.span>
+
+            <SectionSubTitle>HENGE CATALOGUE</SectionSubTitle>
 
             <div className="mt-3 overflow-hidden mb-5">
               <SectionTitle>S34/5</SectionTitle>
@@ -82,7 +74,11 @@ export default function CatalogueSection() {
                 transition={{ duration: 0.7, delay: 0.3, ease: EASE }}
                 className="mt-8 "
               >
-                <PlusTextBtn text=" Download S34/5" textColor="text-background" href="#"/>
+                <PlusTextBtn
+                  text=" Download S34/5"
+                  textColor="text-background"
+                  href="#"
+                />
               </motion.div>
             </div>
           </div>

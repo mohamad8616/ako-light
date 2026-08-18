@@ -2,27 +2,15 @@
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
+import { EASE } from "../ui/HomepageSection";
 import ScrollIndicator from "../ui/ScrollIndicator";
-
-const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function HeroSection() {
   const { t } = useLanguage();
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black">
-      <motion.video
-        autoPlay
-        muted
-        loop
-        playsInline
-        initial={{ scale: 1.12, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 2, ease: EASE }}
-        className="absolute inset-0 h-full w-full object-cover"
-      >
-        <source src="/hero.mp4" type="video/mp4" />
-      </motion.video>
+      <Video />
 
       <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/10 to-black/35" />
 
@@ -68,5 +56,19 @@ export default function HeroSection() {
         <ScrollIndicator />
       </div>
     </section>
+  );
+}
+
+function Video() {
+  return (
+    <video
+      autoPlay
+      muted
+      loop
+      playsInline
+      className="absolute inset-0 h-full w-full object-cover"
+    >
+      <source src="/videos/hero.mp4" type="video/mp4" />
+    </video>
   );
 }

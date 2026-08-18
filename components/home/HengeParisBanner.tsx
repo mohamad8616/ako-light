@@ -4,6 +4,7 @@
 import { homepageSections } from "@/lib/data/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { Paragraph } from "@/utility/Paragraph";
+import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
 import HomepageSection, { EASE } from "../ui/HomepageSection";
@@ -42,15 +43,7 @@ export default function HengeParisBanner() {
           {/* Right: kicker, title, two-column body, CTA */}
           <div className="lg:col-span-7 flex flex-col justify-between">
             <div className="overflow-hidden">
-              <motion.span
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, ease: EASE }}
-                className="block text-xs font-medium uppercase tracking-[0.25em] text-background/50"
-              >
-                {t("paris.kicker")}
-              </motion.span>
+              <SectionSubTitle>{t("paris.kicker")}</SectionSubTitle>
               <SectionTitle>{t("paris.title")}</SectionTitle>
             </div>
 
