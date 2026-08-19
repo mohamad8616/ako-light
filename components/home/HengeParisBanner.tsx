@@ -7,7 +7,7 @@ import { Paragraph } from "@/utility/Paragraph";
 import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
-import HomepageSection, { EASE } from "../ui/HomepageSection";
+import HomepageSection, { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 
 export default function HengeParisBanner() {
@@ -15,7 +15,7 @@ export default function HengeParisBanner() {
   const { paris } = homepageSections;
 
   return (
-    <HomepageSection className="w-full bg-background-secondary py-20 md:py-28 ">
+    <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
           {/* Left: image, with peeking "next" card below it */}
@@ -34,14 +34,14 @@ export default function HengeParisBanner() {
               />
 
               {/* Small circular badge, top-left */}
-              <div className="absolute left-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-background text-white">
+              <div className="bg-background absolute top-4 left-4 flex h-9 w-9 items-center justify-center rounded-full text-white">
                 <span className="text-[10px] font-light">H</span>
               </div>
             </motion.div>
           </div>
 
           {/* Right: kicker, title, two-column body, CTA */}
-          <div className="lg:col-span-7 flex flex-col justify-between">
+          <div className="flex flex-col justify-between lg:col-span-7">
             <div className="overflow-hidden">
               <SectionSubTitle>{t("paris.kicker")}</SectionSubTitle>
               <SectionTitle>{t("paris.title")}</SectionTitle>

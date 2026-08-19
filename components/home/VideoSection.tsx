@@ -3,7 +3,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import HomepageSection from "../ui/HomepageSection";
+import HomepageSection from "../../utility/HomepageSection";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -42,10 +42,10 @@ export default function VideoSection() {
   }, []);
 
   return (
-    <HomepageSection className="w-full bg-background-secondary py-20 md:py-28">
+    <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         <div ref={sectionRef} className="relative">
-          <div className="relative aspect-video w-full overflow-hidden bg-background">
+          <div className="bg-background relative aspect-video w-full overflow-hidden">
             {/* Placeholder shown until the video is actually playing */}
             <AnimatePresence>
               {!isPlaying && (
@@ -53,9 +53,9 @@ export default function VideoSection() {
                   initial={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.8, ease: EASE }}
-                  className="absolute inset-0 z-10 flex items-center justify-center bg-background"
+                  className="bg-background absolute inset-0 z-10 flex items-center justify-center"
                 >
-                  <span className="text-sm font-light uppercase tracking-[0.4em] text-background-secondary md:text-base">
+                  <span className="text-background-secondary text-sm font-light tracking-[0.4em] uppercase md:text-base">
                     AKO LIGHTING
                   </span>
                 </motion.div>

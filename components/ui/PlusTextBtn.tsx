@@ -15,10 +15,10 @@ const PlusTextBtn = ({
     return (
       <Link
         href={href}
-        className={`group inline shrink-0 items-center gap-2 text-sm uppercase tracking-[0.15em] text-white transition duration-300 sm:inline-flex ${className} ${textColor}`}
+        className={`group inline shrink-0 items-center gap-2 text-sm tracking-[0.15em] text-white uppercase transition duration-300 sm:inline-flex ${className} ${textColor}`}
       >
         <span
-          className={`inline-flex  h-5 w-5 shrink-0 items-center justify-center text-lg leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90 ${textColor}`}
+          className={`inline-flex h-5 w-5 shrink-0 items-center justify-center text-lg leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90 ${textColor}`}
         >
           <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
             <path d="M7 0V14M0 7H14" stroke="currentColor" strokeWidth="1.5" />
@@ -34,7 +34,7 @@ const PlusTextBtn = ({
   }
   return (
     <p
-      className={`group inline-block shrink-0 items-center gap-2 text-sm uppercase text-white transition duration-300 sm:flex ${className} ${textColor}`}
+      className={`group inline shrink-0 cursor-pointer items-center gap-2 text-sm text-white uppercase transition duration-300 sm:inline-flex ${className} ${textColor}`}
     >
       <span
         className={`inline-flex h-5 w-5 shrink-0 items-center justify-center text-lg leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90 ${textColor}`}

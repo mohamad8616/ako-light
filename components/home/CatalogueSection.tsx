@@ -8,7 +8,7 @@ import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
-import HomepageSection, { EASE } from "../ui/HomepageSection";
+import HomepageSection, { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 
 export default function CatalogueSection() {
@@ -16,15 +16,14 @@ export default function CatalogueSection() {
   const { t } = useLanguage();
 
   return (
-    <HomepageSection className="w-full bg-background-secondary py-20 md:py-28">
+    <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
           {/* Text column */}
           <div className="order-2 flex flex-col justify-start lg:order-1 lg:col-span-6">
-
             <SectionSubTitle>HENGE CATALOGUE</SectionSubTitle>
 
-            <div className="mt-3 overflow-hidden mb-5">
+            <div className="mt-3 mb-5 overflow-hidden">
               <SectionTitle>S34/5</SectionTitle>
             </div>
 
@@ -49,7 +48,7 @@ export default function CatalogueSection() {
 
                 {/* Animated download circle */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-background transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110">
+                  <div className="bg-background flex h-16 w-16 items-center justify-center rounded-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110">
                     <div className="relative h-4 w-4 overflow-hidden">
                       <ArrowDown
                         size={16}
@@ -72,7 +71,7 @@ export default function CatalogueSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.7, delay: 0.3, ease: EASE }}
-                className="mt-8 "
+                className="mt-8"
               >
                 <PlusTextBtn
                   text=" Download S34/5"

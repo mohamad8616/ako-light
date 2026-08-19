@@ -5,6 +5,14 @@ const nextConfig: NextConfig = {
   /* config options here */
 
   output: "standalone",
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "www.henge07.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

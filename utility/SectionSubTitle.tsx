@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { EASE } from "../components/ui/HomepageSection";
+import { EASE } from "./HomepageSection";
 
 const SectionSubTitle = ({
   children,
@@ -14,7 +14,7 @@ const SectionSubTitle = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.7, ease: EASE }}
-      className={`block text-xs font-medium uppercase tracking-[0.25em] text-background/50 ${className}`}
+      className={`text-background/50 block text-xs font-medium tracking-[0.25em] uppercase ${className}`}
     >
       {children}
     </motion.span>

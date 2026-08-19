@@ -6,7 +6,7 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
-import HomepageSection from "../ui/HomepageSection";
+import HomepageSection from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -16,7 +16,7 @@ export default function Vocla2026Section() {
   const { vocla } = homepageSections;
 
   return (
-    <HomepageSection className="relative  w-full bg-background py-40 md:py-80">
+    <HomepageSection className="bg-background relative w-full py-40 md:py-80">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {/* H-Life wordmark */}
         <motion.span
@@ -24,7 +24,7 @@ export default function Vocla2026Section() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7, ease: EASE }}
-          className="mb-12 block font-serif text-3xl  text-white md:mb-16 md:text-5xl"
+          className="mb-12 block font-serif text-3xl text-white md:mb-16 md:text-5xl"
         >
           H-Life
         </motion.span>
@@ -72,7 +72,11 @@ export default function Vocla2026Section() {
               transition={{ duration: 0.7, delay: 0.45, ease: EASE }}
               className="mt-12"
             >
-              <PlusTextBtn className="text-sm tracking-tight" text="Read more" href="#"/>
+              <PlusTextBtn
+                className="text-sm tracking-tight"
+                text="Read more"
+                href="#"
+              />
             </motion.div>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { EASE } from "@/components/ui/HomepageSection";
+import { EASE } from "@/utility/HomepageSection";
 import { motion } from "framer-motion";
 
 const SectionTitle = ({
@@ -14,7 +14,7 @@ const SectionTitle = ({
       whileInView={{ y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8, delay: 0.1, ease: EASE }}
-      className={`mt-2 text-2xl uppercase leading-[0.95] text-background md:text-4xl tracking-wide ${className}`}
+      className={`text-background mt-2 text-2xl leading-[0.95] tracking-wide uppercase md:text-4xl ${className}`}
     >
       {children}
     </motion.h2>

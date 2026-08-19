@@ -6,7 +6,7 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
-import HomepageSection, { EASE } from "../ui/HomepageSection";
+import HomepageSection, { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 
 export default function HIstraBanner() {
@@ -14,7 +14,7 @@ export default function HIstraBanner() {
   const { istra } = homepageSections;
 
   return (
-    <section className="relative w-full bg-background-secondary pb-0 pt-20 md:pt-28 -bottom-18 lg:-bottom-80">
+    <section className="bg-background-secondary relative -bottom-18 w-full pt-20 pb-0 md:pt-28 lg:-bottom-80">
       <HomepageSection className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {/* Title */}
         <div className="overflow-hidden">

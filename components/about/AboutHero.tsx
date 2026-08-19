@@ -3,7 +3,7 @@
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { Play } from "lucide-react";
 import { useRef, useState } from "react";
-import { EASE } from "../ui/HomepageSection";
+import { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 import ScrollIndicator from "../ui/ScrollIndicator";
 
@@ -64,13 +64,13 @@ export default function AboutHero() {
 
       {/* Hero copy — bottom-left, same alignment convention as the
           homepage hero */}
-      <div className="absolute inset-x-0 space-y-3 bottom-0 z-10 px-6 pb-16 md:px-12 md:pb-20 lg:px-20 lg:pb-24 xl:px-[8.5vw]">
-        <div className="overflow-hidden ">
+      <div className="absolute inset-x-0 bottom-0 z-10 space-y-3 px-6 pb-16 md:px-12 md:pb-20 lg:px-20 lg:pb-24 xl:px-[8.5vw]">
+        <div className="overflow-hidden">
           <motion.h1
             initial={{ y: "110%" }}
             animate={{ y: 0 }}
             transition={{ duration: 0.9, delay: 0.4, ease: EASE }}
-            className="text-4xl font-din uppercase tracking-tighter leading-[0.95] text-white md:text-6xl lg:text-7xl xl:text-7xl"
+            className="font-din text-4xl leading-[0.95] tracking-tighter text-white uppercase md:text-6xl lg:text-7xl xl:text-7xl"
           >
             The Metaphysics of Beauty
           </motion.h1>
@@ -80,7 +80,7 @@ export default function AboutHero() {
             initial={{ y: "110%" }}
             animate={{ y: 0 }}
             transition={{ duration: 0.9, delay: 0.55, ease: EASE }}
-            className="mt-2 text-lg uppercase font-din tracking-tight text-white md:text-2xl lg:text-3xl"
+            className="font-din mt-2 text-lg tracking-tight text-white uppercase md:text-2xl lg:text-3xl"
           >
             Henge&rsquo;s world is incredibly rich of unique materials
           </motion.h2>
@@ -93,7 +93,7 @@ export default function AboutHero() {
           onMouseEnter={() => setOverInteractive(true)}
           onMouseLeave={() => setOverInteractive(false)}
         >
-          <PlusTextBtn text={"play"} className="font-din"/>
+          <PlusTextBtn text={"play"} className="font-din" />
         </motion.button>
         {/* Scroll indicator */}
         <ScrollIndicator />

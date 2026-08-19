@@ -6,7 +6,7 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
-import HomepageSection from "../ui/HomepageSection";
+import HomepageSection from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -16,7 +16,7 @@ export default function HomeCollectionBanner() {
   const { homeCollection } = homepageSections;
 
   return (
-    <HomepageSection className="w-full bg-background-secondary py-20 md:py-28">
+    <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-stretch lg:gap-14">
           {/* Image column, with peeking "next" card underneath it */}
@@ -39,7 +39,7 @@ export default function HomeCollectionBanner() {
           {/* Content column — title pinned top, CTA pinned bottom to mirror the image height */}
           <div className="order-2 flex flex-col lg:col-span-5 lg:justify-between lg:py-2">
             <div>
-              <div className="overflow-hidden mb-5">
+              <div className="mb-5 overflow-hidden">
                 <SectionTitle>{t("homeCollection.title")}</SectionTitle>
               </div>
 

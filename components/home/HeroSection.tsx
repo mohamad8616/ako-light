@@ -2,7 +2,7 @@
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
-import { EASE } from "../ui/HomepageSection";
+import { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 import ScrollIndicator from "../ui/ScrollIndicator";
 
@@ -23,7 +23,7 @@ export default function HeroSection() {
               initial={{ y: "110%" }}
               animate={{ y: 0 }}
               transition={{ duration: 0.9, delay: 0.5, ease: EASE }}
-              className="text-5xl uppercase leading-[0.92] tracking-wider text-background-secondary xs:text-6xl md:text-7xl lg:text-8xl"
+              className="text-background-secondary xs:text-6xl text-5xl leading-[0.92] tracking-wider uppercase md:text-7xl lg:text-8xl"
             >
               {t("hero.collection")}
             </motion.h1>
@@ -33,7 +33,7 @@ export default function HeroSection() {
               initial={{ y: "110%" }}
               animate={{ y: 0 }}
               transition={{ duration: 0.9, delay: 0.65, ease: EASE }}
-              className="text-4xl uppercase leading-[0.92] tracking-tight text-background-secondary xs:text-5xl md:text-6xl lg:text-7xl"
+              className="text-background-secondary xs:text-5xl text-4xl leading-[0.92] tracking-tight uppercase md:text-6xl lg:text-7xl"
             >
               {t("hero.ritualGravity")}
             </motion.h2>

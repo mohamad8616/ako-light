@@ -3,8 +3,8 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
-import { EASE } from "../ui/HomepageSection";
 
 interface DesignerRowProps {
   name: string;
@@ -12,7 +12,6 @@ interface DesignerRowProps {
   image: string;
   index: number;
 }
-
 
 export default function DesignerRow({
   name,
@@ -42,7 +41,7 @@ export default function DesignerRow({
         </div>
 
         {/* Name */}
-        <h2 className="flex-1 truncate text-2xl uppercase leading-none text-white sm:text-3xl md:text-4xl tracking-wide">
+        <h2 className="flex-1 truncate text-2xl leading-none tracking-wide text-white uppercase sm:text-3xl md:text-4xl">
           {name}
         </h2>
 
