@@ -37,14 +37,14 @@ const ProjectsSections = () => {
             >
               <Link
                 href={href}
-                className="group relative grid grid-cols-1 aspect-square w-full overflow-hidden"
+                className="group relative mb-5 grid aspect-square w-full grid-cols-1 overflow-hidden lg:mb-0"
               >
                 <Image
                   src={image}
                   alt={label}
                   fill
                   sizes="(max-width: 640px) 100vw, 33vw"
-                  className="object-cover  transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+                  className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/20 transition-colors duration-500 group-hover:bg-black/40" />
               </Link>
