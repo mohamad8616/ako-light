@@ -6,9 +6,12 @@ import PageTransition from "@/components/ui/PageTransition";
 import Preloader from "@/components/ui/Preloader";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import type { Metadata } from "next";
-import { Oswald, Vazirmatn } from "next/font/google";
+import { Oswald, Vazirmatn, Inter } from "next/font/google";
 import "./globals.css";
 import localFont from "next/font/local";
+import { cn } from "@/lib/utils";
+
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 const jetBrainsMono = localFont({
   src: [
@@ -57,7 +60,7 @@ export default function RootLayout({
     <html
       lang="en"
       dir="ltr"
-      className={`${oswald.variable} ${vazirmatn.variable} ${jetBrainsMono.variable} ${dinNextLTPro.variable} h-full antialiased `}
+      className={cn("h-full", "antialiased", oswald.variable, vazirmatn.variable, jetBrainsMono.variable, dinNextLTPro.variable, "font-sans", inter.variable)}
     >
       <body className="min-h-full  flex flex-col bg-background-secondary text-background-secondary font-sans text-sm leading-normal  md:text-base">
         <Preloader />
