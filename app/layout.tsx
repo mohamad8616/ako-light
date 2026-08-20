@@ -3,6 +3,7 @@ import NewsletterSection from "@/components/footer/newsLetterSection";
 import Navbar from "@/components/navbar/Navbar";
 import SmoothScroll from "@/components/smoothScroll";
 import PageTransition from "@/components/ui/PageTransition";
+import Preloader from "@/components/ui/Preloader";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import type { Metadata } from "next";
 import { Oswald, Vazirmatn } from "next/font/google";
@@ -59,6 +60,7 @@ export default function RootLayout({
       className={`${oswald.variable} ${vazirmatn.variable} ${jetBrainsMono.variable} ${dinNextLTPro.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background-secondary text-background-secondary font-sans text-sm leading-normal  md:text-base">
+        <Preloader />
         <SmoothScroll>
           <LanguageProvider>
             <Navbar />
