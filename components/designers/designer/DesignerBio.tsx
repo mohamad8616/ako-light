@@ -2,6 +2,7 @@
 "use client";
 
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
+import { Paragraph } from "@/utility/Paragraph";
 import { motion } from "framer-motion";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -20,7 +21,7 @@ export default function DesignerBio({
   website,
 }: DesignerBioProps) {
   return (
-    <section className="w-full bg-background pb-20 md:pb-28">
+    <section className="bg-background w-full pb-20 md:pb-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {/* Three independent grid items with a single shared order (1, 2, 3)
             that works for BOTH breakpoints at once: on mobile (grid-cols-1)
@@ -46,16 +47,9 @@ export default function DesignerBio({
 
           <div className="order-2 space-y-6 lg:col-span-5">
             {bio.map((paragraph, i) => (
-              <motion.p
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: i * 0.1, ease: EASE }}
-                className="text-justify text-[15px] font-light leading-relaxed text-background-secondary md:text-base"
-              >
+              <Paragraph key={i} textColor="text-background-secondary">
                 {paragraph}
-              </motion.p>
+              </Paragraph>
             ))}
           </div>
 
@@ -70,7 +64,7 @@ export default function DesignerBio({
               <PlusTextBtn
                 href={website}
                 text="view website"
-                className="group inline-flex items-center gap-2 text-sm font-medium uppercase tracking-[0.15em] text-white transition-colors duration-300 hover:text-white/70"
+                className="group inline-flex items-center gap-2 text-sm font-medium tracking-[0.15em] text-white uppercase transition-colors duration-300 hover:text-white/70"
               />
             </motion.div>
           )}
