@@ -20,12 +20,12 @@ const PageTitle = ({
           {children}
         </span>
       </motion.div>
-      <div className="mt-2overflow-hidden pb-16 md:mt-4 md:pb-40">
+      <div className="mt-2 overflow-hidden pb-16 md:mt-4 md:pb-40">
         <motion.h1
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
           transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
-          className={`text-3xl leading-[0.95] text-background-secondary uppercase md:text-6xl ${className}`}
+          className={`text-3xl tracking-tight leading-[0.95] text-background-secondary uppercase md:text-5xl ${className}`}
         >
           {children}
         </motion.h1>

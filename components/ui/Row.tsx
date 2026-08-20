@@ -11,18 +11,21 @@ interface RowProps {
   slug?: string;
   image: string;
   index: number;
+  animateOnLoad?: boolean;
 }
 
-export default function Row({ name, slug, image, index }: RowProps) {
+export default function Row({ name, slug, image, index, animateOnLoad = false }: RowProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 44 }}
-      animate ={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
+      {...(animateOnLoad
+        ? { animate: { opacity: 1, y: 0 } }
+        : { whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: "-80px" } })}
       transition={{ duration: 1.5, delay: (index % 4) * 0.08, ease: EASE }}
       className="border-b border-white/20"
     >
       <Link
+
         href={`/designers/${slug ? slug : ""}`}
         className="flex items-end gap-8 py-8 sm:gap-12 md:py-10"
       >
@@ -40,7 +43,7 @@ export default function Row({ name, slug, image, index }: RowProps) {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="flex-1 truncate text-2xl leading-none tracking-wide text-white uppercase sm:text-3xl md:text-4xl transition-all duration-700 "
+          className="flex-1 truncate text-2xl leading-none text-white tracking-tighter uppercase sm:text-3xl md:text-4xl transition-all duration-700 "
         >
           {name}
         </motion.h2>
