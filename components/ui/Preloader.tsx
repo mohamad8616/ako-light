@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import AkoLightingLogo from "@/components/ui/HengeLogo";
+import { useEffect, useState } from "react";
 
 export default function Preloader() {
   const [progress, setProgress] = useState(0);
@@ -22,9 +22,9 @@ export default function Preloader() {
         setTimeout(() => {
           setProgress(100);
           setIsReady(true);
-        }, 300);
+        }, 100);
       }
-    }, 50);
+    }, 20);
 
     return () => clearInterval(interval);
   }, []);
@@ -32,7 +32,7 @@ export default function Preloader() {
   // After the fade-out transition completes, unmount the preloader entirely
   useEffect(() => {
     if (isReady) {
-      const timer = setTimeout(() => setIsGone(true), 1200);
+      const timer = setTimeout(() => setIsGone(true), 900);
       return () => clearTimeout(timer);
     }
   }, [isReady]);
@@ -42,28 +42,14 @@ export default function Preloader() {
   return (
     <div
       id="loader"
-      className={`
-        fixed inset-0 z-1000 
-        bg-background 
-        flex flex-col items-center justify-center
-        transition-all duration-1000 ease-[cubic-bezier(0.74,0,0.15,0.99)] delay-200
-        ${isReady ? "opacity-0 pointer-events-none" : "opacity-100 pointer-events-auto"}
-      `}
+      className={`bg-background fixed inset-0 z-1000 flex flex-col items-center justify-center transition-all delay-200 duration-1000 ease-[cubic-bezier(0.74,0,0.15,0.99)] ${isReady ? "pointer-events-none opacity-0" : "pointer-events-auto opacity-100"} `}
     >
       {/* AKO Lighting Logo */}
-      <AkoLightingLogo className="w-20 h-auto fill-white transition-opacity duration-500 ease-out" />
+      <AkoLightingLogo className="h-auto w-20 fill-white transition-opacity duration-500 ease-out" />
 
       {/* Progress Bar */}
       <div
-        className={`
-          w-20 
-          h-0.5 
-          bg-white 
-          mt-4 
-          origin-left
-          transition-transform duration-100 ease-out
-          ${isReady ? "transition-duration-200" : ""}
-        `}
+        className={`mt-4 h-0.5 w-20 origin-left bg-background-secondary transition-transform duration-100 ease-out ${isReady ? "transition-duration-200" : ""} `}
         style={{
           transform: `scaleX(${progress / 100})`,
         }}
