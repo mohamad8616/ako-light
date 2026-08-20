@@ -1,10 +1,10 @@
 "use client";
 
+import { EASE } from "@/utility/HomepageSection";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
-
-const EASE = "easeInOut";
+import UnderLineEffect from "../ui/UnderLineEffect";
 
 interface ProductCategoryCardProps {
   name: string;
@@ -34,7 +34,7 @@ export default function ProductCategoryCard({
         onMouseLeave={() => setHovered(false)}
         className="group block"
       >
-        <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#111]">
+        <div className="relative aspect-4/3 w-full overflow-hidden bg-[#111]">
           <img
             src={image}
             alt={name}
@@ -42,31 +42,12 @@ export default function ProductCategoryCard({
           />
         </div>
 
-        {/* Label with a directional underline: it grows left-to-right on
-            hover-in (left edge fixed at 0%, width animates 0%→100%), and
-            on hover-out both `left` and `width` animate together — since
-            they move in lockstep at the same rate, their sum (the right
-            edge) stays pinned at 100% the whole time, so only the LEFT
-            edge sweeps rightward as it shrinks. Net effect: it always
-            reads as a left-to-right sweep, whether appearing or
-            disappearing, rather than just growing/shrinking symmetrically. */}
+
         <div className="relative mt-4 inline-block md:mt-5">
-          <span className="text-sm tracking-tight text-white uppercase">
+          <span className="text-background-secondary text-sm tracking-tight uppercase">
             {name}
           </span>
-          <motion.span
-            initial={{ right: "0%", width: "100%" }}
-            animate={
-              hovered
-                ? {
-                    right: ["100%", "0%", "0%"],
-                    width: ["0%", "100%", "100%"],
-                  }
-                : { right: "0%", width: "0%" }
-            }
-            transition={{ duration: 0.7, ease: EASE }}
-            className="absolute -bottom-1 h-px bg-white"
-          />
+          <UnderLineEffect hovered={hovered} />
         </div>
       </Link>
     </motion.div>
