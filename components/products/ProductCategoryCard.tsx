@@ -13,7 +13,12 @@ interface ProductCategoryCardProps {
   index: number;
 }
 
-export default function ProductCategoryCard({ name, slug, image, index }: ProductCategoryCardProps) {
+export default function ProductCategoryCard({
+  name,
+  slug,
+  image,
+  index,
+}: ProductCategoryCardProps) {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -46,15 +51,20 @@ export default function ProductCategoryCard({ name, slug, image, index }: Produc
             reads as a left-to-right sweep, whether appearing or
             disappearing, rather than just growing/shrinking symmetrically. */}
         <div className="relative mt-4 inline-block md:mt-5">
-          <span className="text-sm font-medium uppercase tracking-[0.15em] text-white md:text-base">
+          <span className="text-sm tracking-tight text-white uppercase">
             {name}
           </span>
           <motion.span
-            initial={{ left: "0%", width: "0%" }}
+            initial={{ right: "0%", width: "100%" }}
             animate={
-              hovered ? { left: "0%", width: "100%" } : { left: "100%", width: "0%" }
+              hovered
+                ? {
+                    right: ["100%", "0%", "0%"],
+                    width: ["0%", "100%", "100%"],
+                  }
+                : { right: "0%", width: "0%" }
             }
-            transition={{ duration: 0.4, ease: EASE }}
+            transition={{ duration: 0.7, ease: EASE }}
             className="absolute -bottom-1 h-px bg-white"
           />
         </div>

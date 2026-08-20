@@ -19,12 +19,12 @@ export default function ProductsHeader() {
           </span>
         </motion.div>
 
-        <div className="mt-10 overflow-hidden pb-16 md:mt-14 md:pb-24">
+        <div className="mt-2overflow-hidden pb-16 md:mt-4 md:pb-40">
           <motion.h1
             initial={{ y: "100%" }}
             animate={{ y: 0 }}
             transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
-            className="text-5xl font-bold uppercase leading-[0.95] tracking-tight text-white md:text-8xl"
+            className="text-3xl uppercase leading-[0.95] text-white md:text-6xl"
           >
             Products
           </motion.h1>
