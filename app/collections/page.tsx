@@ -1,5 +1,5 @@
 import CollectionsHeader from "@/components/collections/CollectionsHeader";
-import CollectionsGrid from "@/components/collections/CollectionsGrid";
+import CollectionsGrid from "@/components/collections/CollectionsList";
 
 export default function CollectionsPage() {
   return (

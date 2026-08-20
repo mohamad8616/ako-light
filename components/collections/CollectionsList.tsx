@@ -1,6 +1,7 @@
 "use client";
 
-import CollectionCard from "./CollectionCard";
+import HomepageSection from "@/utility/HomepageSection";
+import Row from "../ui/Row";
 
 const collections = [
   { name: "Ritual Gravity", year: "2026", slug: "ritual-gravity" },
@@ -11,16 +12,14 @@ const collections = [
   { name: "Experimental", year: "2022", slug: "experimental" },
 ].map((c) => ({ ...c, image: `https://picsum.photos/seed/${c.slug}/700/440` }));
 
-export default function CollectionsGrid() {
+export default function CollectionsList() {
   return (
-    <section className="w-full bg-background pb-20 md:pb-28">
+    <HomepageSection className="bg-background w-full pb-20 md:pb-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
-        <div className="grid grid-cols-1 gap-x-8 gap-y-12 sm:grid-cols-2 md:gap-y-16 lg:grid-cols-3">
-          {collections.map((collection, i) => (
-            <CollectionCard key={collection.slug} index={i} {...collection} />
-          ))}
-        </div>
+        {collections.map((collection, i) => (
+          <Row key={collection.slug} index={i} {...collection} />
+        ))}
       </div>
-    </section>
+    </HomepageSection>
   );
 }

@@ -6,29 +6,24 @@ import Link from "next/link";
 import { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 
-interface DesignerRowProps {
+interface RowProps {
   name: string;
-  slug: string;
+  slug?: string;
   image: string;
   index: number;
 }
 
-export default function DesignerRow({
-  name,
-  slug,
-  image,
-  index,
-}: DesignerRowProps) {
+export default function Row({ name, slug, image, index }: RowProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 44 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      animate ={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: 1.5, delay: (index % 4) * 0.08, ease: EASE }}
       className="border-b border-white/20"
     >
       <Link
-        href={`/designers/${slug}`}
+        href={`/designers/${slug ? slug : ""}`}
         className="flex items-end gap-8 py-8 sm:gap-12 md:py-10"
       >
         {/* Portrait */}
@@ -41,9 +36,14 @@ export default function DesignerRow({
         </div>
 
         {/* Name */}
-        <h2 className="flex-1 truncate text-2xl leading-none tracking-wide text-white uppercase sm:text-3xl md:text-4xl">
+        <motion.h2
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex-1 truncate text-2xl leading-none tracking-wide text-white uppercase sm:text-3xl md:text-4xl transition-all duration-700 "
+        >
           {name}
-        </h2>
+        </motion.h2>
 
         {/* Discover CTA */}
         <PlusTextBtn text="Discover" />

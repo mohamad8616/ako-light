@@ -57,9 +57,9 @@ export default function RootLayout({
     <html
       lang="en"
       dir="ltr"
-      className={`${oswald.variable} ${vazirmatn.variable} ${jetBrainsMono.variable} ${dinNextLTPro.variable} h-full antialiased`}
+      className={`${oswald.variable} ${vazirmatn.variable} ${jetBrainsMono.variable} ${dinNextLTPro.variable} h-full antialiased `}
     >
-      <body className="min-h-full flex flex-col bg-background-secondary text-background-secondary font-sans text-sm leading-normal  md:text-base">
+      <body className="min-h-full  flex flex-col bg-background-secondary text-background-secondary font-sans text-sm leading-normal  md:text-base">
         <Preloader />
         <SmoothScroll>
           <LanguageProvider>

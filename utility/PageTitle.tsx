@@ -25,7 +25,7 @@ const PageTitle = ({
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
           transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
-          className={`text-3xl leading-[0.95] text-white uppercase md:text-6xl ${className}`}
+          className={`text-3xl leading-[0.95] text-background-secondary uppercase md:text-6xl ${className}`}
         >
           {children}
         </motion.h1>
