@@ -49,8 +49,9 @@ export default function FullscreenMenu({ open, onClose }: Props) {
           transition={{
             duration: 0.75,
             ease: EASE,
+            delay: 0.7,
           }}
-          className="fixed inset-x-0 top-0 bottom-16 z-999 flex flex-col overflow-y-auto bg-background text-background-secondary shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:bottom-24"
+          className="bg-background text-background-secondary fixed inset-x-0 top-0 bottom-16 z-999 flex flex-col overflow-y-auto scrollbar-thin shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:bottom-24"
         >
           {/* Top */}
           <div className="flex items-center justify-between px-8 pt-6 md:px-20 md:pt-8">
@@ -87,7 +88,7 @@ export default function FullscreenMenu({ open, onClose }: Props) {
                     >
                       <button
                         onClick={() => setLang("en")}
-                        className={`w-fit cursor-pointer text-left text-sm font-medium uppercase tracking-[0.08em] transition-colors duration-300 ${
+                        className={`w-fit cursor-pointer text-left text-sm font-medium tracking-[0.08em] uppercase transition-colors duration-300 ${
                           lang === "en"
                             ? "text-white"
                             : "text-white/30 hover:text-white/60"
@@ -119,7 +120,7 @@ export default function FullscreenMenu({ open, onClose }: Props) {
                       <Link
                         href="/credits"
                         onClick={onClose}
-                        className="text-sm font-light uppercase tracking-[0.08em] text-white/30 transition-colors duration-300 hover:text-white/60"
+                        className="text-sm font-light tracking-[0.08em] text-white/30 uppercase transition-colors duration-300 hover:text-white/60"
                       >
                         {t("footer.credits")}
                       </Link>

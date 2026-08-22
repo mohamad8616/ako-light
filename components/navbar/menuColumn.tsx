@@ -29,7 +29,7 @@ export default function MenuColumn({
         delay,
       }}
     >
-      <h2 className="mb-5 text-[20px] font-light uppercase tracking-tight text-white/35 md:mb-6 md:text-[28px]">
+      <h2 className="mb-5 text-[20px] font-light tracking-tight text-white/35 uppercase md:mb-6 md:text-[28px]">
         {t(titleKey)}
       </h2>
 
@@ -46,7 +46,7 @@ export default function MenuColumn({
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={onLinkClick}
-                  className="menu-link text-sm md:text-lg font-medium tracking-[0.12em] text-white transition-colors duration-300 hover:text-neutral-400"
+                  className="menu-link text-sm font-medium tracking-[0.12em] text-white transition-colors duration-300 hover:text-neutral-400 md:text-lg"
                 >
                   {t(linkKey)}
                 </a>
@@ -54,7 +54,7 @@ export default function MenuColumn({
                 <Link
                   href={item.href}
                   onClick={onLinkClick}
-                  className="menu-link text-sm md:text-lg font-medium tracking-[0.12em] text-white transition-colors duration-300 hover:text-neutral-400"
+                  className="menu-link text-sm font-medium tracking-[0.12em] text-white transition-colors duration-300 hover:text-neutral-400 md:text-lg"
                 >
                   {t(linkKey)}
                 </Link>

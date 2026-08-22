@@ -8,6 +8,8 @@ import { Menu, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import ProductsSheet from "../ui/ProductsSheet";
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -45,13 +47,12 @@ export default function Navbar() {
         <div
           className={`flex border-b transition-[height,width,background-color,backdrop-filter,border-color,border-radius] duration-1500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
             scrolled
-              ? "mx-auto h-24 w-full items-center border-white/10 md:h-22 "
-              : "mx-auto h-32 w-full items-end border-transparent backdrop-blur-0 md:h-52"
+              ? "mx-auto h-24 w-full items-center border-white/10 md:h-22"
+              : "backdrop-blur-0 mx-auto h-32 w-full items-end border-transparent md:h-52"
           }`}
         >
           <div
-            className={`mx-auto flex h-full w-full items-center justify-between px-6 md:px-12 lg:px-20 xl:px-[8.5vw]
-              ${scrolled ? 'bg-background' : 'bg-transparent'}`}
+            className={`mx-auto flex h-full w-full items-center justify-between px-6 md:px-12 lg:px-20 xl:px-[8.5vw] ${scrolled ? "bg-background" : "bg-transparent"}`}
           >
             {/* Logo */}
             <Link href="/" className="group cursor-pointer">
@@ -62,11 +63,12 @@ export default function Navbar() {
             <div className="flex items-center gap-6 md:gap-12">
               <button
                 aria-label={t("nav.search")}
-                className="cursor-pointer text-background-secondary transition-all duration-300 hover:opacity-70"
+                className="text-background-secondary cursor-pointer transition-all duration-300 hover:opacity-70"
               >
                 <Search size={18} strokeWidth={2.2} />
               </button>
-              <span className="text-sm"> PRODUCTS </span>
+              {/* <Button className="text-xs font-din tracking-tighter"> PRODUCTS </Button> */}
+              <ProductsSheet  />
               <button
                 onClick={() => setOpen(true)}
                 aria-label={t("nav.menu")}
