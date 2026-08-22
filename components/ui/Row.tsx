@@ -28,8 +28,8 @@ export default function Row({
   height = "30",
   width = "30",
 }: RowProps) {
- const pathname = usePathname().slice(1);
-  console.log(pathname);
+  const pathname = usePathname().slice(1);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 44 }}
@@ -48,7 +48,7 @@ export default function Row({
       >
         {/* Portrait */}
         <div
-          className={`h-${height} w-${width} shrink-0 overflow-hidden sm:h-56 sm:w-56 md:h-72 md:w-72 lg:h-60 lg:w-${pathname === "materials" ? "90" : "60"}`}
+          className={`h-${height} w-${width} shrink-0 overflow-hidden sm:h-56 sm:w-56 md:h-72 md:w-72 lg:h-60 lg:w-${pathname === "materials" || pathname === "projects" ? "90" : "60"}`}
         >
           <img
             src={image}
