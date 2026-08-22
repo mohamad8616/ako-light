@@ -19,8 +19,6 @@ export default function ProductCategoryCard({
   image,
   index,
 }: ProductCategoryCardProps) {
-  const [hovered, setHovered] = useState(false);
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -30,8 +28,6 @@ export default function ProductCategoryCard({
     >
       <Link
         href={`/products/${slug}`}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
         className="group block"
       >
         <div className="relative aspect-4/3 w-full overflow-hidden bg-[#111]">
@@ -47,7 +43,7 @@ export default function ProductCategoryCard({
           <span className="text-background-secondary text-sm tracking-tight uppercase">
             {name}
           </span>
-          <UnderLineEffect hovered={hovered} />
+          <UnderLineEffect  />
         </div>
       </Link>
     </motion.div>

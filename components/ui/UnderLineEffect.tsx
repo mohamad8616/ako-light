@@ -1,23 +1,7 @@
-import { EASE } from '@/utility/HomepageSection'
-import React from 'react'
-import { motion } from 'framer-motion'
-
-const UnderLineEffect = ({hovered}:{hovered:boolean}) => {
+const UnderLineEffect = ({duration = '500',color="bg-background-secondary"}:{duration?:string,color?:string}) => {
   return (
-     <motion.span
-            initial={{ right: "0%", width: "100%" }}
-            animate={
-              hovered
-                ? {
-                    right: ["100%", "0%", "0%"],
-                    width: ["0%", "100%", "100%"],
-                  }
-                : { right: "0%", width: "0%" }
-            }
-            transition={{ duration: 0.7, ease: EASE }}
-            className="absolute -bottom-1 h-[0.5px] bg-background-secondary"
-          />
-  )
-}
+    <span className={` absolute -bottom-1 left-0 h-[0.5px] w-full origin-right scale-x-0 transition-transform duration-${duration} ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:origin-left group-hover:scale-x-100 ${color}`} />
+  );
+};
 
-export default UnderLineEffect
+export default UnderLineEffect;

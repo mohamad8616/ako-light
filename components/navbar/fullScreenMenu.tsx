@@ -2,6 +2,7 @@
 
 import HengeLogo from "@/components/ui/HengeLogo";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { EASE } from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import Link from "next/link";
@@ -14,18 +15,9 @@ interface Props {
   onClose: () => void;
 }
 
-const EASE = [0.22, 1, 0.36, 1] as const;
-
 export default function FullscreenMenu({ open, onClose }: Props) {
   const { t, lang, setLang } = useLanguage();
 
-  useEffect(() => {
-    document.body.style.overflow = open ? "hidden" : "auto";
-
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [open]);
 
   useEffect(() => {
     const close = (e: KeyboardEvent) => {
@@ -51,7 +43,7 @@ export default function FullscreenMenu({ open, onClose }: Props) {
             ease: EASE,
             delay: 0.7,
           }}
-          className="bg-background text-background-secondary fixed inset-x-0 top-0 bottom-16 z-999 flex flex-col overflow-y-auto scrollbar-thin shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:bottom-24"
+          className="bg-background no-scrollbar text-background-secondary fixed inset-x-0 top-0 bottom-16 z-999 flex scrollbar-thin flex-col overflow-y-auto shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:bottom-24"
         >
           {/* Top */}
           <div className="flex items-center justify-between px-8 pt-6 md:px-20 md:pt-8">

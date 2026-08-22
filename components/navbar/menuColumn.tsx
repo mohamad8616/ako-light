@@ -4,6 +4,7 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import type { MenuLink } from "../header/data";
+import UnderLineEffect from "../ui/UnderLineEffect";
 
 interface Props {
   titleKey: string;
@@ -12,6 +13,9 @@ interface Props {
   onLinkClick?: () => void;
 }
 
+const LinkStyles =
+  "text-sm font-din  text-white transition-colors duration-300 hover:text-neutral-400 md:text-lg";
+
 export default function MenuColumn({
   titleKey,
   links,
@@ -19,7 +23,6 @@ export default function MenuColumn({
   onLinkClick,
 }: Props) {
   const { t } = useLanguage();
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -29,24 +32,24 @@ export default function MenuColumn({
         delay,
       }}
     >
-      <h2 className="mb-5 text-[20px] font-light tracking-tight text-white/35 uppercase md:mb-6 md:text-[28px]">
+      <h2 className="mb-5 text-[20px] font-din tracking-tighter text-white/35 uppercase md:mb-6 md:text-[28px]">
         {t(titleKey)}
       </h2>
 
-      <ul className="space-y-3 md:space-y-4">
+      <ul className="flex flex-col space-y-3 md:space-y-4">
         {links.map((item) => {
           const isExternal = item.href.startsWith("http");
           const linkKey = item.i18nKey;
 
           return (
-            <li key={item.label}>
+            <li key={item.label} className="group relative w-fit">
               {isExternal ? (
                 <a
                   href={item.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={onLinkClick}
-                  className="menu-link text-sm font-medium tracking-[0.12em] text-white transition-colors duration-300 hover:text-neutral-400 md:text-lg"
+                  className={LinkStyles}
                 >
                   {t(linkKey)}
                 </a>
@@ -54,11 +57,12 @@ export default function MenuColumn({
                 <Link
                   href={item.href}
                   onClick={onLinkClick}
-                  className="menu-link text-sm font-medium tracking-[0.12em] text-white transition-colors duration-300 hover:text-neutral-400 md:text-lg"
+                  className={LinkStyles}
                 >
                   {t(linkKey)}
                 </Link>
               )}
+              <UnderLineEffect duration="1000" color = {'bg-white/35'}/>
             </li>
           );
         })}
