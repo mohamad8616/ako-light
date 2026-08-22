@@ -2,6 +2,7 @@
 
 import HengeLogo from "@/components/ui/HengeLogo";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { useLenis } from "@/lib/lenisStore";
 import { EASE } from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
@@ -17,7 +18,15 @@ interface Props {
 
 export default function FullscreenMenu({ open, onClose }: Props) {
   const { t, lang, setLang } = useLanguage();
+  const { lock, unlock } = useLenis();
 
+  useEffect(() => {
+    if (open) lock();
+    else unlock();
+  }, [open, lock, unlock]);
+
+  // Ensure scroll is never left locked if the menu unmounts.
+  useEffect(() => () => unlock(), [unlock]);
 
   useEffect(() => {
     const close = (e: KeyboardEvent) => {
