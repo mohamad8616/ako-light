@@ -43,17 +43,32 @@ export default function FullscreenMenu({ open, onClose }: Props) {
   return (
     <AnimatePresence>
       {open && (
-        <motion.div
-          initial={{ y: "-100%" }}
-          animate={{ y: 0 }}
-          exit={{ y: "-100%" }}
-          transition={{
-            duration: 0.75,
-            ease: EASE,
-            delay: 0.7,
-          }}
-          className="bg-background no-scrollbar text-background-secondary fixed inset-x-0 top-0 bottom-16 z-999 flex scrollbar-thin flex-col overflow-y-auto shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:bottom-24"
-        >
+        <>
+          {/* Bottom overlay — covers the area the menu doesn't reach */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{
+              duration: 0.75,
+              ease: EASE,
+              delay: 0.7,
+            }}
+            onClick={onClose}
+            className="fixed inset-x-0 bottom-0 z-[998] h-16 bg-black/80 backdrop-blur-xs supports-backdrop-filter:backdrop-blur-sm md:h-24"
+          />
+
+          <motion.div
+            initial={{ y: "-100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "-100%" }}
+            transition={{
+              duration: 0.75,
+              ease: EASE,
+              delay: 0.7,
+            }}
+            className="bg-background no-scrollbar text-background-secondary fixed inset-x-0 top-0 bottom-16 z-999 flex scrollbar-thin flex-col overflow-y-auto shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:bottom-24"
+          >
           {/* Top */}
           <div className="flex items-center justify-between px-8 pt-6 md:px-20 md:pt-8">
             <HengeLogo className="h-auto w-24 fill-white" />
@@ -131,7 +146,8 @@ export default function FullscreenMenu({ open, onClose }: Props) {
               ))}
             </div>
           </div>
-        </motion.div>
+          </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
