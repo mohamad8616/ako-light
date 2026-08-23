@@ -64,6 +64,15 @@ export const translations = {
       "Located on the iconic Boulevard Saint-Germain, the pop-up store presents a curated selection of Henge furniture. A unique opportunity to discover and experience creations with a bold character and a noble soul, where precious materials are shaped through exceptional artisanal craftsmanship.",
     "paris.discover": "Discover",
 
+    // Henge London
+    "london.kicker": "FLAGSHIP",
+    "london.title": "HENGE LONDON",
+    "london.p1":
+      "Henge's flagship store at 254 Brompton Road is located in the heart of Chelsea, London's premier design district. Spanning over 600 square metres, the space is a celebration of luxury furniture and refined aesthetics, perfectly capturing the brand's distinctive style.",
+    "london.p2":
+      "The showroom unfolds through four curated living environments, featuring bespoke furniture, iconic sculptural lighting, exquisite luxury sofas, and handmade kitchens that redefine contemporary living. Among the highlights, two monumental kitchens showcase Henge's approach to bespoke kitchen design at its finest.",
+    "london.discover": "Discover",
+
     // Video
     "video.title": "2026 Collection",
 
@@ -223,6 +232,15 @@ export const translations = {
     "paris.p2":
       "فروشگاه پاپ‌آپ در بلوار نمادین سن‌ژرمن واقع شده و مجموعه‌ای منتخب از مبلمان هنژ را ارائه می‌دهد. فرصتی بی‌نظیر برای کشف و تجربه آثاری با شخصیت جسور و روحی اصیل، جایی که متریال‌های گرانبها با صنایع دستی استثنایی شکل می‌گیرند.",
     "paris.discover": "کشف",
+
+    // Henge London
+    "london.kicker": "فلاگ‌شیپ",
+    "london.title": "هنژ لندن",
+    "london.p1":
+      "فروشگاه اصلی هنژ در خیابان برامپتون ۲۵۴ در قلب چلسی، منطقه برتر طراحی لندن واقع شده است. این فضا با وسعت بیش از ۶۰۰ متر مربع، جشنی از مبلمان لوکس و زیبایی‌شناسی ظریف است که سبک متمایز برند را به‌طور کامل به تصویر می‌کشد.",
+    "london.p2":
+      "شوروم در چهار محیط نشیمن منظم گسترده شده و شامل مبلمان سفارشی، نورپردازی مجسمه‌ای نمادین، مبل‌های لوکس نفیس و آشپزخانه‌های دست‌ساز است که زندگی معاصر را بازتعریف می‌کنند. در میان نکات برجسته، دو آشپزخانه عظیم رویکرد هنژ را در طراحی آشپزخانه سفارشی در بهترین شکل آن به نمایش می‌گذارند.",
+    "london.discover": "کشف",
 
     // Video
     "video.title": "کلکسیون ۲۰۲۶",

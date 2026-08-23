@@ -3,6 +3,7 @@
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // adjust import path
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import UnderLineEffect from "./UnderLineEffect";
 
 interface Props {
   open: boolean;
@@ -10,7 +11,7 @@ interface Props {
 }
 
 const linkClasses =
-  "font-din w-fit text-sm font-normal tracking-tighter text-white uppercase no-underline transition-colors hover:text-stone-400 text-center";
+  "w-fit font-din text-sm tracking-tighter text-white uppercase no-underline transition-colors hover:text-stone-400 text-center";
 const categories = [
   "LIGHTING",
   "DESIGNERS",
@@ -65,9 +66,7 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
       actionsRef={actionsRef}
     >
       {/* ---------- CUSTOM TRIGGER ---------- */}
-      <SheetTrigger
-        className="font-din relative z-50 h-5 cursor-pointer overflow-hidden text-sm font-normal tracking-tighter uppercase focus:outline-none"
-      >
+      <SheetTrigger className="font-din relative z-50 h-5 cursor-pointer overflow-hidden text-sm font-normal tracking-tighter uppercase focus:outline-none">
         <span
           className={`block transition-transform duration-300 ease-in-out ${
             open ? "-translate-y-full" : "translate-y-0"
@@ -89,22 +88,23 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
         side={isMobile ? "top" : "right"}
         className="border-0 bg-stone-950 p-6 text-white outline-0"
         motionProps={{
-          initial: {  x: isMobile ? 0 : 400 },
+          initial: { x: isMobile ? 0 : 400 },
           animate: { x: 0 },
           exit: { opacity: 1, x: 400 },
-          transition: { duration: 0.8, delay: 1,ease:"easeInOut" },
+          transition: { duration: 0.8, delay: 1, ease: "easeInOut" },
         }}
         onExitComplete={() => actionsRef.current?.unmount()}
       >
-        <div className="flex h-full flex-col items-center justify-center">
+        <div className="font-din flex h-full flex-col items-start justify-center gap-6">
           <Link
             href="/products"
-            className={`${linkClasses} mb-6 cursor-pointer`}
+            className={`${linkClasses} relative mb-6 cursor-pointer`}
           >
             all Products
+            <UnderLineEffect />
           </Link>
           {/* Navigation list */}
-          <nav className="flex flex-col justify-center space-y-2 bg-blue-700 text-center">
+          <nav className="flex flex-col items-start justify-center space-y-2 text-center">
             {categories.map((item) => (
               <Link
                 key={item}
