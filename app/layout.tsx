@@ -2,6 +2,7 @@ import Footer from "@/components/footer/footer";
 import NewsletterSection from "@/components/footer/newsLetterSection";
 import Navbar from "@/components/navbar/Navbar";
 import SmoothScroll from "@/components/smoothScroll";
+import PageLoader from "@/components/ui/PageLoader";
 import PageTransition from "@/components/ui/PageTransition";
 import Preloader from "@/components/ui/Preloader";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
@@ -76,6 +77,7 @@ export default function RootLayout({
         <SmoothScroll>
           <LanguageProvider>
             <Navbar />
+            <PageLoader />
             <PageTransition>{children}</PageTransition>
             <NewsletterSection />
             <Footer />
