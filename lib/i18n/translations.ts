@@ -153,6 +153,12 @@ export const translations = {
     "contact.email": "Email",
     "contact.message": "Message",
     "contact.send": "Send",
+
+    // Not found page
+    "notFound.title": "404",
+    "notFound.subtitle":
+      "The page you are looking for does not exist or has been moved.",
+    "notFound.backHome": "Back home",
   },
   fa: {
     // Header
@@ -186,7 +192,7 @@ export const translations = {
     "menu.contacts": "تماس",
     "menu.designers": "طراحان",
     "menu.flagships": "فروشگاه‌های اصلی",
-    
+
     "menu.hLife": "اچ-لایف",
     "menu.projects": "پروژه‌ها",
     "menu.s34": "اس-۳۴",
@@ -307,6 +313,12 @@ export const translations = {
     "contact.email": "ایمیل",
     "contact.message": "پیام",
     "contact.send": "ارسال",
+
+    // Not found page
+    "notFound.title": "۴۰۴",
+    "notFound.subtitle":
+      "صفحه‌ای که به دنبال آن هستید وجود ندارد یا منتقل شده است.",
+    "notFound.backHome": "بازگشت به خانه",
   },
 } as const;
 
