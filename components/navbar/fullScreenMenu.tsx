@@ -69,18 +69,6 @@ export default function FullscreenMenu({ open, onClose }: Props) {
             }}
             className="bg-background no-scrollbar text-background-secondary fixed inset-x-0 top-0 bottom-16 z-999 flex scrollbar-thin flex-col overflow-y-auto shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:bottom-24"
           >
-          {/* Top */}
-          <div className="flex items-center justify-between px-8 pt-6 md:px-20 md:pt-8">
-            <HengeLogo className="h-auto w-24 fill-white" />
-
-            <button
-              onClick={onClose}
-              className="cursor-pointer transition hover:opacity-70"
-              aria-label={t("nav.close")}
-            >
-              <X className="h-5 w-5 md:h-6 md:w-6" />
-            </button>
-          </div>
 
           {/* Menu Columns — vertically centered in the remaining space */}
           <div className="flex flex-1 flex-col justify-center">

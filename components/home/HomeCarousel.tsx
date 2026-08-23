@@ -121,63 +121,28 @@
 "use client";
 
 import { homepageSections } from "@/lib/data/homepage";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import useEmblaCarousel from "embla-carousel-react";
 import Link from "next/link";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import HomepageSection from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 
-// Translation keys for carousel titles
-const carouselKeys: Record<string, string> = {
-  "Breccia Medicea": "carousel.breccia",
-  "MDW 2022": "carousel.mdw2022",
-  "OFF-ROAD": "carousel.offRoad",
-  "HENGE BEIJING": "carousel.beijing",
-  "TEST-ONE": "carousel.testOne",
-  "WHY HENGE": "carousel.whyHenge",
-};
-
-// Detect touch/coarse pointer
-const subscribeToPointer = (callback: () => void) => {
-  const mql = window.matchMedia("(hover: none), (pointer: coarse)");
-  mql.addEventListener("change", callback);
-  return () => mql.removeEventListener("change", callback);
-};
-const getPointerSnapshot = () =>
-  window.matchMedia("(hover: none), (pointer: coarse)").matches;
-const getServerSnapshot = () => false;
-
 export default function HomeCarousel() {
-  const { t } = useLanguage();
-  const containerRef = useRef<HTMLDivElement>(null);
   const sectionRef = useRef<HTMLElement>(null);
-
-  // State
-  const [maxScroll, setMaxScroll] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [startScrollLeft, setStartScrollLeft] = useState(0);
   const [inView, setInView] = useState(false);
 
-  const isTouch = useSyncExternalStore(
-    subscribeToPointer,
-    getPointerSnapshot,
-    getServerSnapshot,
-  );
+  // Embla powers the carousel: smooth, animated drag with momentum and
+  // snap-to-slide. Throwing a card advances 1–2 items instead of a stiff,
+  // unanimated scroll.
+  const [emblaRef] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    slidesToScroll: 1,
+    duration: 800,
+    loop: false,
+  });
 
   const carouselItems = homepageSections.carousel;
-
-  // Measure max scroll on resize
-  useEffect(() => {
-    const measure = () => {
-      const el = containerRef.current;
-      if (!el) return;
-      setMaxScroll(Math.max(0, el.scrollWidth - el.clientWidth));
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
 
   // IntersectionObserver for entry animation
   useEffect(() => {
@@ -196,39 +161,6 @@ export default function HomeCarousel() {
     return () => observer.disconnect();
   }, []);
 
-  // Mouse drag handlers
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isTouch || maxScroll === 0) return;
-    const el = containerRef.current;
-    if (!el) return;
-    setIsDragging(true);
-    setStartX(e.clientX);
-    setStartScrollLeft(el.scrollLeft);
-    e.preventDefault(); // prevent text selection
-  };
-
-  // Global mouse move/up for drag
-  useEffect(() => {
-    if (!isDragging) return;
-    const onMouseMove = (e: MouseEvent) => {
-      const el = containerRef.current;
-      if (!el) return;
-      const delta = startX - e.clientX;
-      let newScrollLeft = startScrollLeft + delta;
-      newScrollLeft = Math.max(0, Math.min(newScrollLeft, maxScroll));
-      el.scrollLeft = newScrollLeft;
-    };
-    const onMouseUp = () => {
-      setIsDragging(false);
-    };
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-    return () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
-  }, [isDragging, startX, startScrollLeft, maxScroll]);
-
   return (
     <HomepageSection
       ref={sectionRef}
@@ -245,46 +177,42 @@ export default function HomeCarousel() {
         </span>
       </div>
 
-      {/* Horizontal Scroll Carousel */}
+      {/* Horizontal Scroll Carousel — Embla viewport */}
       <div
-        ref={containerRef}
-        className={`no-scrollbar mx-auto flex max-w-[1600px] cursor-grab gap-5 overflow-x-auto px-6 pb-2 active:cursor-grabbing sm:gap-6 md:px-12 lg:gap-8 lg:px-20 xl:px-[8.5vw] ${
-          isTouch ? "snap-x snap-proximity" : ""
-        } ${inView ? "in-view" : ""}`}
-        onMouseDown={handleMouseDown}
+        ref={emblaRef}
+        className="no-scrollbar mx-auto max-w-[1600px] cursor-grab overflow-hidden px-6 pb-2 active:cursor-grabbing md:px-12 lg:px-20 xl:px-[8.5vw]"
       >
-        {carouselItems.map((item, index) => (
-          <div
-            key={item.title}
-            className={`group xs:w-[56vw] relative w-[68vw] shrink-0 sm:w-[40vw] md:w-[31vw] lg:w-[24vw] xl:w-[20vw] ${
-              isTouch ? "snap-start" : ""
-            }`}
-            style={{
-              transitionDelay: `${index * 0.08}s`,
-            }}
-          >
-            <Link href="/hlife" className="block">
-              <div className="relative aspect-4/5 w-full overflow-hidden bg-[#111]">
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  draggable={false}
-                  className="h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+        {/* Embla container (first child of the viewport) */}
+        <div
+          className={`carousel flex gap-5 sm:gap-6 lg:gap-8 ${
+            inView ? "in-view" : ""
+          }`}
+        >
+          {carouselItems.map((item) => (
+            <div
+              key={item.title}
+              className="group xs:w-[56vw] relative w-[68vw] shrink-0 sm:w-[40vw] md:w-[31vw] lg:w-[24vw] xl:w-[20vw]"
+            >
+              <Link href="/hlife" className="block">
+                <div className="relative aspect-4/5 w-full overflow-hidden bg-[#111]">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    draggable={false}
+                    className="h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
+                </div>
+
+                <PlusTextBtn
+                  text={item.title}
+                  textColor="text-background"
+                  className="mt-7"
                 />
-                <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
-              </div>
-
-              <PlusTextBtn
-                text={item.title}
-                textColor="text-background"
-                className="mt-7"
-              />
-            </Link>
-          </div>
-        ))}
-
-        {/* trailing spacer */}
-        <div className="w-2 shrink-0 sm:w-4" aria-hidden="true" />
+              </Link>
+            </div>
+          ))}
+        </div>
       </div>
     </HomepageSection>
   );

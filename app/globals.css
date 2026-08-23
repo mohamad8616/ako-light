@@ -55,6 +55,11 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    /* Always reserve the scrollbar gutter so hiding the scrollbar
+       (e.g. when the fullscreen menu locks scroll) never shifts the
+       layout sideways. */
+    scrollbar-gutter: stable;
+    
     @apply font-sans;
   }
 
