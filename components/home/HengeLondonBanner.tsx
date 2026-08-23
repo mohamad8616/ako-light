@@ -1,0 +1,73 @@
+/* eslint-disable @next/next/no-img-element */
+"use client";
+
+import { homepageSections } from "@/lib/data/homepage";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { Paragraph } from "@/utility/Paragraph";
+import SectionSubTitle from "@/utility/SectionSubTitle";
+import SectionTitle from "@/utility/SectionTitle";
+import { motion } from "framer-motion";
+import HomepageSection, { EASE } from "../../utility/HomepageSection";
+import PlusTextBtn from "../ui/PlusTextBtn";
+
+export default function HengeLondonBanner() {
+  const { t } = useLanguage();
+  const { london } = homepageSections;
+
+  return (
+    <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
+      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14">
+          {/* Left: image */}
+          <div className="relative lg:col-span-5">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.1, ease: EASE }}
+              className="group relative aspect-4/5 w-full overflow-hidden lg:aspect-3/4"
+            >
+              <img
+                src={london.image}
+                alt={t("london.title")}
+                className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+              />
+
+              {/* Small circular badge, top-left */}
+              <div className="bg-background absolute top-4 left-4 flex h-9 w-9 items-center justify-center rounded-full text-white">
+                <span className="text-[10px] font-light">H</span>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Right: kicker, title, two-column body, CTA */}
+          <div className="flex flex-col justify-between lg:col-span-7">
+            <div className="overflow-hidden">
+              <SectionSubTitle>{t("london.kicker")}</SectionSubTitle>
+              <SectionTitle>{t("london.title")}</SectionTitle>
+            </div>
+
+            <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10">
+              <Paragraph>{t("london.p1")}</Paragraph>
+              <Paragraph>{t("london.p2")}</Paragraph>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.7, delay: 0.45, ease: EASE }}
+              className="mt-12"
+            >
+              <PlusTextBtn
+                href="/showroom/showroom-henge-london"
+                text={t("london.discover")}
+                textColor="text-background"
+              />
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </HomepageSection>
+  );
+}
