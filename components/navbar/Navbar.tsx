@@ -42,7 +42,7 @@ export default function Navbar() {
           duration: 0.5,
           ease: [0.22, 1, 0.36, 1],
         }}
-        className={`fixed inset-x-0 top-0 ${menuOpen ? "z-[1000]" : "z-50"}`}
+        className={`fixed inset-x-0 top-0 ${menuOpen ? "z-[1000]" : "z-50"} ${overlayOpen ? "pointer-events-none" : ""}`}
       >
         {/* Both states now declare an explicit height (h-20/h-24 vs h-40/h-52)
             instead of one state relying on "auto", and the transitioned
@@ -61,11 +61,12 @@ export default function Navbar() {
             className={`mx-auto flex h-full w-full items-center justify-between px-6 md:px-12 lg:px-20 xl:px-[8.5vw] ${scrolled && !overlayOpen ? "bg-background" : "bg-transparent"}`}
           >
             {/* Logo */}
-            <CollapsibleNavItem hidden={overlayOpen}>
-              <Link href="/" className="group cursor-pointer">
-                <HengeLogo className="h-auto w-24 fill-white transition-all duration-500 group-hover:opacity-70 md:w-28" />
-              </Link>
-            </CollapsibleNavItem>
+            <Link
+              href="/"
+              className={`group cursor-pointer ${overlayOpen ? "pointer-events-auto" : ""}`}
+            >
+              <HengeLogo className="h-auto w-24 fill-white transition-all duration-500 group-hover:opacity-70 md:w-28" />
+            </Link>
 
             {/* Right Side — only Search + Menu + products*/}
             <div className="flex items-center gap-6 md:gap-12">
@@ -78,37 +79,47 @@ export default function Navbar() {
                 </button>
               </CollapsibleNavItem>
               {/* <Button className="text-xs font-din tracking-tighter"> PRODUCTS </Button> */}
-              <ProductsSheet
-                open={activeOverlay === "products"}
-                onOpenChange={(o) => setActiveOverlay(o ? "products" : null)}
-              />
-              <button
-                onClick={() =>
-                  setActiveOverlay((cur) => (cur === "menu" ? null : "menu"))
-                }
-                aria-expanded={menuOpen}
-                aria-label={menuOpen ? t("nav.close") : t("nav.menu")}
-                className="group relative flex h-[18px] w-[18px] cursor-pointer items-center justify-center text-white transition-all duration-300 hover:opacity-70"
+              <CollapsibleNavItem
+                hidden={activeOverlay === "menu"}
+                className={overlayOpen ? "pointer-events-auto" : undefined}
               >
-                <span
-                  className={`absolute transition-[opacity,transform] duration-300 ease-in-out ${
-                    menuOpen
-                      ? "rotate-90 opacity-0"
-                      : "rotate-0 opacity-100"
-                  }`}
+                <ProductsSheet
+                  open={activeOverlay === "products"}
+                  onOpenChange={(o) => setActiveOverlay(o ? "products" : null)}
+                />
+              </CollapsibleNavItem>
+              <CollapsibleNavItem
+                hidden={activeOverlay === "products"}
+                className={overlayOpen ? "pointer-events-auto" : undefined}
+              >
+                <button
+                  onClick={() =>
+                    setActiveOverlay((cur) => (cur === "menu" ? null : "menu"))
+                  }
+                  aria-expanded={menuOpen}
+                  aria-label={menuOpen ? t("nav.close") : t("nav.menu")}
+                  className="group relative flex h-[18px] w-[18px] cursor-pointer items-center justify-center text-white transition-all duration-300 hover:opacity-70"
                 >
-                  <Menu size={18} strokeWidth={2.5} />
-                </span>
-                <span
-                  className={`absolute transition-[opacity,transform] duration-300 ease-in-out ${
-                    menuOpen
-                      ? "rotate-0 opacity-100"
-                      : "-rotate-90 opacity-0"
-                  }`}
-                >
-                  <X size={18} strokeWidth={2.5} />
-                </span>
-              </button>
+                  <span
+                    className={`absolute transition-[opacity,transform] duration-300 ease-in-out ${
+                      menuOpen
+                        ? "rotate-90 opacity-0"
+                        : "rotate-0 opacity-100"
+                    }`}
+                  >
+                    <Menu size={18} strokeWidth={2.5} />
+                  </span>
+                  <span
+                    className={`absolute transition-[opacity,transform] duration-300 ease-in-out ${
+                      menuOpen
+                        ? "rotate-0 opacity-100"
+                        : "-rotate-90 opacity-0"
+                    }`}
+                  >
+                    <X size={18} strokeWidth={2.5} />
+                  </span>
+                </button>
+              </CollapsibleNavItem>
             </div>
           </div>
         </div>

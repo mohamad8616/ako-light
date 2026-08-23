@@ -1,4 +1,5 @@
 import CatalogueSection from "@/components/home/CatalogueSection";
+import HengeLondonBanner from "@/components/home/HengeLondonBanner";
 import HengeParisBanner from "@/components/home/HengeParisBanner";
 import HeroSection from "@/components/home/HeroSection";
 import HIstraBanner from "@/components/home/HIstraBanner";
@@ -13,6 +14,7 @@ export default function HomePage() {
       <HeroSection />
       <HomeCarousel />
       <HengeParisBanner />
+      <HengeLondonBanner />
       <VideoSection />
       <CatalogueSection />
       {/* <SliderSection /> */}

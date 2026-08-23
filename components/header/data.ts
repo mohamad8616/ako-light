@@ -31,11 +31,6 @@ export const menu: MenuSection[] = [
       { label: "Materials", href: "/materials", i18nKey: "menu.materials" },
       { label: "Projects", href: "/projects", i18nKey: "menu.projects" },
       {
-        label: "2D/3D",
-        href: "https://area.henge07.com",
-        i18nKey: "menu.twoDThreeD",
-      },
-      {
         label: "H-Fragrance",
         href: "https://34.henge07.com",
         i18nKey: "menu.hFragrance",

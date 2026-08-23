@@ -3,8 +3,7 @@ export const homepageSections = {
     tag: "#22",
     title: "A NEW PERSPECTIVE",
     cta: "DISCOVER ALL PRODUCTS",
-    image:
-      "https://www.henge07.com/app/uploads/2023/02/MDW-400x400.png",
+    image: "https://www.henge07.com/app/uploads/2023/02/MDW-400x400.png",
   },
   tables: {
     title: "Timeless Tables",
@@ -14,8 +13,12 @@ export const homepageSections = {
   paris: {
     kicker: "SILVERA",
     title: "HENGE PARIS",
-    image:
-      "https://www.henge07.com/app/uploads/2026/01/7-scaled.jpg",
+    image: "https://www.henge07.com/app/uploads/2026/01/7-scaled.jpg",
+  },
+  london: {
+    kicker: "FLAGSHIP",
+    title: "HENGE LONDON",
+    image: "https://www.henge07.com/app/uploads/2026/01/7-scaled.jpg",
   },
   catalogue: {
     kicker: "HENGE CATALOGUE",
@@ -39,8 +42,7 @@ export const homepageSections = {
   carousel: [
     {
       title: "Breccia Medicea",
-      image:
-        "https://www.henge07.com/app/uploads/2022/06/he1408m-400x400.jpg",
+      image: "https://www.henge07.com/app/uploads/2022/06/he1408m-400x400.jpg",
     },
     {
       title: "MDW 2022",
@@ -49,13 +51,11 @@ export const homepageSections = {
     },
     {
       title: "OFF-ROAD",
-      image:
-        "https://www.henge07.com/app/uploads/2022/03/DSC00935-400x400.jpg",
+      image: "https://www.henge07.com/app/uploads/2022/03/DSC00935-400x400.jpg",
     },
     {
       title: "HENGE BEIJING",
-      image:
-        "https://www.henge07.com/app/uploads/2021/12/005web-1-400x400.jpg",
+      image: "https://www.henge07.com/app/uploads/2021/12/005web-1-400x400.jpg",
     },
     {
       title: "TEST-ONE",

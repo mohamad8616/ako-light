@@ -1,11 +1,9 @@
 "use client";
 
-import HengeLogo from "@/components/ui/HengeLogo";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useLenis } from "@/lib/lenisStore";
 import { EASE } from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
 import Link from "next/link";
 import { useEffect } from "react";
 import { menu } from "../header/data";

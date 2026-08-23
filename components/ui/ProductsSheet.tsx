@@ -95,16 +95,16 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
         }}
         onExitComplete={() => actionsRef.current?.unmount()}
       >
-        <div className="font-din flex h-full flex-col items-start justify-center gap-6">
+        <div className="font-din flex h-full flex-col items-start justify-center gap-6 mt-9">
           <Link
             href="/products"
-            className={`${linkClasses} relative mb-6 cursor-pointer`}
+            className={`${linkClasses} relative group mb-6 cursor-pointer`}
           >
             all Products
             <UnderLineEffect />
           </Link>
           {/* Navigation list */}
-          <nav className="flex flex-col items-start justify-center space-y-2 text-center">
+          <nav className="flex flex-col items-start justify-center space-y-4 text-center">
             {categories.map((item) => (
               <Link
                 key={item}
@@ -113,9 +113,10 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
                   e.preventDefault();
                   closeSheet();
                 }}
-                className={linkClasses}
+                className={`${linkClasses} relative group`}
               >
                 {item}
+                <UnderLineEffect />
               </Link>
             ))}
           </nav>
