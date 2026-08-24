@@ -137,7 +137,8 @@ export default function HomeCarousel() {
   const [emblaRef] = useEmblaCarousel({
     align: "start",
     containScroll: "trimSnaps",
-    slidesToScroll: 1,
+    
+    dragFree: true,
     duration: 800,
     loop: false,
   });

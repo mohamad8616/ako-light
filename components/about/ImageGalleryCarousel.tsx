@@ -1,11 +1,12 @@
-
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
+import useEmblaCarousel from "embla-carousel-react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import HomepageSection from "@/utility/HomepageSection";
 import SectionSubTitle from "@/utility/SectionSubTitle";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-// ----- images array (unchanged) -----
+// ----- images array -----
 const images = [
   "https://www.henge07.com/app/uploads/2023/04/H19_FOTO_01.jpg",
   "https://www.henge07.com/app/uploads/2025/07/Henge0301-1.jpg",
@@ -21,7 +22,7 @@ const images = [
   "https://www.henge07.com/app/uploads/2025/07/Henge0312-1.jpg",
 ];
 
-// ----- detect touch/coarse pointer (unchanged) -----
+// ----- detect touch/coarse pointer (gates the cursor circle only) -----
 const subscribeToPointer = (callback: () => void) => {
   const mql = window.matchMedia("(hover: none), (pointer: coarse)");
   mql.addEventListener("change", callback);
@@ -33,13 +34,14 @@ const getServerSnapshot = () => false;
 
 export default function ImageGalleryCarousel() {
   const sectionRef = useRef<HTMLElement>(null);
-  const carouselRef = useRef<HTMLDivElement>(null);
 
-  // ----- drag state -----
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const [startScrollLeft, setStartScrollLeft] = useState(0);
-  const [maxScroll, setMaxScroll] = useState(0);
+  // Embla powers the carousel: free momentum drag, no snap-to-slide.
+  const [emblaRef] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    dragFree: true,
+    loop: false,
+  }); 
 
   // ----- entry animation state -----
   const [inView, setInView] = useState(false);
@@ -53,18 +55,6 @@ export default function ImageGalleryCarousel() {
     getPointerSnapshot,
     getServerSnapshot,
   );
-
-  // ----- measure max scroll on resize -----
-  useEffect(() => {
-    const measure = () => {
-      const el = carouselRef.current;
-      if (!el) return;
-      setMaxScroll(Math.max(0, el.scrollWidth - el.clientWidth));
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
 
   // ----- IntersectionObserver for entry animation -----
   useEffect(() => {
@@ -83,45 +73,9 @@ export default function ImageGalleryCarousel() {
     return () => observer.disconnect();
   }, []);
 
-  // ----- drag scroll (mouse only, non‑touch) -----
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (isTouch || maxScroll === 0) return;
-    const el = carouselRef.current;
-    if (!el) return;
-    setIsDragging(true);
-    setStartX(e.clientX);
-    setStartScrollLeft(el.scrollLeft);
-    // prevent text selection / default drag
-    e.preventDefault();
-  };
-
   const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
-    // update cursor position for the circle
     setCursorPos({ x: e.clientX, y: e.clientY });
   };
-
-  // global mouse move/up for drag
-  useEffect(() => {
-    if (!isDragging) return;
-    const onMouseMove = (e: MouseEvent) => {
-      const el = carouselRef.current;
-      if (!el) return;
-      const delta = startX - e.clientX;
-      let newScrollLeft = startScrollLeft + delta;
-      // clamp
-      newScrollLeft = Math.max(0, Math.min(newScrollLeft, maxScroll));
-      el.scrollLeft = newScrollLeft;
-    };
-    const onMouseUp = () => {
-      setIsDragging(false);
-    };
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup", onMouseUp);
-    return () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup", onMouseUp);
-    };
-  }, [isDragging, startX, startScrollLeft, maxScroll]);
 
   // ----- cursor circle scale/opacity (CSS transitions) -----
   const circleStyle = {
@@ -145,38 +99,31 @@ export default function ImageGalleryCarousel() {
         <SectionSubTitle>Image Gallery</SectionSubTitle>
       </div>
 
-      {/* ----- carousel container ----- */}
+      {/* ----- carousel — Embla viewport ----- */}
       <div
-        ref={carouselRef}
-        className={`no-scrollbar grid max-w-[1600px] grid-cols-1 gap-1 px-6 pb-2 sm:gap-6 md:px-12 lg:flex lg:cursor-grab lg:gap-8 lg:overflow-x-auto lg:active:cursor-grabbing ${
-          isTouch ? "snap-x snap-proximity" : ""
-        } ${inView ? "in-view" : ""}`}
-        onMouseDown={handleMouseDown}
+        ref={emblaRef}
+        className="no-scrollbar mx-auto max-w-[1600px] cursor-grab overflow-hidden px-6 pb-2 active:cursor-grabbing md:px-12 lg:px-20 xl:px-[8.5vw]"
       >
-        {images.map((src, i) => (
-          <div
-            key={src}
-            className={`group relative w-full shrink-0 lg:w-[24vw] xl:w-[38vw] ${
-              isTouch ? "snap-start" : ""
-            }`}
-            style={{
-              transitionDelay: `${(i % 6) * 0.06}s`,
-            }}
-          >
-            <div className="relative aspect-video w-full overflow-hidden bg-[#111]">
+        {/* Embla container (first child of the viewport) */}
+        <div className={`carousel flex gap-4 md:gap-6 ${inView ? "in-view" : ""}`}>
+          {images.map((src, i) => (
+            <div
+              key={src}
+              style={{ transitionDelay: `${(i % 6) * 0.06}s` }}
+              className="group relative aspect-4/5 w-[70vw] shrink-0 overflow-hidden bg-[#111] sm:w-[45vw] md:w-[32vw] lg:w-[24vw] xl:w-[20vw]"
+            >
               <img
                 src={src}
                 alt=""
                 draggable={false}
+                loading="lazy"
+                decoding="async"
                 className="h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
             </div>
-          </div>
-        ))}
-
-        {/* trailing spacer */}
-        <div className="w-2 shrink-0 sm:w-4" aria-hidden="true" />
+          ))}
+        </div>
       </div>
 
       {/* ----- cursor circle with arrow ----- */}
@@ -185,7 +132,7 @@ export default function ImageGalleryCarousel() {
           className="pointer-events-none fixed z-50 hidden h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white mix-blend-difference md:flex md:items-center md:justify-center"
           style={circleStyle}
         >
-          {/* Arrow pointing top‑right */}
+          {/* Arrow pointing top-right */}
           <svg
             width="24"
             height="24"
@@ -205,28 +152,3 @@ export default function ImageGalleryCarousel() {
     </HomepageSection>
   );
 }
-{
-  /* Image gallery — full-bleed horizontal carousel */
-}
-{/* <div className="mt-16 md:mt-20">
-  <div
-    ref={emblaRef}
-    className="no-scrollbar cursor-grab overflow-hidden active:cursor-grabbing"
-  >
-    <div className="flex gap-4 px-6 md:gap-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
-      {gallery.images.map((src, i) => (
-        <div
-          key={i}
-          className="group relative aspect-4/5 w-[70vw] shrink-0 overflow-hidden bg-[#111] sm:w-[45vw] md:w-[32vw] lg:w-[24vw] xl:w-[20vw]"
-        >
-          <img
-            src={src}
-            alt={`${gallery.kicker} ${i + 1}`}
-            draggable={false}
-            className="h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
-          />
-        </div>
-      ))}
-    </div>
-  </div>
-</div>; */}
