@@ -5,7 +5,6 @@ import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import { motion } from "framer-motion";
 import { EASE } from "../../utility/HomepageSection";
-import PlusTextBtn from "../ui/PlusTextBtn";
 
 export default function S34Harmony() {
   const { harmony } = s34Sections;
@@ -26,33 +25,12 @@ export default function S34Harmony() {
           </motion.h2>
         </div>
 
-        {/* Two-column paragraphs */}
-        <div className="mt-12 grid grid-cols-1 gap-8 md:mt-16 md:grid-cols-2 md:gap-10">
+        {/* Three-column paragraphs */}
+        <div className="mt-12 grid grid-cols-1 gap-8 md:mt-16 md:grid-cols-3 md:gap-10">
           {harmony.paragraphs.map((p, i) => (
             <Paragraph key={i}>{p}</Paragraph>
           ))}
         </div>
-
-        {/* CTAs */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7, delay: 0.45, ease: EASE }}
-          className="mt-14 flex flex-wrap gap-x-10 gap-y-6"
-        >
-          <PlusTextBtn
-            href="/products"
-            text="Products"
-            textColor="text-background"
-          />
-          <PlusTextBtn
-            href="/projects"
-            text="Projects"
-            textColor="text-background"
-          />
-          <PlusTextBtn href="/s34" text="S34" textColor="text-background" />
-        </motion.div>
       </div>
     </HomepageSection>
   );

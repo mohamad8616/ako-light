@@ -1,9 +1,7 @@
 import S34Approach from "@/components/s34/S34Approach";
 import S34Concept from "@/components/s34/S34Concept";
-import S34Gallery from "@/components/s34/S34Gallery";
 import S34Harmony from "@/components/s34/S34Harmony";
-import S34Intro from "@/components/s34/S34Intro";
-import S34Location from "@/components/s34/S34Location";
+import Secuence from "@/components/s34/Secuence";
 import HeroVideo from "@/components/ui/HeroVideo";
 
 export default function S34Page() {
@@ -16,10 +14,8 @@ export default function S34Page() {
         videoSrc="/videos/hero.mp4"
       />
       <S34Concept />
-      <S34Intro />
+      <Secuence />
       <S34Approach />
-      <S34Location />
-      <S34Gallery />
       <S34Harmony />
     </main>
   );
