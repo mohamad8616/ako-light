@@ -7,7 +7,17 @@ import { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 import ScrollIndicator from "../ui/ScrollIndicator";
 
-export default function AboutHero() {
+export default function HeroVideo({
+  firstLine,
+  secondLine,
+  btn,
+  videoSrc,
+}: {
+  firstLine: string;
+  secondLine: string;
+  btn: string;
+  videoSrc: string;
+}) {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [hovering, setHovering] = useState(false);
   // True while the cursor is over an interactive element (the play button)
@@ -39,7 +49,15 @@ export default function AboutHero() {
       onMouseLeave={() => setHovering(false)}
       className="relative h-screen w-full cursor-none overflow-hidden bg-black md:cursor-auto"
     >
-      <Video />
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="absolute inset-0 h-full w-full object-cover"
+      >
+        <source src={videoSrc} type="video/mp4" />
+      </video>
       <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-black/40" />
 
       {/* Cursor-following play circle. Positioned with a HIGHER z-index
@@ -72,7 +90,7 @@ export default function AboutHero() {
             transition={{ duration: 0.9, delay: 0.4, ease: EASE }}
             className="font-din text-4xl leading-[0.95] tracking-tighter text-white uppercase md:text-6xl lg:text-7xl xl:text-7xl"
           >
-            The Metaphysics of Beauty
+            {firstLine}
           </motion.h1>
         </div>
         <div className="overflow-hidden">
@@ -82,7 +100,7 @@ export default function AboutHero() {
             transition={{ duration: 0.9, delay: 0.55, ease: EASE }}
             className="font-din mt-2 text-lg tracking-tight text-white uppercase md:text-2xl lg:text-3xl"
           >
-            Henge&rsquo;s world is incredibly rich of unique materials
+            {secondLine}
           </motion.h2>
         </div>
 
@@ -93,24 +111,11 @@ export default function AboutHero() {
           onMouseEnter={() => setOverInteractive(true)}
           onMouseLeave={() => setOverInteractive(false)}
         >
-          <PlusTextBtn text={"play"} className="font-din" />
+          <PlusTextBtn text={btn} className="font-din" />
         </motion.button>
         {/* Scroll indicator */}
         <ScrollIndicator />
       </div>
     </section>
-  );
-}
-function Video() {
-  return (
-    <video
-      autoPlay
-      muted
-      loop
-      playsInline
-      className="absolute inset-0 h-full w-full object-cover"
-    >
-      <source src="/videos/hero.mp4" type="video/mp4" />
-    </video>
   );
 }
