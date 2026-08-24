@@ -81,10 +81,11 @@ export default function ImageGalleryCarousel() {
   const circleStyle = {
     left: cursorPos.x,
     top: cursorPos.y,
+    translate: "-50% -50%",
+    scale: hovering ? 1 : 0,
     opacity: hovering ? 1 : 0,
-    transform: "translate(-50%, -50%) scale(" + (hovering ? 1 : 0) + ")",
     transition:
-      "opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
+      "opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), scale 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
   };
 
   return (
@@ -129,7 +130,7 @@ export default function ImageGalleryCarousel() {
       {/* ----- cursor circle with arrow ----- */}
       {!isTouch && (
         <div
-          className="pointer-events-none fixed z-50 hidden h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white mix-blend-difference md:flex md:items-center md:justify-center"
+          className="pointer-events-none fixed z-50 hidden h-20 w-20 rounded-full bg-white mix-blend-difference md:flex md:items-center md:justify-center"
           style={circleStyle}
         >
           {/* Arrow pointing top-right */}
