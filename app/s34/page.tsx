@@ -1,4 +1,4 @@
-import S34Approach from "@/components/s34/S34Approach";
+import ProjectsSections from "@/components/ProjectsSections";
 import S34Concept from "@/components/s34/S34Concept";
 import S34Harmony from "@/components/s34/S34Harmony";
 import Secuence from "@/components/s34/Secuence";
@@ -15,8 +15,8 @@ export default function S34Page() {
       />
       <S34Concept />
       <Secuence />
-      <S34Approach />
       <S34Harmony />
+      <ProjectsSections />
     </main>
   );
 }

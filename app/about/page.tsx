@@ -2,7 +2,7 @@ import AboutHeroVideo from "@/components/about/AboutHeroVideo";
 import BrandStory from "@/components/about/BrandStory";
 import EleganceSection from "@/components/about/EleganceSection";
 import ImageGalleryCarousel from "@/components/about/ImageGalleryCarousel";
-import ProjectsSections from "@/components/about/ProjectsSections";
+import ProjectsSections from "@/components/ProjectsSections";
 import HeroVideo from "@/components/ui/HeroVideo";
 import MiddleScreenVideo from "@/components/ui/MiddleFullscreenVideo";
 

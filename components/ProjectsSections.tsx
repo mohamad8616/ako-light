@@ -3,8 +3,8 @@ import { EASE } from "@/utility/HomepageSection";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import HomerPageSection from "../../utility/HomepageSection";
-import PlusTextBtn from "../ui/PlusTextBtn";
+import HomerPageSection from "../utility/HomepageSection";
+import PlusTextBtn from "./ui/PlusTextBtn";
 const links = [
   {
     label: "Products",
