@@ -18,7 +18,7 @@ export const menu: MenuSection[] = [
     i18nKey: "menu.company",
     links: [
       { label: "About Us", href: "/about", i18nKey: "menu.aboutUs" },
-      { label: "S-34", href: "/s-34", i18nKey: "menu.s34" },
+      { label: "S-34", href: "/s34", i18nKey: "menu.s34" },
       { label: "Designers", href: "/designers", i18nKey: "menu.designers" },
     ],
   },
@@ -27,40 +27,28 @@ export const menu: MenuSection[] = [
     i18nKey: "menu.products",
     links: [
       { label: "All Products", href: "/products", i18nKey: "menu.allProducts" },
-      { label: "Collections", href: "/collections", i18nKey: "menu.collections" },
+      {
+        label: "Collections",
+        href: "/collections",
+        i18nKey: "menu.collections",
+      },
       { label: "Materials", href: "/materials", i18nKey: "menu.materials" },
       { label: "Projects", href: "/projects", i18nKey: "menu.projects" },
-      {
-        label: "H-Fragrance",
-        href: "https://34.henge07.com",
-        i18nKey: "menu.hFragrance",
-      },
     ],
   },
   {
     title: "Media",
     i18nKey: "menu.media",
     links: [
-      { label: "Media Kit", href: "/media-kit", i18nKey: "menu.mediaKit" },
-      {
-        label: "Press Clippings",
-        href: "/journal",
-        i18nKey: "menu.pressClippings",
-      },
-      { label: "Catalogues", href: "/catalogues", i18nKey: "menu.catalogues" },
-      { label: "H-Life", href: "/hlife", i18nKey: "menu.hLife" },
+      { label: "Catalogue", href: "/catalogues", i18nKey: "menu.catalogues" },
+      // { label: "H-Life", href: "/hlife", i18nKey: "menu.hLife" },
     ],
   },
   {
     title: "Network",
     i18nKey: "menu.network",
     links: [
-      { label: "Flagships", href: "/showrooms", i18nKey: "menu.flagships" },
-      {
-        label: "Store Finder",
-        href: "/network-map",
-        i18nKey: "menu.storeFinder",
-      },
+      { label: "Flagships", href: "/flagship", i18nKey: "menu.flagships" },
       { label: "Contacts", href: "/contact", i18nKey: "menu.contacts" },
     ],
   },
