@@ -11,6 +11,8 @@ interface Props {
   links: MenuLink[];
   delay: number;
   onLinkClick?: () => void;
+  className?: string;
+  children?: React.ReactNode;
 }
 
 const LinkStyles =
@@ -32,7 +34,7 @@ export default function MenuColumn({
         delay,
       }}
     >
-      <h2 className="mb-5 text-[20px] font-din tracking-tighter text-white/35 uppercase md:mb-6 md:text-[28px]">
+      <h2 className="font-din mb-5 text-[20px] tracking-tighter text-white/35 uppercase md:mb-6 md:text-[28px]">
         {t(titleKey)}
       </h2>
 
@@ -62,7 +64,7 @@ export default function MenuColumn({
                   {t(linkKey)}
                 </Link>
               )}
-              <UnderLineEffect duration="1000" color = {'bg-white/35'}/>
+              <UnderLineEffect duration="1000" color={"bg-white/35"} />
             </li>
           );
         })}
