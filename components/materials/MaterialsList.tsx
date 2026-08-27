@@ -15,10 +15,11 @@ export default function MaterialsList() {
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {materials.map((material, i) => (
           <Row
-            route={`materials/${material.metal}`}
+            route="materials"
             key={material.id}
             index={i}
             animateOnLoad={i < ROWS_ON_LOAD}
+            slug={material.id}
             {...material}
             width={"40"}
           />

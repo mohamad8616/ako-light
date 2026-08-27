@@ -43,7 +43,7 @@ export default function Row({
       className="border-b border-white/20"
     >
       <Link
-        href={`/${route ? route : ""}/${slug ? slug : ""}`}
+        href={`/${route}/${slug ? slug : ""}`}
         className="flex items-end gap-8 py-8 sm:gap-12 md:py-10"
       >
         {/* Portrait */}
