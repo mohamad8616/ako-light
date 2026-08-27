@@ -1,5 +1,5 @@
 import Footer from "@/components/footer/footer";
-import NewsletterSection from "@/components/footer/newsLetterSection";
+import NewsletterSectionWrapper from "@/components/footer/NewsLetterSectionWrapper";
 import Navbar from "@/components/navbar/Navbar";
 import SmoothScroll from "@/components/smoothScroll";
 import PageLoader from "@/components/ui/PageLoader";
@@ -72,14 +72,14 @@ export default function RootLayout({
         inter.variable,
       )}
     >
-      <body className="no-scrollbar bg-background-secondary text-background-secondary flex min-h-full flex-col font-sans text-sm leading-normal md:text-base">
+      <body suppressHydrationWarning className="no-scrollbar  bg-background-secondary text-background-secondary flex min-h-full flex-col font-sans text-sm leading-normal md:text-base">
         <Preloader />
         <SmoothScroll>
           <LanguageProvider>
             <Navbar />
             <PageLoader />
             <PageTransition>{children}</PageTransition>
-            <NewsletterSection />
+            <NewsletterSectionWrapper />
             <Footer />
           </LanguageProvider>
         </SmoothScroll>

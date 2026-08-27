@@ -18,6 +18,7 @@ export default function FlagshipList() {
             key={flagship.slug}
             index={i}
             animateOnLoad={i < ROWS_ON_LOAD}
+            route="flagship"
             {...flagship}
           />
         ))}
