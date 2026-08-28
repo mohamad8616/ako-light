@@ -4,8 +4,7 @@ import { motion, useMotionValue, useSpring } from "framer-motion";
 import { Play } from "lucide-react";
 import { useRef, useState } from "react";
 import { EASE } from "../../utility/HomepageSection";
-import PlusTextBtn from "../ui/PlusTextBtn";
-import ScrollIndicator from "../ui/ScrollIndicator";
+import HeroSectionText from "./HeroSectionText";
 
 export default function HeroVideo({
   firstLine,
@@ -80,42 +79,7 @@ export default function HeroVideo({
         <Play size={22} className="ml-1 fill-black text-black" />
       </motion.div>
 
-      {/* Hero copy — bottom-left, same alignment convention as the
-          homepage hero */}
-      <div className="absolute inset-x-0 bottom-0 z-10 space-y-3 px-6 pb-16 md:px-12 md:pb-20 lg:px-20 lg:pb-24 xl:px-[8.5vw]">
-        <div className="overflow-hidden">
-          <motion.h1
-            initial={{ y: "110%" }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.9, delay: 0.4, ease: EASE }}
-            className="font-din text-4xl leading-[0.95] tracking-tighter text-white uppercase md:text-6xl lg:text-7xl xl:text-7xl"
-          >
-            {firstLine}
-          </motion.h1>
-        </div>
-        <div className="overflow-hidden">
-          <motion.h2
-            initial={{ y: "110%" }}
-            animate={{ y: 0 }}
-            transition={{ duration: 0.9, delay: 0.55, ease: EASE }}
-            className="font-din mt-2 text-lg tracking-tight text-white uppercase md:text-2xl lg:text-3xl"
-          >
-            {secondLine}
-          </motion.h2>
-        </div>
-
-        <motion.button
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.85, ease: EASE }}
-          onMouseEnter={() => setOverInteractive(true)}
-          onMouseLeave={() => setOverInteractive(false)}
-        >
-          <PlusTextBtn text={btn} className="font-din" />
-        </motion.button>
-        {/* Scroll indicator */}
-        <ScrollIndicator />
-      </div>
+      <HeroSectionText firstLine={firstLine} secondLine={secondLine} btn={btn} />
     </section>
   );
 }

@@ -1,10 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { motion } from "framer-motion";
-import { EASE } from "../../utility/HomepageSection";
-import PlusTextBtn from "../ui/PlusTextBtn";
-import ScrollIndicator from "../ui/ScrollIndicator";
+import HeroSectionText from "../ui/HeroSectionText";
 
 export default function HeroSection() {
   const { t } = useLanguage();
@@ -16,39 +13,7 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/10 to-black/35" />
 
       {/* Hero copy — bottom-left aligned, tight leading between the two lines */}
-      <div className="absolute inset-x-0 bottom-0 z-10">
-        <div className="mx-auto max-w-[1600px] px-6 pb-16 md:px-12 md:pb-20 lg:px-20 lg:pb-24 xl:px-[8.5vw]">
-          <div className="overflow-hidden">
-            <motion.h1
-              initial={{ y: "110%" }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.9, delay: 0.5, ease: EASE }}
-              className="text-background-secondary xs:text-6xl text-5xl leading-[0.92] tracking-wider uppercase md:text-7xl lg:text-8xl"
-            >
-              {t("hero.collection")}
-            </motion.h1>
-          </div>
-          <div className="mt-5 overflow-hidden">
-            <motion.h2
-              initial={{ y: "110%" }}
-              animate={{ y: 0 }}
-              transition={{ duration: 0.9, delay: 0.65, ease: EASE }}
-              className="text-background-secondary xs:text-5xl text-4xl leading-[0.92] tracking-tight uppercase md:text-6xl lg:text-7xl"
-            >
-              {t("hero.ritualGravity")}
-            </motion.h2>
-          </div>
-
-          <PlusTextBtn
-            text={t("hero.readMore")}
-            href="/catalogue"
-            className="mt-5"
-          />
-
-          {/* Scroll indicator */}
-          <ScrollIndicator />
-        </div>
-      </div>
+      <HeroSectionText firstLine={t("hero.collection")} secondLine={t("hero.ritualGravity")} btn={t("hero.readMore")} />
     </section>
   );
 }
@@ -66,3 +31,4 @@ function Video() {
     </video>
   );
 }
+

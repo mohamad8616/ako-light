@@ -31,7 +31,6 @@ export default async function ProductPage({ params }: PageProps) {
   const { product, prod } = await params;
 
   const productt = getProduct(product, prod);
-  console.log(product, prod);
   if (!productt) notFound();
 
   return (
