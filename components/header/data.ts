@@ -40,7 +40,7 @@ export const menu: MenuSection[] = [
     title: "Media",
     i18nKey: "menu.media",
     links: [
-      { label: "Catalogue", href: "/catalogues", i18nKey: "menu.catalogues" },
+      { label: "Catalogue", href: "/catalogue", i18nKey: "menu.catalogues" },
       // { label: "H-Life", href: "/hlife", i18nKey: "menu.hLife" },
     ],
   },

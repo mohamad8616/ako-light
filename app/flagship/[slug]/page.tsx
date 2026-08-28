@@ -22,16 +22,17 @@ export function generateStaticParams() {
   return Object.keys(flagshipDetails).map((slug) => ({ slug }));
 }
 
-// export function generateMetadata({ params }: PageProps) {
-//   const flagship = getFlagship(slug);
-//   const detail = getFlagshipDetail(params.slug);
-//   if (!flagship || !detail) return {};
+export async function generateMetadata({ params }: PageProps) {
+  const { slug } = await params;
+  const flagship = getFlagship(slug);
+  const detail = getFlagshipDetail(slug);
+  if (!flagship || !detail) return {};
 
-//   return {
-//     title: `${flagship.name} | Henge Flagships`,
-//     description: detail.description.slice(0, 160),
-//   };
-// }
+  return {
+    title: `${flagship.name} | Henge Flagships`,
+    description: detail.description.slice(0, 160),
+  };
+}
 
 export default async function FlagshipPage({ params }: PageProps) {
   const { slug } = await params;
