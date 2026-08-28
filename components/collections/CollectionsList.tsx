@@ -19,7 +19,7 @@ export default function CollectionsList() {
     <HomepageSection animateOnLoad className="bg-background w-full pb-20 md:pb-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {collections.map((collection, i) => (
-          <Row key={collection.slug} index={i} animateOnLoad={i < ROWS_ON_LOAD} route="collections" slug={collection.id} {...collection} />
+          <Row key={collection.slug} index={i} animateOnLoad={i < ROWS_ON_LOAD} route="collections" {...collection} />
         ))}
       </div>
     </HomepageSection>

@@ -1,7 +1,7 @@
 "use client";
 
 import FabricCard from "./FabricCard";
-import type { WishlistItem } from "@/lib/wishlist/store";
+import type { WishlistItem } from "@/lib/whislist/store";
 
 // Placeholder library matching the reference screenshot's naming/coloring —
 // swap swatchColor for a real photo source per fabric once photography is
