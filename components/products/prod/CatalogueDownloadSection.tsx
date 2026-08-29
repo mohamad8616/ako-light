@@ -1,7 +1,10 @@
-import Link from "next/link";
-import { ArrowDown, Plus } from "lucide-react";
+"use client";
 import { s34Sections } from "@/lib/data/s34";
 import HomepageSection from "@/utility/HomepageSection";
+import { Paragraph } from "@/utility/Paragraph";
+import SectionTitle from "@/utility/SectionTitle";
+import { ArrowDown, Plus } from "lucide-react";
+import Link from "next/link";
 
 // Placeholder — swap for the real S34/4 catalogue PDF URL.
 const CATALOGUE_HREF = "#";
@@ -12,18 +15,17 @@ export default function CatalogueDownloadSection() {
   return (
     <HomepageSection className="flex min-h-screen w-full items-center bg-stone-100 px-6 py-20 md:px-12 lg:px-20 xl:px-[8.5vw]">
       <div className="grid w-full grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center lg:gap-24">
-        <div>
+        <div className="space-y-7">
           <span className="font-din text-xs font-normal tracking-tighter text-stone-500 uppercase">
-            Henge Catalogue
+            {process.env.NEXT_PUBLIC_APP_NAME} Catalogue
           </span>
 
-          <h2 className="font-din mt-4 text-4xl font-bold tracking-tight text-stone-950 uppercase md:text-6xl">
-            Download our latest catalogue
-          </h2>
+          <SectionTitle className='tracking-tighter font-medium'>Download our latest catalogue</SectionTitle>
 
-          <p className="font-din mt-8 max-w-xl text-base leading-relaxed text-stone-600">
+          <Paragraph 
+       >
             {s34Sections.concept.paragraphs[0]}
-          </p>
+          </Paragraph>
         </div>
 
         <div className="flex flex-col gap-6 lg:max-w-md lg:justify-self-end">

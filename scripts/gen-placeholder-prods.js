@@ -1,13 +1,17 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "node:fs";
+import path from "node:path";
 
-const categoriesPath = path.join(process.cwd(), "lib/data/productCategories.ts");
+const categoriesPath = path.join(
+  process.cwd(),
+  "lib/data/productCategories.ts",
+);
 const prodsPath = path.join(process.cwd(), "lib/data/prods.ts");
 
 const categoriesContent = fs.readFileSync(categoriesPath, "utf8");
 const prodsContent = fs.readFileSync(prodsPath, "utf8");
 
-const subCategoryRegex = /\{ name: "([^"]+)", slug: "([^"]+)", image: "([^"]+)", hoverImage: "([^"]+)" \}/g;
+const subCategoryRegex =
+  /\{ name: "([^"]+)", slug: "([^"]+)", image: "([^"]+)", hoverImage: "([^"]+)" \}/g;
 const subCategories = [];
 let match;
 while ((match = subCategoryRegex.exec(categoriesContent)) !== null) {
@@ -80,7 +84,10 @@ for (let i = 0; i < lines.length; i++) {
 }
 
 const products = subCatPositions.map((sub) => {
-  const words = sub.categorySlug.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  const words = sub.categorySlug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
   return {
     name: sub.name,
     slug: sub.slug,
@@ -88,14 +95,18 @@ const products = subCatPositions.map((sub) => {
     categoryLabel: words,
     heroImage: `https://picsum.photos/seed/${sub.slug}/1200/900`,
     description: `Discover the ${sub.name} collection by Henge. Italian-designed furniture crafted with exceptional materials and attention to detail.`,
-    moreInfo: "Available in a range of finishes and configurations — contact your Henge representative for full technical specifications, dimensions, and lead times.",
+    moreInfo:
+      "Available in a range of finishes and configurations — contact your Henge representative for full technical specifications, dimensions, and lead times.",
     downloads: [
       { label: "Product Sheet", href: "#" },
       { label: "Images", href: "#" },
       { label: "2D / 3D", href: "#" },
     ],
     designer: { name: "Massimo Castagna", href: "#" },
-    gallery: [`https://picsum.photos/seed/${sub.slug}-1/1200/900`, `https://picsum.photos/seed/${sub.slug}-2/1200/900`],
+    gallery: [
+      `https://picsum.photos/seed/${sub.slug}-1/1200/900`,
+      `https://picsum.photos/seed/${sub.slug}-2/1200/900`,
+    ],
     related: [],
   };
 });
@@ -118,7 +129,7 @@ const entries = products
     designer: { name: "${p.designer.name}", href: "${p.designer.href}" },
     gallery: [${p.gallery.map((g) => `"${g}"`).join(", ")}],
     related: [],
-  }${idx < products.length - 1 ? "," : ""}`
+  }${idx < products.length - 1 ? "," : ""}`,
   )
   .join("\n\n");
 
@@ -126,7 +137,10 @@ const newProductsObj = `export const products: Record<string, Product> = {
 ${entries}
 };`;
 
-const updatedProds = prodsContent.replace(/export const products: Record<string, Product> = \{[\s\S]*?\};/, newProductsObj);
+const updatedProds = prodsContent.replace(
+  /export const products: Record<string, Product> = \{[\s\S]*?\};/,
+  newProductsObj,
+);
 
 fs.writeFileSync(prodsPath, updatedProds);
 console.log("Updated prods.ts with", products.length, "placeholder products");

@@ -1,4 +1,3 @@
-import CatalogueDownloadSection from "@/components/products/prod/CatalogueDownloadSection";
 import ProductHero from "@/components/products/prod/ProdHero";
 import ProductInfoSection from "@/components/products/prod/ProdInfoSection";
 import RelatedProductsSection from "@/components/products/prod/RelatedProdSection";
@@ -12,8 +11,8 @@ interface PageProps {
 
 export function generateStaticParams() {
   return Object.values(products).map((p) => ({
-    category: p.category,
-    slug: p.slug,
+    product: p.category,
+    prod: p.slug,
   }));
 }
 
@@ -40,7 +39,7 @@ export default async function ProductPage({ params }: PageProps) {
       <ProductInfoSection product={productt} />
       <ImageGalleryCarousel />
       <RelatedProductsSection product={productt} />
-      <CatalogueDownloadSection />
+      {/* <CatalogueDownloadSection /> */}
     </main>
   );
 }

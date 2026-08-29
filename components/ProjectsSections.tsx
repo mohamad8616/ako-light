@@ -13,6 +13,7 @@ const links = [
   },
   {
     label: "Projects",
+    
     href: "/projects",
     image: "https://www.henge07.com/app/uploads/2023/04/PROJECTS-1.jpg",
   },

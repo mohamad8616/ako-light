@@ -38,7 +38,7 @@ export default async function FlagshipPage({ params }: PageProps) {
   const { slug } = await params;
   const flagship = getFlagship(slug);
   const detail = getFlagshipDetail(slug);
-  console.log(flagship, detail);
+
   if (!flagship || !detail) notFound();
 
   // Merge summary (name/slug/city/image) with detail content into the

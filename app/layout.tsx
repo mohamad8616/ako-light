@@ -8,11 +8,8 @@ import Preloader from "@/components/ui/Preloader";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
-import { Inter, Oswald, Vazirmatn } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 const jetBrainsMono = localFont({
   src: [
@@ -35,17 +32,6 @@ const dinNextLTPro = localFont({
   variable: "--font-dinnext",
 });
 
-export const oswald = Oswald({
-  subsets: ["latin"],
-  weight: ["200", "300", "400", "500"],
-  variable: "--font-oswald",
-});
-
-export const vazirmatn = Vazirmatn({
-  subsets: ["arabic"],
-  variable: "--font-vazirmatn",
-});
-
 export const metadata: Metadata = {
   title: "Henge | Italian Design Furniture",
   description:
@@ -61,17 +47,13 @@ export default function RootLayout({
     <html
       lang="en"
       dir="ltr"
-
       data-scroll-behavior="smooth"
       className={cn(
         "h-full",
         "antialiased",
-        oswald.variable,
-        vazirmatn.variable,
         jetBrainsMono.variable,
         dinNextLTPro.variable,
         "font-sans",
-        inter.variable,
       )}
     >
       <body
