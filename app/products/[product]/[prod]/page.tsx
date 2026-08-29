@@ -1,3 +1,4 @@
+import CatalogueDownloadSection from "@/components/products/prod/CatalogueDownloadSection";
 import ProductHero from "@/components/products/prod/ProdHero";
 import ProductInfoSection from "@/components/products/prod/ProdInfoSection";
 import RelatedProductsSection from "@/components/products/prod/RelatedProdSection";
@@ -34,11 +35,12 @@ export default async function ProductPage({ params }: PageProps) {
   if (!productt) notFound();
 
   return (
-    <main className="bg-stone-950">
+    <main>
       <ProductHero product={productt} />
       <ProductInfoSection product={productt} />
-      <ImageGalleryCarousel  />
+      <ImageGalleryCarousel />
       <RelatedProductsSection product={productt} />
+      <CatalogueDownloadSection />
     </main>
   );
 }

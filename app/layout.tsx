@@ -61,6 +61,7 @@ export default function RootLayout({
     <html
       lang="en"
       dir="ltr"
+
       data-scroll-behavior="smooth"
       className={cn(
         "h-full",
@@ -73,7 +74,10 @@ export default function RootLayout({
         inter.variable,
       )}
     >
-      <body suppressHydrationWarning className="no-scrollbar  bg-background-secondary text-background-secondary flex min-h-full flex-col font-sans text-sm leading-normal md:text-base">
+      <body
+        suppressHydrationWarning
+        className="no-scrollbar bg-background-secondary text-background-secondary flex min-h-full flex-col font-sans text-sm leading-normal md:text-base"
+      >
         <Preloader />
         <SmoothScroll>
           <LanguageProvider>

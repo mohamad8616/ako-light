@@ -62,7 +62,7 @@
 
   body {
     font-family: var(--font-oswald), sans-serif;
-    @apply bg-background text-foreground;
+    @apply  text-foreground;
   }
 
   /* Persian font applied when RTL */
