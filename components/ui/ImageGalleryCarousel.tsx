@@ -91,7 +91,7 @@ export default function ImageGalleryCarousel() {
   return (
     <HomepageSection
       ref={sectionRef}
-      className="w-full overflow-hidden border-y border-white/10 px-6 py-20 md:px-12 md:py-28 lg:py-32"
+      className="w-full overflow-hidden border-y border-white/10 px-6 py-20 md:px-12 md:py-28 lg:py-32 bg-background-secondary"
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}

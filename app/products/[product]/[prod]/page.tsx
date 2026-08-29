@@ -1,7 +1,7 @@
-import ProductGallerySection from "@/components/products/prod/ProdGallerySection";
 import ProductHero from "@/components/products/prod/ProdHero";
 import ProductInfoSection from "@/components/products/prod/ProdInfoSection";
 import RelatedProductsSection from "@/components/products/prod/RelatedProdSection";
+import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
 import { getProduct, products } from "@/lib/data/prods";
 import { notFound } from "next/navigation";
 
@@ -37,7 +37,7 @@ export default async function ProductPage({ params }: PageProps) {
     <main className="bg-stone-950">
       <ProductHero product={productt} />
       <ProductInfoSection product={productt} />
-      <ProductGallerySection product={productt} />
+      <ImageGalleryCarousel  />
       <RelatedProductsSection product={productt} />
     </main>
   );
