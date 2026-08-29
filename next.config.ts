@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "www.henge07.com",
       },
+      {
+        protocol: "https",
+        hostname: "picsum.photos",
+        
+      }
     ],
   },
 };

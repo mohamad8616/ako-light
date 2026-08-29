@@ -1,17 +1,20 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { Plus, Minus } from "lucide-react";
+import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import type { Product } from "@/lib/data/prods";
+import HomepageSection from "@/utility/HomepageSection";
+import { Paragraph } from "@/utility/Paragraph";
+import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function ProductInfoSection({ product }: { product: Product }) {
   const [moreInfoOpen, setMoreInfoOpen] = useState(false);
 
   return (
-    <section className="bg-stone-100 px-6 py-20 md:px-12 md:py-28 lg:px-20 xl:px-[8.5vw]">
-      <div className="grid grid-cols-1 gap-12 lg:grid-cols-[2fr_1fr] lg:gap-16">
-        <div>
+    <HomepageSection className="bg-background-secondary h-4/5 px-6 py-20 md:px-12 md:py-28 lg:px-20 xl:px-[8.5vw]">
+      <div className="grid h-full grid-cols-1 gap-12 lg:grid-cols-[2fr_1fr] lg:gap-16">
+        <div className="space-y-6 lg:space-y-10">
           <nav className="font-din flex flex-wrap items-center gap-2 text-xs font-medium tracking-tighter text-stone-500 uppercase">
             <Link
               href="/products"
@@ -22,37 +25,43 @@ export default function ProductInfoSection({ product }: { product: Product }) {
             <span>/</span>
             <Link
               href={`/products/${product.category}`}
-              className="underline underline-offset-2 transition-colors hover:text-stone-950"
+              className="underline underline-offset-2 transition-colors hover:text-stone-600"
             >
               {product.categoryLabel}
             </Link>
             <span>/</span>
-            <span className="text-stone-950">{product.name}</span>
+            <span className="text-stone-700">{product.name}</span>
           </nav>
 
-          <p className="font-din mt-8 max-w-2xl text-base leading-relaxed text-stone-700">
-            {product.description}
-          </p>
+          <Paragraph>{product.description}</Paragraph>
 
           {product.moreInfo && (
             <div className="mt-10">
-              <button
-                onClick={() => setMoreInfoOpen((prev) => !prev)}
-                aria-expanded={moreInfoOpen}
-                className="font-din flex cursor-pointer items-center gap-2 text-xs font-medium tracking-tighter text-stone-950 uppercase"
-              >
-                {moreInfoOpen ? (
-                  <Minus size={12} strokeWidth={2.5} />
-                ) : (
-                  <Plus size={12} strokeWidth={2.5} />
+              <AnimatePresence>
+                {!moreInfoOpen && (
+                  <motion.div
+                    initial={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <PlusTextBtn
+                      onClick={() => setMoreInfoOpen(!moreInfoOpen)}
+                      text="more info"
+                      textColor="text-background"
+                    />
+                  </motion.div>
                 )}
-                More info
-              </button>
+              </AnimatePresence>
 
               {moreInfoOpen && (
-                <p className="font-din mt-4 max-w-2xl text-sm leading-relaxed text-stone-600">
+                <motion.p
+                  initial={{ opacity: 0.6, y: 0 }}
+                  animate={{ opacity: 1, y: 90 }}
+                  transition={{ duration: 0.8 }}
+                  className="font-din mt-4 max-w-2xl text-sm leading-relaxed text-stone-600 mb-24"
+                >
                   {product.moreInfo}
-                </p>
+                </motion.p>
               )}
             </div>
           )}
@@ -91,6 +100,6 @@ export default function ProductInfoSection({ product }: { product: Product }) {
           </div>
         </div>
       </div>
-    </section>
+    </HomepageSection>
   );
 }
