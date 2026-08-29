@@ -55,11 +55,8 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    /* Always reserve the scrollbar gutter so hiding the scrollbar
-       (e.g. when the fullscreen menu locks scroll) never shifts the
-       layout sideways. */
     scrollbar-gutter: stable;
-    
+
     @apply font-sans;
   }
 
@@ -159,7 +156,9 @@ html.lenis {
 .carousel .group {
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition:
+    opacity 0.6s ease,
+    transform 0.6s ease;
 }
 .carousel.in-view .group {
   opacity: 1;
