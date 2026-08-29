@@ -39,8 +39,8 @@ export default function ProductCategoryCard({
           <img
             src={image}
             alt={`${name} default`}
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-              hoverImage ? "group-hover:opacity-0" : "group-hover:scale-105"
+            className={`absolute inset-0 h-full w-full object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              hoverImage ? "group-hover:opacity-0" : "group-hover:scale-105 transition duration-300"
             }`}
           />
           {hoverImage && (
