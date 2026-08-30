@@ -20,7 +20,7 @@ const HomepageSection = ({
         ? { animate: { opacity: 1, y: 0 } }
         : { whileInView: { opacity: 1, y: 0 }, viewport: { once: true } })}
       transition={{ duration: 2, ease: EASE }}
-      className={className}
+      className={`${className} mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]`}
       {...rest}
     >
       {children}

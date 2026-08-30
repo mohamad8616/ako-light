@@ -1,6 +1,6 @@
 "use client";
 
-import AkoLightingLogo from "@/components/ui/HengeLogo";
+import AkoLightingLogo from "@/components/ui/Logo";
 import { useEffect, useState } from "react";
 
 export default function Preloader() {
@@ -49,7 +49,7 @@ export default function Preloader() {
 
       {/* Progress Bar */}
       <div
-        className={`mt-4 h-0.5 w-20 origin-left bg-background-secondary transition-transform duration-100 ease-out ${isReady ? "transition-duration-200" : ""} `}
+        className={`bg-background-secondary mt-4 h-0.5 w-20 origin-left transition-transform duration-100 ease-out ${isReady ? "transition-duration-200" : ""} `}
         style={{
           transform: `scaleX(${progress / 100})`,
         }}

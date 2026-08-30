@@ -23,8 +23,8 @@ export default function SmoothScroll({
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // expo easing
       orientation: "vertical",
       smoothWheel: true,
-      wheelMultiplier: 0.8, // ← reduce for heavier feel
-      touchMultiplier: 1.5,
+      wheelMultiplier: 0.9, // ← reduce for heavier feel
+      touchMultiplier: 0.9,
     });
 
     lenisRef.current = lenis;

@@ -6,10 +6,10 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
-import HomepageSection from "../../utility/HomepageSection";
+import HomepageSection, { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
+import Image from "next/image";
 
-const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function HomeCollectionBanner() {
   const { t } = useLanguage();
@@ -17,7 +17,7 @@ export default function HomeCollectionBanner() {
 
   return (
     <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
-      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
+      <div>
         <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-stretch lg:gap-14">
           {/* Image column, with peeking "next" card underneath it */}
           <div className="relative order-1 lg:col-span-7">
@@ -26,12 +26,14 @@ export default function HomeCollectionBanner() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 1.1, ease: EASE }}
-              className="group relative aspect-4/3 w-full overflow-hidden lg:aspect-auto lg:h-full lg:min-h-105"
+              className="group relative  aspect-video w-full overflow-hidden lg:aspect-auto lg:h-full lg:min-h-105"
             >
-              <img
+              <Image
+                sizes="(max-width: 1024px) 100vw, 58vw"
+                fill
                 src={homeCollection.image}
                 alt={t("homeCollection.title")}
-                className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+                className="h absolute object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
               />
             </motion.div>
           </div>
@@ -39,7 +41,7 @@ export default function HomeCollectionBanner() {
           {/* Content column — title pinned top, CTA pinned bottom to mirror the image height */}
           <div className="order-2 flex flex-col lg:col-span-5 lg:justify-between lg:py-2">
             <div>
-              <div className="mb-5 overflow-hidden">
+              <div className="mb-5">
                 <SectionTitle>{t("homeCollection.title")}</SectionTitle>
               </div>
 

@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { homepageSections } from "@/lib/data/homepage";
@@ -8,6 +7,7 @@ import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
 import HomepageSection, { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
+import Image from "next/image";
 
 export default function HIstraBanner() {
   const { t } = useLanguage();
@@ -33,10 +33,11 @@ export default function HIstraBanner() {
           transition={{ duration: 1.2, delay: 0.15, ease: EASE }}
           className="group relative z-10 mt-10 -mb-16 aspect-16/10 w-full overflow-hidden sm:aspect-video md:mt-14 md:-mb-16 lg:-mb-18"
         >
-          <img
+          <Image
             src={istra.image}
             alt={t("istra.title")}
-            className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+            fill
+            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
           />
         </motion.div>
 
