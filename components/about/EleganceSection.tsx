@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionTitle from "@/utility/SectionTitle";
 
@@ -12,21 +13,21 @@ const paragraphs = [
 
 export default function EleganceSection() {
   return (
-    <section className="w-full py-20 md:py-28">
-      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
+    <HomepageSection className="w-full py-20 md:py-28">
+     
         {/* Title */}
         <div className="overflow-hidden lg:w-1/5">
           <SectionTitle>A Paradigm of Contemporary Elegance</SectionTitle>
         </div>
 
         {/* Three-column paragraph grid */}
-        <div className="mt-12 grid grid-cols-1 gap-8 md:mt-16 md:grid-cols-3 md:gap-10">
+        <div className="mt-12 grid grid-cols-1 gap-8 md:mt-16 lg:grid-cols-3 md:gap-10">
           {paragraphs.map((text, i) => (
             <Paragraph key={i}>{text}</Paragraph>
           ))}
         </div>
-      </div>
+      
      
-    </section>
+    </HomepageSection>
   );
 }

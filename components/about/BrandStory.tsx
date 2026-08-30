@@ -1,24 +1,24 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionImage from "@/utility/SectionImage";
 import SectionTitle from "@/utility/SectionTitle";
+import Image from "next/image";
 
 export default function BrandStory() {
   return (
     <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
-      <div className="border-background/10 mx-auto max-w-[1600px] space-y-20 border-t px-6 pt-10 md:px-12 lg:px-20 xl:px-[8.5vw]">
+      <div className="border-background/10 space-y-20 border-t">
         {/* Title */}
-        <div className="overflow-hidden lg:w-1/5">
-          <SectionTitle>
+        <div className="overflow-hidden lg:w-2/6">
+          <SectionTitle className="font-medium">
             From material search to a design trademark success
           </SectionTitle>
         </div>
 
         {/* Three-column paragraph grid */}
-        <div className="mt-12 grid grid-cols-1 gap-8 md:mt-16 md:grid-cols-3 md:gap-10">
+        <div className="mt-12 grid grid-cols-1 gap-8 md:mt-16 lg:grid-cols-3 md:gap-10">
           <Paragraph>
             HENGE is the successful story of a young company that turned the
             search for materials into its trademark in the world of design. The
@@ -65,10 +65,11 @@ export default function BrandStory() {
         {/*  image with corner badge with text */}
         <div className="mt-16 lg:flex flex-row-reverse items-center justify-between gap-5 space-y-5 lg:space-y-0 md:mt-30 lg:mb-60">
           <SectionImage className="flex-4 md:mt-20">
-            <img
+            <Image
               src="https://www.henge07.com/app/uploads/2025/07/Henge_0730.jpg"
               alt="Henge interior"
-              className="h-full w-full object-cover"
+              fill
+              className="object-cover"
             />
           </SectionImage>
           <div className="flex-2 space-y-5 lg:px-14 text-xs">
@@ -93,10 +94,11 @@ export default function BrandStory() {
         {/* Text-Below / image-top */}
         <div className="mt-16 grid grid-cols-1 items-center gap-10 md:mt-20 lg:gap-12">
           <SectionImage>
-            <img
+            <Image
               src="https://www.henge07.com/app/uploads/2025/07/Henge_0722-SG.jpg"
               alt="Henge lighting installation"
-              className="h-full w-full object-cover"
+              fill
+              className="object-cover"
             />
           </SectionImage>
           <Paragraph>
