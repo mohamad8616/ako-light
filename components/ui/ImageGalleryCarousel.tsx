@@ -1,10 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import useEmblaCarousel from "embla-carousel-react";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import HomepageSection from "@/utility/HomepageSection";
 import SectionSubTitle from "@/utility/SectionSubTitle";
+import useEmblaCarousel from "embla-carousel-react";
+import Image from "next/image";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 // ----- images array -----
 const images = [
@@ -32,7 +32,7 @@ const getPointerSnapshot = () =>
   window.matchMedia("(hover: none), (pointer: coarse)").matches;
 const getServerSnapshot = () => false;
 
-export default function ImageGalleryCarousel() {
+export default function ImageGalleryCarousel({ circle }: { circle: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
 
   // Embla powers the carousel: free momentum drag, no snap-to-slide.
@@ -41,7 +41,7 @@ export default function ImageGalleryCarousel() {
     containScroll: "trimSnaps",
     dragFree: true,
     loop: false,
-  }); 
+  });
 
   // ----- entry animation state -----
   const [inView, setInView] = useState(false);
@@ -91,7 +91,7 @@ export default function ImageGalleryCarousel() {
   return (
     <HomepageSection
       ref={sectionRef}
-      className="w-full overflow-hidden border-y border-white/10 px-6 py-20 md:px-12 md:py-28 lg:py-32 bg-background-secondary"
+      className="bg-background-secondary w-full overflow-hidden border-y border-white/10 py-20 md:py-28 lg:py-32"
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
@@ -103,23 +103,23 @@ export default function ImageGalleryCarousel() {
       {/* ----- carousel — Embla viewport ----- */}
       <div
         ref={emblaRef}
-        className="no-scrollbar mx-auto max-w-[1600px] cursor-grab overflow-hidden px-6 pb-2 active:cursor-grabbing md:px-12 lg:px-20 xl:px-[8.5vw]"
+        className="no-scrollbar mx-auto max-w-[1600px] cursor-grab overflow-hidden pb-2 active:cursor-grabbing"
       >
         {/* Embla container (first child of the viewport) */}
-        <div className={`carousel flex gap-4 md:gap-6 ${inView ? "in-view" : ""}`}>
+        <div
+          className={`carousel flex gap-4 md:gap-6 ${inView ? "in-view" : ""}`}
+        >
           {images.map((src, i) => (
             <div
               key={src}
               style={{ transitionDelay: `${(i % 6) * 0.06}s` }}
               className="group relative aspect-4/5 w-[70vw] shrink-0 overflow-hidden bg-[#111] sm:w-[45vw] md:w-[32vw] lg:w-[24vw] xl:w-[20vw]"
             >
-              <img
+              <Image
                 src={src}
                 alt=""
-                draggable={false}
-                loading="lazy"
-                decoding="async"
-                className="h-full w-full object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+                fill
+                className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
             </div>
@@ -128,7 +128,7 @@ export default function ImageGalleryCarousel() {
       </div>
 
       {/* ----- cursor circle with arrow ----- */}
-      {!isTouch && (
+      {circle && !isTouch && (
         <div
           className="pointer-events-none fixed z-50 hidden h-20 w-20 rounded-full bg-white mix-blend-difference md:flex md:items-center md:justify-center"
           style={circleStyle}

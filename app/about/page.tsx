@@ -1,9 +1,9 @@
 import AboutHeroVideo from "@/components/about/AboutHeroVideo";
 import BrandStory from "@/components/about/BrandStory";
 import EleganceSection from "@/components/about/EleganceSection";
-import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
 import ProjectsSections from "@/components/ProjectsSections";
 import HeroVideo from "@/components/ui/HeroVideo";
+import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
 import MiddleScreenVideo from "@/components/ui/MiddleFullscreenVideo";
 
 export default function AboutPage() {
@@ -17,7 +17,7 @@ export default function AboutPage() {
       />
       <AboutHeroVideo />
       <BrandStory />
-      <ImageGalleryCarousel />
+      <ImageGalleryCarousel circle={false} />
       <MiddleScreenVideo src="videos/aboutvid.mp4" />
       <EleganceSection />
       <ProjectsSections />
