@@ -32,7 +32,25 @@ const getPointerSnapshot = () =>
   window.matchMedia("(hover: none), (pointer: coarse)").matches;
 const getServerSnapshot = () => false;
 
-export default function ImageGalleryCarousel({ circle }: { circle: boolean }) {
+// ----- generate random widths for multiWidth mode -----
+const generateRandomWidths = (count: number): string[] => {
+  const widthPercentages = [25, 28, 30, 32, 35, 38, 40, 42, 45, 48, 50];
+  return Array.from({ length: count }, () => {
+    const randomPercentage =
+      widthPercentages[Math.floor(Math.random() * widthPercentages.length)];
+    return `w-[${randomPercentage}vw]`;
+  });
+};
+
+export default function ImageGalleryCarousel({
+  circle = false,
+  multiWidth = false,
+  mobileColumn = false,
+}: {
+  circle?: boolean;
+  multiWidth?: boolean;
+  mobileColumn?: boolean;
+}) {
   const sectionRef = useRef<HTMLElement>(null);
 
   // Embla powers the carousel: free momentum drag, no snap-to-slide.
@@ -49,6 +67,9 @@ export default function ImageGalleryCarousel({ circle }: { circle: boolean }) {
   // ----- circle cursor state -----
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [hovering, setHovering] = useState(false);
+
+  // ----- random widths for multiWidth mode -----
+  const [randomWidths] = useState(() => generateRandomWidths(images.length));
 
   const isTouch = useSyncExternalStore(
     subscribeToPointer,
@@ -96,41 +117,83 @@ export default function ImageGalleryCarousel({ circle }: { circle: boolean }) {
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
-      <div className="mb-10 flex max-w-[1600px] items-end justify-between px-6 md:mb-14 md:px-12">
+      <div className="mb-10 flex max-w-[1600px] items-end justify-between md:mb-14">
         <SectionSubTitle>Image Gallery</SectionSubTitle>
       </div>
 
-      {/* ----- carousel — Embla viewport ----- */}
-      <div
-        ref={emblaRef}
-        className="no-scrollbar mx-auto max-w-[1600px] cursor-grab overflow-hidden pb-2 active:cursor-grabbing"
-      >
-        {/* Embla container (first child of the viewport) */}
+      {/* ----- mobile column layout (only when mobileColumn is true, hidden on lg+) ----- */}
+      {mobileColumn && (
+        <div className="mx-auto block max-w-[1600px] lg:hidden">
+          <div className="grid grid-cols-1 gap-2">
+            {images.map((src) => (
+              <div
+                key={src}
+                className="group relative aspect-video w-full overflow-hidden bg-[#111]"
+              >
+                <Image
+                  src={src}
+                  alt=""
+                  fill
+                  className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ----- carousel — Embla viewport (hidden on mobile when mobileColumn is true) ----- */}
+      <div className={mobileColumn ? "hidden lg:block" : ""}>
         <div
-          className={`carousel flex gap-4 md:gap-6 ${inView ? "in-view" : ""}`}
+          ref={emblaRef}
+          className="no-scrollbar mx-auto max-w-[1600px] cursor-grab overflow-hidden pb-2 active:cursor-grabbing"
         >
-          {images.map((src, i) => (
-            <div
-              key={src}
-              style={{ transitionDelay: `${(i % 6) * 0.06}s` }}
-              className="group relative aspect-4/5 w-[70vw] shrink-0 overflow-hidden bg-[#111] sm:w-[45vw] md:w-[32vw] lg:w-[24vw] xl:w-[20vw]"
-            >
-              <Image
-                src={src}
-                alt=""
-                fill
-                className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
-            </div>
-          ))}
+          {/* Embla container (first child of the viewport) */}
+          <div
+            className={`carousel flex gap-4 md:gap-6 ${inView ? "in-view" : ""}`}
+          >
+            {images.map((src, i) => {
+              const isMultiWidth = multiWidth && randomWidths[i];
+              const widthClass = isMultiWidth
+                ? ""
+                : "w-[70vw] sm:w-[45vw] md:w-[32vw] lg:w-[24vw] xl:w-[20vw]";
+              const heightClass = multiWidth
+                ? "h-[50vh] sm:h-[45vh] md:h-[50vh]"
+                : "aspect-4/5";
+
+              // Extract random width percentage for inline style
+              const randomWidthStr = isMultiWidth ? randomWidths[i] : "";
+              const widthMatch = randomWidthStr.match(/\[(\d+)vw\]/);
+              const inlineWidth = widthMatch ? `${widthMatch[1]}vw` : undefined;
+
+              return (
+                <div
+                  key={src}
+                  style={{
+                    transitionDelay: `${(i % 6) * 0.06}s`,
+                    ...(inlineWidth && { width: inlineWidth }),
+                  }}
+                  className={`group relative ${heightClass} ${widthClass} shrink-0 overflow-hidden bg-[#111]`}
+                >
+                  <Image
+                    src={src}
+                    alt=""
+                    fill
+                    className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
       {/* ----- cursor circle with arrow ----- */}
       {circle && !isTouch && (
         <div
-          className="pointer-events-none fixed z-50 hidden h-20 w-20 rounded-full bg-white mix-blend-difference md:flex md:items-center md:justify-center"
+          className="pointer-events-none fixed -z-50 hidden h-20 w-20 rounded-full bg-white mix-blend-difference md:flex md:items-center md:justify-center"
           style={circleStyle}
         >
           {/* Arrow pointing top-right */}

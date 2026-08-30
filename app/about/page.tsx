@@ -17,7 +17,7 @@ export default function AboutPage() {
       />
       <AboutHeroVideo />
       <BrandStory />
-      <ImageGalleryCarousel circle={false} />
+      <ImageGalleryCarousel circle={false} multiWidth={false} mobileColumn={true} />
       <MiddleScreenVideo src="videos/aboutvid.mp4" />
       <EleganceSection />
       <ProjectsSections />
