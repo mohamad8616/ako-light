@@ -3,7 +3,6 @@ import { EASE } from "@/utility/HomepageSection";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import HomepageSection from "../utility/HomepageSection";
 import PlusTextBtn from "./ui/PlusTextBtn";
 const links = [
   {
@@ -27,7 +26,7 @@ const ProjectsSections = () => {
   return (
     <section >
       <div className="bg-background mx-auto flex min-h-screen items-center justify-center py-20">
-        <div className="grid w-full grid-cols-1 items-center justify-between gap-10 px-6 sm:px-12 lg:grid-cols-3 md:mt-20 md:gap-8">
+        <div className="grid w-full grid-cols-1 items-center justify-between gap-10 px-6 sm:px-12 lg:grid-cols-3 md:mt-20 md:gap-8 lg:gap-18 lg:px-32">
           {links.map(({ label, href, image }, i) => (
             <motion.div
               key={label}

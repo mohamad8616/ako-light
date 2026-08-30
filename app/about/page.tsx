@@ -4,7 +4,6 @@ import EleganceSection from "@/components/about/EleganceSection";
 import ProjectsSections from "@/components/ProjectsSections";
 import HeroVideo from "@/components/ui/HeroVideo";
 import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
-import MiddleScreenVideo from "@/components/ui/MiddleFullscreenVideo";
 
 export default function AboutPage() {
   return (
@@ -17,7 +16,7 @@ export default function AboutPage() {
       />
       <AboutHeroVideo />
       <BrandStory />
-      <ImageGalleryCarousel circle={false} multiWidth={false} mobileColumn={true} />
+      <ImageGalleryCarousel circle={false} multiWidth={true} mobileColumn={true} />
       {/* <MiddleScreenVideo src="videos/aboutvid.mp4" /> */}
       <EleganceSection />
       <ProjectsSections />

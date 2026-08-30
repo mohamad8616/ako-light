@@ -117,13 +117,13 @@ export default function ImageGalleryCarousel({
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
-      <div className="mb-10 flex max-w-[1600px] items-end justify-between md:mb-14">
+      <div className="mb-10 flex items-end justify-between md:mb-14">
         <SectionSubTitle>Image Gallery</SectionSubTitle>
       </div>
 
       {/* ----- mobile column layout (only when mobileColumn is true, hidden on lg+) ----- */}
       {mobileColumn && (
-        <div className="mx-auto block max-w-[1600px] lg:hidden">
+        <div className="mx-auto block lg:hidden">
           <div className="grid grid-cols-1 gap-2">
             {images.map((src) => (
               <div
@@ -147,7 +147,7 @@ export default function ImageGalleryCarousel({
       <div className={mobileColumn ? "hidden lg:block" : ""}>
         <div
           ref={emblaRef}
-          className="no-scrollbar mx-auto max-w-[1600px] cursor-grab overflow-hidden pb-2 active:cursor-grabbing"
+          className="no-scrollbar mx-autocursor-grab overflow-hidden pb-2 active:cursor-grabbing"
         >
           {/* Embla container (first child of the viewport) */}
           <div

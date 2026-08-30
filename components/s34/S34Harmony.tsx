@@ -11,7 +11,7 @@ export default function S34Harmony() {
 
   return (
     <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
-      <div className="border-background/10 mx-auto max-w-[1600px] border-t px-6 pt-16 md:px-12 md:pt-24 lg:px-20 xl:px-[8.5vw]">
+      <div className="border-background/10">
         {/* Title */}
         <div className="overflow-hidden lg:w-1/3">
           <motion.h2
