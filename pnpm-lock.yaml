@@ -65,18 +65,12 @@ importers:
       react-dom:
         specifier: 19.2.4
         version: 19.2.4(react@19.2.4)
-      react-icons:
-        specifier: ^5.7.0
-        version: 5.7.0(react@19.2.4)
       shadcn:
         specifier: ^4.18.0
         version: 4.18.0(supports-color@7.2.0)(typescript@5.9.3)
       shadcn-ui:
         specifier: ^0.9.5
         version: 0.9.5
-      slick-carousel:
-        specifier: ^1.8.1
-        version: 1.8.1(jquery@4.0.0)
       tailwind-merge:
         specifier: ^3.6.0
         version: 3.6.0
@@ -2599,9 +2593,6 @@ packages:
   jose@6.2.9:
     resolution: {integrity: sha512-XrchZOFZUl/T3vTwRe8XK+cJrGtMF4th1ARnDfwbBXFKThGhlsxEE4Zu03AD/bjJSt/9jT/mxrOCkJWOg77aPA==}
 
-  jquery@4.0.0:
-    resolution: {integrity: sha512-TXCHVR3Lb6TZdtw1l3RTLf8RBWVGexdxL6AC8/e0xZKEpBflBsjh9/8LXw+dkNFuOyW9B7iB3O1sP7hS0Kiacg==}
-
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -3306,11 +3297,6 @@ packages:
     peerDependencies:
       react: ^19.2.4
 
-  react-icons@5.7.0:
-    resolution: {integrity: sha512-LBLy340Rzqy6+/yVhZKT3B/QpP1BZaesGqasf09HPOBzRarcDIFH0WwXlXQfE7q7ipxK4MSiC5DIBWURCny6fw==}
-    peerDependencies:
-      react: '*'
-
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -3496,11 +3482,6 @@ packages:
 
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
-
-  slick-carousel@1.8.1:
-    resolution: {integrity: sha512-XB9Ftrf2EEKfzoQXt3Nitrt/IPbT+f1fgqBdoxO3W/+JYvtEOW6EgxnWfr9GH6nmULv7Y2tPmEX3koxThVmebA==}
-    peerDependencies:
-      jquery: '>=1.8.0'
 
   smart-buffer@4.2.0:
     resolution: {integrity: sha512-94hK0Hh8rPqQl2xXc3HsaBoOXKV20MToPkcXvwbISWLEs+64sBq5kFgn2kJDHb1Pry9yrP0dxrCI9RRci7RXKg==}
@@ -6433,8 +6414,6 @@ snapshots:
 
   jose@6.2.9: {}
 
-  jquery@4.0.0: {}
-
   js-tokens@4.0.0: {}
 
   js-yaml@4.3.0:
@@ -7031,10 +7010,6 @@ snapshots:
       react: 19.2.4
       scheduler: 0.27.0
 
-  react-icons@5.7.0(react@19.2.4):
-    dependencies:
-      react: 19.2.4
-
   react-is@16.13.1: {}
 
   react@19.2.4: {}
@@ -7319,10 +7294,6 @@ snapshots:
   signal-exit@4.1.0: {}
 
   sisteransi@1.0.5: {}
-
-  slick-carousel@1.8.1(jquery@4.0.0):
-    dependencies:
-      jquery: 4.0.0
 
   smart-buffer@4.2.0: {}
 
