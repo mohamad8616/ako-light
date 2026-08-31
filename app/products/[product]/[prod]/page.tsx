@@ -1,4 +1,4 @@
-import ProductHero from "@/components/products/prod/ProdHero";
+import PictureHero from "@/components/ui/PictureHero";
 import ProductInfoSection from "@/components/products/prod/ProdInfoSection";
 import RelatedProductsSection from "@/components/products/prod/RelatedProdSection";
 import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
@@ -35,10 +35,10 @@ export default async function ProductPage({ params }: PageProps) {
 
   return (
     <main className="bg-background-secondary">
-      <ProductHero product={productt} />
+      <PictureHero image={productt.heroImage} name={productt.name} />
       <ProductInfoSection product={productt} />
       <ImageGalleryCarousel multiWidth={true} mobileColumn={true} />
-      
+
       <RelatedProductsSection product={productt} />
     </main>
   );

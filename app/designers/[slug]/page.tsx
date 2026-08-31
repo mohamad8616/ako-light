@@ -20,7 +20,7 @@ export default async function DesignerDetailPage({ params }: PageProps) {
   }
 
   return (
-    <main className="w-full bg-background">
+    <main className="w-full">
       <DesignerHeader name={designer.name} />
       <DesignerBio
         name={designer.name}
