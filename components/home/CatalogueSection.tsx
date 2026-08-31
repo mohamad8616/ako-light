@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { homepageSections } from "@/lib/data/homepage";
@@ -8,6 +7,7 @@ import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
+import Image from "next/image";
 import HomepageSection, { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 
@@ -16,15 +16,25 @@ export default function CatalogueSection() {
   const { t } = useLanguage();
 
   return (
-    <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
-      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
+    <HomepageSection className="w-full py-20 md:py-28">
+      <div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-16">
           {/* Text column */}
-          <div className="order-2 flex flex-col justify-start lg:order-1 lg:col-span-6">
-            <SectionSubTitle>HENGE CATALOGUE</SectionSubTitle>
 
+          {/* FOR SMALL SCREEN */}
+          <div className="lg:hidden">
+            <SectionSubTitle>HENGE CATALOGUE</SectionSubTitle>
             <div className="mt-3 mb-5 overflow-hidden">
               <SectionTitle>S34/5</SectionTitle>
+            </div>
+          </div>
+          <div className="order-2 flex flex-col justify-start lg:order-1 lg:col-span-6">
+            {/* FOR LARGE SCREEN */}
+            <div className="hidden lg:block">
+              <SectionSubTitle>HENGE CATALOGUE</SectionSubTitle>
+              <div className="mt-3 mb-5 overflow-hidden">
+                <SectionTitle>S34/5</SectionTitle>
+              </div>
             </div>
 
             <Paragraph>{t("catalogue.description")}</Paragraph>
@@ -40,10 +50,11 @@ export default function CatalogueSection() {
                 transition={{ duration: 1, ease: EASE }}
                 className="group relative aspect-2/3 w-full overflow-hidden"
               >
-                <img
+                <Image
                   src={catalogue.image}
                   alt="S34/5"
-                  className="h-full w-full object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+                  fill
+                  className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
                 />
 
                 {/* Animated download circle */}
@@ -67,15 +78,16 @@ export default function CatalogueSection() {
 
               {/* CTA — flush with the image's left edge, same as the reference */}
               <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                initial={{ y: 16 }}
+                whileInView={{ y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.7, delay: 0.3, ease: EASE }}
-                className="mt-8"
+                transition={{ duration: 0.7, ease: EASE }}
+                className="mt-2"
               >
                 <PlusTextBtn
-                  text=" Download S34/5"
-                  textColor="text-background"
+                  text="Download S34/5"
+                  textColor="text-black"
+                  className=""
                   href="#"
                 />
               </motion.div>

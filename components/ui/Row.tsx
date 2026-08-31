@@ -29,7 +29,7 @@ export default function Row({
   width = "30",
 }: RowProps) {
   const pathname = usePathname().slice(1);
-
+console.log(image);
   return (
     <motion.div
       initial={{ opacity: 0, y: 44 }}

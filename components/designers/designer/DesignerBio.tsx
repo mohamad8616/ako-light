@@ -1,11 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import { Paragraph } from "@/utility/Paragraph";
 import { motion } from "framer-motion";
-
-const EASE = [0.22, 1, 0.36, 1] as const;
+import { EASE } from "@/utility/HomepageSection";
+import Image from "next/image";
 
 interface DesignerBioProps {
   name: string;
@@ -38,10 +37,11 @@ export default function DesignerBio({
             transition={{ duration: 1, ease: EASE }}
             className="order-1 aspect-4/5 w-full overflow-hidden lg:col-span-7"
           >
-            <img
+            <Image
               src={image}
               alt={name}
-              className="h-full w-full object-cover grayscale"
+              fill
+              className="object-cover grayscale"
             />
           </motion.div>
 

@@ -1,5 +1,3 @@
-"use client";
-
 import PageTitle from "@/utility/PageTitle";
 
 export default function CollectionsHeader() {

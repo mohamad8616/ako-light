@@ -1,5 +1,6 @@
 import HomepageSection from "@/utility/HomepageSection";
 import ContactForm from "./ContactForm";
+import Image from "next/image";
 
 // Placeholder — sourced from the existing gallery data as a stand-in.
 // Swap for real photography whenever it's ready.
@@ -13,10 +14,11 @@ export default function ContactHero() {
           small screens" requirement. Height comes from the grid row
           stretching to match the form column's height. */}
       <div className="relative hidden lg:block">
-        <img
+        <Image
           src={HERO_IMAGE}
           alt=""
-          className="absolute inset-0 h-full w-full object-cover"
+          fill
+          className="object-cover"
         />
       </div>
 

@@ -1,4 +1,5 @@
 import type { FlagshipWithDetail } from "@/lib/data/flagships";
+import Image from "next/image";
 
 export default function FlagshipGallerySection({ flagship }: { flagship: FlagshipWithDetail }) {
   return (
@@ -10,10 +11,11 @@ export default function FlagshipGallerySection({ flagship }: { flagship: Flagshi
       <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {flagship.gallery.map((src, i) => (
           <div key={src} className="relative aspect-square w-full overflow-hidden">
-            <img
+            <Image
               src={src}
               alt={`${flagship.name} gallery ${i + 1}`}
-              className="h-full w-full object-cover"
+              fill
+              className="object-cover"
             />
           </div>
         ))}

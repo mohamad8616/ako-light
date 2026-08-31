@@ -2,8 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-
-const EASE = [0.22, 1, 0.36, 1] as const;
+import { EASE } from "@/utility/HomepageSection";
 
 export default function DesignerHeader({ name }: { name: string }) {
   return (

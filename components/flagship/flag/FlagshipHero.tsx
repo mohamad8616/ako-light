@@ -1,12 +1,14 @@
 import type { FlagshipWithDetail } from "@/lib/data/flagships";
+import Image from "next/image";
 
 export default function FlagshipHero({ flagship }: { flagship: FlagshipWithDetail }) {
   return (
     <section className="relative flex h-screen w-full items-end overflow-hidden">
-      <img
+      <Image
         src={flagship.heroImage}
         alt={flagship.name}
-        className="absolute inset-0 h-full w-full object-cover"
+        fill
+        className="object-cover"
       />
       {/* Darkens the lower portion so the heading stays legible over any photo */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
