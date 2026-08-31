@@ -1,11 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
-import Image from "next/image";
 
 interface RowProps {
   name: string;
@@ -29,7 +29,6 @@ export default function Row({
   width = "30",
 }: RowProps) {
   const pathname = usePathname().slice(1);
-console.log(image);
   return (
     <motion.div
       initial={{ opacity: 0, y: 44 }}
@@ -40,15 +39,15 @@ console.log(image);
             viewport: { once: true, margin: "-80px" },
           })}
       transition={{ duration: 1.5, delay: (index % 4) * 0.08, ease: EASE }}
-      className="border-b border-white/20"
+      className="border-background-secondary pb-6 border-b-2 w-full"
     >
       <Link
         href={`/${route}/${slug ? slug : ""}`}
-        className="flex items-end gap-8 py-8 sm:gap-12 md:py-10"
+        className="mx-auto flex w-full flex-col md:items-end gap-4  py-8 sm:gap-12 md:flex-row md:py-10"
       >
         {/* Portrait */}
         <div
-          className={`relative h-${height} w-${width} shrink-0 overflow-hidden sm:h-56 sm:w-56 md:h-72 md:w-72 lg:h-60 lg:w-${pathname === "materials" || pathname === "projects" ? "90" : "60"}`}
+          className={`relative aspect-square h-[40vh] w-full shrink-0 overflow-hidden sm:h-56 sm:w-56 md:h-72 md:w-72 lg:h-60 lg:w-${pathname === "materials" || pathname === "projects" ? "90" : "60"}`}
         >
           <Image
             src={image}
@@ -63,13 +62,15 @@ console.log(image);
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="flex-1 truncate text-2xl leading-none tracking-tighter text-white uppercase transition-all duration-700 sm:text-3xl md:text-4xl"
+          className="flex-1 text-lg leading-normal font-medium  tracking-tighter text-white uppercase transition-all duration-700 sm:text-xl md:text-3xl lg:text-4xl"
         >
           {name}
         </motion.h2>
 
         {/* Discover CTA */}
-        <PlusTextBtn text="Discover" />
+        <span className="hidden shrink-0 md:block">
+          <PlusTextBtn text="Discover" />
+        </span>
       </Link>
     </motion.div>
   );

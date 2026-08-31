@@ -10,7 +10,7 @@ export const designers: Designer[] = [
   {
     name: "Massimo Castagna",
     slug: "massimo-castagna",
-    image: "https://picsum.photos/seed/massimo-castagna/900/1000",
+    image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Massimo+Castagna",
     website: "#",
     bio: [
       "Henge started working with the architect and designer Massimo Castagna, back in 2011, and collection after collection this cooperation continues to strengthen the unique identity of the brand.",
@@ -21,7 +21,7 @@ export const designers: Designer[] = [
   {
     name: "Yabu Pushelberg",
     slug: "glenn-pushelberg-george-yabu",
-    image: "https://picsum.photos/seed/glenn-pushelberg-george-yabu/900/1000",
+    image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Yabu+Pushelberg",
     website: "#",
     bio: [
       "Henge began its collaboration with Yabu Pushelberg in 2016, and the partnership has since grown into one of the brand's most enduring international creative relationships.",
@@ -32,7 +32,7 @@ export const designers: Designer[] = [
   {
     name: "Isabella Genovese",
     slug: "isabella-genovese",
-    image: "https://picsum.photos/seed/isabella-genovese/900/1000",
+    image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Isabella+Genovese",
     website: "#",
     bio: [
       "Isabella Genovese has been part of Henge since its founding in 2011, shaping the brand's product design language alongside Paolo Tormena from its very first collection.",
@@ -43,7 +43,7 @@ export const designers: Designer[] = [
   {
     name: "Ugo Cacciatori",
     slug: "ugo-cacciatori",
-    image: "https://picsum.photos/seed/ugo-cacciatori/900/1000",
+    image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Ugo+Cacciatori",
     website: "#",
     bio: [
       "Henge's collaboration with Ugo Cacciatori began in 2018, bringing his jewellery-making sensibility into a series of unmistakable objects that embrace the brand's material DNA.",
@@ -54,7 +54,7 @@ export const designers: Designer[] = [
   {
     name: "Johanna Grawunder",
     slug: "johanna-grawunder",
-    image: "https://picsum.photos/seed/johanna-grawunder/900/1000",
+    image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Johanna+Grawunder",
     website: "#",
     bio: [
       "Johanna Grawunder joined Henge's roster of creative partners in 2025, contributing an experimental approach to light and colour to the brand's most recent collection.",
@@ -65,7 +65,7 @@ export const designers: Designer[] = [
   {
     name: "Tanju \u00D6zelgin",
     slug: "tanju-ozelgin",
-    image: "https://picsum.photos/seed/tanju-ozelgin/900/1000",
+    image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Tanju+Özelgin",
     website: "#",
     bio: [
       "Tanju \u00D6zelgin began collaborating with Henge in 2025, bringing his refined minimalism and strong architectural influence to the brand's newest pieces.",
@@ -76,7 +76,7 @@ export const designers: Designer[] = [
   {
     name: "Davide Nascimbeni",
     slug: "davide-nascimbeni",
-    image: "https://picsum.photos/seed/davide-nascimbeni/900/1000",
+    image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Davide+Nascimbeni",
     website: "#",
     bio: [
       "Davide Nascimbeni has collaborated with Henge since 2013, lending his mastery of Murano glassworking traditions to several of the brand's lighting collections.",
@@ -87,7 +87,7 @@ export const designers: Designer[] = [
   {
     name: "Hilla Havkin",
     slug: "hilla-havkin",
-    image: "https://picsum.photos/seed/hilla-havkin/900/1000",
+    image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Hilla+Havkin",
     website: "#",
     bio: [
       "Hilla Havkin has worked with Henge since 2020, bringing a sculptural, material-focused perspective to a series of limited-edition objects for the brand.",
@@ -98,7 +98,7 @@ export const designers: Designer[] = [
   {
     name: "Stephen Tierney",
     slug: "stephen-tierney",
-    image: "https://picsum.photos/seed/stephen-tierney/900/1000",
+    image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Stephen+Tierney",
     website: "#",
     bio: [
       "Stephen Tierney has partnered with Henge since 2019, applying his hospitality design expertise to several of the brand's flagship showroom concepts.",

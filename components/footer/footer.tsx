@@ -152,7 +152,7 @@ export default function Footer() {
         </div>
 
         {/* Social */}
-        <div className="mt-7 flex w-full items-center justify-between md:mt-0 md:w-auto md:justify-end md:gap-3">
+        <div className="mt-7 flex flex-wrap w-full items-center justify-between md:mt-0 md:w-auto md:justify-end md:gap-3">
           {socialLinks.map(({ label, href, icon: Icon }) => (
             <Link
               key={label}

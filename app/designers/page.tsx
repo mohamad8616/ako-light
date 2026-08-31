@@ -3,7 +3,7 @@ import DesignersList from "@/components/designers/DesignersList";
 
 export default function DesignersPage() {
   return (
-    <main className="w-full bg-background">
+    <main className=" bg-background">
       <DesignersHeader />
       <DesignersList />
     </main>
