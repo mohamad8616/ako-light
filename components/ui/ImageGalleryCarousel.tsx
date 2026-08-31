@@ -3,6 +3,7 @@
 import HomepageSection from "@/utility/HomepageSection";
 import SectionSubTitle from "@/utility/SectionSubTitle";
 import useEmblaCarousel from "embla-carousel-react";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
@@ -122,26 +123,7 @@ export default function ImageGalleryCarousel({
       </div>
 
       {/* ----- mobile column layout (only when mobileColumn is true, hidden on lg+) ----- */}
-      {mobileColumn && (
-        <div className="mx-auto block lg:hidden">
-          <div className="grid grid-cols-1 gap-2">
-            {images.map((src) => (
-              <div
-                key={src}
-                className="group relative aspect-video w-full overflow-hidden bg-[#111]"
-              >
-                <Image
-                  src={src}
-                  alt=""
-                  fill
-                  className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {mobileColumn && <MobileColumn />}
 
       {/* ----- carousel — Embla viewport (hidden on mobile when mobileColumn is true) ----- */}
       <div className={mobileColumn ? "hidden lg:block" : ""}>
@@ -214,5 +196,32 @@ export default function ImageGalleryCarousel({
         </div>
       )}
     </HomepageSection>
+  );
+}
+
+function MobileColumn() {
+  return (
+    <div className="mx-auto block lg:hidden">
+      <div className="grid grid-cols-1 gap-2">
+        {images.map((src) => (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.9, ease: "easeOut" }}
+            key={src}
+            className="group relative aspect-video w-full overflow-hidden bg-[#111]"
+          >
+            <Image
+              src={src}
+              alt=""
+              fill
+              className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+            />
+            <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
+          </motion.div>
+        ))}
+      </div>
+    </div>
   );
 }
