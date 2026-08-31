@@ -2,7 +2,7 @@
 
 import CollapsibleNavItem from "@/components/navbar/CollapsibleNavItem";
 import FullscreenMenu from "@/components/navbar/fullScreenMenu";
-import HengeLogo from "@/components/ui/HengeLogo";
+import AkoLightingLogo from "@/components/ui/Logo";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { Menu, Search, X } from "lucide-react";
@@ -65,7 +65,7 @@ export default function Navbar() {
               href="/"
               className={`group cursor-pointer ${overlayOpen ? "pointer-events-auto" : ""}`}
             >
-              <HengeLogo className="h-auto w-24 fill-white transition-all duration-500 group-hover:opacity-70 md:w-28" />
+              <AkoLightingLogo className="h-auto w-24 fill-white transition-all duration-500 group-hover:opacity-70 md:w-28" />
             </Link>
 
             {/* Right Side — only Search + Menu + products*/}
@@ -102,18 +102,14 @@ export default function Navbar() {
                 >
                   <span
                     className={`absolute transition-[opacity,transform] duration-300 ease-in-out ${
-                      menuOpen
-                        ? "rotate-90 opacity-0"
-                        : "rotate-0 opacity-100"
+                      menuOpen ? "rotate-90 opacity-0" : "rotate-0 opacity-100"
                     }`}
                   >
                     <Menu size={18} strokeWidth={2.5} />
                   </span>
                   <span
                     className={`absolute transition-[opacity,transform] duration-300 ease-in-out ${
-                      menuOpen
-                        ? "rotate-0 opacity-100"
-                        : "-rotate-90 opacity-0"
+                      menuOpen ? "rotate-0 opacity-100" : "-rotate-90 opacity-0"
                     }`}
                   >
                     <X size={18} strokeWidth={2.5} />

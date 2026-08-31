@@ -4,14 +4,14 @@ export interface Material {
   category: string;
   image: string;
   description: string;
-  metal:string
+  type: string;
 }
 
 export const materials: Material[] = [
   {
     id: "breccia-medicea",
     name: "Breccia Medicea",
-    metal: "leather",
+    type: "leather",
     category: "Stone",
     image: "https://www.henge07.com/app/uploads/2022/06/he1408m-400x400.jpg",
     description:
@@ -20,7 +20,7 @@ export const materials: Material[] = [
   {
     id: "marble",
     name: "Marble",
-    metal: "stone",
+    type: "stone",
     category: "Stone",
     image: "https://www.henge07.com/app/uploads/2023/02/MDW-400x400.png",
     description:
@@ -29,7 +29,7 @@ export const materials: Material[] = [
   {
     id: "bronze",
     name: "woods",
-    metal: "metal",
+    type: "metal",
     category: "Metal",
     image:
       "https://www.henge07.com/app/uploads/2021/09/henge-071020-h17929-400x400.jpg",
@@ -39,7 +39,7 @@ export const materials: Material[] = [
   {
     id: "glass",
     name: "Crystal Glass",
-    metal: "rugs",
+    type: "rugs",
     category: "Glass",
     image:
       "https://www.henge07.com/app/uploads/2026/04/henge-home-collection-2026-001.jpg",

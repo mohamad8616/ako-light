@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { motion } from "framer-motion";
@@ -6,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
+import Image from "next/image";
 
 interface RowProps {
   name: string;
@@ -48,12 +48,13 @@ export default function Row({
       >
         {/* Portrait */}
         <div
-          className={`h-${height} w-${width} shrink-0 overflow-hidden sm:h-56 sm:w-56 md:h-72 md:w-72 lg:h-60 lg:w-${pathname === "materials" || pathname === "projects" ? "90" : "60"}`}
+          className={`relative h-${height} w-${width} shrink-0 overflow-hidden sm:h-56 sm:w-56 md:h-72 md:w-72 lg:h-60 lg:w-${pathname === "materials" || pathname === "projects" ? "90" : "60"}`}
         >
-          <img
+          <Image
             src={image}
             alt={name}
-            className="h-full w-full object-cover grayscale transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-102"
+            fill
+            className="object-cover grayscale transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-102"
           />
         </div>
 
