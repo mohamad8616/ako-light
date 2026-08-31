@@ -3,7 +3,7 @@
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import { Paragraph } from "@/utility/Paragraph";
 import { motion } from "framer-motion";
-import { EASE } from "@/utility/HomepageSection";
+import HomepageSection, { EASE } from "@/utility/HomepageSection";
 import Image from "next/image";
 
 interface DesignerBioProps {
@@ -20,8 +20,7 @@ export default function DesignerBio({
   website,
 }: DesignerBioProps) {
   return (
-    <section className="bg-background w-full pb-20 md:pb-28">
-      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
+    <HomepageSection className="bg-background w-full pb-20 md:pb-28">
         {/* Three independent grid items with a single shared order (1, 2, 3)
             that works for BOTH breakpoints at once: on mobile (grid-cols-1)
             they simply stack image → text → CTA in that order. On desktop
@@ -35,7 +34,7 @@ export default function DesignerBio({
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 1, ease: EASE }}
-            className="order-1 aspect-4/5 w-full overflow-hidden lg:col-span-7"
+            className="relative order-1 aspect-5/4 w-full overflow-hidden lg:col-span-7"
           >
             <Image
               src={image}
@@ -69,7 +68,6 @@ export default function DesignerBio({
             </motion.div>
           )}
         </div>
-      </div>
-    </section>
+    </HomepageSection>
   );
 }
