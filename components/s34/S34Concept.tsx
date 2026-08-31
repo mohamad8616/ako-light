@@ -25,8 +25,8 @@ export default function S34Concept() {
         </div>
 
         {/* Image */}
-        <div className="lg:flex h-full">
-          <SectionImage className="mt-16 md:mt-20 flex-5">
+        <div className="lg:flex h-full gap-20">
+          <SectionImage className="mt-16 x md:mt-20 flex-5">
             <Image
               src={concept.image}
               alt={concept.kicker}

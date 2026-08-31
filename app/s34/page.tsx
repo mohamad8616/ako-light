@@ -3,6 +3,7 @@ import S34Concept from "@/components/s34/S34Concept";
 import S34Harmony from "@/components/s34/S34Harmony";
 import Secuence from "@/components/s34/Secuence";
 import HeroVideo from "@/components/ui/HeroVideo";
+import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
 
 export default function S34Page() {
   return (
@@ -15,6 +16,7 @@ export default function S34Page() {
       />
       <S34Concept />
       <Secuence />
+      <ImageGalleryCarousel multiWidth={true} mobileColumn={true} />
       <S34Harmony />
       <ProjectsSections />
     </main>
