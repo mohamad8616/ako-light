@@ -3,6 +3,7 @@ import NewsletterSectionWrapper from "@/components/footer/NewsLetterSectionWrapp
 import Navbar from "@/components/navbar/Navbar";
 import SmoothScroll from "@/components/smoothScroll";
 import PageLoader from "@/components/ui/PageLoader";
+import { PageLoadInitializer } from "@/components/ui/PageLoadInitializer";
 import PageTransition from "@/components/ui/PageTransition";
 import Preloader from "@/components/ui/Preloader";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
@@ -60,6 +61,7 @@ export default function RootLayout({
         suppressHydrationWarning
         className="no-scrollbar bg-background-secondary text-background-secondary flex min-h-full flex-col font-sans text-sm leading-normal md:text-base"
       >
+        <PageLoadInitializer />
         <Preloader />
         <SmoothScroll>
           <LanguageProvider>
