@@ -34,12 +34,12 @@ export default async function ProductPage({ params }: PageProps) {
   if (!productt) notFound();
 
   return (
-    <main>
+    <main className="bg-background-secondary">
       <ProductHero product={productt} />
       <ProductInfoSection product={productt} />
-      <ImageGalleryCarousel />
+      <ImageGalleryCarousel multiWidth={true} mobileColumn={true} />
+      
       <RelatedProductsSection product={productt} />
-      {/* <CatalogueDownloadSection /> */}
     </main>
   );
 }

@@ -27,7 +27,7 @@ export default function ProductsGrid({ categories, parentSlug }: ProductsGridPro
   return (
     <section className="w-full bg-background pb-20 md:pb-28">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
-        <div className="grid grid-cols-1 gap-x-3 gap-y-12 sm:grid-cols-2 md:gap-y-16 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-x-3 gap-y-12 md:gap-y-16 md:grid-cols-3">
           {items.map((category, i) => (
             <ProductCategoryCard key={category.slug} index={i} parentSlug={parentSlug} {...category} />
           ))}

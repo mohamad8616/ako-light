@@ -1,13 +1,16 @@
 import HeroSectionText from "@/components/ui/HeroSectionText";
 import type { Product } from "@/lib/data/prods";
+import Image from "next/image";
 
 export default function ProductHero({ product }: { product: Product }) {
   return (
     <section className="relative flex h-screen w-full items-end bg-black">
-      <img
+      <Image
         src={product.heroImage}
         alt={product.name}
-        className="absolute inset-0 h-full w-full object-cover"
+        fill
+        priority={true}
+        className="object-cover"
       />
 
       {/* 30% dark overlay */}

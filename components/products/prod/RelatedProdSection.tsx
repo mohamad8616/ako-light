@@ -34,10 +34,10 @@ export default function RelatedProductsSection({ product }: { product: Product }
   const related = getRelatedProducts(product);
 
   return (
-    <HomepageSection className="">
-      <div className="bg-background-secondary mx-auto flex min-h-screen max-w-[1600px] items-center justify-center py-20">
-        <div className="grid w-full grid-cols-1 items-center justify-between gap-10 px-6 sm:grid-cols-3 md:mt-20 md:gap-8 md:px-12 lg:px-20 xl:px-[8.5vw]">
-          <span className="font-din col-span-full text-xs font-medium tracking-tighter text-stone-500 uppercase">
+    <HomepageSection >
+      <div className="bg-background-secondary m flex min-h-screen items-center justify-center py-20">
+        <div className="grid w-full grid-cols-1 items-center justify-between gap-20 sm:grid-cols-3 md:mt-20 md:gap-20 ">
+          <span className="font-din col-span-full text-xs font-medium tracking-tighter text-stone-700 uppercase">
             You may also like
           </span>
           {related.map((item, i) => (
@@ -50,7 +50,7 @@ export default function RelatedProductsSection({ product }: { product: Product }
             >
               <Link
                 href={`/products/${item.category}/${item.slug}`}
-                className="group relative mb-5 grid aspect-square w-full grid-cols-1 overflow-hidden lg:mb-0"
+                className="group relative mb-5 grid aspect-square w-full grid-cols-1  overflow-hidden lg:mb-0"
               >
                 <Image
                   src={item.image}
