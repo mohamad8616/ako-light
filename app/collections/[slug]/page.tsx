@@ -1,4 +1,5 @@
 import AboutCollection from "@/components/collections/collection/AboutCollection";
+import ImageGallery from "@/components/collections/collection/ImageGallery";
 import PictureHero from "@/components/ui/PictureHero";
 import { collections } from "@/lib/data/collections";
 import { notFound } from "next/navigation";
@@ -14,12 +15,13 @@ const page = async ({ params }: PageProps) => {
   if (!collection) return notFound();
 
   return (
-    <main className="w-full bg-background-secondary space-y-48">
+    <main className="bg-background-secondary w-full space-y-48">
       <PictureHero
         name={`${collection.name} Collection`}
         image={collection.image}
       />
       <AboutCollection collection={collection} />
+      <ImageGallery />
     </main>
   );
 };
