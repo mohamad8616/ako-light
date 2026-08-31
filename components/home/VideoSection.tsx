@@ -3,9 +3,7 @@
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import HomepageSection from "../../utility/HomepageSection";
-
-const EASE = [0.22, 1, 0.36, 1] as const;
+import HomepageSection, { EASE } from "../../utility/HomepageSection";
 
 export default function VideoSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
