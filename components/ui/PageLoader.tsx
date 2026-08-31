@@ -19,6 +19,7 @@ export default function PageLoader() {
       isFirstRender.current = false;
       return;
     }
+    window.scrollTo(0, 0);
     setVisible(true);
     setGone(false);
   }, [pathname]);

@@ -59,7 +59,7 @@ export default function RootLayout({
     >
       <body
         suppressHydrationWarning
-        className="no-scrollbar bg-background-secondary text-background-secondary flex min-h-full flex-col font-sans text-sm leading-normal md:text-base"
+        className="no-scrollbar bg-background text-background-secondary flex min-h-full flex-col font-sans text-sm leading-normal md:text-base"
       >
         <PageLoadInitializer />
         <Preloader />
