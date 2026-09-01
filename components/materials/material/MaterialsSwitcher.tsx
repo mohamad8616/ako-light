@@ -1,18 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
+import { materialCategories } from "@/lib/data/materials";
 
-// Sibling materials categories — I don't have your actual site map, so
-// these slugs/labels are a placeholder set. Swap in the real ones.
-const MATERIAL_CATEGORIES = [
-  { label: "Fabrics", href: "/materials/fabrics" },
-  { label: "Leathers", href: "/materials/leathers" },
-  { label: "Woods", href: "/materials/woods" },
-  { label: "Metals", href: "/materials/metals" },
-  { label: "Marbles", href: "/materials/marbles" },
-];
+const MATERIAL_CATEGORIES = materialCategories;
 
 export default function MaterialsSwitcher({ active }: { active: string }) {
   const [open, setOpen] = useState(false);

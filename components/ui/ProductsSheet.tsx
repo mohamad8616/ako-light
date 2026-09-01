@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // adjust import path
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import UnderLineEffect from "./UnderLineEffect";
+import { productCategories } from "@/lib/data/productCategories";
 
 interface Props {
   open: boolean;
@@ -15,16 +16,7 @@ const linkClasses =
 const categories = [
   "LIGHTING",
   "DESIGNERS",
-  "BOOKCASES",
-  "CABINETS AND SIDEBOARDS",
-  "TABLES",
-  "COFFEE TABLES",
-  "SOFAS AND ARMCHAIRS",
-  "CHAIRS AND STOOLS",
-  "KITCHENS",
-  "BEDROOM",
-  "WALL PANELLING",
-  "ACCESSORIES",
+  ...productCategories.map((c) => c.name.toUpperCase()),
 ];
 
 function useMediaQuery(query: string): boolean {

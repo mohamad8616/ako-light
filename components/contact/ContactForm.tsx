@@ -1,25 +1,17 @@
-"use client";
+﻿"use client";
 
 import { useState, type FormEvent } from "react";
 import FormField from "./FormField";
 import FormSelect from "./FormSelect";
 import FormTextarea from "./FormTextarea";
 import ConsentCheckbox from "./ConsentCheckbox";
-
-// Only "Generic requests" is visible in the reference screenshot — these
-// extra options are a placeholder set, swap for the real list.
-const SUBJECT_OPTIONS = [
-  "Generic requests",
-  "Press & marketing",
-  "Trade / dealer enquiry",
-  "Job application",
-];
+import { subjectOptions } from "@/lib/data/contact";
 
 export default function ContactForm() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [subject, setSubject] = useState(SUBJECT_OPTIONS[0]);
+  const [subject, setSubject] = useState(subjectOptions[0]);
   const [message, setMessage] = useState("");
   const [newsletterConsent, setNewsletterConsent] = useState(false);
   const [privacyConsent, setPrivacyConsent] = useState(false);
@@ -28,7 +20,7 @@ export default function ContactForm() {
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    // Nothing is wired to a real backend here — plug in your actual
+    // Nothing is wired to a real backend here \u2014 plug in your actual
     // email/API endpoint (e.g. fetch("/api/contact", { method: "POST",
     // body: JSON.stringify({ fullName, email, phone, subject, message,
     // newsletterConsent }) })) in place of this simulated delay.
@@ -45,7 +37,7 @@ export default function ContactForm() {
         label="Subject of the communication"
         name="subject"
         value={subject}
-        options={SUBJECT_OPTIONS}
+        options={subjectOptions}
         onChange={setSubject}
       />
       <FormTextarea label="Message" name="message" value={message} onChange={setMessage} />

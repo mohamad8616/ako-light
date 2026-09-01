@@ -45,3 +45,28 @@ export const projects: Project[] = [
       "Henge's presence in Beijing, bringing Italian design craftsmanship to China.",
   },
 ];
+// Quick-links strip rendered by components/ProjectsSections.tsx.
+// (label / href / image cards for Products, Projects and S34)
+export interface SectionLink {
+  label: string;
+  href: string;
+  image: string;
+}
+
+export const projectsSectionLinks: SectionLink[] = [
+  {
+    label: "Products",
+    href: "/products",
+    image: "https://www.henge07.com/app/uploads/2023/04/PRODUCTS-1.jpg",
+  },
+  {
+    label: "Projects",
+    href: "/projects",
+    image: "https://www.henge07.com/app/uploads/2023/04/PROJECTS-1.jpg",
+  },
+  {
+    label: "S34",
+    href: "/collection/henge-catalogue-s34-3",
+    image: "https://www.henge07.com/app/uploads/2023/04/Henge_Spiga_30_B-1.jpg",
+  },
+];

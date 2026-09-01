@@ -5,19 +5,10 @@ import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import HomepageSection from "@/utility/HomepageSection";
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
+import { collectionGalleryImages } from "@/lib/data/imageGalleries";
 
 
-const images = [
-  { src: "https://loremflickr.com/2400/1200/interior?lock=20", alt: "Modern interior" },
-  { src: "https://loremflickr.com/1920/1280/architecture?lock=21", alt: "Modern living room" },
-  { src: "https://loremflickr.com/1920/1280/design?lock=23", alt: "Interior design" },
-  { src: "https://loremflickr.com/1920/1280/furniture?lock=24", alt: "Interior design" },
-  { src: "https://loremflickr.com/1920/1280/livingroom?lock=25", alt: "Luxury interior" },
-  { src: "https://loremflickr.com/1200/1300/interior?lock=16", alt: "Minimal interior" },
-  { src: "https://loremflickr.com/1800/900/interior?lock=17", alt: "Contemporary interior" },
-  { src: "https://loremflickr.com/1200/1300/interior?lock=18", alt: "Living space" },
-  { src: "https://loremflickr.com/1200/1300/interior?lock=19", alt: "Architectural interior" },
-];
+const images = collectionGalleryImages;
 
 const rowVariants: Variants = {
   hidden: { opacity: 0, y: 70 },

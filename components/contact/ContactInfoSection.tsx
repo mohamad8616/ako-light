@@ -1,25 +1,5 @@
-import HomepageSection from "@/utility/HomepageSection";
-
-const CONTACT_CARDS = [
-  {
-    title: "Showroom",
-    lines: ["Via della Spiga, 34 20121, Milano - Italy", "Open by appointment."],
-    email: "sales@henge07.com",
-    phone: "+39 327 812 7661",
-  },
-  {
-    title: "Press office and marketing requests",
-    lines: [],
-    email: "marketing@henge07.com",
-    phone: "+39 0438 171 0600",
-  },
-  {
-    title: "Headquarters",
-    lines: ["Via Fossa 1 31051, Follina (TV) - Italy"],
-    email: "atelier@henge07.com",
-    phone: "+39 0438 171 0600",
-  },
-];
+﻿import HomepageSection from "@/utility/HomepageSection";
+import { contactCards, contactInfoHeading } from "@/lib/data/contact";
 
 export default function ContactInfoSection() {
   return (
@@ -30,13 +10,13 @@ export default function ContactInfoSection() {
       <div className="mt-2 h-px w-full bg-white/15" />
 
       <h2 className="font-din mt-20 lg:mt-38 text-3xl font-bold tracking-tight text-white uppercase md:text-5xl ">
-        Via della Spiga 34
+        {contactInfoHeading.line1}
         <br />
-        20121 Milano (MI) – Italy
+        {contactInfoHeading.line2}
       </h2>
 
       <div className="mt-16 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {CONTACT_CARDS.map((card) => (
+        {contactCards.map((card) => (
           <div key={card.title} className="bg-stone-900 p-8">
             <h3 className="font-din text-sm font-medium tracking-tighter text-white uppercase underline underline-offset-4">
               {card.title}

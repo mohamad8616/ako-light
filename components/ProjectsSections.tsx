@@ -1,27 +1,11 @@
-"use client";
+﻿"use client";
 import { EASE } from "@/utility/HomepageSection";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import PlusTextBtn from "./ui/PlusTextBtn";
-const links = [
-  {
-    label: "Products",
-    href: "/products",
-    image: "https://www.henge07.com/app/uploads/2023/04/PRODUCTS-1.jpg",
-  },
-  {
-    label: "Projects",
-    
-    href: "/projects",
-    image: "https://www.henge07.com/app/uploads/2023/04/PROJECTS-1.jpg",
-  },
-  {
-    label: "S34",
-    href: "/collection/henge-catalogue-s34-3",
-    image: "https://www.henge07.com/app/uploads/2023/04/Henge_Spiga_30_B-1.jpg",
-  },
-];
+import { projectsSectionLinks } from "@/lib/data/projects";
+const links = projectsSectionLinks;
 const ProjectsSections = () => {
   return (
     <section >

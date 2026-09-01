@@ -1,25 +1,18 @@
-"use client";
+﻿"use client";
 
 import ProductCategoryCard from "./ProductCategoryCard";
+import { productCategories } from "@/lib/data/productCategories";
 
 interface ProductsGridProps {
   categories?: Array<{ name: string; slug: string; image: string; hoverImage?: string }>;
   parentSlug?: string;
 }
 
-const defaultCategories = [
-  { name: "Lighting", slug: "lighting" },
-  { name: "Bookcases", slug: "bookcases" },
-  { name: "Cabinets And Sideboards", slug: "cabinets-and-sideboards" },
-  { name: "Tables", slug: "tables" },
-  { name: "Coffee Tables", slug: "coffee-tables" },
-  { name: "Sofas And Armchairs", slug: "sofas-and-armchairs" },
-  { name: "Chairs And Stools", slug: "chairs-and-stools" },
-  { name: "Kitchens", slug: "kitchens" },
-  { name: "Bedroom", slug: "bedroom" },
-  { name: "Wall Panelling", slug: "wall-panelling" },
-  { name: "Accessories", slug: "accessories" },
-].map((c) => ({ ...c, image: `https://picsum.photos/seed/${c.slug}/700/525` }));
+const defaultCategories = productCategories.map((c) => ({
+  name: c.name,
+  slug: c.slug,
+  image: "https://picsum.photos/seed/" + c.slug + "/700/525",
+}));
 
 export default function ProductsGrid({ categories, parentSlug }: ProductsGridProps) {
   const items = categories ?? defaultCategories;

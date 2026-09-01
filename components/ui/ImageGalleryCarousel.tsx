@@ -1,27 +1,14 @@
-"use client";
+﻿"use client";
 
 import HomepageSection from "@/utility/HomepageSection";
 import SectionSubTitle from "@/utility/SectionSubTitle";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { carouselImages } from "@/lib/data/imageGalleries";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-// ----- images array -----
-const images = [
-  "https://www.henge07.com/app/uploads/2023/04/H19_FOTO_01.jpg",
-  "https://www.henge07.com/app/uploads/2025/07/Henge0301-1.jpg",
-  "https://www.henge07.com/app/uploads/2023/04/HENGE_MAR17_4403.jpg",
-  "https://www.henge07.com/app/uploads/2023/04/HENGE_MAR17_5741.jpg",
-  "https://www.henge07.com/app/uploads/2025/07/Henge_0793-SG.jpg",
-  "https://www.henge07.com/app/uploads/2023/04/henge-24092016809m.jpg",
-  "https://www.henge07.com/app/uploads/2023/04/IMG_3166.jpg",
-  "https://www.henge07.com/app/uploads/2025/07/Henge0391.jpg",
-  "https://www.henge07.com/app/uploads/2023/04/IMG_3168.jpg",
-  "https://www.henge07.com/app/uploads/2025/07/Henge0481.jpg",
-  "https://www.henge07.com/app/uploads/2023/04/IMG5_43789.jpg",
-  "https://www.henge07.com/app/uploads/2025/07/Henge0312-1.jpg",
-];
+const images = carouselImages;
 
 // ----- detect touch/coarse pointer (gates the cursor circle only) -----
 const subscribeToPointer = (callback: () => void) => {
@@ -125,7 +112,7 @@ export default function ImageGalleryCarousel({
       {/* ----- mobile column layout (only when mobileColumn is true, hidden on lg+) ----- */}
       {mobileColumn && <MobileColumn />}
 
-      {/* ----- carousel — Embla viewport (hidden on mobile when mobileColumn is true) ----- */}
+      {/* ----- carousel â€” Embla viewport (hidden on mobile when mobileColumn is true) ----- */}
       <div className={mobileColumn ? "hidden lg:block" : ""}>
         <div
           ref={emblaRef}
