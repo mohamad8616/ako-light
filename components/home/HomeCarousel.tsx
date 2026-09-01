@@ -1,5 +1,6 @@
 "use client";
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { homepageSections } from "@/lib/data/homepage";
 import useEmblaCarousel from "embla-carousel-react";
 import Image from "next/image";
@@ -9,6 +10,7 @@ import HomepageSection from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 
 export default function HomeCarousel() {
+  const { t } = useLanguage();
   const sectionRef = useRef<HTMLElement>(null);
   const [inView, setInView] = useState(false);
 
@@ -59,14 +61,14 @@ export default function HomeCarousel() {
         >
           {carouselItems.map((item) => (
             <div
-              key={item.title}
+              key={item.id}
               className="group relative w-[50vw] shrink-0 sm:w-[68vw] md:w-[64vw] lg:w-[24vw] xl:w-[22vw]"
             >
               <Link href="/hlife" className="block">
                 <div className="relative aspect-4/5 w-full overflow-hidden bg-[#111]">
                   <Image
                     src={item.image}
-                    alt={item.title}
+                    alt={t(`carousel.${item.id}`)}
                     fill
                     className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
                   />
@@ -74,7 +76,7 @@ export default function HomeCarousel() {
                 </div>
 
                 <PlusTextBtn
-                  text={item.title}
+                  text={t(`carousel.${item.id}`)}
                   textColor="text-background"
                   className="mt-7"
                 />

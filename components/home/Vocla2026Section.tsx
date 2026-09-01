@@ -29,22 +29,22 @@ export default function Vocla2026Section() {
       cta={
         <PlusTextBtn
           className="text-sm tracking-tight"
-          text="Read more"
+          text={t("vocla.cta")}
           href="#"
         />
       }
       imageClassName="bg-[#1c1c1e]"
       ctaDelay={0.45}
     >
-      <motion.span
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.7, ease: EASE }}
-        className="mb-12 block font-serif text-3xl text-white md:mb-16 md:text-5xl"
-      >
-        H-Life
-      </motion.span>
+        <motion.span
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="mb-12 block font-serif text-3xl text-white md:mb-16 md:text-5xl"
+        >
+          {t("vocla.hLife")}
+        </motion.span>
     </SplitBanner>
   );
 }

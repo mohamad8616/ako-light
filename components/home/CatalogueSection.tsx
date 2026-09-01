@@ -1,7 +1,7 @@
 "use client";
 
-import { homepageSections } from "@/lib/data/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { homepageSections } from "@/lib/data/homepage";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
@@ -23,17 +23,17 @@ export default function CatalogueSection() {
 
           {/* FOR SMALL SCREEN */}
           <div className="lg:hidden">
-            <SectionSubTitle>HENGE CATALOGUE</SectionSubTitle>
+            <SectionSubTitle>{t("catalogue.kicker")}</SectionSubTitle>
             <div className="mt-3 mb-5 overflow-hidden">
-              <SectionTitle>S34/5</SectionTitle>
+              <SectionTitle>{t("catalogue.title")}</SectionTitle>
             </div>
           </div>
           <div className="order-2 flex flex-col justify-start lg:order-1 lg:col-span-6">
             {/* FOR LARGE SCREEN */}
             <div className="hidden lg:block">
-              <SectionSubTitle>HENGE CATALOGUE</SectionSubTitle>
+              <SectionSubTitle>{t("catalogue.kicker")}</SectionSubTitle>
               <div className="mt-3 mb-5 overflow-hidden">
-                <SectionTitle>S34/5</SectionTitle>
+                <SectionTitle>{t("catalogue.title")}</SectionTitle>
               </div>
             </div>
 
@@ -85,7 +85,7 @@ export default function CatalogueSection() {
                 className="mt-2"
               >
                 <PlusTextBtn
-                  text="Download S34/5"
+                  text={t("catalogue.cta")}
                   textColor="text-black"
                   className=""
                   href="#"

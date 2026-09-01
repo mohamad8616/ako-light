@@ -78,7 +78,8 @@ export default function Navbar() {
                   <Search size={18} strokeWidth={2.2} />
                 </button>
               </CollapsibleNavItem>
-              {/* <Button className="text-xs font-din tracking-tighter"> PRODUCTS </Button> */}
+
+              
               <CollapsibleNavItem
                 hidden={activeOverlay === "menu"}
                 className={overlayOpen ? "pointer-events-auto" : undefined}
@@ -98,7 +99,7 @@ export default function Navbar() {
                   }
                   aria-expanded={menuOpen}
                   aria-label={menuOpen ? t("nav.close") : t("nav.menu")}
-                  className="group relative flex h-[18px] w-[18px] cursor-pointer items-center justify-center text-white transition-all duration-300 hover:opacity-70"
+                  className="group relative flex h-4.5 w-4.5 cursor-pointer items-center justify-center text-white transition-all duration-300 hover:opacity-70"
                 >
                   <span
                     className={`absolute transition-[opacity,transform] duration-300 ease-in-out ${

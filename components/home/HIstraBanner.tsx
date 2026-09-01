@@ -1,7 +1,7 @@
 "use client";
 
-import { homepageSections } from "@/lib/data/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { homepageSections } from "@/lib/data/homepage";
 import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
@@ -18,7 +18,7 @@ export default function HIstraBanner() {
       <HomepageSection className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {/* Title */}
         <div className="overflow-hidden">
-          <SectionSubTitle>Henge Projects</SectionSubTitle>
+          <SectionSubTitle>{t("istra.kicker")}</SectionSubTitle>
           <SectionTitle>{t("istra.title")}</SectionTitle>
         </div>
 
@@ -49,7 +49,7 @@ export default function HIstraBanner() {
           transition={{ duration: 0.7, delay: 0.55, ease: EASE }}
           className="relative z-20 mt-24"
         >
-          <PlusTextBtn href={"#"} text={"Discover"} className="flex!" />
+          <PlusTextBtn href={"#"} text={t("istra.cta")} className="flex!" />
         </motion.div>
       </HomepageSection>
     </section>

@@ -1,11 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import HomepageSection, { EASE } from "../../utility/HomepageSection";
 
 export default function VideoSection() {
+  const { t } = useLanguage();
   const sectionRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -54,7 +56,7 @@ export default function VideoSection() {
                   className="bg-background absolute inset-0 z-10 flex items-center justify-center"
                 >
                   <span className="text-background-secondary text-sm font-light tracking-[0.4em] uppercase md:text-base">
-                    AKO LIGHTING
+                    {t("video.akoLighting")}
                   </span>
                 </motion.div>
               )}

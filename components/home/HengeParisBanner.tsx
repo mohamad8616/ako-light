@@ -17,7 +17,7 @@ export default function HengeParisBanner() {
       imageAlt={t("paris.title")}
       kicker={t("paris.kicker")}
       title={t("paris.title")}
-      page="FLAGSHIP"
+      page={t("paris.page")}
       paragraphs={[
         <Paragraph key="p1">{t("paris.p1")}</Paragraph>,
         <Paragraph key="p2">{t("paris.p2")}</Paragraph>,

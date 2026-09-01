@@ -33,6 +33,9 @@ export const translations = {
     "hero.ritualGravity": "Ritual Gravity",
     "hero.readMore": "Read more",
 
+    "video.akoLighting": "AKO LIGHTING",
+
+    "paris.page": "FLAGSHIP",
     "paris.kicker": "SILVERA",
     "paris.title": "HENGE PARIS",
     "paris.p1":
@@ -49,6 +52,9 @@ export const translations = {
       "The showroom unfolds through four curated living environments, featuring bespoke furniture, iconic sculptural lighting, exquisite luxury sofas, and handmade kitchens that redefine contemporary living. Among the highlights, two monumental kitchens showcase Henge's approach to bespoke kitchen design at its finest.",
     "london.discover": "Discover",
 
+    "catalogue.kicker": "HENGE CATALOGUE",
+    "catalogue.title": "S34/5",
+    "catalogue.cta": "Download S34/5",
     "catalogue.description":
       "Ritual Gravity is not only a collection of new products, it is the expansion of a brand universe. From the master bedroom to the table, from light to the domestic lounge, from private space to collective experience, Henge continues to define places where every piece is given its own weight, its own gesture, its own reason to be.",
 
@@ -59,14 +65,24 @@ export const translations = {
 
     "istra.kicker": "HENGE PROJECTS",
     "istra.title": "H Istra",
+    "istra.cta": "Discover",
     "istra.discover": "Discover",
 
     "vocla.title": "Vocla 2026",
+    "vocla.hLife": "H-Life",
     "vocla.p1":
       "For Milan Design Week 2026, Henge returned to VOCLA, the project founded by Alcova, deepening its exploration of design as immersive and sensory experience. The heart of this edition beat at the Ospedale Militare di Baggio, Alcova's main hub in 2021 and 2022, which reclaims here its nature as an iconic and recognisable venue, capable of receiving and amplifying the brand's vision. Henge shaped a complex of multiple buildings and outdoor spaces through an installation conceived in dialogue with the existing architectural layers, allowing circulation, pauses and gathering points to emerge naturally from the inner logic of the space.",
     "vocla.p2":
       "Rather than presenting individual pieces, the brand chose to construct a coherent and inhabitable setting, where the experience would be guided by the quality of materials, light and atmosphere.",
+    "vocla.cta": "Read more",
     "vocla.readMore": "Read more",
+
+    "carousel.brecciaMedicea": "Breccia Medicea",
+    "carousel.mdw2022": "MDW 2022",
+    "carousel.offRoad": "OFF-ROAD",
+    "carousel.hengeBeijing": "HENGE BEIJING",
+    "carousel.testOne": "TEST-ONE",
+    "carousel.whyHenge": "WHY HENGE",
 
     "footer.credits": "Credits",
     "footer.privacy": "Privacy",
@@ -117,6 +133,9 @@ export const translations = {
     "hero.ritualGravity": "ریچوال گرویتی",
     "hero.readMore": "بیشتر بخوانید",
 
+    "video.akoLighting": "اِکو لایتینگ",
+
+    "paris.page": "فروشگاه اصلی",
     "paris.kicker": "سیلورا",
     "paris.title": "هنژ پاریس",
     "paris.p1":
@@ -133,6 +152,9 @@ export const translations = {
       "شوروم در چهار محیط نشیمن منظم گسترده شده و شامل مبلمان سفارشی، نورپردازی مجسمه‌ای نمادین، مبل‌های لوکس نفیس و آشپزخانه‌های دست‌ساز است که زندگی معاصر را بازتعریف می‌کنند. در میان نکات برجسته، دو آشپزخانه عظیم رویکرد هنژ را در طراحی آشپزخانه سفارشی در بهترین شکل آن به نمایش می‌گذارد.",
     "london.discover": "کشف",
 
+    "catalogue.kicker": "کاتالوگ هنژ",
+    "catalogue.title": "اس ۳۴/۵",
+    "catalogue.cta": "دانلود اس ۳۴/۵",
     "catalogue.description":
       "«ریچوال گراویتی» نه تنها مجموعه‌ای از محصولات جدید است، بلکه گسترش جهانی از برند است. از اتاق خواب اصلی گرفته تا میز، از نور گرفته تا سالن نشیمن خانگی، از فضای خصوصی گرفته تا تجربه جمعی، هِنگه همچنان به تعریف مکان‌هایی می‌پردازد که در آن‌ها به هر قطعه وزن، ژست و دلیل وجودی خاص خود داده می‌شود.",
 
@@ -143,14 +165,24 @@ export const translations = {
 
     "istra.kicker": "پروژه‌های هنژ",
     "istra.title": "اچ ایسترا",
+    "istra.cta": "کشف",
     "istra.discover": "کشف",
 
     "vocla.title": "ووکلا ۲۰۲۶",
+    "vocla.hLife": "اچ-لایف",
     "vocla.p1":
       "برای هفته طراحی میلان ۲۰۲۶، هنژ به ووکلا، پروژه‌ای که توسط آلکووا تأسیس شده، بازگشت و کاوش خود در طراحی به‌عنوان تجربه‌ای فراگیر و حسی را عمیق‌تر کرد. قلب این دوره در بیمارستان نظامی باجو، مرکز اصلی آلکووا در ۲۰۲۱ و ۲۰۲۲، می‌تپید که در اینجا ماهیت خود را به‌عنوان مکانی نمادین و شناخته‌شده بازپس می‌گیرد.",
     "vocla.p2":
       "برند به‌جای ارائه قطعات منفرد، ساخت محیطی منسجم و قابل سکونت را انتخاب کرد که در آن تجربه با کیفیت متریال‌ها، نور و فضا هدایت می‌شود.",
+    "vocla.cta": "بیشتر بخوانید",
     "vocla.readMore": "بیشتر بخوانید",
+
+    "carousel.brecciaMedicea": "برچیا مدیسا",
+    "carousel.mdw2022": "MDW 2022",
+    "carousel.offRoad": "اف-رود",
+    "carousel.hengeBeijing": "هنژ پکن",
+    "carousel.testOne": "تست-وان",
+    "carousel.whyHenge": "چرا هنژ",
 
     "footer.credits": "اعتبارات",
     "footer.privacy": "حریم خصوصی",
