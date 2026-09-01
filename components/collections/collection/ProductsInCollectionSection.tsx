@@ -1,10 +1,16 @@
 "use client";
 
+import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import { productCategories } from "@/lib/data/productCategories";
 import { AnimatePresence, motion } from "framer-motion";
-import { Plus } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 // Size of the tracking photo box — tune to taste.
 const PHOTO_HEIGHT = 200;
@@ -12,17 +18,27 @@ const PHOTO_HEIGHT = 200;
 const ENTER_EXIT_OFFSET = 500;
 
 function useIsDesktop(breakpointPx = 1024) {
-  const [isDesktop, setIsDesktop] = useState(false);
+  const mediaQuery = `(min-width: ${breakpointPx}px)`;
 
-  useEffect(() => {
-    const query = window.matchMedia(`(min-width: ${breakpointPx}px)`);
-    setIsDesktop(query.matches);
-    const listener = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    query.addEventListener("change", listener);
-    return () => query.removeEventListener("change", listener);
-  }, [breakpointPx]);
+  const subscribe = useCallback(
+    (onStoreChange: () => void) => {
+      const query = window.matchMedia(mediaQuery);
+      query.addEventListener("change", onStoreChange);
+      return () => query.removeEventListener("change", onStoreChange);
+    },
+    [mediaQuery],
+  );
 
-  return isDesktop;
+  const getSnapshot = useCallback(
+    () => window.matchMedia(mediaQuery).matches,
+    [mediaQuery],
+  );
+
+  return useSyncExternalStore(
+    subscribe,
+    getSnapshot,
+    () => false, // server snapshot: desktop-only enhancement, safe default
+  );
 }
 
 interface HoveredState {
@@ -84,16 +100,10 @@ export default function ProductsInCollectionSection() {
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1fr_1.7fr] lg:items-start lg:gap-16 xl:gap-20">
         {/* Heading */}
         <div>
-          <h1 className="font-din text-4xl font-bold tracking-tight text-white uppercase md:text-5xl lg:text-6xl">
+          <h1 className="font-din text-4xl font-medium tracking-tight text-white uppercase md:text-5xl">
             Products in the
           </h1>
-          <Link
-            href="/products"
-            className="font-din mt-10 flex w-fit items-center gap-2 text-xs font-medium tracking-tighter text-white uppercase transition-colors hover:text-stone-400"
-          >
-            <Plus size={12} strokeWidth={2.5} />
-            View all products
-          </Link>
+          <PlusTextBtn href={"/products"} text="view all products" />
         </div>
 
         {/* Tracking photo — desktop only */}
