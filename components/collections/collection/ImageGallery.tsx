@@ -2,26 +2,27 @@
 
 import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
+import HomepageSection from "@/utility/HomepageSection";
 
 const images = [
   {
-    src: "https://loremflickr.com/1800/900/interior?lock=11",
+    src: "https://loremflickr.com/2400/1200/interior?lock=20",
     alt: "Modern interior",
   },
   {
-    src: "https://loremflickr.com/1200/1300/interior?lock=12",
+    src: "https://loremflickr.com/1920/1280/architecture?lock=21",
     alt: "Modern living room",
   },
   {
-    src: "https://loremflickr.com/1200/1300/interior?lock=13",
-    alt: "Modern architecture",
-  },
-  {
-    src: "https://loremflickr.com/1200/1300/interior?lock=14",
+    src: "https://loremflickr.com/1920/1280/design?lock=23",
     alt: "Interior design",
   },
   {
-    src: "https://loremflickr.com/1200/1300/interior?lock=15",
+    src: "https://loremflickr.com/1920/1280/furniture?lock=24",
+    alt: "Interior design",
+  },
+  {
+    src: "https://loremflickr.com/1920/1280/livingroom?lock=25",
     alt: "Luxury interior",
   },
   {
@@ -79,6 +80,58 @@ interface GalleryCellProps {
   index?: number;
 }
 
+export default function ImageGallery() {
+  return (
+    <HomepageSection>
+      {/* Heading */}
+      <h2 className="mb-22 text-[12px] leading-none tracking-[-0.2px] text-[#222] uppercase lg:mb-22.5 lg:text-[16px]">
+        IMAGE GALLERY
+      </h2>
+
+      {/* ================================================== */}
+      {/* DESKTOP */}
+      {/* ================================================== */}
+
+      <div className="hidden lg:grid lg:grid-cols-3 lg:gap-0.5">
+        {desktopLayout.map(({ index, span }) => (
+          <GalleryCell
+            key={index}
+            src={images[index].src}
+            alt={images[index].alt}
+            wide={span === 2}
+          />
+        ))}
+      </div>
+
+      {/* ================================================== */}
+      {/* MOBILE / TABLET */}
+      {/* ================================================== */}
+
+      <div className="flex flex-col gap-0.5 lg:hidden">
+        {images.slice(0, 3).map((image, index) => (
+          <motion.div
+            key={image.src}
+            variants={rowVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={VIEWPORT}
+            transition={{ delay: index * 0.08 }}
+            className="relative aspect-[0.88/1] w-full overflow-hidden"
+          >
+            <Image
+              src={image.src}
+              alt={image.alt}
+              fill
+              sizes="100vw"
+              className="object-cover"
+            />
+          </motion.div>
+        ))}
+      </div>
+    </HomepageSection>
+  );
+}
+
 function GalleryCell({ src, alt, wide = false, index }: GalleryCellProps) {
   return (
     <motion.div
@@ -95,63 +148,13 @@ function GalleryCell({ src, alt, wide = false, index }: GalleryCellProps) {
         src={src}
         alt={alt}
         fill
-        sizes={wide ? "(min-width: 1024px) 66vw, 100vw" : "(min-width: 1024px) 33vw, 100vw"}
+        sizes={
+          wide
+            ? "(min-width: 1024px) 66vw, 100vw"
+            : "(min-width: 1024px) 33vw, 100vw"
+        }
         className="object-cover"
       />
     </motion.div>
-  );
-}
-
-export default function ImageGallery() {
-  return (
-    <section className="bg-[#f1f1ef]">
-      <div className="mx-auto max-w-[1448px] px-[25px] lg:px-0">
-        {/* Heading */}
-        <h2 className="mb-[88px] text-[12px] leading-none tracking-[-0.2px] text-[#222] uppercase lg:mb-[90px] lg:text-[16px]">
-          IMAGE GALLERY
-        </h2>
-
-        {/* ================================================== */}
-        {/* DESKTOP */}
-        {/* ================================================== */}
-
-        <div className="hidden lg:grid lg:grid-cols-3 lg:gap-[2px]">
-          {desktopLayout.map(({ index, span }) => (
-            <GalleryCell
-              key={index}
-              src={images[index].src}
-              alt={images[index].alt}
-              wide={span === 2}
-            />
-          ))}
-        </div>
-
-        {/* ================================================== */}
-        {/* MOBILE / TABLET */}
-        {/* ================================================== */}
-
-        <div className="flex flex-col gap-[2px] lg:hidden">
-          {images.slice(0, 3).map((image, index) => (
-            <motion.div
-              key={image.src}
-              variants={rowVariants}
-              initial="hidden"
-              whileInView="visible"
-              viewport={VIEWPORT}
-              transition={{ delay: index * 0.08 }}
-              className="relative aspect-[0.88/1] w-full overflow-hidden"
-            >
-              <Image
-                src={image.src}
-                alt={image.alt}
-                fill
-                sizes="100vw"
-                className="object-cover"
-              />
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
   );
 }

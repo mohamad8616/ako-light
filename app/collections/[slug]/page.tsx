@@ -1,5 +1,6 @@
 import AboutCollection from "@/components/collections/collection/AboutCollection";
 import ImageGallery from "@/components/collections/collection/ImageGallery";
+import ProductsInCollectionSection from "@/components/collections/collection/ProductsInCollectionSection";
 import PictureHero from "@/components/ui/PictureHero";
 import { collections } from "@/lib/data/collections";
 import { notFound } from "next/navigation";
@@ -22,6 +23,7 @@ const page = async ({ params }: PageProps) => {
       />
       <AboutCollection collection={collection} />
       <ImageGallery />
+      <ProductsInCollectionSection />
     </main>
   );
 };
