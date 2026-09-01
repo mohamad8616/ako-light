@@ -14,7 +14,7 @@ export default function Vocla2026Section() {
 
   return (
     <SplitBanner
-      sectionClassName="bg-background relative w-full py-40 md:py-80"
+      sectionClassName="bg-background! relative w-full py-40 md:py-80"
       image={vocla.image}
       imageAlt={t("vocla.title")}
       title={t("vocla.title")}

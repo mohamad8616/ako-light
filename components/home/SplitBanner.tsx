@@ -44,7 +44,7 @@ export default function SplitBanner({
   const textCol = reverse ? "lg:col-span-5" : "lg:col-span-7";
 
   return (
-    <HomepageSection className={sectionClassName}>
+    <HomepageSection className={`bg-background-secondary ${sectionClassName}`}>
       <div>
         {children}
         <div
