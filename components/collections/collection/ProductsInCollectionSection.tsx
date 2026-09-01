@@ -2,6 +2,7 @@
 
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import { productCategories } from "@/lib/data/productCategories";
+import HomepageSection from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -96,7 +97,7 @@ export default function ProductsInCollectionSection() {
   }
 
   return (
-    <section className="bg-stone-950 px-6 py-24 md:px-12 md:py-32 lg:px-20 xl:px-[8.5vw]">
+    <HomepageSection className="py-24 md:py-32 bg-background">
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1fr_1.7fr] lg:items-start lg:gap-16 xl:gap-20">
         {/* Heading */}
         <div>
@@ -183,6 +184,6 @@ export default function ProductsInCollectionSection() {
           ))}
         </div>
       </div>
-    </section>
+    </HomepageSection>
   );
 }
