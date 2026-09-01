@@ -124,10 +124,10 @@ export default function ProductsInCollectionSection() {
                     key={hovered.slug}
                     src={hovered.image}
                     alt=""
-                    initial={{ opacity: 0 }}
+                    initial={{ opacity: 0.5 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3, ease: "easeInOut" }}
+                    exit={{ opacity: 0.5 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
                     className="aspect-video h-full w-full object-cover"
                   />
                 </AnimatePresence>
