@@ -6,6 +6,7 @@ import ProductModal from "@/components/cart/ProductModal";
 import { fragranceProduct34 } from "@/lib/data/fragranceProduct";
 import { Product } from "@/lib/data/productCategories";
 import { useLenis } from "@/lib/lenisStore";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useEffect, useState } from "react";
 
 // Drop this pattern wherever your "Buy Now" button lives (e.g. the
@@ -13,6 +14,7 @@ import { useEffect, useState } from "react";
 // FloatingCartButton doesn't care how CartSheet got opened, it just
 // needs somewhere to call when clicked.
 export default function BuyBtn({product}:{product:Product}) {
+  const { t } = useLanguage();
   const [modalOpen, setModalOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
   const { lock, unlock } = useLenis();
@@ -28,7 +30,7 @@ export default function BuyBtn({product}:{product:Product}) {
         onClick={() => setModalOpen(true)}
         className="font-din cursor-pointer bg-white px-8 py-3 text-sm font-medium text-stone-950"
       >
-        Buy Now
+        {t("product.buyNow")}
       </button>
 
       <ProductModal
