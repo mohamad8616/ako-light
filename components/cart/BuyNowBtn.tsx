@@ -3,10 +3,9 @@
 import CartSheet from "@/components/cart/CartSheet";
 import FloatingCartButton from "@/components/cart/FloatingCartButton";
 import ProductModal from "@/components/cart/ProductModal";
-import { fragranceProduct34 } from "@/lib/data/fragranceProduct";
 import { Product } from "@/lib/data/productCategories";
-import { useLenis } from "@/lib/lenisStore";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { useLenis } from "@/lib/lenisStore";
 import { useEffect, useState } from "react";
 
 // Drop this pattern wherever your "Buy Now" button lives (e.g. the
@@ -28,7 +27,7 @@ export default function BuyBtn({product}:{product:Product}) {
     <>
       <button
         onClick={() => setModalOpen(true)}
-        className="font-din cursor-pointer bg-white px-8 py-3 text-sm font-medium text-stone-950"
+        className="font-din cursor-pointer bg-white px-8 py-3 my-10 text-sm font-medium text-stone-950"
       >
         {t("product.buyNow")}
       </button>

@@ -106,7 +106,13 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
                       : "border-transparent hover:border-stone-300"
                   }`}
                 >
-                  <Image src={src} alt="" width={64} height={64} className="object-cover" />
+                  <Image
+                    src={src}
+                    alt=""
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                  />
                 </button>
               ))}
             </div>
