@@ -1,5 +1,6 @@
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import Link from "next/link";
-import type { ButtonHTMLAttributes, ComponentProps } from "react";
+import type { ButtonHTMLAttributes, ComponentProps, ReactNode } from "react";
 
 type PlusTextBtnBase = {
   className?: string;
@@ -7,53 +8,68 @@ type PlusTextBtnBase = {
   textColor?: string;
 };
 
-type PlusTextBtnLinkProps = PlusTextBtnBase & Omit<ComponentProps<typeof Link>, "className"> & { href: string };
+type PlusTextBtnLinkProps = PlusTextBtnBase &
+  Omit<ComponentProps<typeof Link>, "className"> & { href: string };
 
 type PlusTextBtnProps =
   | PlusTextBtnLinkProps
-  | (PlusTextBtnBase & ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined });
+  | (PlusTextBtnBase &
+      ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined });
+
+const BUTTON_CLASSES =
+  "group inline shrink-0 cursor-pointer items-center gap-2 text-sm uppercase tracking-[0.15em] transition duration-300 sm:inline-flex";
+const ICON_CLASSES =
+  "inline-flex h-5 w-5 shrink-0 items-center justify-center text-lg leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90";
+
+const PlusIcon = () => (
+  <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
+    <path d="M7 0V14M0 7H14" stroke="currentColor" strokeWidth="1.5" />
+  </svg>
+);
 
 const PlusTextBtn = (props: PlusTextBtnProps) => {
-  const resolvedTextColor = props.textColor ?? "text-white";
+  const { dir } = useLanguage();
+  const { className, text, textColor, ...rest } = props;
+  const resolvedTextColor = textColor ?? "text-white";
+  const TEXT_CLASSES = `duration-300 group-hover:${dir === "rtl" ? "translate-x-1.5" : "-translate-x-1.5"}`;
+  const classNames = [BUTTON_CLASSES, resolvedTextColor, className]
+    .filter(Boolean)
+    .join(" ");
 
-  if ("href" in props) {
-    const { href, className, text, textColor, ...rest } = props as PlusTextBtnLinkProps;
+  const content: ReactNode = (
+    <>
+      <span className={`${ICON_CLASSES} ${resolvedTextColor}`}>
+        <PlusIcon />
+      </span>
+      <span className={`${TEXT_CLASSES} ${resolvedTextColor}`}>{text}</span>
+    </>
+  );
+
+  if (props.href !== undefined) {
     return (
       <Link
-        href={href}
-        className={`group inline shrink-0 items-center gap-2 text-sm tracking-[0.15em] uppercase transition duration-300 sm:inline-flex ${resolvedTextColor} ${className ?? ""}`}
-        {...rest}
+        href={props.href}
+        className={classNames}
+        {...(rest as Omit<
+          PlusTextBtnLinkProps,
+          keyof PlusTextBtnBase | "href"
+        >)}
       >
-        <span
-          className={`inline-flex h-5 w-5 shrink-0 items-center justify-center text-lg leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90 ${resolvedTextColor}`}
-        >
-          <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-            <path d="M7 0V14M0 7H14" stroke="currentColor" strokeWidth="1.5" />
-          </svg>
-        </span>
-        <span className={`duration-300 group-hover:-translate-x-1.5 ${resolvedTextColor}`}>
-          {text}
-        </span>
+        {content}
       </Link>
     );
   }
 
-  const { className, text, textColor, ...rest } = props;
   return (
     <button
-      className={`group inline shrink-0 cursor-pointer items-center gap-2 text-sm uppercase transition duration-300 sm:inline-flex ${resolvedTextColor} ${className ?? ""}`}
-      {...rest}
+      type="button"
+      className={classNames}
+      {...(rest as Omit<
+        PlusTextBtnBase & ButtonHTMLAttributes<HTMLButtonElement>,
+        keyof PlusTextBtnBase
+      >)}
     >
-      <span
-        className={`inline-flex h-5 w-5 shrink-0 items-center justify-center text-lg leading-none transition-transform duration-300 ease-in-out group-hover:rotate-90 ${resolvedTextColor}`}
-      >
-        <svg width="11" height="11" viewBox="0 0 14 14" fill="none">
-          <path d="M7 0V14M0 7H14" stroke="currentColor" strokeWidth="1.5" />
-        </svg>
-      </span>
-      <span className={`duration-300 group-hover:-translate-x-1.5 ${resolvedTextColor}`}>
-        {text}
-      </span>
+      {content}
     </button>
   );
 };

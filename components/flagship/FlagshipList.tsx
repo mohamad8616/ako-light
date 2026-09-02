@@ -12,7 +12,6 @@ export default function FlagshipList() {
       animateOnLoad
       className="bg-background w-full pb-20 md:pb-28"
     >
-      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {flagships.map((flagship, i) => (
           <Row
             key={flagship.slug}
@@ -22,7 +21,6 @@ export default function FlagshipList() {
             {...flagship}
           />
         ))}
-      </div>
     </HomepageSection>
   );
 }

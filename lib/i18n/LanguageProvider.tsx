@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from "react";
 import {
@@ -23,35 +22,46 @@ interface LanguageContextValue {
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
 
-function getInitialLang(): Language {
-  if (typeof window === "undefined") return "en";
-  try {
-    const saved = localStorage.getItem("henge-lang");
-    if (saved === "en" || saved === "fa") return saved;
-  } catch {
-    // ignore
+function getInitialLang(initialLang?: Language): Language {
+  if (typeof window !== "undefined") {
+    try {
+      const saved = localStorage.getItem("henge-lang");
+      if (saved === "en" || saved === "fa") return saved;
+    } catch {
+      // ignore
+    }
   }
-  return "en";
+  return initialLang ?? "en";
+}
+
+interface LanguageProviderProps {
+  children: React.ReactNode;
+  initialLang?: Language;
 }
 
 export function LanguageProvider({
   children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [lang, setLangState] = useState<Language>(getInitialLang);
+  initialLang,
+}: LanguageProviderProps) {
+  const [lang, setLangState] = useState<Language>(() =>
+    getInitialLang(initialLang),
+  );
 
   const dir = lang === "fa" ? "rtl" : "ltr";
 
-  useEffect(() => {
-    document.documentElement.lang = lang;
-    document.documentElement.dir = dir;
-  }, [lang, dir]);
+  const writeLangCookie = (l: Language) => {
+    try {
+      document.cookie = `henge-lang=${l}; path=/; max-age=31536000; SameSite=Lax`;
+    } catch {
+      // ignore
+    }
+  };
 
   const setLang = useCallback((l: Language) => {
     setLangState(l);
     try {
       localStorage.setItem("henge-lang", l);
+      writeLangCookie(l);
     } catch {
       // ignore
     }
@@ -62,6 +72,7 @@ export function LanguageProvider({
       const next = prev === "en" ? "fa" : "en";
       try {
         localStorage.setItem("henge-lang", next);
+        writeLangCookie(next);
       } catch {
         // ignore
       }

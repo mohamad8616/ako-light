@@ -13,6 +13,11 @@ export const translations = {
     "nav.menu": "Menu",
     "nav.close": "Close",
 
+    "ui.discover": "Discover",
+    "ui.loadMore": "Load More",
+    "ui.viewAllProducts": "view all products",
+    "ui.viewWebsite": "view website",
+
     "menu.company": "Company",
     "menu.products": "Products",
     "menu.media": "Media",
@@ -131,6 +136,11 @@ export const translations = {
     "nav.search": "جستجو",
     "nav.menu": "منو",
     "nav.close": "بستن",
+
+    "ui.discover": "کشف",
+    "ui.loadMore": "بارگذاری بیشتر",
+    "ui.viewAllProducts": "مشاهده همه محصولات",
+    "ui.viewWebsite": "مشاهده وب‌سایت",
 
     "menu.company": "شرکت",
     "menu.products": "محصولات",

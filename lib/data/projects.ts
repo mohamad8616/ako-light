@@ -49,6 +49,8 @@ export const projects: Project[] = [
 // (label / href / image cards for Products, Projects and S34)
 export interface SectionLink {
   label: string;
+  /** Translation key (lib/i18n/translations.ts) used to localize the label; falls back to `label`. */
+  i18nKey?: string;
   href: string;
   image: string;
 }
@@ -56,16 +58,19 @@ export interface SectionLink {
 export const projectsSectionLinks: SectionLink[] = [
   {
     label: "Products",
+    i18nKey: "nav.products",
     href: "/products",
     image: "https://www.henge07.com/app/uploads/2023/04/PRODUCTS-1.jpg",
   },
   {
     label: "Projects",
+    i18nKey: "nav.projects",
     href: "/projects",
     image: "https://www.henge07.com/app/uploads/2023/04/PROJECTS-1.jpg",
   },
   {
     label: "S34",
+    i18nKey: "menu.s34",
     href: "/collection/henge-catalogue-s34-3",
     image: "https://www.henge07.com/app/uploads/2023/04/Henge_Spiga_30_B-1.jpg",
   },

@@ -6,6 +6,7 @@ import { motion, type Variants } from "framer-motion";
 import HomepageSection from "@/utility/HomepageSection";
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import { collectionGalleryImages } from "@/lib/data/imageGalleries";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 
 const images = collectionGalleryImages;
@@ -126,6 +127,7 @@ function useRandomMobileCount(min: number, max: number) {
 }
 
 export default function ImageGallery() {
+  const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const mobileInitialCount = useRandomMobileCount(MOBILE_RANDOM_MIN, MOBILE_RANDOM_MAX);
 
@@ -184,7 +186,7 @@ export default function ImageGallery() {
 
       {!expanded && (
         <div className="mt-12 flex justify-center">
-          <PlusTextBtn text="Load More" textColor="text-[#222]" onClick={() => setExpanded(true)} />
+          <PlusTextBtn text={t("ui.loadMore")} textColor="text-[#222]" onClick={() => setExpanded(true)} />
         </div>
       )}
     </HomepageSection>

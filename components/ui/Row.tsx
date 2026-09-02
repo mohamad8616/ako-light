@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 interface RowProps {
   name: string;
@@ -28,6 +29,7 @@ export default function Row({
   height = "30",
   width = "30",
 }: RowProps) {
+  const { t } = useLanguage();
   const pathname = usePathname().slice(1);
   return (
     <motion.div
@@ -69,7 +71,7 @@ export default function Row({
 
         {/* Discover CTA */}
         <span className="hidden shrink-0 md:block">
-          <PlusTextBtn text="Discover" />
+          <PlusTextBtn text={t("ui.discover")} />
         </span>
       </Link>
     </motion.div>

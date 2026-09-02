@@ -2,6 +2,7 @@
 
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import { Paragraph } from "@/utility/Paragraph";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 import HomepageSection, { EASE } from "@/utility/HomepageSection";
 import Image from "next/image";
@@ -19,6 +20,7 @@ export default function DesignerBio({
   bio,
   website,
 }: DesignerBioProps) {
+  const { t } = useLanguage();
   return (
     <HomepageSection className="bg-background w-full pb-20 md:pb-28">
         {/* Three independent grid items with a single shared order (1, 2, 3)
@@ -62,7 +64,7 @@ export default function DesignerBio({
             >
               <PlusTextBtn
                 href={website}
-                text="view website"
+                text={t("ui.viewWebsite")}
                 className="group inline-flex items-center gap-2 text-sm font-medium tracking-[0.15em] text-white uppercase transition-colors duration-300 hover:text-white/70"
               />
             </motion.div>

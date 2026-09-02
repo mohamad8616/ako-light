@@ -7,8 +7,10 @@ import { PageLoadInitializer } from "@/components/ui/PageLoadInitializer";
 import PageTransition from "@/components/ui/PageTransition";
 import Preloader from "@/components/ui/Preloader";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
+import { type Language } from "@/lib/i18n/translations";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -39,15 +41,20 @@ export const metadata: Metadata = {
     "Unveil timeless design. Henge: Italian furniture that transcends trends. Handcrafted for enduring beauty, each piece elevates your space. Explore Henge's legacy of exceptional Italian craftsmanship.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const savedLang = cookieStore.get("henge-lang")?.value;
+  const initialLang: Language = savedLang === "fa" ? "fa" : "en";
+  const initialDir = initialLang === "fa" ? "rtl" : "ltr";
+
   return (
     <html
-      lang="en"
-      dir="ltr"
+      lang={initialLang}
+      dir={initialDir}
       data-scroll-behavior="smooth"
       className={cn(
         "h-full",
@@ -58,12 +65,11 @@ export default function RootLayout({
       )}
     >
       <body
-        suppressHydrationWarning
         className="no-scrollbar bg-background text-background-secondary flex min-h-full flex-col font-sans text-sm leading-normal md:text-base"
       >
         <PageLoadInitializer />
         <SmoothScroll>
-          <LanguageProvider>
+          <LanguageProvider initialLang={initialLang}>
             <Navbar />
             <PageLoader />
             <Preloader />
