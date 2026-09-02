@@ -4,7 +4,7 @@ import HomepageSection from "@/utility/HomepageSection";
 import { materials } from "../../lib/data/materials";
 import Row from "../ui/Row";
 
-const ROWS_ON_LOAD = 2;
+export const ROWS_ON_LOAD = 2;
 
 export default function MaterialsList() {
   return (

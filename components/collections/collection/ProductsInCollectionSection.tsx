@@ -3,6 +3,7 @@
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import { productCategories } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { productName } from "@/lib/i18n/localized";
 import HomepageSection from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
@@ -161,7 +162,7 @@ export default function ProductsInCollectionSection() {
               className="flex flex-col lg:grid lg:grid-cols-[180px_1fr] lg:items-start lg:gap-6"
             >
               <h2 className="font-din border-b border-white/10 pb-2 text-sm font-medium text-white lg:border-none lg:pb-0">
-                {category.name}
+                {t(category.i18nKey)}
               </h2>
 
               <div className="mt-4 flex flex-col gap-2 lg:mt-0">
@@ -182,7 +183,7 @@ export default function ProductsInCollectionSection() {
                         : "text-stone-400 hover:text-white"
                     }`}
                   >
-                    {product.name}
+                    {productName(t, product.slug)}
                   </Link>
                 ))}
               </div>

@@ -7,6 +7,8 @@ import HomepageSection from "@/utility/HomepageSection";
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import type { Product, RelatedProduct } from "@/lib/data/productCategories";
 import { products } from "@/lib/data/productCategories";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { productKey, productName } from "@/lib/i18n/localized";
 
 function getRelatedProducts(product: Product): RelatedProduct[] {
   const sameCategory = products.filter(
@@ -31,6 +33,7 @@ function getRelatedProducts(product: Product): RelatedProduct[] {
 }
 
 export default function RelatedProductsSection({ product }: { product: Product }) {
+  const { t } = useLanguage();
   const related = getRelatedProducts(product);
 
   return (
@@ -54,7 +57,7 @@ export default function RelatedProductsSection({ product }: { product: Product }
               >
                 <Image
                   src={item.image}
-                  alt={item.name}
+                  alt={productName(t, item.slug)}
                   fill
                   sizes="(max-width: 640px) 100vw, 33vw"
                   className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
@@ -62,7 +65,7 @@ export default function RelatedProductsSection({ product }: { product: Product }
                 <div className="absolute inset-0 bg-black/20 transition-colors duration-500 group-hover:bg-black/40" />
               </Link>
               <PlusTextBtn
-                text={item.name}
+                text={productName(t, item.slug)}
                 className="text-background mt-10 lg:mt-5"
                 textColor="text-background"
               />

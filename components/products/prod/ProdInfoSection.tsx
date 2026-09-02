@@ -4,12 +4,16 @@ import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import type { Product } from "@/lib/data/productCategories";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { productDescription, productName, productKey } from "@/lib/i18n/localized";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
 
 export default function ProductInfoSection({ product }: { product: Product }) {
   const [moreInfoOpen, setMoreInfoOpen] = useState(false);
+  const { t } = useLanguage();
+
 
   return (
     <HomepageSection className="bg-background-secondary h-4/5 px-6 py-20 md:px-12 md:py-28 lg:px-20 xl:px-[8.5vw]">
@@ -27,13 +31,13 @@ export default function ProductInfoSection({ product }: { product: Product }) {
               href={`/products/${product.category}`}
               className="underline underline-offset-2 transition-colors hover:text-stone-600"
             >
-              {product.categoryLabel}
+              {t(productKey(product.category))}
             </Link>
             <span>/</span>
-            <span className="text-stone-700">{product.name}</span>
+            <span className="text-stone-700">{productName(t, product.slug)}</span>
           </nav>
 
-          <Paragraph>{product.description}</Paragraph>
+          <Paragraph>{productDescription(t, product.slug)}</Paragraph>
 
           {product.moreInfo && (
             <div className="mt-10">
@@ -46,7 +50,7 @@ export default function ProductInfoSection({ product }: { product: Product }) {
                   >
                     <PlusTextBtn
                       onClick={() => setMoreInfoOpen(!moreInfoOpen)}
-                      text="more info"
+                      text={t("product.moreInfoToggle")}
                       textColor="text-background"
                     />
                   </motion.div>
@@ -60,7 +64,7 @@ export default function ProductInfoSection({ product }: { product: Product }) {
                   transition={{ duration: 0.8 }}
                   className="font-din mt-4 max-w-2xl text-sm leading-relaxed text-stone-600 mb-24"
                 >
-                  {product.moreInfo}
+                  {t("product.moreInfo")}
                 </motion.p>
               )}
             </div>
@@ -70,7 +74,7 @@ export default function ProductInfoSection({ product }: { product: Product }) {
         <div className="flex flex-col gap-10">
           <div>
             <span className="font-din text-xs font-medium tracking-tighter text-stone-500 uppercase">
-              Download
+              {t("product.download")}
             </span>
             <div className="font-din mt-4 flex flex-col gap-2 text-sm text-stone-950">
               {product.downloads.map((d) => (
@@ -79,7 +83,7 @@ export default function ProductInfoSection({ product }: { product: Product }) {
                   href={d.href}
                   className="w-fit underline underline-offset-2 transition-colors hover:text-stone-600"
                 >
-                  {d.label}
+                  {t(d.label)}
                 </a>
               ))}
             </div>
@@ -87,7 +91,7 @@ export default function ProductInfoSection({ product }: { product: Product }) {
 
           <div>
             <span className="font-din text-xs font-medium tracking-tighter text-stone-500 uppercase">
-              Designer
+              {t("product.designer")}
             </span>
             <div className="font-din mt-4 text-sm text-stone-950">
               <a

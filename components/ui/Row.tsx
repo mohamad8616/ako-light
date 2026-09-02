@@ -26,8 +26,7 @@ export default function Row({
   image,
   index,
   animateOnLoad = false,
-  height = "30",
-  width = "30",
+
 }: RowProps) {
   const { t } = useLanguage();
   const pathname = usePathname().slice(1);

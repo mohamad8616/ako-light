@@ -5,6 +5,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useCart } from "@/lib/cart/store";
 import { Product } from "@/lib/data/productCategories";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { productDescription, productName } from "@/lib/i18n/localized";
 import Image from "next/image";
 
 interface Props {
@@ -18,12 +20,13 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const addItem = useCart((state) => state.addItem);
+  const { t } = useLanguage();
 
   function handleAddToCart() {
     addItem(
       {
         productId: product.id,
-        name: product.name,
+        name: productName(t, product.slug),
         image: product.images[0],
         price: product.price,
         currency: "EUR",
@@ -68,7 +71,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
             <div className="relative aspect-square w-full overflow-hidden bg-stone-100">
               <Image
                 src={product.images[activeImage]}
-                alt={product.name}
+                alt={productName(t, product.slug)}
                 fill
                 className="object-cover"
               />
@@ -111,7 +114,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
 
           {/* Details */}
           <div className="flex flex-col">
-            <h2 className="font-din text-2xl font-medium text-stone-950">{product.name}</h2>
+            <h2 className="font-din text-2xl font-medium text-stone-950">{productName(t, product.slug)}</h2>
             <p className="font-din mt-2 text-lg text-stone-950">
               {formatPrice(product.price)}
             </p>
@@ -139,12 +142,12 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
                 onClick={handleAddToCart}
                 className="font-din flex-1 cursor-pointer bg-stone-950 py-3 text-sm font-medium tracking-tight text-white uppercase transition-colors hover:bg-stone-800"
               >
-                Add to cart
+                {t("product.addToCart")}
               </button>
             </div>
 
             <div className="font-din mt-6 flex flex-col gap-4 text-sm leading-relaxed text-stone-600">
-              <p>{product.description}</p>
+              <p>{productDescription(t, product.slug)}</p>
             </div>
           </div>
         </div>

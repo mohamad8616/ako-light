@@ -3,6 +3,8 @@
 import HomepageSection from "@/utility/HomepageSection";
 import ProductCategoryCard from "./ProductCategoryCard";
 import { Product, ProductCategory } from "@/lib/data/productCategories";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { productKey, productName } from "@/lib/i18n/localized";
 
 interface ProductsGridProps {
   categories?: ProductCategory[];
@@ -16,16 +18,17 @@ export default function ProductsGrid({
   products,
   parentSlug,
 }: ProductsGridProps) {
+  const { t } = useLanguage();
   const items = products
     ? products.map((product) => ({
         key: product.slug,
-        name: product.name,
+        name: productName(t, product.slug),
         slug: product.slug,
         images: [product.images[0], product.hoverImage].filter(Boolean),
       }))
     : (categories ?? []).map((category) => ({
         key: category.slug,
-        name: category.name,
+        name: t(category.i18nKey),
         slug: category.slug,
         images: category.products[0]?.images ?? [],
       }));
