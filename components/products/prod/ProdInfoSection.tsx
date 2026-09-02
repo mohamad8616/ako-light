@@ -1,11 +1,16 @@
 "use client";
 
+import BuyBtn from "@/components/cart/BuyNowBtn";
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import type { Product } from "@/lib/data/productCategories";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import {
+  productDescription,
+  productKey,
+  productName,
+} from "@/lib/i18n/localized";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { productDescription, productName, productKey } from "@/lib/i18n/localized";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
@@ -13,7 +18,6 @@ import { useState } from "react";
 export default function ProductInfoSection({ product }: { product: Product }) {
   const [moreInfoOpen, setMoreInfoOpen] = useState(false);
   const { t } = useLanguage();
-
 
   return (
     <HomepageSection className="bg-background-secondary h-4/5 px-6 py-20 md:px-12 md:py-28 lg:px-20 xl:px-[8.5vw]">
@@ -34,7 +38,9 @@ export default function ProductInfoSection({ product }: { product: Product }) {
               {t(productKey(product.category))}
             </Link>
             <span>/</span>
-            <span className="text-stone-700">{productName(t, product.slug)}</span>
+            <span className="text-stone-700">
+              {productName(t, product.slug)}
+            </span>
           </nav>
 
           <Paragraph>{productDescription(t, product.slug)}</Paragraph>
@@ -62,7 +68,7 @@ export default function ProductInfoSection({ product }: { product: Product }) {
                   initial={{ opacity: 0.6, y: 0 }}
                   animate={{ opacity: 1, y: 90 }}
                   transition={{ duration: 0.8 }}
-                  className="font-din mt-4 max-w-2xl text-sm leading-relaxed text-stone-600 mb-24"
+                  className="font-din mt-4 mb-24 max-w-2xl text-sm leading-relaxed text-stone-600"
                 >
                   {t("product.moreInfo")}
                 </motion.p>
@@ -101,6 +107,7 @@ export default function ProductInfoSection({ product }: { product: Product }) {
                 {product.designer.name}
               </a>
             </div>
+            <BuyBtn product={product} />
           </div>
         </div>
       </div>

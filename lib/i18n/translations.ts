@@ -143,6 +143,7 @@ export const translations = {
     "product.downloadImages": "Images",
     "product.download2d3d": "2D / 3D",
     "product.addToCart": "Add to cart",
+    "product.buyNow": "Buy Now",
 
     "productsSheet.products": "products",
     "productsSheet.close": "close",
@@ -309,6 +310,7 @@ export const translations = {
     "product.downloadImages": "تصاویر",
     "product.download2d3d": "2D / 3D",
     "product.addToCart": "افزودن به سبد خرید",
+    "product.buyNow": "خرید",
 
     "productsSheet.products": "محصولات",
     "productsSheet.close": "بستن",

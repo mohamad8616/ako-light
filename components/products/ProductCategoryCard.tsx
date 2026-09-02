@@ -12,6 +12,7 @@ interface ProductCategoryCardProps {
   images: string[];
   index: number;
   parentSlug?: string;
+  animateOnLoad?: boolean;
 }
 
 export default function ProductCategoryCard({
@@ -20,17 +21,20 @@ export default function ProductCategoryCard({
   images,
   index,
   parentSlug,
+  animateOnLoad = false,
 }: ProductCategoryCardProps) {
   const href = parentSlug
     ? `/products/${parentSlug}/${slug}`
     : `/products/${slug}`;
-  console.log(images);
   return (
     <motion.div
-    
       initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-60px" }}
+      {...(animateOnLoad
+        ? { animate: { opacity: 1, y: 0 } }
+        : {
+            whileInView: { opacity: 1, y: 0 },
+            viewport: { once: true, margin: "-60px" },
+          })}
       transition={{ duration: 0.6, delay: (index % 3) * 0.08, ease: EASE }}
     >
       <Link href={href} className="group block">

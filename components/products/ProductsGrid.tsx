@@ -41,12 +41,13 @@ export default function ProductsGrid({
     );
   }
   return (
-    <HomepageSection className="bg-background w-full pb-20 md:pb-28">
+    <HomepageSection animateOnLoad className="bg-background w-full pb-20 md:pb-28">
       <div className="grid grid-cols-1 gap-x-3 gap-y-12 md:grid-cols-3 md:gap-y-16">
         {items.map((item, i) => (
           <ProductCategoryCard
             key={item.key}
             index={i}
+            animateOnLoad={i < 3}
             parentSlug={parentSlug}
             name={item.name}
             slug={item.slug}
