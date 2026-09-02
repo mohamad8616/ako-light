@@ -1,11 +1,13 @@
 "use client";
 
-import AkoLightingLogo from "@/components/ui/Logo";
+import Logo from "@/components/ui/Logo";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useLoaderStore } from "@/lib/loaderStore";
 import { useEffect, useState } from "react";
 
 export default function Preloader() {
   const { isLoading, progress } = useLoaderStore();
+  const { t } = useLanguage();
   const [isGone, setIsGone] = useState(false);
 
   // After the fade-out transition completes, unmount the preloader entirely
@@ -24,7 +26,7 @@ export default function Preloader() {
       className={`bg-background fixed inset-0 z-1000 flex flex-col items-center justify-center transition-all delay-200 duration-1000 ease-[cubic-bezier(0.74,0,0.15,0.99)] ${!isLoading ? "pointer-events-none opacity-0" : "pointer-events-auto opacity-100"} `}
     >
       {/* AKO Lighting Logo */}
-      <AkoLightingLogo className="h-auto w-20 fill-white transition-opacity duration-500 ease-out" />
+      <Logo className="h-auto fill-white transition-opacity duration-500 ease-out" />
 
       {/* Progress Bar */}
       <div

@@ -1,10 +1,12 @@
 ﻿"use client";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // adjust import path
+import { productCategories } from "@/lib/data/productCategories";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { useLenis } from "@/lib/lenisStore";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import UnderLineEffect from "./UnderLineEffect";
-import { productCategories } from "@/lib/data/productCategories";
 
 interface Props {
   open: boolean;
@@ -13,10 +15,10 @@ interface Props {
 
 const linkClasses =
   "w-fit font-din text-sm tracking-tighter text-white uppercase no-underline transition-colors hover:text-stone-400 text-center";
-const categories = [
-  "LIGHTING",
-  "DESIGNERS",
-  ...productCategories.map((c) => c.name.toUpperCase()),
+const categoryKeys = [
+  "products.lighting",
+  "products.designers",
+  ...productCategories.map((c) => c.i18nKey),
 ];
 
 function useMediaQuery(query: string): boolean {
@@ -38,12 +40,20 @@ function useMediaQuery(query: string): boolean {
 }
 
 export default function ProductsSheet({ open, onOpenChange }: Props) {
+  const { lock, unlock } = useLenis();
+
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { t } = useLanguage();
   const actionsRef = useRef<{ unmount: () => void; close: () => void } | null>(
     null,
   );
 
   const closeSheet = () => onOpenChange(false);
+
+  useEffect(() => {
+    if (open) lock();
+    else unlock();
+  }, [open, lock, unlock]);
 
   return (
     <Sheet
@@ -64,56 +74,102 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
             open ? "-translate-y-full" : "translate-y-0"
           }`}
         >
-          products
+          {t("productsSheet.products")}
         </span>
         <span
           className={`absolute top-full left-0 block transition-transform duration-300 ease-in-out ${
             open ? "-translate-y-full" : "translate-y-0"
           }`}
         >
-          close
+          {t("productsSheet.close")}
         </span>
       </SheetTrigger>
 
-      {/* ---------- SHEET CONTENT ---------- */}
-      <SheetContent
-        side={isMobile ? "top" : "right"}
-        className="border-0 bg-stone-950 p-6 text-white outline-0"
-        motionProps={{
-          initial: { x: isMobile ? 0 : 400 },
-          animate: { x: 0 },
-          exit: { opacity: 1, x: 400 },
-          transition: { duration: 0.8, delay: 1, ease: "easeInOut" },
-        }}
-        onExitComplete={() => actionsRef.current?.unmount()}
-      >
-        <div className="font-din flex h-full flex-col items-start justify-center gap-6 mt-9">
-          <Link
-            href="/products"
-            className={`${linkClasses} relative group mb-6 cursor-pointer`}
-          >
-            all Products
-            <UnderLineEffect />
-          </Link>
-          {/* Navigation list */}
-          <nav className="flex flex-col items-start justify-center space-y-4 text-center">
-            {categories.map((item) => (
-              <Link
-                key={item}
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  closeSheet();
-                }}
-                className={`${linkClasses} relative group`}
-              >
-                {item}
-                <UnderLineEffect />
-              </Link>
-            ))}
-          </nav>
-        </div>
-      </SheetContent>
+      {/* ----------DESKTOP SHEET CONTENT ---------- */}
+      {!isMobile && (
+        <SheetContent
+          showCloseButton={false}
+          side={"right"}
+          className="border-0 bg-stone-950 p-6 text-white outline-0"
+          motionProps={{
+            initial: { x: 400 },
+            animate: { x: 0 },
+            exit: { opacity: 1, x: 400 },
+            transition: { duration: 0.8, delay: 1, ease: "easeInOut" },
+          }}
+          onExitComplete={() => actionsRef.current?.unmount()}
+        >
+          <div className="font-din mt-9 flex h-full flex-col items-start justify-center gap-6">
+            <Link
+              href="/products"
+              className={`${linkClasses} group relative mb-6 cursor-pointer`}
+            >
+              {t("productsSheet.allProducts")}
+              <UnderLineEffect />
+            </Link>
+            {/* Navigation list */}
+            <nav className="flex flex-col items-start justify-center space-y-4 text-center">
+              {categoryKeys.map((key) => (
+                <Link
+                  key={key}
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    closeSheet();
+                  }}
+                  className={`${linkClasses} group relative`}
+                >
+                  {t(key)}
+                  <UnderLineEffect />
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </SheetContent>
+      )}
+
+      {/* ----------MOBILE SHEET CONTENT------------- */}
+      {isMobile && (
+        <SheetContent
+          showCloseButton={false}
+          side={"top"}
+          className="scrollbar-auto border-0 bg-stone-950 p-6 pt-20 text-white outline-0"
+          motionProps={{
+            initial: { y: -1000 },
+            animate: { y: 0 },
+            exit: { y: -1000 },
+            transition: { duration: 0.8, delay: 0.3, ease: "easeInOut" },
+          }}
+          onExitComplete={() => actionsRef.current?.unmount()}
+        >
+          <div className="font-din mt-9 flex h-full flex-col items-center justify-center gap-6">
+            <Link
+              href="/products"
+              className={`${linkClasses} group relative mb-6 cursor-pointer`}
+            >
+              {t("productsSheet.allProducts")}
+              <UnderLineEffect />
+            </Link>
+            {/* Navigation list */}
+            <nav className="flex flex-col items-center justify-center space-y-4 text-center">
+              {categoryKeys.map((key) => (
+                <Link
+                  key={key}
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    closeSheet();
+                  }}
+                  className={`${linkClasses} group relative`}
+                >
+                  {t(key)}
+                  <UnderLineEffect />
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </SheetContent>
+      )}
     </Sheet>
   );
 }

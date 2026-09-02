@@ -2,13 +2,13 @@
 
 import CollapsibleNavItem from "@/components/navbar/CollapsibleNavItem";
 import FullscreenMenu from "@/components/navbar/fullScreenMenu";
-import AkoLightingLogo from "@/components/ui/Logo";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { Menu, Search, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import Logo from "@/components/ui/Logo";
 import ProductsSheet from "../ui/ProductsSheet";
 
 type ActiveOverlay = "products" | "menu" | null;
@@ -65,7 +65,7 @@ export default function Navbar() {
               href="/"
               className={`group cursor-pointer ${overlayOpen ? "pointer-events-auto" : ""}`}
             >
-              <AkoLightingLogo className="h-auto w-24 fill-white transition-all duration-500 group-hover:opacity-70 md:w-28" />
+              <Logo className="h-auto  fill-white transition-all duration-500 group-hover:opacity-70  z-999" />
             </Link>
 
             {/* Right Side — only Search + Menu + products*/}

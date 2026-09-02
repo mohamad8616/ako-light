@@ -84,6 +84,25 @@ export const translations = {
     "carousel.testOne": "TEST-ONE",
     "carousel.whyHenge": "WHY HENGE",
 
+    "products.lighting": "LIGHTING",
+    "products.designers": "DESIGNERS",
+    "products.bookcases": "BOOKCASES",
+    "products.cabinetsAndSideboards": "CABINETS AND SIDEBOARDS",
+    "products.tables": "TABLES",
+    "products.coffeeTables": "COFFEE TABLES",
+    "products.sofasAndArmchairs": "SOFAS AND ARMCHAIRS",
+    "products.chairsAndStools": "CHAIRS AND STOOLS",
+    "products.kitchens": "KITCHENS",
+    "products.bedroom": "BEDROOM",
+    "products.wallPanelling": "WALL PANNELLING",
+    "products.accessories": "ACCESSORIES",
+
+    "productsSheet.products": "products",
+    "productsSheet.close": "close",
+    "productsSheet.allProducts": "all Products",
+
+    "logo.text": "home form",
+
     "footer.credits": "Credits",
     "footer.privacy": "Privacy",
     "footer.vat": "P.IVA 04630340265 / Henge 2019 2026",
@@ -183,6 +202,25 @@ export const translations = {
     "carousel.hengeBeijing": "هنژ پکن",
     "carousel.testOne": "تست-وان",
     "carousel.whyHenge": "چرا هنژ",
+
+    "products.lighting": "نورپردازی",
+    "products.designers": "طراحان",
+    "products.bookcases": "کتابخانه",
+    "products.cabinetsAndSideboards": "کابینت و سندباکس",
+    "products.tables": "میز",
+    "products.coffeeTables": "میز قهوه",
+    "products.sofasAndArmchairs": "مبل و صندلی",
+    "products.chairsAndStools": "صندلی و پادزدی",
+    "products.kitchens": "آشپزخانه",
+    "products.bedroom": "اتاق خواب",
+    "products.wallPanelling": "دیوارپوش",
+    "products.accessories": "لوازم تزئینی",
+
+    "productsSheet.products": "محصولات",
+    "productsSheet.close": "بستن",
+    "productsSheet.allProducts": "همه محصولات",
+
+    "logo.text": "هوم فرم",
 
     "footer.credits": "اعتبارات",
     "footer.privacy": "حریم خصوصی",
