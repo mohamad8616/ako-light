@@ -41,7 +41,7 @@ function useMediaQuery(query: string): boolean {
 
 export default function ProductsSheet({ open, onOpenChange }: Props) {
   const { lock, unlock } = useLenis();
-
+  const { lang } = useLanguage();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { t } = useLanguage();
   const actionsRef = useRef<{ unmount: () => void; close: () => void } | null>(
@@ -49,7 +49,7 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
   );
 
   const closeSheet = () => onOpenChange(false);
-
+  
   useEffect(() => {
     if (open) lock();
     else unlock();
@@ -89,12 +89,12 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
       {!isMobile && (
         <SheetContent
           showCloseButton={false}
-          side={"right"}
+          side={lang === "fa" ? "left" : "right"}
           className="border-0 bg-stone-950 p-6 text-white outline-0"
           motionProps={{
-            initial: { x: 400 },
+            initial: { x: lang === "fa" ? -400 : 400 },
             animate: { x: 0 },
-            exit: { opacity: 1, x: 400 },
+            exit: { opacity: 1, x: lang === "fa" ? -400 : 400 },
             transition: { duration: 0.8, delay: 1, ease: "easeInOut" },
           }}
           onExitComplete={() => actionsRef.current?.unmount()}

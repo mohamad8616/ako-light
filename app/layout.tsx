@@ -62,11 +62,11 @@ export default function RootLayout({
         className="no-scrollbar bg-background text-background-secondary flex min-h-full flex-col font-sans text-sm leading-normal md:text-base"
       >
         <PageLoadInitializer />
-        <Preloader />
         <SmoothScroll>
           <LanguageProvider>
             <Navbar />
             <PageLoader />
+            <Preloader />
             <PageTransition>{children}</PageTransition>
             <NewsletterSectionWrapper />
             <Footer />

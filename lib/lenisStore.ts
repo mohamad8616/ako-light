@@ -6,6 +6,7 @@ interface LenisState {
   setLenis: (instance: Lenis | null) => void;
   lock: () => void;
   unlock: () => void;
+  
 }
 
 export const useLenis = create<LenisState>()((set, get) => ({
