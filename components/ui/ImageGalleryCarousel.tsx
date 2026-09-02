@@ -6,6 +6,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { carouselImages } from "@/lib/data/imageGalleries";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 const images = carouselImages;
@@ -40,13 +41,14 @@ export default function ImageGalleryCarousel({
   mobileColumn?: boolean;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
+  const { dir } = useLanguage();
 
-  // Embla powers the carousel: free momentum drag, no snap-to-slide.
   const [emblaRef] = useEmblaCarousel({
     align: "start",
     containScroll: "trimSnaps",
     dragFree: true,
     loop: false,
+    direction: dir === "rtl" ? "rtl" : "ltr",
   });
 
   // ----- entry animation state -----
@@ -64,6 +66,8 @@ export default function ImageGalleryCarousel({
     getPointerSnapshot,
     getServerSnapshot,
   );
+
+  const isRtl = dir === "rtl";
 
   // ----- IntersectionObserver for entry animation -----
   useEffect(() => {
@@ -165,7 +169,7 @@ export default function ImageGalleryCarousel({
           className="pointer-events-none fixed -z-50 hidden h-20 w-20 rounded-full bg-white mix-blend-difference md:flex md:items-center md:justify-center"
           style={circleStyle}
         >
-          {/* Arrow pointing top-right */}
+          {/* Arrow pointing top-right (top-left in RTL) */}
           <svg
             width="24"
             height="24"
@@ -175,7 +179,7 @@ export default function ImageGalleryCarousel({
             strokeWidth="2"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="text-white mix-blend-difference"
+            className={`text-white mix-blend-difference ${isRtl ? "rotate-180" : ""}`}
           >
             <path d="M7 7h10v10" />
             <path d="M7 17L17 7" />
