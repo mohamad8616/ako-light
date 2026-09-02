@@ -63,9 +63,10 @@ export default function Navbar() {
             {/* Logo */}
             <Link
               href="/"
+              onClick={() => setActiveOverlay(null)}
               className={`group cursor-pointer ${overlayOpen ? "pointer-events-auto" : ""}`}
             >
-              <Logo className="h-auto  fill-white transition-all duration-500 group-hover:opacity-70  z-999" />
+              <Logo className="z-999 h-auto fill-white transition-all duration-500 group-hover:opacity-70" />
             </Link>
 
             {/* Right Side — only Search + Menu + products*/}
@@ -79,7 +80,6 @@ export default function Navbar() {
                 </button>
               </CollapsibleNavItem>
 
-              
               <CollapsibleNavItem
                 hidden={activeOverlay === "menu"}
                 className={overlayOpen ? "pointer-events-auto" : undefined}
