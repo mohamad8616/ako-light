@@ -43,10 +43,12 @@ function DialogContent({
   children,
   showCloseButton = true,
   motionProps,
+  onExitComplete,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean
   motionProps?: MotionProps
+  onExitComplete?: () => void
 }) {
   return (
     <DialogPortal>
@@ -72,6 +74,11 @@ function DialogContent({
                   }
                   exit={motionProps.exit}
                   transition={motionProps.transition}
+                  onAnimationComplete={() => {
+                    if (state.transitionStatus === "ending") {
+                      onExitComplete?.()
+                    }
+                  }}
                 />
               )
             : undefined

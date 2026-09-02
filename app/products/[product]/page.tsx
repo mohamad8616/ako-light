@@ -18,7 +18,7 @@ export default async function ProductCategoryPage({ params }: PageProps) {
   return (
     <main className="bg-background w-full">
       <ProductsHeader title={category.name} />
-      <ProductsGrid categories={category.subCategories} parentSlug={product} />
+      <ProductsGrid products={category.products} parentSlug={product} />
     </main>
   );
 }

@@ -12,7 +12,7 @@ export default function FloatingCartButton({ onClick }: Props) {
   const count = useCartCount();
 
   // Hidden until hydrated (avoids a mismatch) and until something's
-  // actually in the cart — same idea as WishlistButton.
+  // actually in the cart.
   if (!hydrated || count === 0) return null;
 
   return (

@@ -75,7 +75,7 @@ export function useCartCount() {
   );
 }
 
-// Same SSR-safe pattern as useWishlistHydrated: fixed false on the server
+// SSR-safe hydration pattern: fixed false on the server
 // and the client's first render, then settles on the real (persisted)
 // value — no effect, no hydration mismatch.
 const noopSubscribe = () => () => {};

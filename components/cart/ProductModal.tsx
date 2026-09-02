@@ -4,10 +4,11 @@ import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useCart } from "@/lib/cart/store";
-import type { FragranceProduct } from "@/lib/data/fragranceProduct";
+import { Product } from "@/lib/data/productCategories";
+import Image from "next/image";
 
 interface Props {
-  product: FragranceProduct;
+  product: Product;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -25,8 +26,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
         name: product.name,
         image: product.images[0],
         price: product.price,
-        currency: product.currency,
-        variantLabel: product.bottleSize,
+        currency: "EUR",
       },
       quantity
     );
@@ -66,10 +66,11 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
           {/* Gallery */}
           <div className="flex flex-col gap-3">
             <div className="relative aspect-square w-full overflow-hidden bg-stone-100">
-              <img
+              <Image
                 src={product.images[activeImage]}
                 alt={product.name}
-                className="h-full w-full object-cover"
+                fill
+                className="object-cover"
               />
 
               {/* Prev/next — mobile convenience alongside the thumbnails below */}
@@ -102,7 +103,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
                       : "border-transparent hover:border-stone-300"
                   }`}
                 >
-                  <img src={src} alt="" className="h-full w-full object-cover" />
+                  <Image src={src} alt="" width={64} height={64} className="object-cover" />
                 </button>
               ))}
             </div>
@@ -112,7 +113,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
           <div className="flex flex-col">
             <h2 className="font-din text-2xl font-medium text-stone-950">{product.name}</h2>
             <p className="font-din mt-2 text-lg text-stone-950">
-              {formatPrice(product.price, product.currency)}
+              {formatPrice(product.price)}
             </p>
 
             <div className="mt-6 flex items-center gap-3">
@@ -142,22 +143,8 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
               </button>
             </div>
 
-            {product.shippingNote && (
-              <p className="font-din mt-6 text-sm font-medium text-stone-950">
-                {product.shippingNote}
-              </p>
-            )}
-
-            <div className="font-din mt-6 flex flex-col gap-2 text-sm text-stone-700">
-              {product.bottleSize && <p>Bottle Size: {product.bottleSize}</p>}
-              {product.availability && <p>Availability: {product.availability}</p>}
-              {product.freeShipping && <p>Free shipping</p>}
-            </div>
-
             <div className="font-din mt-6 flex flex-col gap-4 text-sm leading-relaxed text-stone-600">
-              {product.description.map((p, i) => (
-                <p key={i}>{p}</p>
-              ))}
+              <p>{product.description}</p>
             </div>
           </div>
         </div>
@@ -166,7 +153,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
   );
 }
 
-function formatPrice(amount: number, currency: string) {
+function formatPrice(amount: number, currency = "EUR") {
   const symbol = currency === "EUR" ? "€" : currency;
   return `${symbol}${amount.toFixed(2).replace(".", ",")}`;
 }

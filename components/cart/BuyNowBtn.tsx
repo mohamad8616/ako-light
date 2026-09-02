@@ -1,18 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import ProductModal from "@/components/cart/ProductModal";
 import CartSheet from "@/components/cart/CartSheet";
 import FloatingCartButton from "@/components/cart/FloatingCartButton";
+import ProductModal from "@/components/cart/ProductModal";
 import { fragranceProduct34 } from "@/lib/data/fragranceProduct";
+import { Product } from "@/lib/data/productCategories";
+import { useLenis } from "@/lib/lenisStore";
+import { useEffect, useState } from "react";
 
 // Drop this pattern wherever your "Buy Now" button lives (e.g. the
 // fragrance hero section). All three pieces are independent — the
 // FloatingCartButton doesn't care how CartSheet got opened, it just
 // needs somewhere to call when clicked.
-export default function BuyNowExample() {
+export default function BuyBtn({product}:{product:Product}) {
   const [modalOpen, setModalOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const { lock, unlock } = useLenis();
+
+  useEffect(() => {
+    if (modalOpen || cartOpen) lock();
+    else unlock();
+  }, [modalOpen, lock, unlock,cartOpen]);
 
   return (
     <>
@@ -24,7 +32,7 @@ export default function BuyNowExample() {
       </button>
 
       <ProductModal
-        product={fragranceProduct34}
+        product={product}
         open={modalOpen}
         onOpenChange={setModalOpen}
       />
