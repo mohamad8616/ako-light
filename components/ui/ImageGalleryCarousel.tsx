@@ -1,15 +1,14 @@
 ﻿"use client";
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import HomepageSection from "@/utility/HomepageSection";
 import SectionSubTitle from "@/utility/SectionSubTitle";
 import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { carouselImages } from "@/lib/data/imageGalleries";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-const images = carouselImages;
+// const images = carouselImages;
 
 // ----- detect touch/coarse pointer (gates the cursor circle only) -----
 const subscribeToPointer = (callback: () => void) => {
@@ -35,10 +34,12 @@ export default function ImageGalleryCarousel({
   circle = false,
   multiWidth = false,
   mobileColumn = false,
+  images,
 }: {
   circle?: boolean;
   multiWidth?: boolean;
   mobileColumn?: boolean;
+  images?: string[];
 }) {
   const sectionRef = useRef<HTMLElement>(null);
   const { dir } = useLanguage();
@@ -59,7 +60,9 @@ export default function ImageGalleryCarousel({
   const [hovering, setHovering] = useState(false);
 
   // ----- random widths for multiWidth mode -----
-  const [randomWidths] = useState(() => generateRandomWidths(images.length));
+  const [randomWidths] = useState(() =>
+    generateRandomWidths(images?.length ?? 0),
+  );
 
   const isTouch = useSyncExternalStore(
     subscribeToPointer,
@@ -101,6 +104,8 @@ export default function ImageGalleryCarousel({
       "opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), scale 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
   };
 
+  if (!images || images.length === 0) return null;
+
   return (
     <HomepageSection
       ref={sectionRef}
@@ -114,7 +119,7 @@ export default function ImageGalleryCarousel({
       </div>
 
       {/* ----- mobile column layout (only when mobileColumn is true, hidden on lg+) ----- */}
-      {mobileColumn && <MobileColumn />}
+      {mobileColumn && images.length > 0 && <MobileColumn images={images} />}
 
       {/* ----- carousel â€” Embla viewport (hidden on mobile when mobileColumn is true) ----- */}
       <div className={mobileColumn ? "hidden lg:block" : ""}>
@@ -190,7 +195,7 @@ export default function ImageGalleryCarousel({
   );
 }
 
-function MobileColumn() {
+function MobileColumn({ images }: { images: string[] }) {
   return (
     <div className="mx-auto block lg:hidden">
       <div className="grid grid-cols-1 gap-2">

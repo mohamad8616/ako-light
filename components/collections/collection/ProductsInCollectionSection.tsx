@@ -2,6 +2,7 @@
 
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import { productCategories } from "@/lib/data/productCategories";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import HomepageSection from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
@@ -49,6 +50,7 @@ interface HoveredState {
 }
 
 export default function ProductsInCollectionSection() {
+  const { t } = useLanguage();
   const isDesktop = useIsDesktop();
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -104,7 +106,7 @@ export default function ProductsInCollectionSection() {
           <h1 className="font-din text-4xl font-medium tracking-tight text-white uppercase md:text-5xl">
             Products in the
           </h1>
-          <PlusTextBtn href={"/products"} text="view all products" />
+          <PlusTextBtn href={"/products"} text={t("ui.viewAllProducts")} />
         </div>
 
         {/* Tracking photo — desktop only */}
@@ -163,20 +165,24 @@ export default function ProductsInCollectionSection() {
               </h2>
 
               <div className="mt-4 flex flex-col gap-2 lg:mt-0">
-                {category.subCategories.map((sub) => (
+                {category.products.map((product) => (
                   <Link
-                    key={sub.slug}
-                    href={`/products/${category.slug}/${sub.slug}`}
+                    key={product.slug}
+                    href={`/products/${category.slug}/${product.slug}`}
                     onMouseEnter={(e) =>
-                      handleItemHover(sub.slug, sub.hoverImage, e.currentTarget)
+                      handleItemHover(
+                        product.slug,
+                        product.hoverImage,
+                        e.currentTarget,
+                      )
                     }
                     className={`font-din w-fit text-sm tracking-tight uppercase transition-colors duration-200 ${
-                      hovered?.slug === sub.slug
+                      hovered?.slug === product.slug
                         ? "font-bold text-white"
                         : "text-stone-400 hover:text-white"
                     }`}
                   >
-                    {sub.name}
+                    {product.name}
                   </Link>
                 ))}
               </div>

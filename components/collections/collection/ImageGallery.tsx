@@ -106,7 +106,7 @@ const spanClassBySpan: Record<1 | 2 | 3, string> = {
  * first (hydration) render, causing a mismatch — so this always reports a
  * fixed value (MOBILE_RANDOM_MAX) for SSR/hydration via getServerSnapshot,
  * then settles on one true random value, generated once and cached, right
- * after mount. Same pattern as the earlier useIsDesktop/useWishlistHydrated
+ * after mount. Same pattern as the earlier useIsDesktop/useCartHydrated
  * fixes — no effect, no setState-in-effect warning.
  */
 function useRandomMobileCount(min: number, max: number) {

@@ -5,11 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import HomepageSection from "@/utility/HomepageSection";
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
-import type { Product, RelatedProduct } from "@/lib/data/prods";
-import { products } from "@/lib/data/prods";
+import type { Product, RelatedProduct } from "@/lib/data/productCategories";
+import { products } from "@/lib/data/productCategories";
 
 function getRelatedProducts(product: Product): RelatedProduct[] {
-  const sameCategory = Object.values(products).filter(
+  const sameCategory = products.filter(
     (p) => p.category === product.category && p.slug !== product.slug,
   );
 

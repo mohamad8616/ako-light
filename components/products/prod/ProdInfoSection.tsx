@@ -1,7 +1,7 @@
 "use client";
 
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
-import type { Product } from "@/lib/data/prods";
+import type { Product } from "@/lib/data/productCategories";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import { AnimatePresence, motion } from "framer-motion";

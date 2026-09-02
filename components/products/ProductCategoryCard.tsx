@@ -9,8 +9,7 @@ import UnderLineEffect from "../ui/UnderLineEffect";
 interface ProductCategoryCardProps {
   name: string;
   slug: string;
-  image: string;
-  hoverImage?: string;
+  images: string[];
   index: number;
   parentSlug?: string;
 }
@@ -18,15 +17,14 @@ interface ProductCategoryCardProps {
 export default function ProductCategoryCard({
   name,
   slug,
-  image,
-  hoverImage,
+  images,
   index,
   parentSlug,
 }: ProductCategoryCardProps) {
   const href = parentSlug
     ? `/products/${parentSlug}/${slug}`
     : `/products/${slug}`;
-
+  console.log(images);
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
@@ -37,18 +35,18 @@ export default function ProductCategoryCard({
       <Link href={href} className="group block">
         <div className="relative aspect-4/3 h-full w-full overflow-hidden bg-[#111]">
           <Image
-            src={image}
+            src={images[0]}
             alt={`${name} default`}
             fill
             className={`absolute object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-              hoverImage
+              images[1]
                 ? "group-hover:opacity-0"
                 : "transition duration-300 group-hover:scale-105"
             }`}
           />
-          {hoverImage && (
+          {images[1] && (
             <Image
-              src={hoverImage}
+              src={images[1]}
               alt={`${name} hover`}
               fill
               className="object-cover opacity-0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-100"

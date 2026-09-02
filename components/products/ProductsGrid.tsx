@@ -1,31 +1,56 @@
 ﻿"use client";
 
+import HomepageSection from "@/utility/HomepageSection";
 import ProductCategoryCard from "./ProductCategoryCard";
-import { productCategories } from "@/lib/data/productCategories";
+import { Product, ProductCategory } from "@/lib/data/productCategories";
 
 interface ProductsGridProps {
-  categories?: Array<{ name: string; slug: string; image: string; hoverImage?: string }>;
+  categories?: ProductCategory[];
+  products?: Product[];
   parentSlug?: string;
 }
 
-const defaultCategories = productCategories.map((c) => ({
-  name: c.name,
-  slug: c.slug,
-  image: "https://picsum.photos/seed/" + c.slug + "/700/525",
-}));
 
-export default function ProductsGrid({ categories, parentSlug }: ProductsGridProps) {
-  const items = categories ?? defaultCategories;
+export default function ProductsGrid({
+  categories,
+  products,
+  parentSlug,
+}: ProductsGridProps) {
+  const items = products
+    ? products.map((product) => ({
+        key: product.slug,
+        name: product.name,
+        slug: product.slug,
+        images: [product.images[0], product.hoverImage].filter(Boolean),
+      }))
+    : (categories ?? []).map((category) => ({
+        key: category.slug,
+        name: category.name,
+        slug: category.slug,
+        images: category.products[0]?.images ?? [],
+      }));
 
+  if (items.length === 0) {
+    return (
+      <HomepageSection className="bg-background flex w-full items-center justify-center pb-20 md:pb-28">
+        <p>There is no product available</p>
+      </HomepageSection>
+    );
+  }
   return (
-    <section className="w-full bg-background pb-20 md:pb-28">
-      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
-        <div className="grid grid-cols-1 gap-x-3 gap-y-12 md:gap-y-16 md:grid-cols-3">
-          {items.map((category, i) => (
-            <ProductCategoryCard key={category.slug} index={i} parentSlug={parentSlug} {...category} />
-          ))}
-        </div>
+    <HomepageSection className="bg-background w-full pb-20 md:pb-28">
+      <div className="grid grid-cols-1 gap-x-3 gap-y-12 md:grid-cols-3 md:gap-y-16">
+        {items.map((item, i) => (
+          <ProductCategoryCard
+            key={item.key}
+            index={i}
+            parentSlug={parentSlug}
+            name={item.name}
+            slug={item.slug}
+            images={item.images}
+          />
+        ))}
       </div>
-    </section>
+    </HomepageSection>
   );
 }
