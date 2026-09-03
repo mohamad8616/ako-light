@@ -1,22 +1,36 @@
 "use client";
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion, useMotionValue, useSpring } from "framer-motion";
 import { Play } from "lucide-react";
 import { useRef, useState } from "react";
 import { EASE } from "../../utility/HomepageSection";
 import HeroSectionText from "./HeroSectionText";
 
-export default function HeroVideo({
-  firstLine,
-  secondLine,
-  btn,
-  videoSrc,
-}: {
-  firstLine: string;
-  secondLine: string;
-  btn: string;
+type HeroVideoProps = {
+  firstLineKey?: string;
+  secondLineKey?: string;
+  btnKey?: string;
   videoSrc: string;
-}) {
+  firstLine?: string;
+  secondLine?: string;
+  btn?: string;
+};
+
+export default function HeroVideo({
+  firstLineKey,
+  secondLineKey,
+  btnKey,
+  videoSrc,
+  firstLine: firstLineProp,
+  secondLine: secondLineProp,
+  btn: btnProp,
+}: HeroVideoProps) {
+  const { t } = useLanguage();
+
+  const firstLine = firstLineKey ? t(firstLineKey) : (firstLineProp ?? "");
+  const secondLine = secondLineKey ? t(secondLineKey) : (secondLineProp ?? "");
+  const btn = btnKey ? t(btnKey) : (btnProp ?? "");
   const sectionRef = useRef<HTMLDivElement>(null);
   const [hovering, setHovering] = useState(false);
   // True while the cursor is over an interactive element (the play button)
@@ -79,7 +93,11 @@ export default function HeroVideo({
         <Play size={22} className="ml-1 fill-black text-black" />
       </motion.div>
 
-      <HeroSectionText firstLine={firstLine} secondLine={secondLine} btn={btn} />
+      <HeroSectionText
+        firstLine={firstLine}
+        secondLine={secondLine}
+        btn={btn}
+      />
     </section>
   );
 }

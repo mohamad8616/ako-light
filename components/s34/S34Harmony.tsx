@@ -1,13 +1,17 @@
 "use client";
 
-import { s34Sections } from "@/lib/data/s34";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import { motion } from "framer-motion";
 import { EASE } from "../../utility/HomepageSection";
 
 export default function S34Harmony() {
-  const { harmony } = s34Sections;
+  const { t } = useLanguage();
+
+  const kicker = t("s34.harmony.kicker");
+  const p1 = t("s34.harmony.p1");
+  const p2 = t("s34.harmony.p2");
 
   return (
     <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
@@ -19,17 +23,16 @@ export default function S34Harmony() {
             whileInView={{ y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: EASE }}
-            className="text-background font-medium text-2xl leading-[0.95] tracking-wide uppercase md:text-4xl"
+            className="text-background text-2xl leading-[0.95] font-medium tracking-wide uppercase md:text-4xl"
           >
-            {harmony.kicker}
+            {kicker}
           </motion.h2>
         </div>
 
         {/* Three-column paragraphs */}
         <div className="mt-12 grid grid-cols-1 gap-8 md:mt-16 md:grid-cols-3 md:gap-10">
-          {harmony.paragraphs.map((p, i) => (
-            <Paragraph key={i}>{p}</Paragraph>
-          ))}
+          <Paragraph>{p1}</Paragraph>
+          <Paragraph>{p2}</Paragraph>
         </div>
       </div>
     </HomepageSection>
