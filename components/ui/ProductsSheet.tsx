@@ -15,6 +15,7 @@ interface Props {
 
 const linkClasses =
   "w-fit font-din text-sm tracking-tighter text-white uppercase no-underline transition-colors hover:text-stone-400 text-center";
+// Noora for Persian, DinNext (default) for English, applied to the products links.
 const categoryKeys = [
   "products.lighting",
   "products.designers",
@@ -68,7 +69,7 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
       actionsRef={actionsRef}
     >
       {/* ---------- CUSTOM TRIGGER ---------- */}
-      <SheetTrigger className="font-din relative z-50 h-5 cursor-pointer overflow-hidden text-sm font-normal tracking-tighter uppercase focus:outline-none">
+      <SheetTrigger className={`${lang === "fa" ? "font-noora" : "font-din"} relative z-50 h-5 cursor-pointer overflow-hidden text-sm font-normal tracking-tighter uppercase focus:outline-none`}>
         <span
           className={`block transition-transform duration-300 ease-in-out ${
             open ? "-translate-y-full" : "translate-y-0"
@@ -99,7 +100,7 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
           }}
           onExitComplete={() => actionsRef.current?.unmount()}
         >
-          <div className="font-din mt-9 flex h-full flex-col items-start justify-center gap-6">
+          <div className={`${lang === "fa" ? "font-noora" : "font-din"} mt-9 flex h-full flex-col items-start justify-center gap-6`}>
             <Link
               href="/products"
               className={`${linkClasses} group relative mb-6 cursor-pointer`}
@@ -142,7 +143,7 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
           }}
           onExitComplete={() => actionsRef.current?.unmount()}
         >
-          <div className="font-din mt-9 flex h-full flex-col items-center justify-center gap-6">
+          <div className={`${lang === "fa" ? "font-noora" : "font-din"} mt-9 flex h-full flex-col items-center justify-center gap-6`}>
             <Link
               href="/products"
               className={`${linkClasses} group relative mb-6 cursor-pointer`}

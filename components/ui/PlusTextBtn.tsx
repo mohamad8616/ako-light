@@ -21,7 +21,7 @@ const BUTTON_CLASSES =
 
 // The SVG is a fixed-size block element centered by its flex wrapper, so its
 // center coincides with the wrapper center and rotating it stays in place.
-// strokes are inset off the viewBox edges so they are not clipped/shifted.
+// strokes are inset off the viewBox edges so they are not clipped/shifted.t
 const PlusIcon = () => (
   <svg
     width="10"

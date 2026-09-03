@@ -1,7 +1,10 @@
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
+﻿import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 const MenuBtns = ({onClose}: { onClose: () => void }) => {
       const { t, lang, setLang } = useLanguage();
+
+      // Noora for Persian, DinNext (default) for English
+      const fontForLang = lang === "fa" ? "font-noora" : "font-din";
     
   return (
     <div className="mx-auto grid w-full max-w-[1600px] grid-cols-2 items-center gap-x-10 px-8 pb-10 md:px-20 md:pb-12 lg:grid-cols-4">
@@ -14,7 +17,7 @@ const MenuBtns = ({onClose}: { onClose: () => void }) => {
       >
         <button
           onClick={() => setLang("en")}
-          className={`w-fit cursor-pointer text-left text-sm font-medium tracking-[0.08em] uppercase transition-colors duration-300 ${
+          className={`${fontForLang} w-fit cursor-pointer text-left text-sm font-medium tracking-[0.08em] uppercase transition-colors duration-300 ${
             lang === "en" ? "text-white" : "text-white/30 hover:text-white/60"
           }`}
         >
@@ -22,7 +25,7 @@ const MenuBtns = ({onClose}: { onClose: () => void }) => {
         </button>
         <button
           onClick={() => setLang("fa")}
-          className={`w-fit cursor-pointer text-left text-sm font-medium tracking-[0.08em] transition-colors duration-300 ${
+          className={`${fontForLang} w-fit cursor-pointer text-left text-sm font-medium tracking-[0.08em] transition-colors duration-300 ${
             lang === "fa" ? "text-white" : "text-white/30 hover:text-white/60"
           }`}
         >

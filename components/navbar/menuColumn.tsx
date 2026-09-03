@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
@@ -15,16 +15,19 @@ interface Props {
   children?: React.ReactNode;
 }
 
-const LinkStyles =
-  "text-sm font-din  text-white transition-colors duration-300 hover:text-neutral-400 md:text-lg";
-
 export default function MenuColumn({
   titleKey,
   links,
   delay,
   onLinkClick,
 }: Props) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+
+  // Noora for Persian, DinNext (default) for English - full static strings
+  // so Tailwind can keep both classes.
+  const fontForLang = lang === "fa" ? "font-noora" : "font-din";
+  const LinkStyles = `text-sm ${fontForLang} text-white transition-colors duration-300 hover:text-neutral-400 md:text-lg`;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}
@@ -34,7 +37,7 @@ export default function MenuColumn({
         delay,
       }}
     >
-      <h2 className="font-din mb-5 text-[20px] tracking-tighter text-white/35 uppercase md:mb-6 md:text-[28px]">
+      <h2 className={`${fontForLang} mb-5 text-[20px] tracking-tighter text-white/35 uppercase md:mb-6 md:text-[28px]`}>
         {t(titleKey)}
       </h2>
 
