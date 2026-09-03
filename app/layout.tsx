@@ -35,6 +35,11 @@ const dinNextLTPro = localFont({
   variable: "--font-dinnext",
 });
 
+const noora = localFont({
+  src: "../public/fonts/noora/Noora-Regular.woff2",
+  variable: "--font-dinnext",
+});
+
 export const metadata: Metadata = {
   title: "Henge | Italian Design Furniture",
   description:
@@ -62,6 +67,7 @@ export default async function RootLayout({
         jetBrainsMono.variable,
         dinNextLTPro.variable,
         "font-sans",
+        noora.variable
       )}
     >
       <body
