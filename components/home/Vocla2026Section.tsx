@@ -2,18 +2,21 @@
 
 import { homepageSections } from "@/lib/data/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 import SplitBanner from "./SplitBanner";
 
 export default function Vocla2026Section() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { vocla } = homepageSections;
 
   return (
     <SplitBanner
-      sectionClassName="bg-background! relative w-full py-40 md:py-80"
+      sectionClassName="bg-background! text-background-secondary! relative w-full py-40 md:py-80"
+      paragraphTextColor="text-background-secondary"
+      titleTextColor="text-background-secondary"
       image={vocla.image}
       imageAlt={t("vocla.title")}
       title={t("vocla.title")}
@@ -33,7 +36,10 @@ export default function Vocla2026Section() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.7, ease: EASE }}
-        className="mb-12 block font-serif text-3xl text-white md:mb-16 md:text-5xl"
+        className={cn(
+          "font-din mb-12 block text-3xl text-white md:mb-16 md:text-5xl",
+          lang === "fa" ? "font-noora" : "font-din",
+        )}
       >
         {t("vocla.hLife")}
       </motion.span>

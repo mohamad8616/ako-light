@@ -5,9 +5,11 @@ import { motion } from "framer-motion";
 const SectionTitle = ({
   children,
   className,
+  textColor,
 }: {
   children: React.ReactNode;
   className?: string;
+  textColor?: string;
 }) => {
   const { lang } = useLanguage();
   return (
@@ -16,7 +18,7 @@ const SectionTitle = ({
       whileInView={{ y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.8, delay: 0.1, ease: EASE }}
-      className={`${lang === "fa" && "font-noora"} text-background mt-2 text-2xl leading-[0.95] tracking-wide uppercase md:text-4xl ${className}`}
+      className={`${lang === "fa" ? "font-noora" : ""} ${textColor ?? "text-background"} mt-2 text-2xl leading-[0.95] tracking-wide uppercase md:text-4xl ${className}`}
     >
       {children}
     </motion.h2>

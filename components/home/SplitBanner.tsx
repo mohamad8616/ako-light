@@ -23,6 +23,10 @@ interface SplitBannerProps {
   stretch?: boolean;
   children?: React.ReactNode;
   page?: string;
+  /** Text color class forwarded to the Paragraphs (defaults to Paragraph's own). */
+  paragraphTextColor?: string;
+  /** Text color class forwarded to the SectionTitle (defaults to SectionTitle's own). */
+  titleTextColor?: string;
 }
 
 export default function SplitBanner({
@@ -40,6 +44,8 @@ export default function SplitBanner({
   badge,
   stretch = false,
   children,
+  paragraphTextColor,
+  titleTextColor,
 }: SplitBannerProps) {
   const imageCol = reverse ? "lg:col-span-7" : "lg:col-span-5";
   const textCol = reverse ? "lg:col-span-5" : "lg:col-span-7";
@@ -54,7 +60,11 @@ export default function SplitBanner({
           {/* Mobile only: kicker/subtitle row above the image */}
           <div className="lg:hidden">
             {page && <SectionSubTitle>{page}</SectionSubTitle>}
-            {<SectionTitle className="font-noora">{title}</SectionTitle>}
+            {
+              <SectionTitle className="font-noora" textColor={titleTextColor}>
+                {title}
+              </SectionTitle>
+            }
           </div>
 
           <div className={`relative ${imageCol}`}>
@@ -63,7 +73,7 @@ export default function SplitBanner({
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 1.1, ease: EASE }}
-              className={`group relative aspect-4/5 h-125.75 max-h-125.75 w-3/4 max-w-3/4 overflow-hidden lg:aspect-3/4 ${imageClassName ?? ""}`}
+              className={`group relative mx-auto aspect-4/5 h-125.75 max-h-125.75 w-full overflow-hidden lg:aspect-3/4 lg:w-3/4 ${imageClassName ?? ""}`}
             >
               <Image
                 src={image}
@@ -84,12 +94,14 @@ export default function SplitBanner({
                 {kicker && (
                   <div className="font-noora overflow-hidden">{kicker}</div>
                 )}
-                <SectionTitle className="font-noora">{title}</SectionTitle>{" "}
+                <SectionTitle className="font-noora" textColor={titleTextColor}>
+                  {title}
+                </SectionTitle>{" "}
               </div>
 
-              <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10">
+              <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2 sm:gap-10">
                 {paragraphs.map((p, i) => (
-                  <Paragraph key={i} className="font-noora">
+                  <Paragraph key={i} textColor={paragraphTextColor}>
                     {p}
                   </Paragraph>
                 ))}
