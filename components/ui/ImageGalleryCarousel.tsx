@@ -35,11 +35,17 @@ export default function ImageGalleryCarousel({
   multiWidth = false,
   mobileColumn = false,
   images,
+  category,
 }: {
   circle?: boolean;
   multiWidth?: boolean;
   mobileColumn?: boolean;
   images?: string[];
+  category?: {
+    name: string;
+    image: string;
+    link: string;
+  }[];
 }) {
   const sectionRef = useRef<HTMLElement>(null);
   const { dir } = useLanguage();
@@ -104,7 +110,7 @@ export default function ImageGalleryCarousel({
       "opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), scale 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
   };
 
-  if (!images || images.length === 0) return null;
+  if (!images || images.length === 0 && !category) return null;
 
   return (
     <HomepageSection
@@ -125,7 +131,7 @@ export default function ImageGalleryCarousel({
       <div className={mobileColumn ? "hidden lg:block" : ""}>
         <div
           ref={emblaRef}
-          className="no-scrollbar mx-autocursor-grab overflow-hidden pb-2 active:cursor-grabbing"
+          className="no-scrollbar mx-auto cursor-grab overflow-hidden pb-2 active:cursor-grabbing"
         >
           {/* Embla container (first child of the viewport) */}
           <div

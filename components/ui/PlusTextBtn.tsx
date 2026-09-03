@@ -16,8 +16,11 @@ type PlusTextBtnProps =
   | (PlusTextBtnBase &
       ButtonHTMLAttributes<HTMLButtonElement> & { href?: undefined });
 
+// inline-flex on ALL sizes so the icon and text stay flex-centered together on
+// mobile too — a base `inline`/`flex` conflict made <sm screens drop flexbox
+// centering and misalign the icon against the text baseline.
 const BUTTON_CLASSES =
-  "group flex inline shrink-0 cursor-pointer items-center gap-2 text-sm uppercase tracking-[0.15em] transition duration-300 flex items-center sm:inline-flex";
+  "group inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 text-sm uppercase tracking-[0.15em] transition-all duration-300";
 
 // The SVG is a fixed-size block element centered by its flex wrapper, so its
 // center coincides with the wrapper center and rotating it stays in place.

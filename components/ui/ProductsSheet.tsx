@@ -13,9 +13,10 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
+// Font-family is inherited from the SheetContent wrapper, which applies
+// Noora for Persian / DinNext for English.
 const linkClasses =
-  "w-fit font-din text-sm tracking-tighter text-white uppercase no-underline transition-colors hover:text-stone-400 text-center";
-// Noora for Persian, DinNext (default) for English, applied to the products links.
+  "w-fit text-sm tracking-tighter text-white uppercase no-underline transition-colors hover:text-stone-400 text-center";
 const categoryKeys = [
   "products.lighting",
   "products.designers",
