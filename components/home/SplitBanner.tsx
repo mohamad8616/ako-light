@@ -1,6 +1,7 @@
 "use client";
 
 import { EASE } from "@/utility/HomepageSection";
+import { Paragraph } from "@/utility/Paragraph";
 import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
@@ -53,7 +54,7 @@ export default function SplitBanner({
           {/* Mobile only: kicker/subtitle row above the image */}
           <div className="lg:hidden">
             {page && <SectionSubTitle>{page}</SectionSubTitle>}
-            {<SectionTitle>{title}</SectionTitle>}
+            {<SectionTitle className="font-noora">{title}</SectionTitle>}
           </div>
 
           <div className={`relative ${imageCol}`}>
@@ -79,14 +80,18 @@ export default function SplitBanner({
           >
             <div>
               <div className="hidden lg:block">
-                <SectionSubTitle>{page}</SectionSubTitle>
-                {kicker && <div className="overflow-hidden">{kicker}</div>}
-                <SectionTitle>{title}</SectionTitle>{" "}
+                <SectionSubTitle className="font-noora">{page}</SectionSubTitle>
+                {kicker && (
+                  <div className="font-noora overflow-hidden">{kicker}</div>
+                )}
+                <SectionTitle className="font-noora">{title}</SectionTitle>{" "}
               </div>
 
               <div className="mt-10 grid grid-cols-1 gap-8 sm:grid-cols-2 sm:gap-10">
                 {paragraphs.map((p, i) => (
-                  <div key={i}>{p}</div>
+                  <Paragraph key={i} className="font-noora">
+                    {p}
+                  </Paragraph>
                 ))}
               </div>
             </div>

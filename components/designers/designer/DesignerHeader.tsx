@@ -1,10 +1,12 @@
-"use client";
+﻿"use client";
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { EASE } from "@/utility/HomepageSection";
 
 export default function DesignerHeader({ name }: { name: string }) {
+  const { t } = useLanguage();
   return (
     <header className="w-full bg-background pt-28 md:pt-36">
       <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
@@ -19,7 +21,7 @@ export default function DesignerHeader({ name }: { name: string }) {
             href="/designers"
             className="text-white underline underline-offset-4 transition-colors duration-300 hover:text-white/70"
           >
-            Designers
+            {t("menu.designers")}
           </Link>
           <span className="text-white/40">/</span>
           <span className="text-white/70">{name}</span>

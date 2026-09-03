@@ -45,7 +45,7 @@ export default function HomeCollectionBanner() {
                 <SectionTitle>{t("homeCollection.title")}</SectionTitle>
               </div>
 
-              <Paragraph>{t("homeCollection.description")}</Paragraph>
+              <Paragraph className="font-noora">{t("homeCollection.description")}</Paragraph>
             </div>
 
             <motion.div

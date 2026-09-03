@@ -1,9 +1,10 @@
-"use client";
+﻿"use client";
 
 import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
 } from "react";
 import {
@@ -48,6 +49,14 @@ export function LanguageProvider({
   );
 
   const dir = lang === "fa" ? "rtl" : "ltr";
+
+  // Keep the document (rendered server-side from the henge-lang cookie) in
+  // sync when the language changes at runtime. Runs only after hydration,
+  // so it cannot cause hydration mismatches.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === "fa" ? "rtl" : "ltr";
+  }, [lang]);
 
   const writeLangCookie = (l: Language) => {
     try {

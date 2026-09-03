@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import { Paragraph } from "@/utility/Paragraph";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { pick, type Localized } from "@/lib/i18n/localized";
 import { motion } from "framer-motion";
 import HomepageSection, { EASE } from "@/utility/HomepageSection";
 import Image from "next/image";
@@ -10,7 +11,7 @@ import Image from "next/image";
 interface DesignerBioProps {
   name: string;
   image: string;
-  bio: string[];
+  bio: (Localized | string)[];
   website?: string;
 }
 
@@ -20,15 +21,15 @@ export default function DesignerBio({
   bio,
   website,
 }: DesignerBioProps) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   return (
     <HomepageSection className="bg-background w-full pb-20 md:pb-28">
         {/* Three independent grid items with a single shared order (1, 2, 3)
             that works for BOTH breakpoints at once: on mobile (grid-cols-1)
-            they simply stack image → text → CTA in that order. On desktop
+            they simply stack image -> text -> CTA in that order. On desktop
             (grid-cols-12), image spans 7 + text spans 5 exactly fill row 1,
             so the CTA (also spans 7, same order) automatically wraps to
-            row 2 directly under the image — no responsive order overrides
+            row 2 directly under the image - no responsive order overrides
             needed. */}
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-x-14 lg:gap-y-10">
           <motion.div
@@ -49,7 +50,7 @@ export default function DesignerBio({
           <div className="order-2 space-y-6 lg:col-span-5">
             {bio.map((paragraph, i) => (
               <Paragraph key={i} textColor="text-background-secondary">
-                {paragraph}
+                {pick(paragraph, lang)}
               </Paragraph>
             ))}
           </div>

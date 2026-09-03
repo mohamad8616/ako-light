@@ -10,11 +10,11 @@ import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
 
 export default function HomePage() {
   return (
-    <main className="w-full space-y-18 lg:space-y-60 bg-background-secondary">
+    <main className="w-full space-y-18 lg:space-y-60 font-noora bg-background-secondary">
       <HeroSection />
       <ImageGalleryCarousel />
       <HengeParisBanner />
-      <HengeLondonBanner />
+      {/* <HengeLondonBanner /> */}
       <VideoSection />
       <CatalogueSection />
       <HomeCollectionBanner />

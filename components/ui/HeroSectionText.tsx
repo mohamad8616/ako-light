@@ -3,7 +3,7 @@
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { EASE } from "../../utility/HomepageSection";
+import HomepageSection, { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 import ScrollIndicator from "../ui/ScrollIndicator";
 
@@ -18,13 +18,12 @@ export default function HeroSectionText({
 }) {
   const { lang } = useLanguage();
   return (
-    <div className="absolute inset-x-0 bottom-0 z-10">
-      <div className="mx-auto max-w-[1600px] px-6 pb-16 md:px-12 md:pb-20 lg:px-20 lg:pb-24 xl:px-[8.5vw]">
+    <HomepageSection className="absolute inset-x-0 bottom-0 z-10 pb-16 md:pb-20 lg:pb-24">
         <div className="">
           <motion.h1
             initial={{ y: "110%" }}
             animate={{ y: 0 }}
-            transition={{ duration: 0.9, delay: 0.9, ease: EASE }}
+            transition={{ duration: 0.9, delay: 0.65, ease: EASE }}
             className={cn(
               "text-4xl leading-[0.95] tracking-tighter text-white uppercase md:text-6xl lg:text-7xl xl:text-7xl",
               lang === "fa" ? "font-noora" : "font-din",
@@ -50,7 +49,6 @@ export default function HeroSectionText({
 
         {/* Scroll indicator */}
         <ScrollIndicator />
-      </div>
-    </div>
+    </HomepageSection>
   );
 }

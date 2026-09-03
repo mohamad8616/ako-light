@@ -10,7 +10,7 @@ import SplitBanner from "./SplitBanner";
 export default function HengeParisBanner() {
   const { t } = useLanguage();
   const { paris } = homepageSections;
-
+  
   return (
     <SplitBanner
       image={paris.image}
@@ -19,8 +19,8 @@ export default function HengeParisBanner() {
       title={t("paris.title")}
       page={t("paris.page")}
       paragraphs={[
-        <Paragraph key="p1">{t("paris.p1")}</Paragraph>,
-        <Paragraph key="p2">{t("paris.p2")}</Paragraph>,
+        t("paris.p1"),
+        t("paris.p2"),
       ]}
       cta={
         <PlusTextBtn

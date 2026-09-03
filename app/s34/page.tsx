@@ -7,7 +7,7 @@ import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
 
 export default function S34Page() {
   return (
-    <main className="w-full space-y-48 bg-background-secondary">
+    <main className="bg-background-secondary w-full space-y-48">
       <HeroVideo
         firstLine="S-34"
         secondLine="Via della Spiga 34, Milan"
