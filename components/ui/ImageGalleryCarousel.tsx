@@ -7,6 +7,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import PlusTextBtn from "./PlusTextBtn";
 
 // const images = carouselImages;
 
@@ -30,6 +31,13 @@ const generateRandomWidths = (count: number): string[] => {
   });
 };
 
+/** A single gallery slide: either a bare image, or a category item (image + CTA). */
+type CarouselItem = {
+  image: string;
+  name?: string;
+  link?: string;
+};
+
 export default function ImageGalleryCarousel({
   circle = false,
   multiWidth = false,
@@ -48,7 +56,18 @@ export default function ImageGalleryCarousel({
   }[];
 }) {
   const sectionRef = useRef<HTMLElement>(null);
-  const { dir } = useLanguage();
+  const { dir, lang , t } = useLanguage();
+
+  // category items (image + name + link) take precedence over plain images.
+  const isCategoryMode = !!category && category.length > 0;
+  const items: CarouselItem[] = isCategoryMode
+    ? (category ?? []).map((c) => ({
+        image: c.image,
+        name: c.name,
+        link: c.link,
+      }))
+    : (images ?? []).map((src) => ({ image: src }));
+  const itemCount = items.length;
 
   const [emblaRef] = useEmblaCarousel({
     align: "start",
@@ -66,9 +85,7 @@ export default function ImageGalleryCarousel({
   const [hovering, setHovering] = useState(false);
 
   // ----- random widths for multiWidth mode -----
-  const [randomWidths] = useState(() =>
-    generateRandomWidths(images?.length ?? 0),
-  );
+  const [randomWidths] = useState(() => generateRandomWidths(itemCount));
 
   const isTouch = useSyncExternalStore(
     subscribeToPointer,
@@ -110,22 +127,22 @@ export default function ImageGalleryCarousel({
       "opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), scale 0.4s cubic-bezier(0.22, 1, 0.36, 1)",
   };
 
-  if (!images || images.length === 0 && !category) return null;
+  if (itemCount === 0) return null;
 
   return (
     <HomepageSection
       ref={sectionRef}
-      className="bg-background-secondary w-full overflow-hidden border-y border-white/10 py-20 md:py-28 lg:py-32"
+      className=" w-full overflow-hidden border-y border-white/10 py-20 md:py-28 lg:py-32"
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
     >
       <div className="mb-10 flex items-end justify-between md:mb-14">
-        <SectionSubTitle>Image Gallery</SectionSubTitle>
+        <SectionSubTitle>{t("ui.imageGallery")}</SectionSubTitle>
       </div>
 
       {/* ----- mobile column layout (only when mobileColumn is true, hidden on lg+) ----- */}
-      {mobileColumn && images.length > 0 && <MobileColumn images={images} />}
+      {mobileColumn && itemCount > 0 && <MobileColumn items={items} />}
 
       {/* ----- carousel â€” Embla viewport (hidden on mobile when mobileColumn is true) ----- */}
       <div className={mobileColumn ? "hidden lg:block" : ""}>
@@ -137,7 +154,7 @@ export default function ImageGalleryCarousel({
           <div
             className={`carousel flex gap-4 md:gap-6 ${inView ? "in-view" : ""}`}
           >
-            {images.map((src, i) => {
+            {items.map((item, i) => {
               const isMultiWidth = multiWidth && randomWidths[i];
               const widthClass = isMultiWidth
                 ? ""
@@ -151,22 +168,36 @@ export default function ImageGalleryCarousel({
               const widthMatch = randomWidthStr.match(/\[(\d+)vw\]/);
               const inlineWidth = widthMatch ? `${widthMatch[1]}vw` : undefined;
 
+              const showCta = isCategoryMode && item.name && item.link;
+
               return (
                 <div
-                  key={src}
+                  key={item.image}
                   style={{
                     transitionDelay: `${(i % 6) * 0.06}s`,
                     ...(inlineWidth && { width: inlineWidth }),
                   }}
-                  className={`group relative ${heightClass} ${widthClass} shrink-0 overflow-hidden bg-[#111]`}
+                  className={`group flex shrink-0 flex-col items-start justify-center gap-5 ${widthClass}`}
                 >
-                  <Image
-                    src={src}
-                    alt=""
-                    fill
-                    className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
+                  <div
+                    className={`relative ${heightClass} w-full overflow-hidden bg-[#111]`}
+                  >
+                    <Image
+                      src={item.image}
+                      alt={isCategoryMode ? t(item.name ?? "") : ""}
+                      fill
+                      className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
+                  </div>
+                  {showCta && (
+                    <PlusTextBtn
+                      text={t(item.name as string)}
+                      href={item.link as string}
+                      className={`${lang === "fa" ? "font-noora" : "font-din"} text-background`}
+                      textColor="text-background"
+                    />
+                  )}
                 </div>
               );
             })}
@@ -201,28 +232,42 @@ export default function ImageGalleryCarousel({
   );
 }
 
-function MobileColumn({ images }: { images: string[] }) {
+function MobileColumn({ items }: { items: CarouselItem[] }) {
+  const { lang, t } = useLanguage();
+  const isCategoryMode = items.some((i) => i.name !== undefined);
   return (
     <div className="mx-auto block lg:hidden">
       <div className="grid grid-cols-1 gap-2">
-        {images.map((src) => (
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.9, ease: "easeOut" }}
-            key={src}
-            className="group relative aspect-video w-full overflow-hidden bg-[#111]"
-          >
-            <Image
-              src={src}
-              alt=""
-              fill
-              className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
-            />
-            <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
-          </motion.div>
-        ))}
+        {items.map((item) => {
+          const showCta = item.name !== undefined && item.link !== undefined;
+          return (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.9, ease: "easeOut" }}
+              key={item.image}
+              className="group flex w-full flex-col items-center justify-start gap-5"
+            >
+              <div className="relative aspect-video w-full overflow-hidden bg-[#111]">
+                <Image
+                  src={item.image}
+                  alt={isCategoryMode ? t(item.name ?? "") : ""}
+                  fill
+                  className="object-cover transition-transform duration-[1.2s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/15" />
+              </div>
+              {showCta && (
+                <PlusTextBtn
+                  text={t(item.name as string)}
+                  href={item.link as string}
+                  className={`${lang === "fa" ? "font-noora" : "font-din"}`}
+                />
+              )}
+            </motion.div>
+          );
+        })}
       </div>
     </div>
   );

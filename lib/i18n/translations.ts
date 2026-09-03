@@ -17,6 +17,7 @@ export const translations = {
     "ui.loadMore": "Load More",
     "ui.viewAllProducts": "view all products",
     "ui.viewWebsite": "view website",
+    "ui.imageGallery": "Image Gallery",
 
     "menu.company": "Company",
     "menu.products": "Products",
@@ -214,6 +215,7 @@ export const translations = {
     "ui.loadMore": "بارگذاری بیشتر",
     "ui.viewAllProducts": "مشاهده همه محصولات",
     "ui.viewWebsite": "مشاهده وب‌سایت",
+    "ui.imageGallery": "گالری تصاویر",
 
     "menu.company": "شرکت",
     "menu.products": "محصولات",
