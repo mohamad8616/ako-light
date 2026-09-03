@@ -15,6 +15,7 @@
   --font-heading: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-oswald: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
   --font-vazirmatn: "Tahoma", "Noto Sans Arabic", sans-serif;
+  --font-noora: "Noora", sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -70,7 +71,7 @@
   /* Persian font applied when RTL */
   html[dir="rtl"] body,
   html[dir="rtl"] .font-persian {
-    font-family: var(--font-vazirmatn), sans-serif;
+    font-family: var(--font-noora), sans-serif;
   }
   * {
     @apply border-border outline-ring/50;

@@ -36,8 +36,44 @@ const dinNextLTPro = localFont({
 });
 
 const noora = localFont({
-  src: "../public/fonts/noora/Noora-Regular.woff2",
-  variable: "--font-dinnext",
+  src: [
+    {
+      path: "../public/fonts/noora/Noora-ExtraLight.woff2",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/noora/Noora-Light.woff2",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/noora/Noora-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/noora/Noora-Medium.woff2",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/noora/Noora-SemiBold.woff2",
+      weight: "600",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/noora/Noora-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/noora/Noora-ExtraBold.woff2",
+      weight: "800",
+      style: "normal",
+    },
+  ],
+  variable: "--font-noora",
 });
 
 export const metadata: Metadata = {
