@@ -57,7 +57,12 @@ export default function FullscreenMenu({ open, onClose }: Props) {
           <motion.div
             initial={{ y: "-100%" }}
             animate={{ y: 0 }}
-            exit={{ y: "-100%" }}
+            exit={{
+              y: "-100%",
+              // Close: let the links slide down out of view first (they
+              // finish by ~0.6s), then slide the panel back up.
+              transition: { duration: 0.75, ease: EASE, delay: 0.5 },
+            }}
             transition={{
               duration: 0.75,
               ease: EASE,
@@ -74,6 +79,10 @@ export default function FullscreenMenu({ open, onClose }: Props) {
                       titleKey={section.i18nKey}
                       links={section.links}
                       delay={0.5 + index * 0.12}
+                      // Panel lands at ~1.45s (delay 0.7 + duration 0.75);
+                      // links reveal from bottom to top after that, staggered
+                      // per column and per link.
+                      linksDelay={1.45 + index * 0.1}
                       onLinkClick={onClose}
                     />
                   </div>

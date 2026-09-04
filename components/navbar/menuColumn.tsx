@@ -1,15 +1,21 @@
 ﻿"use client";
 
+import { EASE } from "@/utility/HomepageSection";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import type { MenuLink } from "../header/data";
 import UnderLineEffect from "../ui/UnderLineEffect";
 
+// Stagger between the links inside one column.
+const LINK_STAGGER = 0.07;
+
 interface Props {
   titleKey: string;
   links: MenuLink[];
   delay: number;
+  /** Base delay for the link reveal — starts once the menu panel has landed. */
+  linksDelay?: number;
   onLinkClick?: () => void;
   className?: string;
   children?: React.ReactNode;
@@ -19,6 +25,7 @@ export default function MenuColumn({
   titleKey,
   links,
   delay,
+  linksDelay = delay,
   onLinkClick,
 }: Props) {
   const { t, lang } = useLanguage();
@@ -42,32 +49,57 @@ export default function MenuColumn({
       </h2>
 
       <ul className="flex flex-col space-y-3 md:space-y-4">
-        {links.map((item) => {
+        {links.map((item, i) => {
           const isExternal = item.href.startsWith("http");
           const linkKey = item.i18nKey;
 
+          // Same reveal as HeroSectionText: the link starts hidden below its
+          // own slot (y: 110%) inside an overflow-hidden clip, then slides up
+          // into place after the menu panel has arrived.
           return (
-            <li key={item.label} className="group relative w-fit">
-              {isExternal ? (
-                <a
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={onLinkClick}
-                  className={LinkStyles}
-                >
-                  {t(linkKey)}
-                </a>
-              ) : (
-                <Link
-                  href={item.href}
-                  onClick={onLinkClick}
-                  className={LinkStyles}
-                >
-                  {t(linkKey)}
-                </Link>
-              )}
-              <UnderLineEffect duration="1000" color={"bg-white/35"} />
+            <li key={item.label} className="overflow-hidden">
+              <motion.div
+                initial={{ y: "110%" }}
+                animate={{ y: 0 }}
+                exit={{
+                  y: "110%",
+                  // Close: slide straight back down (staggered) before the
+                  // panel starts leaving — the enter delay above must not
+                  // apply to the exit.
+                  transition: {
+                    duration: 0.3,
+                    delay: i * 0.04,
+                    ease: EASE,
+                  },
+                }}
+                transition={{
+                  duration: 0.7,
+                  delay: linksDelay + i * LINK_STAGGER,
+                  ease: EASE,
+                }}
+                className="group relative w-fit"
+              >
+                {isExternal ? (
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={onLinkClick}
+                    className={LinkStyles}
+                  >
+                    {t(linkKey)}
+                  </a>
+                ) : (
+                  <Link
+                    href={item.href}
+                    onClick={onLinkClick}
+                    className={LinkStyles}
+                  >
+                    {t(linkKey)}
+                  </Link>
+                )}
+                <UnderLineEffect duration="1000" color={"bg-white/35"} />
+              </motion.div>
             </li>
           );
         })}
