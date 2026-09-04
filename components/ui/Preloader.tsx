@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 export default function Preloader() {
   const { isLoading, progress } = useLoaderStore();
-  const { t } = useLanguage();
+  const { t, dir } = useLanguage();
   const [isGone, setIsGone] = useState(false);
 
   // After the fade-out transition completes, unmount the preloader entirely
@@ -28,9 +28,12 @@ export default function Preloader() {
       {/* AKO Lighting Logo */}
       <Logo className="h-auto fill-white transition-opacity duration-500 ease-out" />
 
-      {/* Progress Bar */}
+      {/* Progress Bar — grows from the right in RTL (Persian), from the
+          left in LTR. */}
       <div
-        className={`bg-background-secondary mt-4 h-0.5 w-20 origin-left transition-transform duration-100 ease-out`}
+        className={`bg-background-secondary mt-4 h-0.5 w-20 ${
+          dir === "rtl" ? "origin-right" : "origin-left"
+        } transition-transform duration-100 ease-out`}
         style={{
           transform: `scaleX(${progress / 100})`,
         }}
