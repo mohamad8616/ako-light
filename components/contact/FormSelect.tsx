@@ -1,12 +1,14 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { cn } from "@/lib/utils";
 
 interface FormSelectProps {
   label: string;
   name: string;
   value: string;
-  options: string[];
+  options: { value: string; label: string }[];
   onChange: (value: string) => void;
 }
 
@@ -17,19 +19,34 @@ export default function FormSelect({
   options,
   onChange,
 }: FormSelectProps) {
+  const { lang } = useLanguage();
   return (
     <label className="flex flex-col gap-3">
-      <span className="font-din text-sm font-normal text-white">{label}</span>
+      <span
+        className={cn(
+          "text-sm font-normal text-white",
+          lang === "fa" ? "font-noora" : "font-din",
+        )}
+      >
+        {label}
+      </span>
       <div className="relative">
         <select
           name={name}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="font-din w-full appearance-none border-b border-white/20 bg-transparent pb-3 pr-8 text-sm text-white outline-none transition-colors focus:border-white"
+          className={cn(
+            "w-full appearance-none border-b border-white/20 bg-transparent pb-3 pr-8 text-sm text-white outline-none transition-colors focus:border-white",
+            lang === "fa" ? "font-noora" : "font-din",
+          )}
         >
           {options.map((option) => (
-            <option key={option} value={option} className="bg-stone-950 text-white">
-              {option}
+            <option
+              key={option.value}
+              value={option.value}
+              className="bg-stone-950 text-white"
+            >
+              {option.label}
             </option>
           ))}
         </select>

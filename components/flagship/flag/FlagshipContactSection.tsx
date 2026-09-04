@@ -61,11 +61,11 @@ export default function FlagshipContactSection() {
 
         <div className="flex flex-col gap-5">
           <ConsentCheckbox checked={newsletterConsent} onChange={setNewsletterConsent}>
-            {t("flagship.consentNewsletter")}
+            {t("form.consentNewsletter")}
           </ConsentCheckbox>
 
           <ConsentCheckbox checked={privacyConsent} onChange={setPrivacyConsent} underline required>
-            {t("flagship.consentPrivacy")}
+            {t("form.consentPrivacy")}
           </ConsentCheckbox>
         </div>
 
