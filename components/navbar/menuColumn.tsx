@@ -57,7 +57,12 @@ export default function MenuColumn({
           // own slot (y: 110%) inside an overflow-hidden clip, then slides up
           // into place after the menu panel has arrived.
           return (
-            <li key={item.label} className="overflow-hidden">
+            <li
+              key={item.label}
+              // pb-* keeps the UnderLineEffect (-bottom-1) inside the
+              // overflow-hidden clip — without it the underline is cut off.
+              className="overflow-hidden pb-1.5"
+            >
               <motion.div
                 initial={{ y: "110%" }}
                 animate={{ y: 0 }}
