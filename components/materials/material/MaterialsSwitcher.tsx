@@ -4,10 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
 import { materialCategories } from "@/lib/data/materials";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { cn } from "@/lib/utils";
 
 const MATERIAL_CATEGORIES = materialCategories;
 
-export default function MaterialsSwitcher({ active }: { active: string }) {
+export default function MaterialsSwitcher({ active }: { active?: string }) {
+  const { t, lang } = useLanguage();
   const [open, setOpen] = useState(false);
 
   return (
@@ -15,9 +18,12 @@ export default function MaterialsSwitcher({ active }: { active: string }) {
       <button
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
-        className="font-din flex items-center gap-2 rounded-full bg-stone-900 px-4 py-2 text-xs font-normal tracking-tighter text-white uppercase transition-colors hover:bg-stone-800 focus:outline-none"
+        className={cn(
+          "flex items-center gap-2 rounded-full bg-stone-900 px-4 py-2 text-xs font-normal tracking-tighter text-white uppercase transition-colors hover:bg-stone-800 focus:outline-none",
+          lang === "fa" ? "font-noora" : "font-din",
+        )}
       >
-        {active}
+        {active ? t(active) : t("materials.title")}
         <ChevronDown
           size={14}
           strokeWidth={2}
@@ -32,13 +38,15 @@ export default function MaterialsSwitcher({ active }: { active: string }) {
               key={category.href}
               href={category.href}
               onClick={() => setOpen(false)}
-              className={`font-din block px-4 py-2.5 text-xs font-normal tracking-tighter uppercase transition-colors ${
-                category.label === active
+              className={cn(
+                "block px-4 py-2.5 text-xs font-normal tracking-tighter uppercase transition-colors",
+                lang === "fa" ? "font-noora" : "font-din",
+                category.i18nKey === active
                   ? "text-white"
-                  : "text-stone-400 hover:text-white"
-              }`}
+                  : "text-stone-400 hover:text-white",
+              )}
             >
-              {category.label}
+              {t(category.i18nKey)}
             </Link>
           ))}
         </div>

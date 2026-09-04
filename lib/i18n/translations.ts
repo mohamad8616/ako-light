@@ -42,6 +42,15 @@ export const translations = {
     "collections.imageGallery": "Image Gallery",
     "collections.productsInCollection": "Products in the",
 
+    "materials.title": "Materials",
+    "materials.previewNote":
+      "Finishes are shown for reference only. For accurate colors and textures selection, please refer to physical samples.",
+    "materials.categories.fabrics": "Fabrics",
+    "materials.categories.leathers": "Leathers",
+    "materials.categories.woods": "Woods",
+    "materials.categories.metals": "Metals",
+    "materials.categories.marbles": "Marbles",
+
     "hero.collection": "2026 Collection",
     "hero.ritualGravity": "Ritual Gravity",
     "hero.readMore": "Read more",
@@ -281,6 +290,15 @@ export const translations = {
     "collections.images": "تصاویر",
     "collections.imageGallery": "گالری تصاویر",
     "collections.productsInCollection": "محصولات این کلکسیون",
+
+    "materials.title": "متریال‌ها",
+    "materials.previewNote":
+      "پرداخت‌ها تنها برای مرجع نشان داده شده‌اند؛ برای انتخاب دقیق رنگ و بافت، لطفاً به نمونه‌های فیزیکی مراجعه کنید.",
+    "materials.categories.fabrics": "پارچه‌ها",
+    "materials.categories.leathers": "چرم‌ها",
+    "materials.categories.woods": "چوب‌ها",
+    "materials.categories.metals": "فلزات",
+    "materials.categories.marbles": "مرمرها",
 
     "hero.collection": "کلکسیون ۲۰۲۶",
     "hero.ritualGravity": "ریچوال گرویتی",

@@ -2,11 +2,14 @@
 
 import HomepageSection from "@/utility/HomepageSection";
 import { materials } from "../../lib/data/materials";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { pick } from "@/lib/i18n/localized";
 import Row from "../ui/Row";
 
 export const ROWS_ON_LOAD = 2;
 
 export default function MaterialsList() {
+  const { lang } = useLanguage();
   return (
     <HomepageSection
       animateOnLoad
@@ -20,7 +23,8 @@ export default function MaterialsList() {
             index={i}
             animateOnLoad={i < ROWS_ON_LOAD}
             slug={material.id}
-            {...material}
+            name={pick(material.name, lang)}
+            image={material.image}
             width={"40"}
           />
         ))}
