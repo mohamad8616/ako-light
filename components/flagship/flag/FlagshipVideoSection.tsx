@@ -1,21 +1,28 @@
+"use client";
+
 import { Play } from "lucide-react";
 import type { FlagshipWithDetail } from "@/lib/data/flagships";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { pick } from "@/lib/i18n/localized";
 import Image from "next/image";
 
 export default function FlagshipVideoSection({ flagship }: { flagship: FlagshipWithDetail }) {
+  const { t, lang } = useLanguage();
+  const name = pick(flagship.name, lang);
   return (
     <section className="bg-stone-100 px-6 pb-16 md:px-12 md:pb-20 lg:px-20 xl:px-[8.5vw]">
       <a
         href={flagship.video.url}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label={`Watch ${flagship.name} video`}
+        aria-label={t("flagship.videoAria").replace("{name}", name)}
         className="group relative block aspect-video w-full overflow-hidden lg:w-2/3"
       >
         <Image
           src={flagship.video.thumbnail}
           alt=""
           fill
+          sizes="(min-width: 1024px) 66vw, 100vw"
           className="object-cover"
         />
         <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition-colors group-hover:bg-black/20">

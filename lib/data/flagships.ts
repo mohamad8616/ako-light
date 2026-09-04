@@ -1,81 +1,83 @@
+import { loc, type Localized } from "@/lib/i18n/localized";
+
 export interface Flagship {
-  name: string;
+  name: Localized;
   slug: string;
-  city: string;
+  city: Localized;
   image: string;
 }
 
 export const flagships: Flagship[] = [
   {
-    name: "Henge Milan",
+    name: loc("Henge Milan", "هنژ میلان"),
     slug: "henge-milan",
-    city: "Milan",
+    city: loc("Milan", "میلان"),
     image: "https://picsum.photos/seed/henge-milan/900/1000",
   },
   {
-    name: "Henge London",
+    name: loc("Henge London", "هنژ لندن"),
     slug: "henge-london",
-    city: "London",
+    city: loc("London", "لندن"),
     image: "https://picsum.photos/seed/henge-london/900/1000",
   },
   {
-    name: "Henge Paris",
+    name: loc("Henge Paris", "هنژ پاریس"),
     slug: "henge-paris",
-    city: "Paris",
+    city: loc("Paris", "پاریس"),
     image: "https://picsum.photos/seed/henge-paris/900/1000",
   },
   {
-    name: "Henge Düsseldorf",
+    name: loc("Henge Düsseldorf", "هنژ دوسلدورف"),
     slug: "henge-dusseldorf",
-    city: "Düsseldorf",
+    city: loc("Düsseldorf", "دوسلدورف"),
     image: "https://picsum.photos/seed/henge-dusseldorf/900/1000",
   },
   {
-    name: "Henge New York",
+    name: loc("Henge New York", "هنژ نیو یورک"),
     slug: "henge-new-york",
-    city: "New York",
+    city: loc("New York", "نیو یورک"),
     image: "https://picsum.photos/seed/henge-new-york/900/1000",
   },
   {
-    name: "Henge Miami",
+    name: loc("Henge Miami", "هنژ میامی"),
     slug: "henge-miami",
-    city: "Miami",
+    city: loc("Miami", "میامی"),
     image: "https://picsum.photos/seed/henge-miami/900/1000",
   },
   {
-    name: "Henge Dubai",
+    name: loc("Henge Dubai", "هنژ دبی"),
     slug: "henge-dubai",
-    city: "Dubai",
+    city: loc("Dubai", "دبی"),
     image: "https://picsum.photos/seed/henge-dubai/900/1000",
   },
   {
-    name: "Henge Riyadh",
+    name: loc("Henge Riyadh", "هنژ ریاض"),
     slug: "henge-riyadh",
-    city: "Riyadh",
+    city: loc("Riyadh", "ریاض"),
     image: "https://picsum.photos/seed/henge-riyadh/900/1000",
   },
   {
-    name: "Henge Tehran",
+    name: loc("Henge Tehran", "هنژ تهران"),
     slug: "henge-tehran",
-    city: "Tehran",
+    city: loc("Tehran", "تهران"),
     image: "https://picsum.photos/seed/henge-tehran/900/1000",
   },
   {
-    name: "Henge Shenzhen",
+    name: loc("Henge Shenzhen", "هنژ شنژن"),
     slug: "henge-shenzhen",
-    city: "Shenzhen",
+    city: loc("Shenzhen", "شنژن"),
     image: "https://picsum.photos/seed/henge-shenzhen/900/1000",
   },
   {
-    name: "Henge Venice",
+    name: loc("Henge Venice", "هنژ ونیز"),
     slug: "henge-venice",
-    city: "Venice",
+    city: loc("Venice", "ونیز"),
     image: "https://picsum.photos/seed/henge-venice/900/1000",
   },
   {
-    name: "Henge Cortina",
+    name: loc("Henge Cortina", "هنژ کورتینا"),
     slug: "henge-cortina",
-    city: "Cortina d'Ampezzo",
+    city: loc("Cortina d'Ampezzo", "کورتینا دامپتزو"),
     image: "https://picsum.photos/seed/henge-cortina/900/1000",
   },
 ];
@@ -84,7 +86,7 @@ export function getFlagship(slug: string): Flagship | undefined {
   return flagships.find((f) => f.slug === slug);
 }
 
-// --- Detail content for /showroom/[slug] -----------------------------
+// --- Detail content for /flagship/[slug] ----------------------------
 //
 // Additive on top of the summary list above — `flagships` and
 // `getFlagship` are untouched. Keyed by the same `slug` values, but
@@ -94,13 +96,13 @@ export function getFlagship(slug: string): Flagship | undefined {
 
 export interface FlagshipDetail {
   heroImage: string;
-  heading: string;
-  description: string;
+  heading: Localized;
+  description: Localized;
   info: {
-    name: string;
-    addressLines: string[];
-    hours: { label: string; value: string }[];
-    appointmentNote: string;
+    name: Localized;
+    addressLines: (Localized | string)[];
+    hours: { label: Localized; value: string }[];
+    appointmentNote: Localized;
     phone: string;
     email: string;
   };
@@ -114,37 +116,44 @@ export interface FlagshipDetail {
 export const flagshipDetails: Record<string, FlagshipDetail> = {
   "henge-milan": {
     // Confirmed real asset — pulled from the live page's og:image.
-    heroImage:
-      "https://www.henge07.com/app/uploads/2024/03/Henge-Spiga-47-Colori-CQ-1.jpg",
-    heading: "Henge's new Home - S34",
+    heroImage: "https://picsum.photos/seed/henge-milan-hero/1600/900",
+    heading: loc("Henge's new Home - S34", "خانه جدید هنژ - اس ۳۴"),
     // Confirmed via the live page's meta description.
-    description:
+    description: loc(
       "Henge has moved its Home and has created a whole new space, in the center of Milan's Quadrilatero della Moda, Via Della Spiga 34. The new Home, called S34, is able to express with full force what, through evolution, consistent curiosity, and experimentation, Henge needs to say, in order to keep breaking the rules and being wonderfully divergent. S34 allows you to immerse yourself and delve into the personality and creative eclecticism that has been a hallmark of Henge's journey over the years. An augmented surface that merges architecture and products in one place. Three levels of light, shape, matter, and function to explore.",
+      "هنژ خانه خود را تغییر داده و فضایی کاملاً نو در مرکز محله‌ی کوادرلاترو دِلا مودا میلان، در ویا دِلا اسپیگا ۳۴، خلق کرده است. خانه‌ی جدید که اس ۳۴ نام دارد، می‌تواند با تمام قدرت آنچه را هنژ از طریق تکامل، کنجکاوی پایدار و آزمون‌وخطا لازم است بگوید، بیان کند تا همچنان قواعد را بشکند و به‌شکلی شگفت‌انگیز متمایز بماند. اس ۳۴ به شما امکان می‌دهد در شخصیت و التقاط خلاقانه‌ای غوطه‌ور شوید که در طول سال‌ها ویژگی بارز مسیر هنژ بوده است. سطحی افزوده که معماری و محصولات را در یک مکان در هم می‌آمیزد؛ سه سطح از نور، فرم، ماده و کارکرد برای کاوش.",
+    ),
     info: {
-      name: "S-34",
-      addressLines: ["Via della Spiga, 34", "20121, Milano MI", "Italy"],
-      hours: [
-        { label: "Monday – Friday:", value: "09.30 – 13.30 / 14.30 – 18.30" },
-        { label: "Saturday:", value: "10.00 / 14.00" },
+      name: loc("S-34", "اس-۳۴"),
+      addressLines: [
+        "Via della Spiga, 34",
+        "20121, Milano MI",
+        loc("Italy", "ایتالیا"),
       ],
-      appointmentNote: "Appointment preferred:",
+      hours: [
+        { label: loc("Monday – Friday:", "دوشنبه – جمعه:"), value: "09.30 – 13.30 / 14.30 – 18.30" },
+        { label: loc("Saturday:", "شنبه:"), value: "10.00 / 14.00" },
+      ],
+      appointmentNote: loc(
+        "Appointment preferred:",
+        "تعیین وقت قبلی ترجیح داده می‌شود:",
+      ),
       phone: "+39 327 812 7661",
       email: "sales@henge07.com",
     },
     video: {
       // Placeholder — no confirmed video URL/thumbnail available.
-      thumbnail:
-        "https://www.henge07.com/app/uploads/2024/06/Henge_SR24_43-1.jpg",
+      thumbnail: "https://picsum.photos/seed/henge-milan-video/1200/675",
       url: "#",
     },
     // Placeholders — swap for the real gallery set.
     gallery: [
-      "https://www.henge07.com/app/uploads/2024/06/Henge_SR24_41_C-3.jpg",
-      "https://www.henge07.com/app/uploads/2024/06/Henge_SR24_72.jpg",
-      "https://www.henge07.com/app/uploads/2024/06/Henge_SR24_18_B-1.jpg",
-      "https://www.henge07.com/app/uploads/2024/06/Henge_SR24_30-1.jpg",
-      "https://www.henge07.com/app/uploads/2024/06/Henge_SR24_78_B-1.jpg",
-      "https://www.henge07.com/app/uploads/2024/06/Henge_SR24_52_C-2.jpg",
+      "https://picsum.photos/seed/henge-milan-g1/900/900",
+      "https://picsum.photos/seed/henge-milan-g2/900/900",
+      "https://picsum.photos/seed/henge-milan-g3/900/900",
+      "https://picsum.photos/seed/henge-milan-g4/900/900",
+      "https://picsum.photos/seed/henge-milan-g5/900/900",
+      "https://picsum.photos/seed/henge-milan-g6/900/900",
     ],
   },
 };

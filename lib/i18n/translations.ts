@@ -51,6 +51,25 @@ export const translations = {
     "materials.categories.metals": "Metals",
     "materials.categories.marbles": "Marbles",
 
+    "flagship.breadcrumb": "Henge Flagships",
+    "flagship.infoLabel": "Info",
+    "flagship.contactHeading": "Send us a message",
+    "flagship.contactIntro":
+      "For any inquiries or appointments regarding our products, please fill out the form below.",
+    "flagship.requestInfo": "Request info",
+    "flagship.send": "Send",
+    "flagship.sent": "Sent",
+    "flagship.videoAria": "Watch {name} video",
+    "flagship.consentNewsletter":
+      "I declare that I have read the privacy policy and consent to the processing of my personal data. After reading the above privacy policy I declare that I wish to proceed with registering for the free newsletter service.",
+    "flagship.consentPrivacy":
+      "I have read and agree to the privacy policy, and I consent to the processing of the personal data provided in this contact form in accordance with the purposes and methods specified.",
+
+    "form.fullName": "Full Name",
+    "form.email": "Email",
+    "form.phone": "Phone",
+    "form.message": "Message",
+
     "hero.collection": "2026 Collection",
     "hero.ritualGravity": "Ritual Gravity",
     "hero.readMore": "Read more",
@@ -133,6 +152,7 @@ export const translations = {
     "catalogue.kicker": "HENGE CATALOGUE",
     "catalogue.title": "S34/5",
     "catalogue.cta": "Download S34/5",
+    "catalogue.download": "Download",
     "catalogue.description":
       "Ritual Gravity is not only a collection of new products, it is the expansion of a brand universe. From the master bedroom to the table, from light to the domestic lounge, from private space to collective experience, Henge continues to define places where every piece is given its own weight, its own gesture, its own reason to be.",
 
@@ -300,6 +320,25 @@ export const translations = {
     "materials.categories.metals": "فلزات",
     "materials.categories.marbles": "مرمرها",
 
+    "flagship.breadcrumb": "فلگشیپ‌های هنژ",
+    "flagship.infoLabel": "اطلاعات",
+    "flagship.contactHeading": "پیامی برای ما بفرستید",
+    "flagship.contactIntro":
+      "برای هرگونه پرسش یا تعیین وقت درباره محصولات ما، لطفاً فرم زیر را تکمیل کنید.",
+    "flagship.requestInfo": "درخواست اطلاعات",
+    "flagship.send": "ارسال",
+    "flagship.sent": "ارسال شد",
+    "flagship.videoAria": "مشاهده ویدیوی {name}",
+    "flagship.consentNewsletter":
+      "اعلام می‌کنم که سیاست حفظ حریم خصوصی را خوانده‌ام و با پردازش اطلاعات شخصی من موافقم. پس از مطالعه سیاست حفظ حریم خصوصی یادشده، اعلام می‌کنم که مایل به ثبت‌نام در سرویس خبرنامه رایگان هستم.",
+    "flagship.consentPrivacy":
+      "خوانده‌ام و با سیاست حفظ حریم خصوصی موافقم و با پردازش اطلاعات شخصی ارائه‌شده در این فرم تماس مطابق با اهداف و روش‌های مشخص‌شده موافقم.",
+
+    "form.fullName": "نام کامل",
+    "form.email": "ایمیل",
+    "form.phone": "تلفن",
+    "form.message": "پیام",
+
     "hero.collection": "کلکسیون ۲۰۲۶",
     "hero.ritualGravity": "ریچوال گرویتی",
     "hero.readMore": "بیشتر بخوانید",
@@ -380,6 +419,7 @@ export const translations = {
     "catalogue.kicker": "کاتالوگ هنژ",
     "catalogue.title": "اس ۳۴/۵",
     "catalogue.cta": "دانلود اس ۳۴/۵",
+    "catalogue.download": "دانلود",
     "catalogue.description":
       "«ریچوال گراویتی» نه تنها مجموعه‌ای از محصولات جدید است، بلکه گسترش جهانی از برند است. از اتاق خواب اصلی گرفته تا میز، از نور گرفته تا سالن نشیمن خانگی، از فضای خصوصی گرفته تا تجربه جمعی، هِنگه همچنان به تعریف مکان‌هایی می‌پردازد که در آن‌ها به هر قطعه وزن، ژست و دلیل وجودی خاص خود داده می‌شود.",
 

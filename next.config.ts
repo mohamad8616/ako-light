@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   /* config options here */
 
   images: {
+    // The dev-server's image optimizer fetches remote images server-side and
+    // times out in this environment (504 on /_next/image), while the browser
+    // can reach the hosts fine. Serve remote images unoptimized so the
+    // browser loads them directly.
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",

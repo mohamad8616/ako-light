@@ -9,6 +9,7 @@ import {
   getFlagship,
   getFlagshipDetail,
 } from "@/lib/data/flagships";
+import { pick } from "@/lib/i18n/localized";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -29,8 +30,8 @@ export async function generateMetadata({ params }: PageProps) {
   if (!flagship || !detail) return {};
 
   return {
-    title: `${flagship.name} | Henge Flagships`,
-    description: detail.description.slice(0, 160),
+    title: `${pick(flagship.name, "en")} | Henge Flagships`,
+    description: pick(detail.description, "en").slice(0, 160),
   };
 }
 
@@ -44,7 +45,7 @@ export default async function FlagshipPage({ params }: PageProps) {
   // Merge summary (name/slug/city/image) with detail content into the
   // single shape the section components expect.
   const combined = { ...flagship, ...detail };
-
+  console.log(flagship, detail);
   return (
     <main className="bg-stone-950">
       <FlagshipHero flagship={combined} />
