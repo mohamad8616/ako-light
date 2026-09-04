@@ -4,6 +4,7 @@ import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import { productCategories } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { productName } from "@/lib/i18n/localized";
+import { cn } from "@/lib/utils";
 import HomepageSection from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
@@ -51,7 +52,7 @@ interface HoveredState {
 }
 
 export default function ProductsInCollectionSection() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const isDesktop = useIsDesktop();
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -104,8 +105,13 @@ export default function ProductsInCollectionSection() {
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1fr_1.7fr] lg:items-start lg:gap-16 xl:gap-20">
         {/* Heading */}
         <div>
-          <h1 className="font-din text-4xl font-medium tracking-tight text-white uppercase md:text-5xl">
-            Products in the
+          <h1
+            className={cn(
+              "text-4xl font-medium tracking-tight text-white uppercase md:text-5xl",
+              lang === "fa" ? "font-noora" : "font-din",
+            )}
+          >
+            {t("collections.productsInCollection").toUpperCase()}
           </h1>
           <PlusTextBtn href={"/products"} text={t("ui.viewAllProducts")} />
         </div>
@@ -161,7 +167,12 @@ export default function ProductsInCollectionSection() {
               key={category.slug}
               className="flex flex-col lg:grid lg:grid-cols-[180px_1fr] lg:items-start lg:gap-6"
             >
-              <h2 className="font-din border-b border-white/10 pb-2 text-sm font-medium text-white lg:border-none lg:pb-0">
+              <h2
+                className={cn(
+                  "border-b border-white/10 pb-2 text-sm font-medium text-white lg:border-none lg:pb-0",
+                  lang === "fa" ? "font-noora" : "font-din",
+                )}
+              >
                 {t(category.i18nKey)}
               </h2>
 
@@ -177,7 +188,10 @@ export default function ProductsInCollectionSection() {
                         e.currentTarget,
                       )
                     }
-                    className={`font-din w-fit text-sm tracking-tight uppercase transition-colors duration-200 ${
+                    className={`${cn(
+                      "w-fit text-sm tracking-tight uppercase transition-colors duration-200",
+                      lang === "fa" ? "font-noora" : "font-din",
+                    )} ${
                       hovered?.slug === product.slug
                         ? "font-bold text-white"
                         : "text-stone-400 hover:text-white"

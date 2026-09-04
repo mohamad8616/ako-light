@@ -35,6 +35,13 @@ export const translations = {
     "menu.projects": "Projects",
     "menu.s34": "S-34",
 
+    "collections.collection": "Collection",
+    "collections.download": "Download",
+    "collections.catalogue": "Catalogue",
+    "collections.images": "Images",
+    "collections.imageGallery": "Image Gallery",
+    "collections.productsInCollection": "Products in the",
+
     "hero.collection": "2026 Collection",
     "hero.ritualGravity": "Ritual Gravity",
     "hero.readMore": "Read more",
@@ -267,6 +274,13 @@ export const translations = {
     "menu.hLife": "اچ-لایف",
     "menu.projects": "پروژه‌ها",
     "menu.s34": "اس-۳۴",
+
+    "collections.collection": "کلکسیون",
+    "collections.download": "دانلود",
+    "collections.catalogue": "کاتالوگ",
+    "collections.images": "تصاویر",
+    "collections.imageGallery": "گالری تصاویر",
+    "collections.productsInCollection": "محصولات این کلکسیون",
 
     "hero.collection": "کلکسیون ۲۰۲۶",
     "hero.ritualGravity": "ریچوال گرویتی",

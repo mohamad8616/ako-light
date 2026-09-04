@@ -1,7 +1,7 @@
 import AboutCollection from "@/components/collections/collection/AboutCollection";
+import CollectionHero from "@/components/collections/collection/CollectionHero";
 import ImageGallery from "@/components/collections/collection/ImageGallery";
 import ProductsInCollectionSection from "@/components/collections/collection/ProductsInCollectionSection";
-import PictureHero from "@/components/ui/PictureHero";
 import { collections } from "@/lib/data/collections";
 import { notFound } from "next/navigation";
 
@@ -17,10 +17,7 @@ const page = async ({ params }: PageProps) => {
 
   return (
     <main className="bg-background-secondary w-full space-y-48">
-      <PictureHero
-        name={`${collection.name} Collection`}
-        image={collection.image}
-      />
+      <CollectionHero collection={collection} />
       <AboutCollection collection={collection} />
       <ImageGallery />
       <ProductsInCollectionSection />

@@ -140,7 +140,7 @@ export default function ImageGallery() {
     <HomepageSection>
       {/* Heading */}
       <h2 className="mb-22 text-[12px] leading-none tracking-[-0.2px] text-[#222] uppercase lg:mb-22.5 lg:text-[16px]">
-        IMAGE GALLERY
+        {t("collections.imageGallery").toUpperCase()}
       </h2>
 
       {/* ================================================== */}
