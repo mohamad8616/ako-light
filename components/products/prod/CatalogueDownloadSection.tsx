@@ -1,5 +1,6 @@
 "use client";
-import { s34Sections } from "@/lib/data/s34";
+
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionTitle from "@/utility/SectionTitle";
@@ -12,6 +13,8 @@ const CATALOGUE_HREF = "#";
 const CATALOGUE_COVER_COLOR = "#8b96a6";
 
 export default function CatalogueDownloadSection() {
+  const { t } = useLanguage();
+
   return (
     <HomepageSection className="flex min-h-screen w-full items-center bg-stone-100 px-6 py-20 md:px-12 lg:px-20 xl:px-[8.5vw]">
       <div className="grid w-full grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center lg:gap-24">
@@ -20,12 +23,11 @@ export default function CatalogueDownloadSection() {
             {process.env.NEXT_PUBLIC_APP_NAME} Catalogue
           </span>
 
-          <SectionTitle className='tracking-tighter font-medium'>Download our latest catalogue</SectionTitle>
+          <SectionTitle className="font-medium tracking-tighter">
+            {t("products.catalogue.label")}
+          </SectionTitle>
 
-          <Paragraph 
-       >
-            {s34Sections.concept.paragraphs[0]}
-          </Paragraph>
+          <Paragraph>{t("s34.concept.p1")}</Paragraph>
         </div>
 
         <div className="flex flex-col gap-6 lg:max-w-md lg:justify-self-end">
@@ -35,7 +37,7 @@ export default function CatalogueDownloadSection() {
             target="_blank"
             rel="noopener noreferrer"
             download
-            aria-label="Download the S34/4 catalogue"
+            aria-label={t("products.catalogue.aria")}
             className="group relative block aspect-3/4 w-full overflow-hidden"
             style={{ backgroundColor: CATALOGUE_COVER_COLOR }}
           >
@@ -56,7 +58,7 @@ export default function CatalogueDownloadSection() {
             className="font-din flex w-fit items-center gap-2 text-xs font-medium tracking-tighter text-stone-950 uppercase transition-colors hover:text-stone-600"
           >
             <Plus size={12} strokeWidth={2.5} />
-            S34/4 Catalogue Download
+            {t("products.catalogue.download")}
           </Link>
         </div>
       </div>

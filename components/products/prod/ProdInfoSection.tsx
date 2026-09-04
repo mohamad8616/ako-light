@@ -9,6 +9,7 @@ import {
   productKey,
   productName,
 } from "@/lib/i18n/localized";
+import { cn } from "@/lib/utils";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import { AnimatePresence, motion } from "framer-motion";
@@ -17,28 +18,39 @@ import { useState } from "react";
 
 export default function ProductInfoSection({ product }: { product: Product }) {
   const [moreInfoOpen, setMoreInfoOpen] = useState(false);
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   return (
-    <HomepageSection className="bg-background-secondary h-4/5 px-6 py-20 md:px-12 md:py-28 lg:px-20 xl:px-[8.5vw]">
+    <HomepageSection className="bg-background-secondary h-4/5 py-20 md:py-28">
       <div className="grid h-full grid-cols-1 gap-12 lg:grid-cols-[2fr_1fr] lg:gap-16">
         <div className="space-y-6 lg:space-y-10">
           <nav className="font-din flex flex-wrap items-center gap-2 text-xs font-medium tracking-tighter text-stone-500 uppercase">
             <Link
               href="/products"
-              className="underline underline-offset-2 transition-colors hover:text-stone-950"
+              className={cn(
+                "underline underline-offset-2 transition-colors hover:text-stone-950",
+                lang === "fa" ? "font-noora" : "font-din",
+              )}
             >
-              Products
+              {lang === "fa" ? "محصولات" : "products"}
             </Link>
             <span>/</span>
             <Link
               href={`/products/${product.category}`}
-              className="underline underline-offset-2 transition-colors hover:text-stone-600"
+              className={cn(
+                "underline underline-offset-2 transition-colors hover:text-stone-600",
+                lang === "fa" ? "font-noora" : "font-din",
+              )}
             >
               {t(productKey(product.category))}
             </Link>
             <span>/</span>
-            <span className="text-stone-700">
+            <span
+              className={
+                (cn("text-stone-700"),
+                lang === "fa" ? "font-noora" : "font-din")
+              }
+            >
               {productName(t, product.slug)}
             </span>
           </nav>
@@ -79,10 +91,15 @@ export default function ProductInfoSection({ product }: { product: Product }) {
 
         <div className="flex flex-col gap-10">
           <div>
-            <span className="font-din text-xs font-medium tracking-tighter text-stone-500 uppercase">
+            <span
+              className={cn(
+                "text-xs font-medium tracking-tighter text-stone-500 uppercase",
+                lang === "fa" ? "font-noora" : "font-din",
+              )}
+            >
               {t("product.download")}
             </span>
-            <div className="font-din mt-4 flex flex-col gap-2 text-sm text-stone-950">
+            <div className={cn("mt-4 flex flex-col gap-2 text-sm text-stone-950", lang === "fa" ? "font-noora" : "font-din")}>
               {product.downloads.map((d) => (
                 <a
                   key={d.label}
@@ -96,13 +113,21 @@ export default function ProductInfoSection({ product }: { product: Product }) {
           </div>
 
           <div>
-            <span className="font-din text-xs font-medium tracking-tighter text-stone-500 uppercase">
+            <span className={cn("text-xs font-medium tracking-tighter text-stone-500 uppercase", lang === "fa" ? "font-noora" : "font-din")}>
               {t("product.designer")}
             </span>
-            <div className="font-din mt-4 text-sm text-stone-950">
+            <div
+              className={cn(
+                "mt-4 text-sm text-stone-950",
+                lang === "fa" ? "font-noora" : "font-din",
+              )}
+            >
               <a
                 href={product.designer.href}
-                className="w-fit underline underline-offset-2 transition-colors hover:text-stone-600"
+                className={cn(
+                  "w-fit underline underline-offset-2 transition-colors hover:text-stone-600",
+                  lang === "fa" ? "font-noora" : "font-din",
+                )}
               >
                 {product.designer.name}
               </a>

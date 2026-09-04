@@ -1,21 +1,22 @@
 "use client";
-import { EASE } from "@/utility/HomepageSection";
-import { motion } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
-import HomepageSection from "@/utility/HomepageSection";
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import type { Product, RelatedProduct } from "@/lib/data/productCategories";
 import { products } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { productKey, productName } from "@/lib/i18n/localized";
+import { productName } from "@/lib/i18n/localized";
+import HomepageSection, { EASE } from "@/utility/HomepageSection";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
 
 function getRelatedProducts(product: Product): RelatedProduct[] {
   const sameCategory = products.filter(
     (p) => p.category === product.category && p.slug !== product.slug,
   );
 
-  const seed = product.slug.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const seed = product.slug
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const shuffled = [...sameCategory];
   let random = seed;
   for (let i = shuffled.length - 1; i > 0; i--) {
@@ -32,16 +33,20 @@ function getRelatedProducts(product: Product): RelatedProduct[] {
   }));
 }
 
-export default function RelatedProductsSection({ product }: { product: Product }) {
+export default function RelatedProductsSection({
+  product,
+}: {
+  product: Product;
+}) {
   const { t } = useLanguage();
   const related = getRelatedProducts(product);
 
   return (
-    <HomepageSection >
+    <HomepageSection>
       <div className="bg-background-secondary m flex min-h-screen items-center justify-center py-20">
-        <div className="grid w-full grid-cols-1 items-center justify-between gap-20 sm:grid-cols-3 md:mt-20 md:gap-20 ">
+        <div className="grid w-full grid-cols-1 items-center justify-between gap-20 sm:grid-cols-3 md:mt-20 md:gap-20">
           <span className="font-din col-span-full text-xs font-medium tracking-tighter text-stone-700 uppercase">
-            You may also like
+            {t("products.relatedTitle")}
           </span>
           {related.map((item, i) => (
             <motion.div
@@ -53,7 +58,7 @@ export default function RelatedProductsSection({ product }: { product: Product }
             >
               <Link
                 href={`/products/${item.category}/${item.slug}`}
-                className="group relative mb-5 grid aspect-square w-full grid-cols-1  overflow-hidden lg:mb-0"
+                className="group relative mb-5 grid aspect-square w-full grid-cols-1 overflow-hidden lg:mb-0"
               >
                 <Image
                   src={item.image}

@@ -1,8 +1,11 @@
 "use client";
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import React from "react";
 import { EASE } from "./HomepageSection";
+
 const PageTitle = ({
   children,
   className,
@@ -10,6 +13,8 @@ const PageTitle = ({
   children: React.ReactNode;
   className?: string;
 }) => {
+  const { lang } = useLanguage();
+
   return (
     <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
       <motion.div
@@ -27,7 +32,11 @@ const PageTitle = ({
           initial={{ y: "100%" }}
           animate={{ y: 0 }}
           transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
-          className={`text-3xl tracking-tight leading-[0.95] text-background-secondary uppercase md:text-5xl ${className}`}
+          className={cn(
+            "text-background-secondary text-3xl leading-[0.95] tracking-tight uppercase md:text-5xl",
+            lang === "fa" ? "font-noora" : "font-din",
+            className,
+          )}
         >
           {children}
         </motion.h1>

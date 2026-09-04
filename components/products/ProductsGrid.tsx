@@ -1,17 +1,16 @@
 ﻿"use client";
 
-import HomepageSection from "@/utility/HomepageSection";
-import ProductCategoryCard from "./ProductCategoryCard";
 import { Product, ProductCategory } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { productKey, productName } from "@/lib/i18n/localized";
+import { productName } from "@/lib/i18n/localized";
+import HomepageSection from "@/utility/HomepageSection";
+import ProductCategoryCard from "./ProductCategoryCard";
 
 interface ProductsGridProps {
   categories?: ProductCategory[];
   products?: Product[];
   parentSlug?: string;
 }
-
 
 export default function ProductsGrid({
   categories,
@@ -36,12 +35,15 @@ export default function ProductsGrid({
   if (items.length === 0) {
     return (
       <HomepageSection className="bg-background flex w-full items-center justify-center pb-20 md:pb-28">
-        <p>There is no product available</p>
+        <p>{t("products.noProducts")}</p>
       </HomepageSection>
     );
   }
   return (
-    <HomepageSection animateOnLoad className="bg-background w-full  pb-20 md:pb-28">
+    <HomepageSection
+      animateOnLoad
+      className="bg-background w-full pb-20 md:pb-28"
+    >
       <div className="grid grid-cols-1 gap-x-3 gap-y-12 md:grid-cols-3 md:gap-y-16">
         {items.map((item, i) => (
           <ProductCategoryCard

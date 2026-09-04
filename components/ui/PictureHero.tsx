@@ -1,12 +1,24 @@
+"use client";
+
 import HeroSectionText from "@/components/ui/HeroSectionText";
 import Image from "next/image";
 
-export default function PictureHero({ image,name }: { image: string, name: string }) {
+type PictureHeroProps = {
+  image: string;
+  nameKey?: string;
+  name?: string;
+};
+
+export default function PictureHero({
+  image,
+  nameKey,
+  name: nameProp,
+}: PictureHeroProps) {
   return (
     <section className="relative flex h-screen w-full items-end bg-black">
       <Image
         src={image}
-        alt={name}
+        alt={nameProp ?? ""}
         fill
         priority={true}
         className="object-cover"
@@ -15,7 +27,7 @@ export default function PictureHero({ image,name }: { image: string, name: strin
       {/* 30% dark overlay */}
       <div className="absolute inset-0 bg-black/30" aria-hidden="true" />
 
-      <HeroSectionText firstLine={name} />
+      <HeroSectionText firstLineKey={nameKey} firstLine={nameProp} />
     </section>
   );
 }
