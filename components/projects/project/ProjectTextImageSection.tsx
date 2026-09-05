@@ -1,12 +1,15 @@
 "use client";
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { pick, type Localized } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import Image from "next/image";
 
 interface Props {
-  text: string;
+  /** Plain string OR a `Localized` object (resolved reactively via context). */
+  text: Localized | string;
   image: string;
   /** Swaps to text-right / image-left on lg+. Mobile order is unaffected
       (image always leads, text follows) since both variants collapse
@@ -19,6 +22,7 @@ export default function ProjectTextImageSection({
   image,
   reverse = false,
 }: Props) {
+  const { lang } = useLanguage();
   return (
     <HomepageSection className="py-20 md:py-28">
       <div className="flex flex-col gap-10 lg:flex-row lg:items-start">
@@ -29,7 +33,9 @@ export default function ProjectTextImageSection({
             reverse ? "lg:order-2" : "lg:order-1",
           )}
         >
-          <Paragraph textColor="text-background-secondary">{text}</Paragraph>
+          <Paragraph textColor="text-background-secondary">
+            {pick(text, lang)}
+          </Paragraph>
         </div>
 
         {/* Image — 60% on lg+ */}

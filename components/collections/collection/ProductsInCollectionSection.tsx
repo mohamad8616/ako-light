@@ -1,9 +1,12 @@
 "use client";
 
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
-import { productCategories } from "@/lib/data/productCategories";
+import {
+  productCategories,
+  type ProductCategory,
+} from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { productName } from "@/lib/i18n/localized";
+import { productName, type Localized } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
 import HomepageSection from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
@@ -20,6 +23,17 @@ import {
 const PHOTO_HEIGHT = 200;
 // How far (px) the photo slides in/out on its first appearance/disappearance.
 const ENTER_EXIT_OFFSET = 500;
+
+interface Props {
+  /** Optional list of categories to render. Defaults to all `productCategories`. */
+  categories?: ProductCategory[];
+  /** Heading text. Defaults to the "collections.productsInCollection" translation. */
+  title?: Localized | string;
+  /** "View all" link target. Defaults to "/products". */
+  viewAllHref?: string;
+  /** "View all" link text. Defaults to the "ui.viewAllProducts" translation. */
+  viewAllLabel?: string;
+}
 
 function useIsDesktop(breakpointPx = 1024) {
   const mediaQuery = `(min-width: ${breakpointPx}px)`;
@@ -51,10 +65,25 @@ interface HoveredState {
   y: number;
 }
 
-export default function ProductsInCollectionSection() {
+export default function ProductsInCollectionSection({
+  categories = productCategories,
+  title,
+  viewAllHref = "/products",
+  viewAllLabel,
+}: Props) {
   const { t, lang } = useLanguage();
   const isDesktop = useIsDesktop();
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Resolve the heading: a `Localized` prop, a plain string prop, or fallback
+  // to the default i18n key.
+  const headingText = title
+    ? typeof title === "string"
+      ? title
+      : (title[lang] ?? title.en)
+    : t("collections.productsInCollection");
+
+  const allLabel = viewAllLabel ?? t("ui.viewAllProducts");
 
   // Tracks scroll direction continuously; read (not subscribed to) at the
   // moment a hover session starts, so entrance direction reflects "which
@@ -101,19 +130,19 @@ export default function ProductsInCollectionSection() {
   }
 
   return (
-    <HomepageSection className="py-24 md:py-32 bg-background">
+    <HomepageSection className="bg-background py-24 md:py-32">
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1fr_1.7fr] lg:items-start lg:gap-16 xl:gap-20">
         {/* Heading */}
-        <div>
+        <div className="space-y-9">
           <h1
             className={cn(
-              "text-4xl font-medium tracking-tight text-white uppercase md:text-5xl",
+              "text-4xl font-medium tracking-tight text-white uppercase md:text-5xl ",
               lang === "fa" ? "font-noora" : "font-din",
             )}
           >
-            {t("collections.productsInCollection").toUpperCase()}
+            {headingText.toUpperCase()}
           </h1>
-          <PlusTextBtn href={"/products"} text={t("ui.viewAllProducts")} />
+          <PlusTextBtn href={viewAllHref} text={allLabel} />
         </div>
 
         {/* Tracking photo — desktop only */}
@@ -162,7 +191,7 @@ export default function ProductsInCollectionSection() {
           onMouseLeave={handleListLeave}
           className="flex flex-col gap-10"
         >
-          {productCategories.map((category) => (
+          {categories.map((category) => (
             <div
               key={category.slug}
               className="flex flex-col lg:grid lg:grid-cols-[180px_1fr] lg:items-start lg:gap-6"

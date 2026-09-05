@@ -1,16 +1,44 @@
+import ProductsInCollectionSection from "@/components/collections/collection/ProductsInCollectionSection";
 import ProjectFullImageSection from "@/components/projects/project/ProjectFullImageSection";
 import ProjectInfoSection from "@/components/projects/project/ProjectInfoSection";
 import ProjectTextImageSection from "@/components/projects/project/ProjectTextImageSection";
 import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
 import PictureHero from "@/components/ui/PictureHero";
+import {
+  productCategories,
+  type ProductCategory,
+} from "@/lib/data/productCategories";
 import { getProjectById } from "@/lib/data/projects";
 import { getLanguageFromCookie } from "@/lib/i18n/getLanguage";
-import { pick } from "@/lib/i18n/localized";
+import { loc, pick } from "@/lib/i18n/localized";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+/**
+ * Group a flat list of products by their `category` slug into
+ * `ProductCategory` shape expected by `ProductsInCollectionSection`.
+ */
+function groupProductsByCategory(
+  products: ProductCategory["products"],
+): ProductCategory[] {
+  const bySlug = new Map<string, ProductCategory["products"]>();
+  for (const p of products) {
+    const list = bySlug.get(p.category) ?? [];
+    list.push(p);
+    bySlug.set(p.category, list);
+  }
+  const result: ProductCategory[] = [];
+  for (const cat of productCategories) {
+    const list = bySlug.get(cat.slug);
+    if (list && list.length > 0) {
+      result.push({ ...cat, products: list });
+    }
+  }
+  return result;
 }
 
 const page = async ({ params }: PageProps) => {
@@ -22,14 +50,14 @@ const page = async ({ params }: PageProps) => {
   const cookieStore = await cookies();
   const lang = getLanguageFromCookie(cookieStore.toString());
   const name = pick(project.name, lang);
-  const moreDescription0 = pick(project.moreDescription[0], lang);
-  const moreDescription1 = pick(project.moreDescription[1], lang);
+
+  const groupedCategories = groupProductsByCategory(project.productsUsed);
 
   return (
     <main>
       <PictureHero image={project.image} name={name} />
       <ProjectInfoSection project={project} />
-      <div className="bg-background text-background-secondary min-h-screen w-full">
+      <div className="bg-background text-background-secondary min-h-screen w-full py-96">
         <ImageGalleryCarousel
           mobileColumn={true}
           multiWidth={true}
@@ -38,9 +66,17 @@ const page = async ({ params }: PageProps) => {
         />
         <ProjectTextImageSection
           image={project.portfolioImages[0]}
-          text={moreDescription0}
+          text={project.moreDescription[0]}
         />
-        <ProjectFullImageSection image={project.portfolioImages[1]} caption={moreDescription1} />
+        <ProjectFullImageSection
+          image={project.portfolioImages[1]}
+          caption={project.moreDescription[1]}
+        />
+        <ProductsInCollectionSection
+          categories={groupedCategories}
+          title={loc("Products Used", "محصولات استفاده‌شده در " + name)}
+          viewAllHref="/products"
+        />
       </div>
     </main>
   );
