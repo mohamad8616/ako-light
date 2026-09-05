@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { pick, type Localized } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import HomepageSection, { EASE } from "../../utility/HomepageSection";
@@ -14,6 +15,13 @@ type HeroSectionTextProps = {
   firstLine?: string;
   secondLine?: string;
   btn?: string;
+  /**
+   * Bilingual text resolved reactively from the current `lang`.
+   * Takes precedence over `firstLineKey` / `firstLine` if both are provided.
+   */
+  firstLineLocalized?: Localized;
+  /** Bilingual text for the second line, resolved reactively. */
+  secondLineLocalized?: Localized;
 };
 
 export default function HeroSectionText({
@@ -23,11 +31,22 @@ export default function HeroSectionText({
   firstLine: firstLineProp,
   secondLine: secondLineProp,
   btn: btnProp,
+  firstLineLocalized,
+  secondLineLocalized,
 }: HeroSectionTextProps) {
   const { lang, t } = useLanguage();
 
-  const firstLine = firstLineKey ? t(firstLineKey) : (firstLineProp ?? "");
-  const secondLine = secondLineKey ? t(secondLineKey) : (secondLineProp ?? "");
+  // Resolution priority: Localized (reactive) > Key (i18n table) > string prop.
+  const firstLine = firstLineLocalized
+    ? pick(firstLineLocalized, lang)
+    : firstLineKey
+    ? t(firstLineKey)
+    : (firstLineProp ?? "");
+  const secondLine = secondLineLocalized
+    ? pick(secondLineLocalized, lang)
+    : secondLineKey
+    ? t(secondLineKey)
+    : (secondLineProp ?? "");
   const btn = btnKey ? t(btnKey) : (btnProp ?? "");
 
   return (

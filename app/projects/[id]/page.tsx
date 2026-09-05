@@ -9,9 +9,7 @@ import {
   type ProductCategory,
 } from "@/lib/data/productCategories";
 import { getProjectById } from "@/lib/data/projects";
-import { getLanguageFromCookie } from "@/lib/i18n/getLanguage";
-import { loc, pick } from "@/lib/i18n/localized";
-import { cookies } from "next/headers";
+import { loc } from "@/lib/i18n/localized";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -47,15 +45,11 @@ const page = async ({ params }: PageProps) => {
 
   if (!project) return notFound();
 
-  const cookieStore = await cookies();
-  const lang = getLanguageFromCookie(cookieStore.toString());
-  const name = pick(project.name, lang);
-
   const groupedCategories = groupProductsByCategory(project.productsUsed);
 
   return (
     <main>
-      <PictureHero image={project.image} name={name} />
+      <PictureHero image={project.image} nameLocalized={project.name} />
       <ProjectInfoSection project={project} />
       <div className="bg-background text-background-secondary min-h-screen w-full py-96">
         <ImageGalleryCarousel
@@ -74,7 +68,7 @@ const page = async ({ params }: PageProps) => {
         />
         <ProductsInCollectionSection
           categories={groupedCategories}
-          title={loc("Products Used", "محصولات استفاده‌شده در " + name)}
+          title={loc("Products Used", "محصولات استفاده‌شده در پروژه")}
           viewAllHref="/products"
         />
       </div>
