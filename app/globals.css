@@ -76,6 +76,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+
+  ::selection {
+    background-color: #979B99;
+    color: #171719;
+  }
 }
 
 @layer components {
