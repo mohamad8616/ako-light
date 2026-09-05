@@ -2,13 +2,14 @@
 
 import ProjectssList from "@/components/projects/ProjectList";
 import ProjectsHeader from "@/components/projects/ProjectsHeader";
+import { projects } from "@/lib/data/projects";
 
 export default function MaterialsPage() {
-
+  console.log(projects);
   return (
-      <main className="w-full bg-background">
-        <ProjectsHeader />
-        <ProjectssList />
-      </main>
+    <main className="bg-background w-full">
+      <ProjectsHeader />
+      <ProjectssList />
+    </main>
   );
 }

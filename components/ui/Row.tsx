@@ -1,17 +1,18 @@
 "use client";
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 interface RowProps {
   name: string;
   slug?: string;
   image: string;
+  description?: string;
   index: number;
   route?: string;
   animateOnLoad?: boolean;
@@ -26,7 +27,6 @@ export default function Row({
   image,
   index,
   animateOnLoad = false,
-
 }: RowProps) {
   const { t } = useLanguage();
   const pathname = usePathname().slice(1);
@@ -40,11 +40,11 @@ export default function Row({
             viewport: { once: true, margin: "-80px" },
           })}
       transition={{ duration: 1.5, delay: (index % 4) * 0.08, ease: EASE }}
-      className="border-background-secondary pb-6 border-b-2 w-full"
+      className="border-background-secondary w-full border-b-2 pb-6"
     >
       <Link
         href={`/${route}/${slug ? slug : ""}`}
-        className="mx-auto flex w-full flex-col md:items-end gap-4  py-8 sm:gap-12 md:flex-row md:py-10"
+        className="mx-auto flex w-full flex-col gap-4 py-8 sm:gap-12 md:flex-row md:items-end md:py-10"
       >
         {/* Portrait */}
         <div
@@ -63,7 +63,7 @@ export default function Row({
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="flex-1 text-lg leading-normal font-medium  tracking-tighter text-white uppercase transition-all duration-700 sm:text-xl md:text-3xl lg:text-4xl"
+          className="flex-1 text-lg leading-normal font-medium tracking-tighter text-white uppercase transition-all duration-700 sm:text-xl md:text-3xl lg:text-4xl"
         >
           {name}
         </motion.h2>

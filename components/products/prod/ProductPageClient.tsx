@@ -20,7 +20,7 @@ export default function ProductPageClient({
 }: ProductPageClientProps) {
   const productt = getProduct(productSlug, prodSlug);
   if (!productt) notFound();
-
+  console.log(productt);
   return (
     <main className="bg-background-secondary relative">
       <PictureHero

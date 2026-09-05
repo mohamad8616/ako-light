@@ -15,7 +15,6 @@ export default function MaterialsList() {
       animateOnLoad
       className="bg-background w-full pb-20 md:pb-28"
     >
-      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {materials.map((material, i) => (
           <Row
             route="materials"
@@ -28,7 +27,6 @@ export default function MaterialsList() {
             width={"40"}
           />
         ))}
-      </div>
     </HomepageSection>
   );
 }
