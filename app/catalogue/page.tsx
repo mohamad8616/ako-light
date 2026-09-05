@@ -1,9 +1,19 @@
 import CatalogueGrid from "@/components/catalogue/CatalogueGrid";
+import { getLanguageFromCookie } from "@/lib/i18n/getLanguage";
+import { translations } from "@/lib/i18n/translations";
+import { cookies } from "next/headers";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "Catalogue | Henge",
-  description: "Download Henge's catalogues and collection publications.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const lang = getLanguageFromCookie(cookieStore.toString());
+  const t = translations[lang];
+
+  return {
+    title: t["page.catalogue.title"],
+    description: t["page.catalogue.description"],
+  };
+}
 
 export default function Page() {
   return (

@@ -1,5 +1,10 @@
 import ProductPageClient from "@/components/products/prod/ProductPageClient";
 import { getProduct, products } from "@/lib/data/productCategories";
+import { pick } from "@/lib/i18n/localized";
+import { getLanguageFromCookie } from "@/lib/i18n/getLanguage";
+import { translations } from "@/lib/i18n/translations";
+import { cookies } from "next/headers";
+import type { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ product: string; prod: string }>;
@@ -12,14 +17,28 @@ export function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { product, prod } = await params;
   const productt = getProduct(product, prod);
-  if (!productt) return {};
+
+  const cookieStore = await cookies();
+  const lang = getLanguageFromCookie(cookieStore.toString());
+  const t = translations[lang];
+
+  if (!productt) {
+    return {
+      title: t["page.products.title"],
+      description: t["page.products.description"],
+    };
+  }
+
+  const name = pick(productt.name, lang);
 
   return {
-    title: `${productt.name} | Henge`,
-    description: productt.description.slice(0, 160),
+    title: t["page.product.title"].replace("{name}", name),
+    description: t["page.product.description"].replace("{name}", name),
   };
 }
 

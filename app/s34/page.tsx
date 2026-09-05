@@ -4,6 +4,21 @@ import S34Harmony from "@/components/s34/S34Harmony";
 import S34Hero from "@/components/s34/S34Hero";
 import Secuence from "@/components/s34/Secuence";
 import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
+import { getLanguageFromCookie } from "@/lib/i18n/getLanguage";
+import { translations } from "@/lib/i18n/translations";
+import type { Metadata } from "next";
+import { cookies } from "next/headers";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const cookieStore = await cookies();
+  const lang = getLanguageFromCookie(cookieStore.toString());
+  const t = translations[lang];
+
+  return {
+    title: t["page.s34.title"],
+    description: t["page.s34.description"],
+  };
+}
 
 export default function S34Page() {
   return (

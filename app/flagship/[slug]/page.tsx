@@ -10,7 +10,11 @@ import {
   getFlagshipDetail,
 } from "@/lib/data/flagships";
 import { pick } from "@/lib/i18n/localized";
+import { getLanguageFromCookie } from "@/lib/i18n/getLanguage";
+import { translations } from "@/lib/i18n/translations";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
+import type { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -23,15 +27,23 @@ export function generateStaticParams() {
   return Object.keys(flagshipDetails).map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const flagship = getFlagship(slug);
   const detail = getFlagshipDetail(slug);
   if (!flagship || !detail) return {};
 
+  const cookieStore = await cookies();
+  const lang = getLanguageFromCookie(cookieStore.toString());
+  const t = translations[lang];
+  const name = pick(flagship.name, lang);
+  const description = pick(detail.description, lang).slice(0, 160);
+
   return {
-    title: `${pick(flagship.name, "en")} | Henge Flagships`,
-    description: pick(detail.description, "en").slice(0, 160),
+    title: t["page.flagship.title"].replace("{name}", name),
+    description,
   };
 }
 

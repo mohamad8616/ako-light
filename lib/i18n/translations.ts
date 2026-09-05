@@ -275,6 +275,48 @@ export const translations = {
     "notFound.subtitle":
       "The page you are looking for does not exist or has been moved.",
     "notFound.backHome": "Back home",
+
+        "page.home.title": "Home Form | Italian Design Furniture",
+    "page.home.description":
+      "Unveil timeless design. Home Form: Italian furniture that transcends trends. Handcrafted for enduring beauty, each piece elevates your space. Explore Home Form's legacy of exceptional Italian craftsmanship.",
+    "page.about.title": "About | Home Form",
+    "page.about.description":
+      "Discover the philosophy behind Home Form — Italian design furniture born from centuries of craftsmanship, exceptional materials and timeless elegance.",
+    "page.contact.title": "Contact | Home Form",
+    "page.contact.description": "Get in touch with Home Form — showroom, press office, and headquarters contact details.",
+    "page.catalogue.title": "Catalogue | Home Form",
+    "page.catalogue.description": "Download Home Form's catalogues and collection publications.",
+    "page.collections.title": "Collections | Home Form",
+    "page.collections.description": "Explore Home Form's curated collections of Italian design furniture.",
+    "page.collection.title": "{name} Collection | Home Form",
+    "page.collection.description":
+      "Discover the {name} collection from Home Form — Italian design furniture with exceptional materials and craftsmanship.",
+    "page.materials.title": "Materials | Home Form",
+    "page.materials.description":
+      "Explore Home Form's material library, hand-selected for our furniture collections.",
+    "page.material.title": "{name} | Home Form Materials",
+    "page.material.description": "Explore Home Form's {name} materials — finishes, textures and craftsmanship details.",
+    "page.designers.title": "Designers | Home Form",
+    "page.designers.description":
+      "Meet the master artisans and designers behind Home Form's exceptional Italian furniture.",
+    "page.designer.title": "{name} | Home Form Designer",
+    "page.designer.description": "Discover the work of {name}, a celebrated designer at Home Form.",
+    "page.products.title": "Products | Home Form",
+    "page.products.description": "Browse Home Form's full range of Italian design furniture, from sofas to lighting.",
+    "page.product.title": "{name} | Home Form",
+    "page.product.description":
+      "Discover the {name} from Home Form — Italian design furniture with exceptional materials and craftsmanship.",
+    "page.flagships.title": "Flagships | Home Form",
+    "page.flagships.description": "Explore Home Form's flagship showrooms around the world.",
+    "page.flagship.title": "{name} | Home Form Flagships",
+    "page.flagship.description":
+      "Visit the {name} Home Form flagship showroom — discover our curated Italian design furniture collections.",
+    "page.projects.title": "Projects | Home Form",
+    "page.projects.description":
+      "Explore Home Form's curated projects showcasing Italian design furniture in exceptional spaces.",
+    "page.s34.title": "S/34 | Home Form",
+    "page.s34.description": "Discover S/34 — Home Form's research project exploring the intersection of design and light.",
+
   },
   fa: {
     "nav.aboutUs": "درباره ما",
@@ -548,7 +590,50 @@ export const translations = {
     "notFound.subtitle":
       "صفحه‌ای که به دنبال آن هستید وجود ندارد یا منتقل شده است.",
     "notFound.backHome": "بازگشت به خانه",
+
+        "page.home.title": "هوم فرم | مبلمان طراحی‌شده در ایتالیا",
+    "page.home.description":
+      "طراحی‌های بی‌زمان را کشف کنید. هوم فرم: مبلمان ایتالیایی که فراتر از روندها است. با دست‌ساز بودن برای زیبایی که پایدار می‌ماند، هر قطعه فضای شما را بالا می‌برد. با میراث استثنایی کارگری ایتالیایی هوم فرم همراه شوید.",
+    "page.about.title": "درباره ما | هوم فرم",
+    "page.about.description":
+      "فلسفه پشت هوم فرم را کشف کنید — مبلمان طراحی‌شده در ایتالیا که از قرن‌ها کارگری به وجود آمده است، متریال‌های استثنایی و شیکاپی که همیشگرد می‌گیرد.",
+    "page.contact.title": "تماس | هوم فرم",
+    "page.contact.description": "با هوم فرم تماس بگیرید — نمایشگاه، دفتر خبری و مرکز اصلی.",
+    "page.catalogue.title": "کاتالوگ | هوم فرم",
+    "page.catalogue.description": "کاتالوگ‌ها و انتشارات مجموعه‌های هوم فرم را دانلود کنید.",
+    "page.collections.title": "مجموعه‌ها | هوم فرم",
+    "page.collections.description": "مجموعه‌های منحصر به فرد هوم فرم از مبلمان طراحی‌شده در ایتالیا را کشف کنید.",
+    "page.collection.title": "مجموعه {name} | هوم فرم",
+    "page.collection.description":
+      "مجموعه {name} هوم فرم را کشف کنید — مبلمان طراحی‌شده در ایتالیا با متریال‌های استثنایی و کارگری.",
+    "page.materials.title": "مواد | هوم فرم",
+    "page.materials.description": "کتابخانه متریال‌های هوم فرم را که برای مجموعه‌های مبلمان ما انتخاب شده‌اند، کاوش کنید.",
+    "page.material.title": "{name} | مواد هوم فرم",
+    "page.material.description": "مواد {name} هوم فرم را کاوش کنید — فینیش‌ها، بافت‌ها و جزئیات کارگری.",
+    "page.designers.title": "طراحان | هوم فرم",
+    "page.designers.description": "با صنعتگران و طراحان برجسته پشت مبلمان طراحی‌شده در ایتالیا هوم فرم آشنا شوید.",
+    "page.designer.title": "{name} | طراح هوم فرم",
+    "page.designer.description": "کارهای {name}، یک طراح برجسته در هوم فرم را کشف کنید.",
+    "page.products.title": "محصولات | هوم فرم",
+    "page.products.description": "تمام محصولات مبلمان طراحی‌شده در ایتالیا هوم فرم را از صندلی‌ها تا لوازم نورپذیری مرور کنید.",
+    "page.product.title": "{name} | هوم فرم",
+    "page.product.description":
+      "مجموعه {name} هوم فرم را کشف کنید — مبلمان طراحی‌شده در ایتالیا با متریال‌های استثنایی و کارگری.",
+    "page.flagships.title": "فروشگاه‌های عطف | هوم فرم",
+    "page.flagships.description": "فروشگاه‌های عطف هوم فرم در سراسر جهان را کاوش کنید.",
+    "page.flagship.title": "{name} | فروشگاه‌های عطف هوم فرم",
+    "page.flagship.description":
+      "فروشگاه عطف {name} هوم فرم را بازدید کنید — مجموعه‌های منحصر به فرد مبلمان طراحی‌شده در ایتالیا ما را کشف کنید.",
+    "page.projects.title": "پروژه‌ها | هوم فرم",
+    "page.projects.description": "پروژه‌های منحصر به فرد هوم فرم را که مبلمان طراحی‌شده در ایتالیا را در فضاهای استثنایی نشان می‌دهند، کاوش کنید.",
+    "page.s34.title": "S/34 | هوم فرم",
+    "page.s34.description": "S/34 را کشف کنید — پروژه تحقیقاتی هوم فرم که به بررسی تلاقی طراحی و نور می‌پردازد.",
   },
 } as const;
 
 export type TranslationKey = keyof typeof translations.en;
+
+export const languageNames: Record<Language, string> = {
+  en: "English",
+  fa: "Persian",
+};
