@@ -16,7 +16,7 @@ export default function ProjectInfoSection({ project }: { project: Project }) {
   const projectParagraph = pick(project.paragraph, lang);
 
   return (
-    <HomepageSection className="bg-background-secondary flex min-h-[150vh] flex-col py-20 md:py-28">
+    <HomepageSection className="bg-background-secondary flex lg:min-h-[150vh] min-h-screen flex-col py-20 md:py-28">
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-[2fr_1fr] lg:gap-16">
         {/* Left column */}
         <div className="space-y-6 lg:space-y-10">
@@ -71,7 +71,7 @@ export default function ProjectInfoSection({ project }: { project: Project }) {
       </div>
 
       {/* Bottom atmospheric paragraph */}
-      <div className="mt-auto max-w-2/5">
+      <div className="mt-auto lg:max-w-2/5 max-w-3/5">
         <Paragraph>{projectParagraph}</Paragraph>
       </div>
     </HomepageSection>

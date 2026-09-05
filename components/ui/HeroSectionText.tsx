@@ -40,13 +40,13 @@ export default function HeroSectionText({
   const firstLine = firstLineLocalized
     ? pick(firstLineLocalized, lang)
     : firstLineKey
-    ? t(firstLineKey)
-    : (firstLineProp ?? "");
+      ? t(firstLineKey)
+      : (firstLineProp ?? "");
   const secondLine = secondLineLocalized
     ? pick(secondLineLocalized, lang)
     : secondLineKey
-    ? t(secondLineKey)
-    : (secondLineProp ?? "");
+      ? t(secondLineKey)
+      : (secondLineProp ?? "");
   const btn = btnKey ? t(btnKey) : (btnProp ?? "");
 
   return (

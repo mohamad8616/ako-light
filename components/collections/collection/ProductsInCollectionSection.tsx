@@ -133,10 +133,10 @@ export default function ProductsInCollectionSection({
     <HomepageSection className="bg-background py-24 md:py-32">
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_1fr_1.7fr] lg:items-start lg:gap-16 xl:gap-20">
         {/* Heading */}
-        <div className="space-y-9">
+        <div className="space-y-4 lg:space-y-9">
           <h1
             className={cn(
-              "text-4xl font-medium tracking-tight text-white uppercase md:text-5xl ",
+              "text-2xl md:text-4xl font-medium tracking-tight text-white uppercase lg:text-5xl ",
               lang === "fa" ? "font-noora" : "font-din",
             )}
           >
