@@ -28,6 +28,7 @@ export default function PictureHero({
         src={image}
         alt={nameProp ?? ""}
         fill
+        loading="eager"
         priority={true}
         className="object-cover"
       />
