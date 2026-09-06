@@ -85,3 +85,6 @@ export const s34Sections = {
     ],
   },
 };
+export function getS34GalleryImages(): string[] {
+  return s34Sections.gallery.images;
+}

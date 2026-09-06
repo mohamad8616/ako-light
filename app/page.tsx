@@ -28,13 +28,13 @@ export default function HomePage() {
     return {
       name: category.i18nKey,
       image: category.products[0].images[0],
-      link: category.products[0].slug,
+      link: `/products/${category.slug}`,
     };
   });
   return (
     <main className="font-noora bg-background-secondary w-full space-y-18 lg:space-y-60">
       <HeroSection />
-      <ImageGalleryCarousel category={productCategory} />
+      <ImageGalleryCarousel purpose="link" category={productCategory} />
       <HengeParisBanner />
       {/* <HengeLondonBanner /> */}
       <VideoSection />

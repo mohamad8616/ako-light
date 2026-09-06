@@ -33,7 +33,6 @@ export default function AboutPage() {
         mobileColumn={true}
         images={images}
       />
-      {/* <MiddleScreenVideo src="videos/aboutvid.mp4" /> */}
       <EleganceSection />
       <ProjectsSections />
     </main>

@@ -4,6 +4,7 @@ import S34Harmony from "@/components/s34/S34Harmony";
 import S34Hero from "@/components/s34/S34Hero";
 import Secuence from "@/components/s34/Secuence";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
+import { getS34GalleryImages } from "@/lib/data/s34";
 import { getLanguageFromCookie } from "@/lib/i18n/getLanguage";
 import { translations } from "@/lib/i18n/translations";
 import type { Metadata } from "next";
@@ -21,12 +22,19 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function S34Page() {
+  const images = getS34GalleryImages();
+
   return (
     <main className="bg-background-secondary w-full space-y-48">
       <S34Hero />
       <S34Concept />
       <Secuence />
-      <ImageGalleryCarousel multiWidth={true} mobileColumn={true} />
+      <ImageGalleryCarousel
+        multiWidth={true}
+        mobileColumn={true}
+        images={images}
+        circle={true}
+      />
       <S34Harmony />
       <ProjectsSections />
     </main>
