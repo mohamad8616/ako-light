@@ -1,11 +1,13 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { motion, useMotionValue, useSpring } from "framer-motion";
-import { Play } from "lucide-react";
-import { useRef, useState } from "react";
-import { EASE } from "../../utility/HomepageSection";
+import { useLenis } from "@/lib/lenisStore";
+import { useHeroVideoStore } from "@/lib/heroVideoStore";
+import { useMotionValue } from "framer-motion";
+import { X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import HeroSectionText from "./HeroSectionText";
+import PlayCircle from "./PlayCircle";
 
 type HeroVideoProps = {
   firstLineKey?: string;
@@ -32,18 +34,42 @@ export default function HeroVideo({
   const secondLine = secondLineKey ? t(secondLineKey) : (secondLineProp ?? "");
   const btn = btnKey ? t(btnKey) : (btnProp ?? "");
   const sectionRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [hovering, setHovering] = useState(false);
-  // True while the cursor is over an interactive element (the play button)
-  // that should suppress the circle rather than show it on top of a real
-  // clickable target.
-  const [overInteractive, setOverInteractive] = useState(false);
+
+  // Playback state lives in a shared store so the navbar can hide while the
+  // video plays (HeroVideo and Navbar are siblings far apart in the tree).
+  const isPlaying = useHeroVideoStore((s) => s.isPlaying);
+  const setPlaying = useHeroVideoStore((s) => s.setPlaying);
+
+  const { lock, unlock } = useLenis();
+
+  // While playing: stop page scrolling (Lenis stop + body overflow hidden)
+  // AND hide the scrollbar entirely by marking <html>. On close/unmount the
+  // scroll behavior is restored.
+  useEffect(() => {
+    if (isPlaying) {
+      lock();
+      document.documentElement.classList.add("video-playing");
+    } else {
+      unlock();
+      document.documentElement.classList.remove("video-playing");
+    }
+    return () => {
+      unlock();
+      document.documentElement.classList.remove("video-playing");
+    };
+  }, [isPlaying, lock, unlock]);
+
+  // If this component unmounts mid-playback (e.g. route navigation), release
+  // the global scroll lock and let the navbar come back.
+  useEffect(() => () => setPlaying(false), [setPlaying]);
 
   // Raw cursor position → smoothed with a spring so the circle trails the
-  // cursor with a slight, natural lag instead of snapping to it.
+  // cursor with a slight, natural lag instead of snapping to it. Owned here;
+  // consumed by PlayCircle (the spring + drift live in that component).
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const springX = useSpring(mouseX, { stiffness: 300, damping: 30, mass: 0.5 });
-  const springY = useSpring(mouseY, { stiffness: 300, damping: 30, mass: 0.5 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = sectionRef.current?.getBoundingClientRect();
@@ -52,7 +78,36 @@ export default function HeroVideo({
     mouseY.set(e.clientY - rect.top);
   };
 
-  const circleVisible = hovering && !overInteractive;
+  // Open the in-place player. Called directly from the user's click (a user
+  // gesture), so the unmuted play() is allowed by the browser autoplay policy.
+  // NOTE: sound only works if the source video file actually has an audio
+  // track — the current /videos/*.mp4 files are silent (no mp4a track in the
+  // container), which is also why Chrome disables the volume control.
+  const openPlayer = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    setPlaying(true);
+    video.muted = false;
+    video.play().catch(() => {
+      /* rejected — the native controls are available for manual play */
+    });
+  };
+
+  const closePlayer = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.pause();
+    video.muted = true;
+    setPlaying(false);
+  };
+
+  // Any click over the hero opens the player, EXCEPT on real interactive
+  // elements (the "play" PlusTextBtn link, the close button).
+  const handleSectionClick = (e: React.MouseEvent<HTMLElement>) => {
+    if (isPlaying) return;
+    if ((e.target as HTMLElement).closest("a, button")) return;
+    openPlayer();
+  };
 
   return (
     <section
@@ -60,44 +115,64 @@ export default function HeroVideo({
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => setHovering(false)}
+      onClick={handleSectionClick}
       className="relative h-screen w-full cursor-none overflow-hidden bg-black md:cursor-auto"
     >
+      {/* The hero's own full-bleed video. Paused (poster frame) and silent by
+          default; while playing it gets Chrome's native controls. In-place, so
+          it scrolls away with the hero naturally instead of floating over the
+          page as a fixed background. */}
       <video
-        autoPlay
+        ref={videoRef}
         muted
         loop
         playsInline
+        preload="auto"
+        controls={isPlaying}
         className="absolute inset-0 h-full w-full object-cover"
       >
         <source src={videoSrc} type="video/mp4" />
       </video>
-      <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-black/40" />
 
-      {/* Cursor-following play circle. Positioned with a HIGHER z-index
-          than the video/overlay but LOWER than the global fixed Header
-          (z-50) and below the play button itself — so it naturally stays
-          hidden under the navbar (which sits on top and also intercepts
-          the pointer, firing mouseleave on this section) and is
-          explicitly suppressed over the button via `overInteractive`,
-          without needing any cross-component logic. */}
-
-      <motion.div
-        style={{ left: springX, top: springY }}
-        animate={{
-          scale: circleVisible ? 1 : 0,
-          opacity: circleVisible ? 0.6 : 0,
-        }}
-        transition={{ duration: 0.4, ease: EASE }}
-        className="pointer-events-none absolute z-20 hidden h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white md:flex"
-      >
-        <Play size={22} className="ml-1 fill-black text-black" />
-      </motion.div>
-
-      <HeroSectionText
-        firstLine={firstLine}
-        secondLine={secondLine}
-        btn={btn}
+      {/* Decorative gradient — pointer-events-none so clicks pass through to
+          the section handler below. Lightens while playing. */}
+      <div
+        className={`pointer-events-none absolute inset-0 transition-colors duration-500 ${
+          isPlaying
+            ? "bg-black/20"
+            : "bg-linear-to-t from-black/80 via-black/20 to-black/40"
+        }`}
       />
+
+      {/* Cursor-following play circle — hidden while playing, pointer-events-
+          none so it never blocks clicks. */}
+      <PlayCircle
+        mouseX={mouseX}
+        mouseY={mouseY}
+        visible={hovering && !isPlaying}
+      />
+
+      {/* Close button — only while playing. */}
+      {isPlaying && (
+        <button
+          type="button"
+          aria-label="Close video"
+          onClick={closePlayer}
+          className="absolute top-4 right-4 z-30 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-black/50 text-white transition-colors hover:bg-black/70"
+        >
+          <X size={24} strokeWidth={1.5} />
+        </button>
+      )}
+
+      {/* Hero copy — shown on the poster, hidden while playing so the video
+          + controls stay clean. */}
+      {!isPlaying && (
+        <HeroSectionText
+          firstLine={firstLine}
+          secondLine={secondLine}
+          btn={btn}
+        />
+      )}
     </section>
   );
 }

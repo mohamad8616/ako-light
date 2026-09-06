@@ -130,6 +130,13 @@ html.lenis {
 .lenis.lenis-smooth [data-lenis-prevent] {
   overscroll-behavior: contain;
 }
+/* Hide the page scrollbar + lock native scroll while the hero video is
+   playing. Applied to <html> by HeroVideo (useHeroVideoStore → isPlaying),
+   which also stops Lenis via the lenis store. */
+html.video-playing,
+html.video-playing body {
+  overflow: hidden;
+}
 /* hide scrollbar */
 .no-scrollbar {
   -ms-overflow-style: none; /* IE/Edge */

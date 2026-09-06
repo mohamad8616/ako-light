@@ -46,20 +46,20 @@ const POINTER_QUERY = "(hover: none), (pointer: coarse)";
 const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 const DEFAULT_SLIDE_WIDTHS =
-  "w-[70vw] sm:w-[45vw] md:w-[32vw] lg:w-[24vw] xl:w-[20vw]";
+  "w-[60vw] sm:w-[45vw] md:w-[32vw] lg:w-[24vw] xl:w-[23vw]";
+
+const DOUBLE_SLIDE_WIDTHS =
+  "w-[120vw] sm:w-[90vw] md:w-[64vw] lg:w-[48vw] xl:w-[46vw]";
 
 const DEFAULT_HEIGHT = "aspect-4/5";
-const MULTI_HEIGHT = "h-[50vh] sm:h-[45vh] md:h-[50vh]";
-
-// Pool of widths (in vw) used when `multiWidth` is enabled.
-const MULTI_WIDTH_POOL = [25, 28, 30, 32, 35, 38, 40, 42, 45, 48, 50] as const;
+const MULTI_HEIGHT = "h-[50vh] sm:h-[45vh] md:h-[60vh]";
 
 const FONT_BY_LANG = (lang: "en" | "fa") =>
   lang === "fa" ? "font-noora" : "font-din";
 
-const IMAGE_TRANSITION = `transition-transform duration-[1.2s] ease-[${EASE}] group-hover:scale-110`;
+const IMAGE_TRANSITION = `transition-transform duration-[1.3s] ease-[${EASE}] group-hover:scale-105`;
 const OVERLAY_TRANSITION =
-  "transition-colors duration-500 group-hover:bg-black/15";
+  "transition-colors duration-600 group-hover:bg-black/15";
 
 // ----- pointer detection (gates the cursor circle only) -----
 
@@ -72,14 +72,6 @@ const getPointerSnapshot = () => window.matchMedia(POINTER_QUERY).matches;
 const getServerSnapshot = () => false;
 
 // ----- helpers -----
-
-function pickRandomWidth(): number {
-  return MULTI_WIDTH_POOL[Math.floor(Math.random() * MULTI_WIDTH_POOL.length)];
-}
-
-function generateRandomWidths(count: number): number[] {
-  return Array.from({ length: count }, () => pickRandomWidth());
-}
 
 function toCarouselItems(
   images: string[] | undefined,
@@ -130,9 +122,6 @@ export default function ImageGalleryCarousel({
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [hovering, setHovering] = useState(false);
 
-  // Random widths for multiWidth mode — generated once per item count.
-  const [randomWidths] = useState(() => generateRandomWidths(itemCount));
-
   const isTouch = useSyncExternalStore(
     subscribeToPointer,
     getPointerSnapshot,
@@ -182,7 +171,7 @@ export default function ImageGalleryCarousel({
           className="no-scrollbar mx-auto cursor-grab overflow-hidden pb-2 active:cursor-grabbing"
         >
           <div
-            className={cn("carousel flex gap-4 md:gap-6", inView && "in-view")}
+            className={cn("carousel flex gap-4 md:gap-10", inView && "in-view")}
           >
             {items.map((item, i) => (
               <Slide
@@ -190,7 +179,6 @@ export default function ImageGalleryCarousel({
                 index={i}
                 image={item.image}
                 multiWidth={multiWidth}
-                randomWidthVw={randomWidths[i]}
                 hasCategoryCta={hasCategoryCta}
                 fontClass={FONT_BY_LANG(lang)}
                 t={t}
@@ -219,7 +207,6 @@ type SlideProps = {
   image: string;
   index: number;
   multiWidth: boolean;
-  randomWidthVw?: number;
   hasCategoryCta: boolean;
   fontClass: string;
   t: (key: string) => string;
@@ -230,21 +217,23 @@ function Slide({
   image,
   index,
   multiWidth,
-  randomWidthVw,
   hasCategoryCta,
   fontClass,
   t,
   cta,
 }: SlideProps) {
-  const isMultiWidth = multiWidth && randomWidthVw !== undefined;
+  const isMultiWidth = multiWidth;
 
-  const widthClass = isMultiWidth ? "" : DEFAULT_SLIDE_WIDTHS;
+  const widthClass = isMultiWidth
+    ? index % 2 === 0
+      ? DEFAULT_SLIDE_WIDTHS
+      : DOUBLE_SLIDE_WIDTHS
+    : DEFAULT_SLIDE_WIDTHS;
   const heightClass = multiWidth ? MULTI_HEIGHT : DEFAULT_HEIGHT;
   const alt = hasCategoryCta && cta ? t(cta.name) : "";
 
   const style: CSSProperties = {
     transitionDelay: `${(index % 6) * 0.06}s`,
-    ...(isMultiWidth && { width: `${randomWidthVw}vw` }),
   };
 
   return (
@@ -272,7 +261,7 @@ function Slide({
         <PlusTextBtn
           text={t(cta.name)}
           href={cta.link}
-          className={cn(fontClass, "text-background")}
+          className={cn(fontClass, "text-background text-sm lg:text-base")}
           textColor="text-background"
         />
       )}
