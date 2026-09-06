@@ -30,7 +30,7 @@ const ProjectsSections = () => {
                   alt={i18nKey ? t(i18nKey) : label}
                   fill
                   sizes="(max-width: 640px) 100vw, 33vw"
-                  className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+                  className="object-cover transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-black/20 transition-colors duration-500 group-hover:bg-black/40" />
               </Link>

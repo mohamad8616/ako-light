@@ -130,11 +130,11 @@ html.lenis {
 .lenis.lenis-smooth [data-lenis-prevent] {
   overscroll-behavior: contain;
 }
-/* Hide the page scrollbar + lock native scroll while the hero video is
-   playing. Applied to <html> by HeroVideo (useHeroVideoStore → isPlaying),
-   which also stops Lenis via the lenis store. */
-html.video-playing,
-html.video-playing body {
+/* Hide the page scrollbar + lock native scroll while an overlay is open
+   (hero video playback, lightbox image gallery). Applied to <html> by the
+   owning component, which also stops Lenis via the lenis store. */
+html.scroll-locked,
+html.scroll-locked body {
   overflow: hidden;
 }
 /* hide scrollbar */
@@ -144,6 +144,25 @@ html.video-playing body {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome/Safari */
+}
+
+/* thumbnails rail in the lightbox — its own thin, dark scrollbar */
+.lightbox-rail {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent; /* Firefox */
+}
+.lightbox-rail::-webkit-scrollbar {
+  width: 5px; /* Chrome/Safari */
+}
+.lightbox-rail::-webkit-scrollbar-track {
+  background: transparent;
+}
+.lightbox-rail::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.25);
+  border-radius: 9999px;
+}
+.lightbox-rail::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.45);
 }
 
 /* entry animation for carousel items */

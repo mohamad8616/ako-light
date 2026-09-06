@@ -3,7 +3,7 @@ import S34Concept from "@/components/s34/S34Concept";
 import S34Harmony from "@/components/s34/S34Harmony";
 import S34Hero from "@/components/s34/S34Hero";
 import Secuence from "@/components/s34/Secuence";
-import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
+import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import { getLanguageFromCookie } from "@/lib/i18n/getLanguage";
 import { translations } from "@/lib/i18n/translations";
 import type { Metadata } from "next";

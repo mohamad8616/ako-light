@@ -50,14 +50,14 @@ export default function HeroVideo({
   useEffect(() => {
     if (isPlaying) {
       lock();
-      document.documentElement.classList.add("video-playing");
+      document.documentElement.classList.add("scroll-locked");
     } else {
       unlock();
-      document.documentElement.classList.remove("video-playing");
+      document.documentElement.classList.remove("scroll-locked");
     }
     return () => {
       unlock();
-      document.documentElement.classList.remove("video-playing");
+      document.documentElement.classList.remove("scroll-locked");
     };
   }, [isPlaying, lock, unlock]);
 

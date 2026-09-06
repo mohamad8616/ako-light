@@ -3,7 +3,7 @@
 import BuyBtn from "@/components/cart/BuyNowBtn";
 import ProductInfoSection from "@/components/products/prod/ProdInfoSection";
 import RelatedProductsSection from "@/components/products/prod/RelatedProdSection";
-import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
+import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import PictureHero from "@/components/ui/PictureHero";
 import { getProduct } from "@/lib/data/productCategories";
 import { productKey } from "@/lib/i18n/localized";

@@ -2,7 +2,7 @@ import ProductsInCollectionSection from "@/components/collections/collection/Pro
 import ProjectFullImageSection from "@/components/projects/project/ProjectFullImageSection";
 import ProjectInfoSection from "@/components/projects/project/ProjectInfoSection";
 import ProjectTextImageSection from "@/components/projects/project/ProjectTextImageSection";
-import ImageGalleryCarousel from "@/components/ui/ImageGalleryCarousel";
+import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import PictureHero from "@/components/ui/PictureHero";
 import {
   productCategories,
