@@ -13,8 +13,8 @@ import { useCallback, useMemo, useState } from "react";
 // ----- constants -----
 
 /** Navbar geometry. Sizes match the two "scrolled" / "at top" states. */
-const SCROLL_HIDE_THRESHOLD = 120; // px — start hiding once user scrolls past this
-const SCROLLED_CLASS_THRESHOLD = 90; // px — start the "scrolled" border/background after this
+const SCROLL_HIDE_THRESHOLD = 100; // px — start hiding once user scrolls past this
+const SCROLLED_CLASS_THRESHOLD = 200; // px — start the "scrolled" border/background after this
 
 /** Easing curve used for the header slide-in/out. Matches the rest of the site. */
 const HEADER_EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -62,14 +62,33 @@ export default function Navbar() {
   // directly to the MotionValue, so subscribing to `scrollY` doesn't
   // cause a re-render on every scroll frame — only `setState` does, and
   // we only set when the boolean actually flips.
+  //
+  // Scroll logic:
+  //   • At the very top of the page (within `SCROLLED_CLASS_THRESHOLD`)
+  //     the bar shows in its full-bleed transparent state (`scrolled` = false).
+  //   • Scrolling DOWN past `SCROLL_HIDE_THRESHOLD` immediately hides
+  //     the bar AND clears the scrolled-pill style (so the bar slides
+  //     away as a transparent shell — no flash of dark background).
+  //   • Scrolling UP re-shows the bar in the scrolled-pill style.
+  //   • Only when scrolling up and back near the top does it morph
+  //     from the pill back to the at-top state.
   useMotionValueEvent(scrollY, "change", (latest) => {
     const prev = scrollY.getPrevious() ?? 0;
     const isScrollingDown = latest > prev;
     const atTop = latest < SCROLLED_CLASS_THRESHOLD;
 
+    // Hide the bar the moment the user starts scrolling down past the
+    // threshold; reveal it as soon as they scroll back up.
     const nextHidden = isScrollingDown && latest > SCROLL_HIDE_THRESHOLD;
     setHidden((cur) => (cur === nextHidden ? cur : nextHidden));
-    setScrolled((cur) => (cur === !atTop ? cur : !atTop));
+
+    // The scrolled-pill style is only applied while the bar is visible
+    // AND the user is past the very top of the page. When hidden, we
+    // force `scrolled = false` so the bar slides out as a transparent
+    // shell — the moment the user scrolls up, it pops back in with the
+    // pill style.
+    const nextScrolled = !nextHidden && !atTop;
+    setScrolled((cur) => (cur === nextScrolled ? cur : nextScrolled));
   });
 
   // Header class — assembled once per render but only when state changes.
@@ -89,37 +108,42 @@ export default function Navbar() {
     [overlayOpen, menuOpen],
   );
 
-  // Inner bar classes. Both states declare the *same* properties
-  // (height, width, vertical alignment, margin) so the `transition-[...]`
-  // list below can interpolate every value smoothly.
-  //
-  //   • At top → `w-full` + `items-end` (logo + buttons anchored to bottom).
-  //   • Scrolled → `w-[calc(100vw-8.5vw)]` + `items-center` (compact, floating).
-  const barClass = useMemo(() => {
-    const alignment = scrolled && !overlayOpen ? "items-center" : "items-end";
-    const height = scrolled && !overlayOpen ? "h-24 md:h-22" : "h-32 md:h-52";
-    const width = scrolled && !overlayOpen ? "w-[calc(100vw-9vw)]" : "w-full";
-    return `mx-auto flex ${height} ${width} ${alignment} border-transparent`;
-  }, [scrolled, overlayOpen]);
+  // Unified bar style — a single class chain whose values depend on the
+  // scroll state, instead of swapping between two completely different
+  // class sets. The bar always has the same shape; only height/width
+  // values change. `items-end` keeps the logo + actions anchored to
+  // the bottom in both states (no vertical jump on scroll-up vs at-top).
+  const isCompact = scrolled && !overlayOpen;
 
-  // Inner row — always carries the page-edge padding so the bar's
-  // padding never appears/disappears on the wrong element during the
-  // morph. The BG swaps between transparent (top) and solid (scrolled).
-  const barInnerClass = useMemo(() => {
-    const bg =
-      scrolled && !overlayOpen
-        ? "bg-background px-14"
-        : "bg-transparent px-6 md:px-12 lg:px-20 xl:px-[8.5vw] ";
-    return `flex h-full w-full items-center justify-between ${bg}`;
-  }, [scrolled, overlayOpen]);
+  const barClass = useMemo(
+    () =>
+      `mx-auto flex ${isCompact ? "h-16 md:h-22" : "h-32 md:h-62"} w-full transition duration-300 ${
+        isCompact ? "lg:w-[calc(100vw-8.5vw)]" : ""
+      } items-end border-transparent`,
+    [isCompact],
+  );
+
+  // Inner row: padding and background are the only two values that
+  // change. The BG is forced transparent while the bar is sliding out
+  // (`hidden`) so the user never sees a flash of dark background during
+  // the hide animation.
+  const innerPadding = isCompact
+    ? "px-6 lg:px-14 "
+    : "px-6 lg:px-14 lg:px-20 xl:px-[8.5vw]";
+  const innerBg = isCompact && !hidden ? "bg-background" : "bg-transparent";
+
+  const barInnerClass = useMemo(
+    () =>
+      `flex h-full w-full items-center justify-between ${innerPadding} ${innerBg}`,
+    [innerPadding, innerBg],
+  );
 
   // Animated transition for the bar/inner. Listing every property that
   // changes in either state (height, width, padding, BG; `items-*` doesn't
   // animate so it's not in the list) means Tailwind interpolates the
   // whole thing. The class name is hardcoded so Tailwind's JIT scanner
   // picks it up.
-  const barTransitionClass =
-    "flex transition-[height,width,padding,margin,background-color] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]";
+  const barTransitionClass = "flex transition-[color] duration-200";
 
   return (
     <>

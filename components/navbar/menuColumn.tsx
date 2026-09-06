@@ -14,7 +14,7 @@ const LINK_STAGGER = 0.07;
 /** Per-link exit stagger (used as the column leaves). */
 const LINK_EXIT_STAGGER = 0.04;
 /** Entry duration for each link. */
-const LINK_ENTER_DURATION = 0.7;
+const LINK_ENTER_DURATION = 0.2;
 /** Exit duration for each link. */
 const LINK_EXIT_DURATION = 0.3;
 /** Column entry duration. */

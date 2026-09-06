@@ -17,11 +17,11 @@ const PANEL_DURATION = 0.4;
 /** Exit: panel slides back up after the links have receded. */
 const PANEL_EXIT_DELAY = 0.5;
 /** First column reveal — after the panel has landed (delay + duration). */
-const FIRST_COLUMN_DELAY = 0.5;
+const FIRST_COLUMN_DELAY = 0.1;
 /** Per-column stagger on entry. */
 const COLUMN_STAGGER = 0.12;
 /** First link reveal — panel lands at ~1.45s. */
-const FIRST_LINK_DELAY = 1.45;
+const FIRST_LINK_DELAY = 0.45;
 /** Per-link stagger inside a column. */
 const LINK_STAGGER = 0.1;
 

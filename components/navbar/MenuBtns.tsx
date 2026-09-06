@@ -37,7 +37,7 @@ export default function MenuBtns({ onClose }: Props) {
   };
 
   return (
-    <div className="mx-auto grid w-full max-w-[1600px] grid-cols-2 items-center gap-x-10 px-8 pb-10 md:px-20 md:pb-12 lg:grid-cols-4">
+    <div className="mx-auto grid w-full grid-cols-2 items-center gap-x-10 px-8 pb-10 md:px-20 md:pb-12 lg:grid-cols-4">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -50,11 +50,13 @@ export default function MenuBtns({ onClose }: Props) {
           onClick={switchTo("en")}
           className={`${fontForLang} text-sm font-medium tracking-[0.08em] uppercase`}
         />
+
+        {/* THIS ELEMENT ALWAYS MUST HAVE FONT-NOORA STYLE */}
         <LanguageButton
           label="فارسی"
           active={lang === "fa"}
           onClick={switchTo("fa")}
-          className={`${fontForLang} text-sm font-medium tracking-[0.08em]`}
+          className={`font-noora text-sm font-medium tracking-[0.08em]`}
         />
       </motion.div>
 
@@ -84,9 +86,7 @@ function LanguageButton({
     <button
       onClick={onClick}
       className={`w-fit cursor-pointer text-left transition-colors duration-300 ${className ?? ""} ${
-        active
-          ? "text-white"
-          : "text-white/30 hover:text-white/60"
+        active ? "text-white" : "text-white/30 hover:text-white/60"
       }`}
     >
       {label}

@@ -20,19 +20,19 @@ type PlusTextBtnProps =
 // mobile too — a base `inline`/`flex` conflict made <sm screens drop flexbox
 // centering and misalign the icon against the text baseline.
 const BUTTON_CLASSES =
-  "group inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 text-sm uppercase tracking-[0.15em] transition-all duration-300";
+  "group inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 text-sm uppercase transition-all duration-300 lg:text-base";
 
 // The SVG is a fixed-size block element centered by its flex wrapper, so its
 // center coincides with the wrapper center and rotating it stays in place.
 // strokes are inset off the viewBox edges so they are not clipped/shifted.t
 const PlusIcon = () => (
-  <svg
-    width="10"
-    height="10"
-    viewBox="0 0 14 14"
-    className="block shrink-0"
-  >
-    <path d="M7 2V12M2 7H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  <svg width="10" height="10" viewBox="0 0 14 14" className="block shrink-0">
+    <path
+      d="M7 2V12M2 7H12"
+      stroke="currentColor"
+      strokeWidth="3"
+      strokeLinecap="round"
+    />
   </svg>
 );
 

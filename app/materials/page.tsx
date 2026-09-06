@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function MaterialsPage() {
   return (
-    <main className="w-full bg-background">
+    <main className="w-full bg-background mt-30 lg:mt-50">
       <MaterialsHeader />
       <MaterialsList />
     </main>

@@ -10,7 +10,7 @@ export default function Logo({ className }: AkoLightingLogoProps) {
   const { lang } = useLanguage();
 
   return (
-    <p className={`${lang === "fa" ? "font-noora" : "font-din"} text-lg font-medium ${className}`}>
+    <p className={`${lang === "fa" ? "font-noora" : "font-din"} lg:text-lg font-semibold ${className}`}>
       {lang === "fa" ? "هوم فرم" : "HOME FORM"}
     </p>
   );
