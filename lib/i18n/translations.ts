@@ -257,6 +257,16 @@ export const translations = {
     "productsSheet.close": "close",
     "productsSheet.allProducts": "all Products",
 
+    "cart.title": "Cart",
+    "cart.empty": "Your cart is empty.",
+    "cart.total": "Total",
+    "cart.notes": "Special instructions for seller",
+    "cart.shippingNote": "Shipping and discount codes are added at checkout.",
+    "cart.checkout": "Checkout",
+    "cart.redirecting": "Redirecting…",
+    "cart.decreaseQuantity": "Decrease quantity",
+    "cart.increaseQuantity": "Increase quantity",
+
     "logo.text": "home form",
 
     "footer.credits": "Credits",
@@ -586,6 +596,16 @@ export const translations = {
     "productsSheet.products": "محصولات",
     "productsSheet.close": "بستن",
     "productsSheet.allProducts": "همه محصولات",
+
+    "cart.title": "سبد خرید",
+    "cart.empty": "سبد خرید شما خالی است.",
+    "cart.total": "جمع کل",
+    "cart.notes": "توضیحات ویژه برای فروشنده",
+    "cart.shippingNote": "هزینه ارسال و کدهای تخفیف در مرحله پرداخت اضافه می‌شوند.",
+    "cart.checkout": "پرداخت",
+    "cart.redirecting": "در حال انتقال…",
+    "cart.decreaseQuantity": "کاهش تعداد",
+    "cart.increaseQuantity": "افزایش تعداد",
 
     "logo.text": "هوم فرم",
 

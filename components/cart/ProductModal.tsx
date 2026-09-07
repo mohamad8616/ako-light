@@ -26,6 +26,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
     addItem(
       {
         productId: product.id,
+        slug: product.slug,
         name: productName(t, product.slug),
         image: product.images[0],
         price: product.price,

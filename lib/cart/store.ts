@@ -4,6 +4,8 @@ import { useSyncExternalStore } from "react";
 
 export interface CartItem {
   productId: string;
+  /** Product slug — lets consumers re-resolve a localized name at render time. */
+  slug?: string;
   name: string;
   image: string;
   price: number;

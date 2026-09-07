@@ -7,6 +7,7 @@ import { Cancel01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion, type MotionProps } from "framer-motion";
 import * as React from "react";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 function Sheet({ ...props }: SheetPrimitive.Root.Props) {
   return <SheetPrimitive.Root data-slot="sheet" {...props} />;
@@ -51,6 +52,7 @@ function SheetContent({
   motionProps?: MotionProps;
   onExitComplete?: () => void;
 }) {
+  const { t } = useLanguage();
   return (
     <SheetPortal>
       <SheetOverlay />
@@ -107,13 +109,13 @@ function SheetContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-4 right-4"
+                className="absolute top-4 end-4"
                 size="icon-sm"
               />
             }
           >
             <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{t("nav.close")}</span>
           </SheetPrimitive.Close>
         )}
       </SheetPrimitive.Popup>
