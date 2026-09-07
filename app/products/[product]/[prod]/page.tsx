@@ -44,5 +44,5 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: PageProps) {
   const { product, prod } = await params;
-  return <ProductPageClient productSlug={product} prodSlug={prod} />;
+  return <ProductPageClient productSlug={product} prodSlug={prod} link="link" />;
 }

@@ -1,28 +1,25 @@
 "use client";
 
+import AnimatedDownloadCircle from "@/components/ui/AnimateDownloadCircle";
+import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import downloadCatalogue from "@/public/photos/downloadCatalogue.jpg";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionTitle from "@/utility/SectionTitle";
-import { ArrowDown, Plus } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 // Placeholder — swap for the real S34/4 catalogue PDF URL.
 const CATALOGUE_HREF = "#";
-// Approximate fabric-cover tone from the screenshot.
-const CATALOGUE_COVER_COLOR = "#8b96a6";
 
-export default function CatalogueDownloadSection() {
+export default function CatalogueDownloadSection({ link }: { link: string }) {
   const { t } = useLanguage();
 
   return (
-    <HomepageSection className="flex min-h-screen w-full items-cente px-6 py-20 md:px-12 lg:px-20 xl:px-[8.5vw]">
+    <HomepageSection className="items-cente flex min-h-screen w-full px-6 py-20 md:px-12 lg:px-20 xl:px-[8.5vw]">
       <div className="grid w-full grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center lg:gap-24">
         <div className="space-y-7">
-          <span className="font-din text-xs font-normal tracking-tighter text-stone-500 uppercase">
-            {process.env.NEXT_PUBLIC_APP_NAME} Catalogue
-          </span>
-
           <SectionTitle className="font-medium tracking-tighter">
             {t("products.catalogue.label")}
           </SectionTitle>
@@ -30,36 +27,34 @@ export default function CatalogueDownloadSection() {
           <Paragraph>{t("s34.concept.p1")}</Paragraph>
         </div>
 
-        <div className="flex flex-col gap-6 lg:max-w-md lg:justify-self-end">
-          {/* Placeholder cover — swap for real catalogue photography */}
+        <div className="flex flex-col gap-6 lg:justify-self-end">
+          {/* Catalogue cover photo — sized to match SplitBanner's photo
+              (aspect-4/5 + fixed height on mobile, 3/4 column width on lg). */}
           <Link
             href={CATALOGUE_HREF}
             target="_blank"
             rel="noopener noreferrer"
             download
             aria-label={t("products.catalogue.aria")}
-            className="group relative block aspect-3/4 w-full overflow-hidden"
-            style={{ backgroundColor: CATALOGUE_COVER_COLOR }}
+            className="group relative mx-auto block aspect-4/5 h-125.75 max-h-125.75 w-full overflow-hidden lg:aspect-3/4 lg:w-3/4"
           >
-            <span className="font-din absolute top-1/2 left-[38%] -translate-x-1/2 -translate-y-1/2 -rotate-90 text-2xl font-bold tracking-tight whitespace-nowrap text-stone-950 uppercase md:text-3xl">
-              Henge
-            </span>
+            <Image
+              src={downloadCatalogue}
+              alt="download catalogue"
+              fill
+              sizes="(min-width: 1024px) 33vw, 100vw"
+              className="object-cover group-hover:scale-102 transition-transform duration-1500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            />
 
-            <span className="absolute top-1/2 left-1/2 flex h-16 w-16 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-stone-950 transition-transform duration-300 group-hover:scale-105 md:h-20 md:w-20">
-              <ArrowDown size={22} strokeWidth={2} className="text-white" />
-            </span>
+            {/* Download icon */}
+            <AnimatedDownloadCircle />
           </Link>
 
-          <Link
-            href={CATALOGUE_HREF}
-            target="_blank"
-            rel="noopener noreferrer"
-            download
-            className="font-din flex w-fit items-center gap-2 text-xs font-medium tracking-tighter text-stone-950 uppercase transition-colors hover:text-stone-600"
-          >
-            <Plus size={12} strokeWidth={2.5} />
-            {t("products.catalogue.download")}
-          </Link>
+          <PlusTextBtn
+            href={link}
+            text={t("products.catalogue.download")}
+            textColor="text-background"
+          />
         </div>
       </div>
     </HomepageSection>

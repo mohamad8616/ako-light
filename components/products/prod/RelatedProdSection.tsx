@@ -4,6 +4,7 @@ import type { Product, RelatedProduct } from "@/lib/data/productCategories";
 import { products } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { productName } from "@/lib/i18n/localized";
+import { cn } from "@/lib/utils";
 import HomepageSection, { EASE } from "@/utility/HomepageSection";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -34,18 +35,24 @@ function getRelatedProducts(product: Product): RelatedProduct[] {
 }
 
 export default function RelatedProductsSection({
+  
   product,
 }: {
   product: Product;
 }) {
-  const { t } = useLanguage();
+  const { t,lang } = useLanguage();
   const related = getRelatedProducts(product);
 
   return (
     <HomepageSection>
       <div className="bg-background-secondary m flex min-h-screen items-center justify-center py-20">
         <div className="grid w-full grid-cols-1 items-center justify-between gap-20 sm:grid-cols-3 md:mt-20 md:gap-20">
-          <span className="font-din col-span-full text-xs font-medium tracking-tighter text-stone-700 uppercase">
+          <span
+            className={cn(
+              "col-span-full text-xs font-medium tracking-tighter text-stone-700 uppercase",
+              lang === "fa" ? "font-noora" : "font-din",
+            )}
+          >
             {t("products.relatedTitle")}
           </span>
           {related.map((item, i) => (

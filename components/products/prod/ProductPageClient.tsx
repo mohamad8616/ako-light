@@ -1,7 +1,6 @@
 "use client";
 
 import BuyBtn from "@/components/cart/BuyNowBtn";
-import CatalogueCard from "@/components/catalogue/CatalogueCard";
 import ProductInfoSection from "@/components/products/prod/ProdInfoSection";
 import RelatedProductsSection from "@/components/products/prod/RelatedProdSection";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
@@ -14,11 +13,13 @@ import CatalogueDownloadSection from "./CatalogueDownloadSection";
 interface ProductPageClientProps {
   productSlug: string;
   prodSlug: string;
+  link: string;
 }
 
 export default function ProductPageClient({
   productSlug,
   prodSlug,
+  link,
 }: ProductPageClientProps) {
   const productt = getProduct(productSlug, prodSlug);
   if (!productt) notFound();
@@ -36,8 +37,7 @@ export default function ProductPageClient({
         images={productt.images}
       />
       <RelatedProductsSection product={productt} />
-      <BuyBtn product={productt} />
-      <CatalogueDownloadSection />
+      <CatalogueDownloadSection link={link} />
     </main>
   );
 }

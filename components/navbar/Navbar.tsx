@@ -108,29 +108,14 @@ export default function Navbar() {
 
   const isScrolledStyle = scrolled && !overlayOpen;
 
-  // Height and alignment are fixed at all times — only width/border
-  // change here, and only background changes on the inner row below.
-  // Nothing in this component moves vertically between states.
-  // No color/width transition: those properties snap instantly — only
-  // the inner bar's height animates, which is what carries the text and
-  // nav items up/down between the two states.
-  const barClass = useMemo(
-    () =>
-      [
-        "mx-auto flex h-32 w-full items-end border-b md:h-52",
-        isScrolledStyle ? "border-white/10" : "border-transparent",
-      ].join(" "),
-    [isScrolledStyle],
-  );
-
-  const barInnerClass = useMemo(
-    () =>
-      [
-        "flex h-full w-full items-center justify-between",
-        "px-6 md:px-12 lg:px-20 xl:px-[8.5vw]",
-      ].join(" "),
-    [],
-  );
+  // The bar is a normal child of the sliding header (NOT position:fixed):
+  // a fixed child escapes a transformed ancestor whenever framer-motion
+  // resolves the transform to `none` (at rest, y: 0), which desynced the
+  // bar from the slide and made the reveal appear without animation.
+  // As a normal child, the whole bar slides as one unit — in from the
+  // top, out through the top, like a shadcn top sheet. Colors/width snap
+  // instantly (no transition classes); only height animates, which is
+  // what carries the text/nav items up/down between the two styles.
 
   return (
     <>
@@ -140,61 +125,57 @@ export default function Navbar() {
         transition={{ duration: HEADER_TRANSITION, ease: HEADER_EASE }}
         className={headerClass}
       >
-        <div className={barClass}>
-          <div className={barInnerClass}>
-            <div
-              className={cn(
-                "fixed inset-x-0 top-0 flex items-center justify-between transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
-                isScrolledStyle
-                  ? "bg-background mx-auto h-24 w-11/12 xl:px-16"
-                  : "h-68 w-full bg-transparent px-6 md:px-12 lg:px-20 xl:px-[8.5vw]",
-              )}
-            >
-              {/* Logo — also closes any open overlay when clicked. */}
-              <Link
-                href="/"
-                onClick={closeOverlay}
-                className={`group cursor-pointer ${overlayOpen ? "pointer-events-auto" : ""}`}
+        {/* The bar itself. A plain (non-fixed) child of the sliding
+            header: entering from above, exiting upward — sheet-style. */}
+        <div
+          className={cn(
+            "flex items-center justify-between border-b transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            isScrolledStyle
+              ? "mx-auto h-24 w-11/12 border-white/10 bg-black xl:px-16 "
+              : "h-68 w-full border-transparent bg-transparent px-6 md:px-12 lg:px-20 xl:px-[8.5vw]",
+          )}
+        >
+          {/* Logo — also closes any open overlay when clicked. */}
+          <Link
+            href="/"
+            onClick={closeOverlay}
+            className={`group cursor-pointer ${overlayOpen ? "pointer-events-auto" : ""}`}
+          >
+            <Logo className="z-999 h-auto  fill-white transition-all duration-500 group-hover:opacity-70" />
+          </Link>
+
+          {/* Right-side action cluster. */}
+          <div className="flex items-center gap-6 md:gap-12">
+            <CollapsibleNavItem hidden={overlayOpen}>
+              <button
+                aria-label={t("nav.search")}
+                className="text-background-secondary cursor-pointer transition-all duration-300 hover:opacity-70"
               >
-                <Logo className="z-999 h-auto fill-white transition-all duration-500 group-hover:opacity-70" />
-              </Link>
+                <Search size={18} strokeWidth={2.2} />
+              </button>
+            </CollapsibleNavItem>
 
-              {/* Right-side action cluster. */}
-              <div className="flex items-center gap-6 md:gap-12">
-                <CollapsibleNavItem hidden={overlayOpen}>
-                  <button
-                    aria-label={t("nav.search")}
-                    className="text-background-secondary cursor-pointer transition-all duration-300 hover:opacity-70"
-                  >
-                    <Search size={18} strokeWidth={2.2} />
-                  </button>
-                </CollapsibleNavItem>
+            <CollapsibleNavItem
+              hidden={activeOverlay === "menu"}
+              className={overlayOpen ? "pointer-events-auto" : undefined}
+            >
+              <ProductsSheet
+                open={activeOverlay === "products"}
+                onOpenChange={(o) => setActiveOverlay(o ? "products" : null)}
+              />
+            </CollapsibleNavItem>
 
-                <CollapsibleNavItem
-                  hidden={activeOverlay === "menu"}
-                  className={overlayOpen ? "pointer-events-auto" : undefined}
-                >
-                  <ProductsSheet
-                    open={activeOverlay === "products"}
-                    onOpenChange={(o) =>
-                      setActiveOverlay(o ? "products" : null)
-                    }
-                  />
-                </CollapsibleNavItem>
-
-                <CollapsibleNavItem
-                  hidden={activeOverlay === "products"}
-                  className={overlayOpen ? "pointer-events-auto" : undefined}
-                >
-                  <MenuButton
-                    menuOpen={menuOpen}
-                    onClick={toggleMenu}
-                    openLabel={t("nav.menu")}
-                    closeLabel={t("nav.close")}
-                  />
-                </CollapsibleNavItem>
-              </div>
-            </div>
+            <CollapsibleNavItem
+              hidden={activeOverlay === "products"}
+              className={overlayOpen ? "pointer-events-auto" : undefined}
+            >
+              <MenuButton
+                menuOpen={menuOpen}
+                onClick={toggleMenu}
+                openLabel={t("nav.menu")}
+                closeLabel={t("nav.close")}
+              />
+            </CollapsibleNavItem>
           </div>
         </div>
       </motion.header>

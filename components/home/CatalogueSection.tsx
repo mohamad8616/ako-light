@@ -6,10 +6,10 @@ import { Paragraph } from "@/utility/Paragraph";
 import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
-import { ArrowDown } from "lucide-react";
 import Image from "next/image";
 import HomepageSection, { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
+import AnimatedDownloadCircle from "../ui/AnimateDownloadCircle";
 
 export default function CatalogueSection() {
   const { catalogue } = homepageSections;
@@ -28,7 +28,7 @@ export default function CatalogueSection() {
       </div>
 
       {/* Text column */}
-      <div className="flex flex-col justify-start lg:col-span-6">
+      <div className="flex flex-col justify-start lg:col-span-6 space-y-2" >
         {/* FOR LARGE SCREEN */}
         <div className="hidden lg:block">
           <SectionSubTitle>{t("catalogue.kicker")}</SectionSubTitle>
@@ -82,23 +82,4 @@ export default function CatalogueSection() {
   );
 }
 
-function AnimatedDownloadCircle() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center">
-      <div className="bg-background flex h-16 w-16 items-center justify-center rounded-full transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-110">
-        <div className="relative h-4 w-4 overflow-hidden">
-          <ArrowDown
-            size={16}
-            strokeWidth={1.5}
-            className="absolute inset-0 text-white transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-full"
-          />
-          <ArrowDown
-            size={16}
-            strokeWidth={1.5}
-            className="absolute inset-0 -translate-y-full text-white transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:translate-y-0"
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
+
