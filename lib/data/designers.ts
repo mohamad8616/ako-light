@@ -2,6 +2,8 @@
 
 export interface Designer {
   name: string;
+  /** Persian transliteration of the name — used by search and fa display. */
+  nameFa?: string;
   slug: string;
   image: string;
   bio: Localized[];
@@ -11,6 +13,7 @@ export interface Designer {
 export const designers: Designer[] = [
   {
     name: "Massimo Castagna",
+    nameFa: "ماسیمو کاستانیا",
     slug: "massimo-castagna",
     image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Massimo+Castagna",
     website: "#",
@@ -22,6 +25,7 @@ export const designers: Designer[] = [
   },
   {
     name: "Yabu Pushelberg",
+    nameFa: "یابو پوشلبرگ",
     slug: "glenn-pushelberg-george-yabu",
     image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Yabu+Pushelberg",
     website: "#",
@@ -33,6 +37,7 @@ export const designers: Designer[] = [
   },
   {
     name: "Isabella Genovese",
+    nameFa: "ایزابلا جنووزه",
     slug: "isabella-genovese",
     image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Isabella+Genovese",
     website: "#",
@@ -44,6 +49,7 @@ export const designers: Designer[] = [
   },
   {
     name: "Ugo Cacciatori",
+    nameFa: "اوگو کاچاتوری",
     slug: "ugo-cacciatori",
     image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Ugo+Cacciatori",
     website: "#",
@@ -55,6 +61,7 @@ export const designers: Designer[] = [
   },
   {
     name: "Johanna Grawunder",
+    nameFa: "جوهانا گراوندر",
     slug: "johanna-grawunder",
     image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Johanna+Grawunder",
     website: "#",
@@ -66,6 +73,7 @@ export const designers: Designer[] = [
   },
   {
     name: "Tanju Özelgin",
+    nameFa: "تانجو اوزلگین",
     slug: "tanju-ozelgin",
     image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Tanju+Özelgin",
     website: "#",
@@ -77,6 +85,7 @@ export const designers: Designer[] = [
   },
   {
     name: "Davide Nascimbeni",
+    nameFa: "داویده ناسیمبنی",
     slug: "davide-nascimbeni",
     image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Davide+Nascimbeni",
     website: "#",
@@ -88,6 +97,7 @@ export const designers: Designer[] = [
   },
   {
     name: "Hilla Havkin",
+    nameFa: "هیلا هاوکین",
     slug: "hilla-havkin",
     image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Hilla+Havkin",
     website: "#",
@@ -99,6 +109,7 @@ export const designers: Designer[] = [
   },
   {
     name: "Stephen Tierney",
+    nameFa: "استیون تیرنی",
     slug: "stephen-tierney",
     image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Stephen+Tierney",
     website: "#",
