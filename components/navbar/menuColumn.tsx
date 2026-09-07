@@ -1,7 +1,7 @@
 "use client";
 
-import { EASE } from "@/utility/HomepageSection";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { EASE } from "@/utility/HomepageSection";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import type { MenuLink } from "../header/data";
@@ -18,7 +18,7 @@ const LINK_ENTER_DURATION = 0.2;
 /** Exit duration for each link. */
 const LINK_EXIT_DURATION = 0.3;
 /** Column entry duration. */
-const COLUMN_ENTER_DURATION = 0.55;
+const COLUMN_ENTER_DURATION = 0.35;
 
 interface Props {
   titleKey: string;
@@ -93,7 +93,12 @@ export default function MenuColumn({
               }}
               className="group relative w-fit"
             >
-              <LinkItem item={item} onClick={onLinkClick} fontClass={fontForLang} t={t} />
+              <LinkItem
+                item={item}
+                onClick={onLinkClick}
+                fontClass={fontForLang}
+                t={t}
+              />
               <UnderLineEffect duration="1000" color="bg-white/35" />
             </motion.div>
           </li>

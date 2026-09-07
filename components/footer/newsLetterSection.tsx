@@ -13,8 +13,8 @@ export default function NewsletterSection() {
   const [agreed, setAgreed] = useState(false);
 
   return (
-    <section className="bg-background-secondary flex h-[75vh] px-6 py-24 md:px-12 lg:px-20 xl:px-[8.5vw]">
-      <div className="mx-auto grid max-w-[1600px] items-center gap-16 lg:grid-cols-[0.9fr_1fr] lg:gap-24">
+    <section className="bg-background-secondary flex h-[75vh] px-6  py-24 md:px-12 lg:px-20 xl:px-[8.5vw]">
+      <div className="mx-auto grid max-w-[1600px] w-full items-center gap-16 lg:grid-cols-[0.9fr_1fr] lg:gap-24">
         {/* Left */}
         <div>
           <SectionTitle>
@@ -59,7 +59,7 @@ export default function NewsletterSection() {
             </div>
 
             {/* Terms */}
-            <label className="mt-10 flex cursor-pointer items-center gap-5 text-[13px] uppercase tracking-[0.4px] text-[#858585]">
+            <label className="mt-10 flex cursor-pointer items-center gap-5 text-[13px] tracking-[0.4px] text-[#858585] uppercase">
               <span className="relative flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white transition-all duration-200">
                 <input
                   type="checkbox"
