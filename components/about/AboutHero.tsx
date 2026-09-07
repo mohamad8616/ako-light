@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import HeroVideo from "@/components/ui/HeroVideo";
+import HeroVideo from "@/components/ui/heroVideo/HeroVideo";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 // Client wrapper so the /about hero copy resolves through the translation

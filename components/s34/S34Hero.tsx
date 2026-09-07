@@ -1,6 +1,6 @@
 "use client";
 
-import HeroVideo from "@/components/ui/HeroVideo";
+import HeroVideo from "@/components/ui/heroVideo/HeroVideo";
 
 export default function S34Hero() {
   return (

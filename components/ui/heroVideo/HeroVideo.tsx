@@ -4,9 +4,9 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useMotionValue } from "framer-motion";
 import Image from "next/image";
 import { useRef, useState } from "react";
-import HeroSectionText from "./HeroSectionText";
-import PlayCircle from "./PlayCircle";
+import HeroSectionText from "../HeroSectionText";
 import VideoModal from "./VideoModal";
+import PlayCircle from "./PlayCircle";
 
 type HeroVideoProps = {
   firstLineKey?: string;

@@ -7,7 +7,7 @@ import {
   type MotionValue,
 } from "framer-motion";
 import { Play } from "lucide-react";
-import { EASE } from "../../utility/HomepageSection";
+import { EASE } from "../../../utility/HomepageSection";
 
 // Radius (px) the Play icon may drift from the circle center toward the
 // cursor, clamped so the icon stays inside the h-28 w-28 (112px) host.
