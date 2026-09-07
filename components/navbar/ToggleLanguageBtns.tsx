@@ -37,7 +37,7 @@ export default function MenuBtns({ onClose }: Props) {
   };
 
   return (
-    <div className="mx-auto grid w-full grid-cols-2 items-center gap-x-10 px-8 pb-10 md:px-20 md:pb-12 lg:grid-cols-4">
+    <div className="mx-auto grid w-full max-w-[1600px] grid-cols-2 items-center gap-x-10 pb-10 md:pb-12 lg:grid-cols-4">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

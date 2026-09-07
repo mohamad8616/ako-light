@@ -93,11 +93,11 @@ export default function FullscreenMenu({ open, onClose }: Props) {
               ease: EASE,
               delay: OVERLAY_FADE_DELAY,
             }}
-            className="bg-background no-scrollbar text-background-secondary fixed inset-x-0 top-0 bottom-16 z-999 flex scrollbar-thin flex-col overflow-y-auto shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:bottom-24"
+            className="no-scrollbar text-background-secondary fixed inset-x-0 top-0 bottom-16 z-999 flex scrollbar-thin flex-col overflow-y-auto bg-black shadow-[0_20px_60px_rgba(0,0,0,0.5)] md:bottom-24 px-6 md:px-12 lg:px-20 xl:px-[8.5vw]"
           >
             {/* Vertically center the columns in the remaining viewport. */}
-            <div className="flex flex-1 flex-col justify-center">
-              <div className="mx-auto grid w-full max-w-[1600px] grid-cols-2 gap-x-10 gap-y-10 px-8 py-10 md:px-20 md:py-12 lg:grid-cols-4">
+            <div className="mt-10 flex flex-1 flex-col justify-center">
+              <div className="mx-auto grid w-full max-w-[1600px] grid-cols-2 gap-x-10 gap-y-10 lg:grid-cols-4">
                 {menu.map((section, index) => (
                   <div key={section.title}>
                     <MenuColumn

@@ -1,6 +1,7 @@
 "use client";
 
 import BuyBtn from "@/components/cart/BuyNowBtn";
+import CatalogueCard from "@/components/catalogue/CatalogueCard";
 import ProductInfoSection from "@/components/products/prod/ProdInfoSection";
 import RelatedProductsSection from "@/components/products/prod/RelatedProdSection";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
@@ -8,6 +9,7 @@ import PictureHero from "@/components/ui/PictureHero";
 import { getProduct } from "@/lib/data/productCategories";
 import { productKey } from "@/lib/i18n/localized";
 import { notFound } from "next/navigation";
+import CatalogueDownloadSection from "./CatalogueDownloadSection";
 
 interface ProductPageClientProps {
   productSlug: string;
@@ -20,7 +22,7 @@ export default function ProductPageClient({
 }: ProductPageClientProps) {
   const productt = getProduct(productSlug, prodSlug);
   if (!productt) notFound();
-  console.log(productt);
+
   return (
     <main className="bg-background-secondary relative">
       <PictureHero
@@ -35,6 +37,7 @@ export default function ProductPageClient({
       />
       <RelatedProductsSection product={productt} />
       <BuyBtn product={productt} />
+      <CatalogueDownloadSection />
     </main>
   );
 }

@@ -16,7 +16,7 @@ export default function CatalogueDownloadSection() {
   const { t } = useLanguage();
 
   return (
-    <HomepageSection className="flex min-h-screen w-full items-center bg-stone-100 px-6 py-20 md:px-12 lg:px-20 xl:px-[8.5vw]">
+    <HomepageSection className="flex min-h-screen w-full items-cente px-6 py-20 md:px-12 lg:px-20 xl:px-[8.5vw]">
       <div className="grid w-full grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center lg:gap-24">
         <div className="space-y-7">
           <span className="font-din text-xs font-normal tracking-tighter text-stone-500 uppercase">
