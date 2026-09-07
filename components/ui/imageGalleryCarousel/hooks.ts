@@ -33,7 +33,7 @@ export function useIsLg(): boolean {
 /** `true` once the element scrolls into view (and stays `true`). */
 export function useInView<T extends Element>(
   threshold = 0.1,
-): [React.RefObject<T>, boolean] {
+): [React.RefObject<T | null>, boolean] {
   const ref = React.useRef<T>(null);
   const [inView, setInView] = React.useState(false);
   React.useEffect(() => {
