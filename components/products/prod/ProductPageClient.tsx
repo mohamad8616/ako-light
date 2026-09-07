@@ -1,6 +1,5 @@
 "use client";
 
-import BuyBtn from "@/components/cart/BuyNowBtn";
 import ProductInfoSection from "@/components/products/prod/ProdInfoSection";
 import RelatedProductsSection from "@/components/products/prod/RelatedProdSection";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";

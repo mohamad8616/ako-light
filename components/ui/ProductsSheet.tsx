@@ -7,6 +7,7 @@ import { useLenis } from "@/lib/lenisStore";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import UnderLineEffect from "./UnderLineEffect";
+import { cn } from "@/lib/utils";
 
 interface Props {
   open: boolean;
@@ -51,7 +52,7 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
   );
 
   const closeSheet = () => onOpenChange(false);
-  
+
   useEffect(() => {
     if (open) lock();
     else unlock();
@@ -70,7 +71,9 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
       actionsRef={actionsRef}
     >
       {/* ---------- CUSTOM TRIGGER ---------- */}
-      <SheetTrigger className={`${lang === "fa" ? "font-noora" : "font-din"} relative z-50 h-5 cursor-pointer overflow-hidden text-sm font-normal tracking-tighter uppercase focus:outline-none`}>
+      <SheetTrigger
+        className={`${lang === "fa" ? "font-noora" : "font-din"} relative z-50 h-5 cursor-pointer overflow-hidden text-sm font-normal tracking-tighter uppercase focus:outline-none`}
+      >
         <span
           className={`block transition-transform duration-300 ease-in-out ${
             open ? "-translate-y-full" : "translate-y-0"
@@ -97,35 +100,44 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
             initial: { x: lang === "fa" ? -400 : 400 },
             animate: { x: 0 },
             exit: { opacity: 1, x: lang === "fa" ? -400 : 400 },
-            transition: { duration: 0.8, delay: 1, ease: "easeInOut" },
+            transition: { duration: 0.8, delay: 0.25, ease: "easeInOut" },
           }}
           onExitComplete={() => actionsRef.current?.unmount()}
         >
-          <div className={`${lang === "fa" ? "font-noora" : "font-din"} mt-9 flex h-full flex-col items-start justify-center gap-6`}>
-            <Link
-              href="/products"
-              className={`${linkClasses} group relative mb-6 cursor-pointer`}
+          <div
+            className={`${lang === "fa" ? "font-noora" : "font-din"} mt-9 flex h-full flex-col items-center justify-center gap-3 lg:justify-end`}
+          >
+            <div
+              className={cn(
+                "flex w-1/2 flex-col",
+                lang === "fa" ? "ms-18" : "ms-10",
+              )}
             >
-              {t("productsSheet.allProducts")}
-              <UnderLineEffect />
-            </Link>
-            {/* Navigation list */}
-            <nav className="flex flex-col items-start justify-center space-y-4 text-center">
-              {categoryKeys.map((key) => (
-                <Link
-                  key={key}
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    closeSheet();
-                  }}
-                  className={`${linkClasses} group relative`}
-                >
-                  {t(key)}
-                  <UnderLineEffect />
-                </Link>
-              ))}
-            </nav>
+              <Link
+                href="/products"
+                className={`${linkClasses} group relative mb-6 cursor-pointer`}
+              >
+                {t("productsSheet.allProducts")}
+                <UnderLineEffect />
+              </Link>
+              {/* Navigation list */}
+              <nav className="flex flex-col items-start justify-center space-y-4 text-center">
+                {categoryKeys.map((key) => (
+                  <Link
+                    key={key}
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      closeSheet();
+                    }}
+                    className={`${linkClasses} group relative`}
+                  >
+                    {t(key)}
+                    <UnderLineEffect />
+                  </Link>
+                ))}
+              </nav>
+            </div>
           </div>
         </SheetContent>
       )}
@@ -144,7 +156,9 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
           }}
           onExitComplete={() => actionsRef.current?.unmount()}
         >
-          <div className={`${lang === "fa" ? "font-noora" : "font-din"} mt-9 flex h-full flex-col items-center justify-center gap-6`}>
+          <div
+            className={`${lang === "fa" ? "font-noora" : "font-din"} mt-9 flex h-full flex-col items-center justify-center gap-6`}
+          >
             <Link
               href="/products"
               className={`${linkClasses} group relative mb-6 cursor-pointer`}

@@ -131,8 +131,8 @@ export default function Navbar() {
           className={cn(
             "flex items-center justify-between border-b transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
             isScrolledStyle
-              ? "mx-auto h-24 w-11/12 border-white/10 bg-black xl:px-16 "
-              : "h-68 w-full border-transparent bg-transparent px-6 md:px-12 lg:px-20 xl:px-[8.5vw]",
+              ? "mx-auto h-24 sm:w-11/12 px-6 sm:px-4 border-white/10 bg-black xl:px-16 "
+              : "lg:h-68 h-24 w-full border-transparent bg-transparent px-6 md:px-12 lg:px-20 xl:px-[8.5vw]",
           )}
         >
           {/* Logo — also closes any open overlay when clicked. */}

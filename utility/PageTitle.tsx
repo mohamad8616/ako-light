@@ -33,8 +33,8 @@ const PageTitle = ({
           animate={{ y: 0 }}
           transition={{ duration: 0.8, delay: 0.15, ease: EASE }}
           className={cn(
-            "text-background-secondary text-3xl leading-[0.95] tracking-tight uppercase md:text-5xl",
-            lang === "fa" ? "font-noora" : "font-din",
+            "text-background-secondary text-3xl uppercase md:text-5xl",
+            lang === "fa" ? "font-noora leading-[1.5]" : "font-din leading-[0.95] tracking-tight",
             className,
           )}
         >
