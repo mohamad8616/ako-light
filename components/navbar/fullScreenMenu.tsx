@@ -5,7 +5,7 @@ import { EASE } from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect } from "react";
 import { menu } from "../header/data";
-import MenuBtns from "./MenuBtns";
+import MenuBtns from "./ToggleLanguageBtns";
 import MenuColumn from "./menuColumn";
 
 // ----- timing constants (seconds) -----

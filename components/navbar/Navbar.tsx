@@ -8,9 +8,10 @@ import { useHeroVideoStore } from "@/lib/heroVideoStore";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
-import { Menu, Search, X } from "lucide-react";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
+import MenuButton from "./MenuBtn";
 
 // ----- constants -----
 
@@ -200,43 +201,5 @@ export default function Navbar() {
 
       <FullscreenMenu open={menuOpen} onClose={closeOverlay} />
     </>
-  );
-}
-
-// ----- menu trigger button (kept local — only Navbar uses it) -----
-
-function MenuButton({
-  menuOpen,
-  onClick,
-  openLabel,
-  closeLabel,
-}: {
-  menuOpen: boolean;
-  onClick: () => void;
-  openLabel: string;
-  closeLabel: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      aria-expanded={menuOpen}
-      aria-label={menuOpen ? closeLabel : openLabel}
-      className="group relative flex h-4.5 w-4.5 cursor-pointer items-center justify-center text-white transition-all duration-300 hover:opacity-70"
-    >
-      <span
-        className={`absolute transition-[opacity,transform] duration-300 ease-in-out ${
-          menuOpen ? "rotate-90 opacity-0" : "rotate-0 opacity-100"
-        }`}
-      >
-        <Menu size={18} strokeWidth={2.5} />
-      </span>
-      <span
-        className={`absolute transition-[opacity,transform] duration-300 ease-in-out ${
-          menuOpen ? "rotate-0 opacity-100" : "-rotate-90 opacity-0"
-        }`}
-      >
-        <X size={18} strokeWidth={2.5} />
-      </span>
-    </button>
   );
 }
