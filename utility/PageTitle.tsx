@@ -4,7 +4,7 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import React from "react";
-import { EASE } from "./HomepageSection";
+import HomepageSection, { EASE } from "./HomepageSection";
 
 const PageTitle = ({
   children,
@@ -16,7 +16,7 @@ const PageTitle = ({
   const { lang } = useLanguage();
 
   return (
-    <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
+    <HomepageSection className="lg:mt-60">
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -41,7 +41,7 @@ const PageTitle = ({
           {children}
         </motion.h1>
       </div>
-    </div>
+    </HomepageSection>
   );
 };
 

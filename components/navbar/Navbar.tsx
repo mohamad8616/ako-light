@@ -131,8 +131,8 @@ export default function Navbar() {
           className={cn(
             "flex items-center justify-between border-b transition-[height] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
             isScrolledStyle
-              ? "mx-auto h-24 sm:w-11/12 px-6 sm:px-4 border-white/10 bg-black xl:px-16 "
-              : "lg:h-68 h-24 w-full border-transparent bg-transparent px-6 md:px-12 lg:px-20 xl:px-[8.5vw]",
+              ? "mx-auto h-24 border-white/10 bg-black px-6 sm:w-11/12 sm:px-4 xl:px-16"
+              : "h-24 w-full border-transparent bg-transparent px-6 md:px-12 lg:h-68 lg:px-20 xl:px-[8.5vw]",
           )}
         >
           {/* Logo — also closes any open overlay when clicked. */}
@@ -141,18 +141,19 @@ export default function Navbar() {
             onClick={closeOverlay}
             className={`group cursor-pointer ${overlayOpen ? "pointer-events-auto" : ""}`}
           >
-            <Logo className="z-999 h-auto  fill-white transition-all duration-500 group-hover:opacity-70" />
+            <Logo className="z-999 h-auto fill-white transition-all duration-500 group-hover:opacity-70" />
           </Link>
 
           {/* Right-side action cluster. */}
           <div className="flex items-center gap-6 md:gap-12">
             <CollapsibleNavItem hidden={overlayOpen}>
-              <button
+              <Link
+                href="/search"
                 aria-label={t("nav.search")}
                 className="text-background-secondary cursor-pointer transition-all duration-300 hover:opacity-70"
               >
                 <Search size={18} strokeWidth={2.2} />
-              </button>
+              </Link>
             </CollapsibleNavItem>
 
             <CollapsibleNavItem
