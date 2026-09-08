@@ -46,6 +46,7 @@ export default function MobileColumn({ items, purpose, href, onOpen }: Props) {
                 src={item.image}
                 alt={alt}
                 fill
+                sizes="100vw"
                 className={cn("object-cover", IMAGE_TRANSITION)}
               />
               <div

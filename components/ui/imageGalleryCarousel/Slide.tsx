@@ -50,6 +50,12 @@ export default function Slide({
       ? DEFAULT_SLIDE_WIDTHS
       : DOUBLE_SLIDE_WIDTHS
     : DEFAULT_SLIDE_WIDTHS;
+  // Match `sizes` to the rendered slide widths above so the optimizer serves
+  // a matching variant instead of the full-size original (mobile especially).
+  const sizes =
+    multiWidth && index % 2 === 1
+      ? "(min-width: 1280px) 46vw, (min-width: 1024px) 48vw, (min-width: 768px) 64vw, (min-width: 640px) 90vw, 100vw"
+      : "(min-width: 1280px) 23vw, (min-width: 1024px) 24vw, (min-width: 768px) 32vw, (min-width: 640px) 45vw, 60vw";
   const heightClass = multiWidth ? MULTI_HEIGHT : DEFAULT_HEIGHT;
   const alt = hasCategoryCta && cta ? t(cta.name) : "";
 
@@ -70,6 +76,7 @@ export default function Slide({
         src={image}
         alt={alt}
         fill
+        sizes={sizes}
         className={cn("object-cover", IMAGE_TRANSITION)}
       />
       <div className={cn("absolute inset-0 bg-black/0", OVERLAY_TRANSITION)} />
@@ -94,6 +101,7 @@ export default function Slide({
         src={image}
         alt={alt}
         fill
+        sizes={sizes}
         className={cn("object-cover", IMAGE_TRANSITION)}
       />
       <div className={cn("absolute inset-0 bg-black/0", OVERLAY_TRANSITION)} />
