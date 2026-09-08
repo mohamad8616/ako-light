@@ -4,10 +4,10 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // ad
 import { productCategories } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useLenis } from "@/lib/lenisStore";
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import UnderLineEffect from "./UnderLineEffect";
-import { cn } from "@/lib/utils";
 
 interface Props {
   open: boolean;
@@ -18,11 +18,8 @@ interface Props {
 // Noora for Persian / DinNext for English.
 const linkClasses =
   "w-fit text-sm tracking-tighter text-white uppercase no-underline transition-colors hover:text-stone-400 text-center";
-const categoryKeys = [
-  "products.lighting",
-  "products.designers",
-  ...productCategories.map((c) => c.i18nKey),
-];
+const categoryKeys = productCategories.map((c) => c.i18nKey);
+const categoryLink = productCategories.map((c) => c.slug);
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() => {
@@ -122,12 +119,11 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
               </Link>
               {/* Navigation list */}
               <nav className="flex flex-col items-start justify-center space-y-4 text-center">
-                {categoryKeys.map((key) => (
+                {categoryKeys.map((key, i) => (
                   <Link
                     key={key}
-                    href="#"
+                    href={`/products/${categoryLink[i]}`}
                     onClick={(e) => {
-                      e.preventDefault();
                       closeSheet();
                     }}
                     className={`${linkClasses} group relative`}
@@ -168,12 +164,11 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
             </Link>
             {/* Navigation list */}
             <nav className="flex flex-col items-center justify-center space-y-4 text-center">
-              {categoryKeys.map((key) => (
+              {categoryKeys.map((key, i) => (
                 <Link
                   key={key}
-                  href="#"
+                  href={`/products/${categoryLink[i]}`}
                   onClick={(e) => {
-                    e.preventDefault();
                     closeSheet();
                   }}
                   className={`${linkClasses} group relative`}

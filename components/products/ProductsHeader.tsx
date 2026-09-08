@@ -16,7 +16,7 @@ export default function ProductsHeader({
   const title = titleKey ? t(titleKey) : (titleProp ?? t("products.title"));
 
   return (
-    <header className="bg-background w-full pt-28 md:pt-76">
+    <header className="bg-background w-full pt-28">
       <PageTitle className="font-medium">{title}</PageTitle>
     </header>
   );
