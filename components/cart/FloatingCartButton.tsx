@@ -17,10 +17,17 @@ export default function FloatingCartButton({ onClick }: Props) {
   // actually in the cart.
   if (!hydrated || count === 0) return null;
 
+  // The badge itself shows just the number (language-neutral); the
+  // accessible name is built from translated pieces so it pluralizes:
+  // "Cart (1 item)" / "Cart (2 items)" in English, "سبد خرید (۲ کالا)" in
+  // Persian (Persian nouns don't pluralize after numerals, so `cart.items`
+  // carries the same word as `cart.item`).
+  const itemWord = count === 1 ? t("cart.item") : t("cart.items");
+
   return (
     <button
       onClick={onClick}
-      aria-label={t("cart.itemsCount").replace("{count}", String(count))}
+      aria-label={`${t("cart.title")} (${count} ${itemWord})`}
       className="fixed right-6 bottom-6 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-stone-950 text-white shadow-lg transition-transform hover:scale-105 md:right-8 md:bottom-8"
     >
       <ShoppingCart size={20} strokeWidth={2} />

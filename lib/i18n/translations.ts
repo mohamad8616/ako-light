@@ -274,7 +274,8 @@ export const translations = {
     "cart.redirecting": "Redirecting…",
     "cart.decreaseQuantity": "Decrease quantity",
     "cart.increaseQuantity": "Increase quantity",
-    "cart.itemsCount": "Cart ({count})",
+    "cart.item": "item",
+    "cart.items": "items",
     "cart.error": "Checkout failed",
 
     "logo.text": "home form",
@@ -629,7 +630,8 @@ export const translations = {
     "cart.redirecting": "در حال انتقال…",
     "cart.decreaseQuantity": "کاهش تعداد",
     "cart.increaseQuantity": "افزایش تعداد",
-    "cart.itemsCount": "سبد خرید ({count})",
+    "cart.item": "کالا",
+    "cart.items": "کالا",
     "cart.error": "پرداخت ناموفق شد",
 
     "logo.text": "هوم فرم",

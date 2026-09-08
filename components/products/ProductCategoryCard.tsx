@@ -41,7 +41,7 @@ export default function ProductCategoryCard({
         <div className="relative aspect-4/3 h-full w-full overflow-hidden bg-[#111]">
           <Image
             src={images[0]}
-            alt={`${name} default`}
+            alt={name}
             fill
             className={`absolute object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
               images[1]
@@ -52,7 +52,7 @@ export default function ProductCategoryCard({
           {images[1] && (
             <Image
               src={images[1]}
-              alt={`${name} hover`}
+              alt={name}
               fill
               className="object-cover opacity-0 transition-opacity duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-100"
             />
