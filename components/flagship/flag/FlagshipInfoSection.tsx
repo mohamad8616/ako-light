@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import type { FlagshipWithDetail } from "@/lib/data/flagships";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { pick } from "@/lib/i18n/localized";

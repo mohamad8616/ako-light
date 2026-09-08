@@ -5,7 +5,7 @@ import { productCategories } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useLenis } from "@/lib/lenisStore";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import { useEffect, useRef, useState } from "react";
 import UnderLineEffect from "./UnderLineEffect";
 

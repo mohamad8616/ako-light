@@ -10,6 +10,7 @@ import {
   useCallback,
   useEffect,
   useState,
+  useSyncExternalStore,
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { createPortal } from "react-dom";
@@ -50,6 +51,15 @@ export default function ImageGalleryCarousel({
 }: ImageGalleryCarouselProps) {
   const [sectionRef, inView] = useInView<HTMLElement>();
   const { dir, lang, t } = useLanguage();
+
+  // SSR-safe mount check — the lightbox backdrop portal below targets
+  // `document.body`, which only exists after hydration. `getServerSnapshot`
+  // is used during hydration too, so the first client render matches SSR.
+  const isClient = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   const items = toCarouselItems(images, category);
   const itemCount = items.length;
@@ -188,25 +198,26 @@ export default function ImageGalleryCarousel({
           2. After the fade, the modal mounts and replaces the backdrop
              with its own opaque bg. Closing: backdrop fades out
              while the modal unmounts immediately. */}
-      {createPortal(
-        <AnimatePresence>
-          {effectiveRequested !== null && (
-            <motion.div
-              key="lightbox-backdrop"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{
-                duration: BACKDROP_EXIT_MS / 1000,
-                ease: "easeOut",
-              }}
-              className="fixed inset-0 z-150 bg-black/90"
-              aria-hidden
-            />
-          )}
-        </AnimatePresence>,
-        document.body,
-      )}
+      {isClient &&
+        createPortal(
+          <AnimatePresence>
+            {effectiveRequested !== null && (
+              <motion.div
+                key="lightbox-backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{
+                  duration: BACKDROP_EXIT_MS / 1000,
+                  ease: "easeOut",
+                }}
+                className="fixed inset-0 z-150 bg-black/90"
+                aria-hidden
+              />
+            )}
+          </AnimatePresence>,
+          document.body,
+        )}
 
       {effectiveCommitted !== null && (
         <LightboxModal

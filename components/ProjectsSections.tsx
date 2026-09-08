@@ -2,7 +2,7 @@
 import { EASE } from "@/utility/HomepageSection";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import PlusTextBtn from "./ui/PlusTextBtn";
 import { projectsSectionLinks } from "@/lib/data/projects";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";

@@ -10,7 +10,7 @@ import { productName, type Localized } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
 import HomepageSection from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import {
   useCallback,
   useEffect,

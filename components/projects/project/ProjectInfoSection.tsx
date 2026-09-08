@@ -6,7 +6,7 @@ import { pick } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 
 export default function ProjectInfoSection({ project }: { project: Project }) {
   const { t, lang } = useLanguage();

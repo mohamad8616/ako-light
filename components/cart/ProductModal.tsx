@@ -20,7 +20,10 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const addItem = useCart((state) => state.addItem);
-  const { t } = useLanguage();
+  const { lang, t } = useLanguage();
+  // Noora for Persian / DinNext for English — same pairing as CartSheet
+  // and ProductsSheet, so every Persian string renders in the Persian face.
+  const fontClass = lang === "fa" ? "font-noora" : "font-din";
 
   function handleAddToCart() {
     addItem(
@@ -121,8 +124,8 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
 
           {/* Details */}
           <div className="flex flex-col">
-            <h2 className="font-din text-2xl font-medium text-stone-950">{productName(t, product.slug)}</h2>
-            <p className="font-din mt-2 text-lg text-stone-950">
+            <h2 className={`${fontClass} text-2xl font-medium text-stone-950`}>{productName(t, product.slug)}</h2>
+            <p className={`${fontClass} mt-2 text-lg text-stone-950`}>
               {formatPrice(product.price)}
             </p>
 
@@ -147,13 +150,13 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
 
               <button
                 onClick={handleAddToCart}
-                className="font-din flex-1 cursor-pointer bg-stone-950 py-3 text-sm font-medium tracking-tight text-white uppercase transition-colors hover:bg-stone-800"
+                className={`${fontClass} flex-1 cursor-pointer bg-stone-950 py-3 text-sm font-medium tracking-tight text-white uppercase transition-colors hover:bg-stone-800`}
               >
                 {t("product.addToCart")}
               </button>
             </div>
 
-            <div className="font-din mt-6 flex flex-col gap-4 text-sm leading-relaxed text-stone-600">
+            <div className={`${fontClass} mt-6 flex flex-col gap-4 text-sm leading-relaxed text-stone-600`}>
               <p>{productDescription(t, product.slug)}</p>
             </div>
           </div>

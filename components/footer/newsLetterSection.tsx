@@ -4,7 +4,7 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionTitle from "@/utility/SectionTitle";
 import { ArrowRight } from "lucide-react";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import { useState } from "react";
 
 export default function NewsletterSection() {

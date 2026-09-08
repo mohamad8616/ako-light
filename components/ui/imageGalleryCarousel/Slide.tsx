@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import { type CSSProperties } from "react";
 import PlusTextBtn from "../PlusTextBtn";
 import {

@@ -9,7 +9,7 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { Search } from "lucide-react";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import { useCallback, useMemo, useState } from "react";
 import MenuButton from "./MenuBtn";
 

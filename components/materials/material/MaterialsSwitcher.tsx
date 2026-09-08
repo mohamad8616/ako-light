@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import { ChevronDown } from "lucide-react";
 import { materialCategories } from "@/lib/data/materials";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";

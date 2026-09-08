@@ -5,7 +5,7 @@ import { useLenis } from "@/lib/lenisStore";
 import { EASE } from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
@@ -44,6 +44,15 @@ export default function VideoModal({
   const { lock, unlock } = useLenis();
   const setPlaying = useHeroVideoStore((s) => s.setPlaying);
   const { t } = useLanguage();
+
+  // SSR-safe mount check — the portal below needs `document.body`, which
+  // only exists after hydration. `getServerSnapshot` is also used during
+  // hydration, so the first client render matches the server output.
+  const isClient = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   // Scroll lock while open; release on close AND on unmount (navigating
   // away while the player is up must never leave the page locked).
@@ -87,6 +96,8 @@ export default function VideoModal({
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
+
+  if (!isClient) return null;
 
   return createPortal(
     <AnimatePresence>

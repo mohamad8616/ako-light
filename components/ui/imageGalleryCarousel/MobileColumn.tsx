@@ -4,7 +4,7 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import PlusTextBtn from "../PlusTextBtn";
 import { IMAGE_TRANSITION, OVERLAY_TRANSITION } from "./constants";
 import { isCategoryItem } from "./helpers";

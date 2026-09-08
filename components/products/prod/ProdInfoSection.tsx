@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import { useState } from "react";
 
 export default function ProductInfoSection({ product }: { product: Product }) {

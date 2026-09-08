@@ -3,7 +3,7 @@
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { EASE } from "@/utility/HomepageSection";
 import { motion } from "framer-motion";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import type { MenuLink } from "../header/data";
 import UnderLineEffect from "../ui/UnderLineEffect";
 

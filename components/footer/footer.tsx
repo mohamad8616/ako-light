@@ -4,7 +4,7 @@ import Logo from "@/components/ui/Logo";
 import { socialLinks, type SocialIconKey } from "@/lib/data/footer";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import HomepageSection from "@/utility/HomepageSection";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import { memo } from "react";
 
 // ---------------------------------------------------------------------------

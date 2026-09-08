@@ -1,5 +1,5 @@
 ﻿import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import type { ButtonHTMLAttributes, ComponentProps, ReactNode } from "react";
 
 type PlusTextBtnBase = {

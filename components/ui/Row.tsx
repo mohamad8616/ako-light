@@ -3,9 +3,10 @@
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import { usePathname } from "next/navigation";
 import { EASE } from "../../utility/HomepageSection";
+import { stripLocalePrefix } from "@/lib/i18n/routing";
 import PlusTextBtn from "../ui/PlusTextBtn";
 
 interface RowProps {
@@ -29,7 +30,7 @@ export default function Row({
   animateOnLoad = false,
 }: RowProps) {
   const { t } = useLanguage();
-  const pathname = usePathname().slice(1);
+  const pathname = stripLocalePrefix(usePathname()).slice(1);
   return (
     <motion.div
       initial={{ opacity: 0, y: 44 }}

@@ -3,7 +3,7 @@
 import { EASE } from "@/utility/HomepageSection";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import UnderLineEffect from "../ui/UnderLineEffect";
 
 interface ProductCategoryCardProps {

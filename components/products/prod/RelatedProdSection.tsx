@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import HomepageSection, { EASE } from "@/utility/HomepageSection";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 
 function getRelatedProducts(product: Product): RelatedProduct[] {
   const sameCategory = products.filter(

@@ -8,7 +8,7 @@ import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionTitle from "@/utility/SectionTitle";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 
 // Placeholder — swap for the real S34/4 catalogue PDF URL.
 const CATALOGUE_HREF = "#";

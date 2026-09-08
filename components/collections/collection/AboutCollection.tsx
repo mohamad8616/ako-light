@@ -1,7 +1,7 @@
 "use client";
 
 import HomepageSection from "@/utility/HomepageSection";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 import type { Collection } from "@/lib/data/collections";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { pick } from "@/lib/i18n/localized";

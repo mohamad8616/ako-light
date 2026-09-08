@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/lib/i18n/Link";
 
 // ---------------------------------------------------------------------------
 // SearchCard — reusable result card shared by the PRODUCTS and DESIGNERS
