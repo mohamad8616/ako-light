@@ -48,7 +48,7 @@ export default function NewsletterSection() {
 
               <button
                 type="submit"
-                aria-label="Subscribe"
+                aria-label={t("newsletter.subscribe")}
                 className="flex aspect-square h-full shrink-0 items-center justify-center rounded-full bg-[#111111] text-white transition-transform duration-300 hover:scale-[1.04]"
               >
                 <ArrowRight

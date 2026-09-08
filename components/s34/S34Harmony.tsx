@@ -23,7 +23,7 @@ export default function S34Harmony() {
             whileInView={{ y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.8, ease: EASE }}
-            className="text-background text-2xl leading-[0.95] font-medium tracking-wide uppercase md:text-4xl"
+            className="text-background text-2xl leading-[1.2] font-medium tracking-wide uppercase md:text-4xl"
           >
             {kicker}
           </motion.h2>

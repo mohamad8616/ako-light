@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Cancel01Icon } from "@hugeicons/core-free-icons"
+import { useLanguage } from "@/lib/i18n/LanguageProvider"
 
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
@@ -50,6 +51,7 @@ function DialogContent({
   motionProps?: MotionProps
   onExitComplete?: () => void
 }) {
+  const { t } = useLanguage()
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -98,7 +100,7 @@ function DialogContent({
             }
           >
             <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{t("nav.close")}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Popup>

@@ -64,7 +64,7 @@ type Props = {
  *  • Cursor-following arrow indicates direction.
  */
 export default function LightboxModal({ items, startIndex, onClose }: Props) {
-  const { dir } = useLanguage();
+  const { dir, t } = useLanguage();
   const isRtl = dir === "rtl";
   const count = items.length;
 
@@ -169,7 +169,7 @@ export default function LightboxModal({ items, startIndex, onClose }: Props) {
               key={item.image}
               type="button"
               onClick={() => setCurrent(i)}
-              aria-label={`Photo ${i + 1} of ${count}`}
+              aria-label={t("lightbox.photoCount").replace("{current}", String(i + 1)).replace("{total}", String(count))}
               className={cn(
                 "relative aspect-square w-full shrink-0 cursor-pointer overflow-hidden transition-opacity duration-300",
                 isActive
@@ -212,7 +212,7 @@ export default function LightboxModal({ items, startIndex, onClose }: Props) {
         {/* Close — stopPropagation so it doesn't trigger half-click nav. */}
         <button
           type="button"
-          aria-label="Close"
+          aria-label={t("nav.close")}
           onClick={(e) => {
             e.stopPropagation();
             onClose();

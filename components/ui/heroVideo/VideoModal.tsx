@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 /** Backdrop fade duration (s) — the video starts while the screen darkens,
  *  so the user sees a smooth darken → reveal instead of a sudden pop-in. */
@@ -42,6 +43,7 @@ export default function VideoModal({
   const videoRef = useRef<HTMLVideoElement>(null);
   const { lock, unlock } = useLenis();
   const setPlaying = useHeroVideoStore((s) => s.setPlaying);
+  const { t } = useLanguage();
 
   // Scroll lock while open; release on close AND on unmount (navigating
   // away while the player is up must never leave the page locked).
@@ -93,7 +95,7 @@ export default function VideoModal({
           dir="ltr"
           role="dialog"
           aria-modal="true"
-          aria-label="Video player"
+          aria-label={t("video.player")}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -118,7 +120,7 @@ export default function VideoModal({
           {/* Close — pinned to the viewport's top-right, always visible. */}
           <button
             type="button"
-            aria-label="Close video"
+            aria-label={t("video.close")}
             onClick={(e) => {
               e.stopPropagation();
               onClose();

@@ -80,14 +80,14 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
               {/* Prev/next — mobile convenience alongside the thumbnails below */}
               <button
                 onClick={showPrev}
-                aria-label="Previous image"
+                aria-label={t("product.previousImage")}
                 className="absolute top-1/2 left-2 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/80 text-stone-950 shadow transition-colors hover:bg-white md:hidden"
               >
                 <ChevronLeft size={16} />
               </button>
               <button
                 onClick={showNext}
-                aria-label="Next image"
+                aria-label={t("product.nextImage")}
                 className="absolute top-1/2 right-2 flex h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/80 text-stone-950 shadow transition-colors hover:bg-white md:hidden"
               >
                 <ChevronRight size={16} />
@@ -100,7 +100,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
                 <button
                   key={src}
                   onClick={() => setActiveImage(i)}
-                  aria-label={`View image ${i + 1}`}
+                  aria-label={t("product.viewImage").replace("{number}", String(i + 1))}
                   className={`relative h-16 w-16 shrink-0 cursor-pointer overflow-hidden border transition-colors ${
                     activeImage === i
                       ? "border-stone-950"
@@ -130,7 +130,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
               <div className="flex items-center border border-stone-300">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  aria-label="Decrease quantity"
+                  aria-label={t("cart.decreaseQuantity")}
                   className="flex h-10 w-10 cursor-pointer items-center justify-center text-stone-950 hover:bg-stone-100"
                 >
                   −
@@ -138,7 +138,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
                 <span className="w-8 text-center text-sm">{quantity}</span>
                 <button
                   onClick={() => setQuantity((q) => q + 1)}
-                  aria-label="Increase quantity"
+                  aria-label={t("cart.increaseQuantity")}
                   className="flex h-10 w-10 cursor-pointer items-center justify-center text-stone-950 hover:bg-stone-100"
                 >
                   +

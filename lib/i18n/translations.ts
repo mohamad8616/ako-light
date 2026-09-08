@@ -18,6 +18,7 @@ export const translations = {
     "ui.viewAllProducts": "view all products",
     "ui.viewWebsite": "view website",
     "ui.imageGallery": "Image Gallery",
+    "lightbox.photoCount": "Photo {current} of {total}",
 
     "menu.company": "Company",
     "menu.products": "Products",
@@ -81,6 +82,8 @@ export const translations = {
     "hero.readMore": "Read more",
 
     "video.akoLighting": "AKO LIGHTING",
+    "video.player": "Video player",
+    "video.close": "Close video",
 
     "about.hero.firstLine": "The Metaphysics of Beauty",
     "about.hero.secondLine":
@@ -252,6 +255,9 @@ export const translations = {
     "product.download2d3d": "2D / 3D",
     "product.addToCart": "Add to cart",
     "product.buyNow": "Buy Now",
+    "product.previousImage": "Previous image",
+    "product.nextImage": "Next image",
+    "product.viewImage": "View image {number}",
 
     "productsSheet.products": "products",
     "productsSheet.close": "close",
@@ -280,6 +286,7 @@ export const translations = {
     "newsletter.emailPlaceholder": "Email*",
     "newsletter.agree": "Agree to",
     "newsletter.terms": "terms and conditions",
+    "newsletter.subscribe": "Subscribe",
 
     "notFound.title": "404",
     "notFound.subtitle":
@@ -360,6 +367,7 @@ export const translations = {
     "ui.viewAllProducts": "مشاهده همه محصولات",
     "ui.viewWebsite": "مشاهده وب‌سایت",
     "ui.imageGallery": "گالری تصاویر",
+    "lightbox.photoCount": "تصویر {current} از {total}",
 
     "menu.company": "شرکت",
     "menu.products": "محصولات",
@@ -423,6 +431,8 @@ export const translations = {
     "hero.readMore": "بیشتر بخوانید",
 
     "video.akoLighting": "اِکو لایتینگ",
+    "video.player": "پخش‌کننده ویدیو",
+    "video.close": "بستن ویدیو",
 
     "about.hero.firstLine": "متافیزیک زیبایی",
     "about.hero.secondLine": "دنیای هنژ سرشار از متریال‌های منحصربه‌فرد است",
@@ -592,6 +602,9 @@ export const translations = {
     "product.download2d3d": "2D / 3D",
     "product.addToCart": "افزودن به سبد خرید",
     "product.buyNow": "خرید",
+    "product.previousImage": "تصویر قبلی",
+    "product.nextImage": "تصویر بعدی",
+    "product.viewImage": "مشاهده تصویر {number}",
 
     "productsSheet.products": "محصولات",
     "productsSheet.close": "بستن",
@@ -621,6 +634,7 @@ export const translations = {
     "newsletter.emailPlaceholder": "ایمیل*",
     "newsletter.agree": "موافقت با",
     "newsletter.terms": "شرایط و ضوابط",
+    "newsletter.subscribe": "عضویت",
 
     "notFound.title": "۴۰۴",
     "notFound.subtitle":
