@@ -123,7 +123,7 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
                   <Link
                     key={key}
                     href={`/products/${categoryLink[i]}`}
-                    onClick={(e) => {
+                    onClick={() => {
                       closeSheet();
                     }}
                     className={`${linkClasses} group relative`}
@@ -168,7 +168,7 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
                 <Link
                   key={key}
                   href={`/products/${categoryLink[i]}`}
-                  onClick={(e) => {
+                  onClick={() => {
                     closeSheet();
                   }}
                   className={`${linkClasses} group relative`}

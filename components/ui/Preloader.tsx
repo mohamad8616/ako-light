@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 
 export default function Preloader() {
   const { isLoading, progress } = useLoaderStore();
-  const { t, dir } = useLanguage();
+  const { dir } = useLanguage();
   const [isGone, setIsGone] = useState(false);
 
   // After the fade-out transition completes, unmount the preloader entirely

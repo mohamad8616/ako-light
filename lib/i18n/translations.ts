@@ -42,7 +42,7 @@ export const translations = {
     "collections.catalogue": "Catalogue",
     "collections.images": "Images",
     "collections.imageGallery": "Image Gallery",
-    "collections.productsInCollection": "Products in the",
+    "collections.productsInCollection": "Products in this collection",
 
     "materials.title": "Materials",
     "materials.previewNote":
@@ -175,7 +175,6 @@ export const translations = {
     "istra.kicker": "HENGE PROJECTS",
     "istra.title": "H Istra",
     "istra.cta": "Discover",
-    "istra.discover": "Discover",
 
     "vocla.title": "Vocla 2026",
     "vocla.hLife": "H-Life",
@@ -184,7 +183,6 @@ export const translations = {
     "vocla.p2":
       "Rather than presenting individual pieces, the brand chose to construct a coherent and inhabitable setting, where the experience would be guided by the quality of materials, light and atmosphere.",
     "vocla.cta": "Read more",
-    "vocla.readMore": "Read more",
 
     "carousel.brecciaMedicea": "Breccia Medicea",
     "carousel.mdw2022": "MDW 2022",
@@ -340,7 +338,7 @@ export const translations = {
     "page.flagship.title": "{name} | Home Form Flagships",
     "page.flagship.description":
       "Visit the {name} Home Form flagship showroom — discover our curated Italian design furniture collections.",
-    "page.projects.title": "Projects",
+    "page.projects.title": "Projects | Home Form",
     "page.projects.description":
       "Explore Home Form's curated projects showcasing Italian design furniture in exceptional spaces.",
     "page.s34.title": "S/34 | Home Form",
@@ -410,7 +408,7 @@ export const translations = {
     "materials.categories.metals": "فلزات",
     "materials.categories.marbles": "مرمرها",
 
-    "flagship.breadcrumb": "فلگشیپ‌های هنژ",
+    "flagship.breadcrumb": "فروشگاه‌های اصلی هنژ",
     "flagship.infoLabel": "اطلاعات",
     "flagship.contactHeading": "پیامی برای ما بفرستید",
     "flagship.contactIntro":
@@ -498,11 +496,11 @@ export const translations = {
     "s34.concept.p2":
       "خانه در وهله اول یک سفر پویا است، پروژه‌ای بلندمدت که از فضای فیزیکی برای روایت زندگی ما و پیچیدن آن در زیبایی استفاده می‌کند. در مراحل مختلف زندگی احساس امنیت و آرامش را القا می‌کند.",
     "s34.concept.p3":
-      "هنژ خانه خود را منتقل کرده و فضایی کاملاً جدید در مرکز کادریلatero دلا مودا میلان، ویا دلا اسپیگا ۳۴ ایجاد کرده است. فقط چند قدم دورتر از جایی که ۷ سال Incredible را در میلان و هفته طراحی جشن گرفت.",
+      "هنژ خانه‌اش را جابه‌جا کرده و فضایی کاملاً جدید در مرکز کوادریلاترو دلا مودای میلان، ویا دلا اسپیگا ۳۴ خلق کرده است؛ تنها چند قدم دورتر از جایی که هفت سال شگفت‌انگیز، میلان و هفته طراحی را در آن جشن گرفت.",
     "s34.concept.p4":
       "خانه جدید قادر است آنچه را که هنژ از طریق تکامل، کنجکاوی مداوم و آزمایش نیاز به گفتن دارد، با قدرت کامل بیان کند تا به شکستن قوانین ادامه دهد و به طرز شگفت‌انگیزی متفاوت باشد.",
     "s34.concept.p5":
-      "خانه جدید اس ۳۴ نام دارد، فضایی که به شما امکان می‌دهد در شخصیت و اکLECTIC خلاقیتی که نشانه سفر هنڜ در طول سال‌ها بوده غرق شوید. سطحی افزوده که معماری و محصولات را در یک مکان ترکیب می‌کند. سه سطح از نور، شکل، ماده و عملکرد برای کاوش.",
+      "خانه جدید «اس ۳۴» نام دارد؛ فضایی که به شما امکان می‌دهد در شخصیت و خلاقیت اکلکتیکی‌ای که نشانه‌ی مسیر هنژ در طول سال‌ها بوده است غرق شوید. سطحی افزوده که معماری و محصولات را در یک مکان به هم می‌آمیزد. سه سطح از نور، شکل، ماده و کارکرد برای کاوش.",
     "s34.gallery.kicker": "دنباله‌ای از فضاهای جذاب",
     "s34.gallery.p1":
       "ویژگی‌های بیانی منحصربه‌فرد می‌توانند گفتگوی احساسی بین محصول و افراد اطراف آن را برقرار کنند. راز این سفر به سوی روح سنگ‌های گرانبها از عشق غریزی به زیبایی یک جهان ارگانیک سرچشمه می‌گیرد، جهانی که قادر است شما را غافلگیر کند و عناصر شگفت‌انگیز و خارق‌العاده‌ای را که طبیعت می‌آفریند، آشکار سازد.",
@@ -530,7 +528,6 @@ export const translations = {
     "istra.kicker": "پروژه‌های هنژ",
     "istra.title": "اچ ایسترا",
     "istra.cta": "کشف",
-    "istra.discover": "کشف",
 
     "vocla.title": "ووکلا ۲۰۲۶",
     "vocla.hLife": "اچ-لایف",
@@ -539,7 +536,6 @@ export const translations = {
     "vocla.p2":
       "برند به‌جای ارائه قطعات منفرد، ساخت محیطی منسجم و قابل سکونت را انتخاب کرد که در آن تجربه با کیفیت متریال‌ها، نور و فضا هدایت می‌شود.",
     "vocla.cta": "بیشتر بخوانید",
-    "vocla.readMore": "بیشتر بخوانید",
 
     "carousel.brecciaMedicea": "برچیا مدیسا",
     "carousel.mdw2022": "MDW 2022",
@@ -551,7 +547,7 @@ export const translations = {
     "products.lighting": "نورپردازی",
     "products.designers": "طراحان",
     "products.bookcases": "کتابخانه",
-    "products.cabinetsAndSideboards": "کابینت و سندباکس",
+    "products.cabinetsAndSideboards": "کابینت و سایدبورد",
     "products.tables": "میزها",
     "products.seating": "نشیمن",
     "products.kitchens": "آشپزخانه",
@@ -565,7 +561,7 @@ export const translations = {
     "products.catalogue.aria": "دانلود کاتالوگ اس ۳۴/۴",
     "products.coffeeTables": "میز قهوه",
     "products.sofasAndArmchairs": "مبل و صندلی",
-    "products.chairsAndStools": "صندلی و پادزدی",
+    "products.chairsAndStools": "صندلی و چهارپایه",
     "products.wallPanelling": "دیوارپوش",
 
     "products.pendantLight": "لامپ آویز",
@@ -659,25 +655,25 @@ export const translations = {
       "طراحی‌های بی‌زمان را کشف کنید. هوم فرم: مبلمان ایتالیایی که فراتر از روندها است. با دست‌ساز بودن برای زیبایی که پایدار می‌ماند، هر قطعه فضای شما را بالا می‌برد. با میراث استثنایی کارگری ایتالیایی هوم فرم همراه شوید.",
     "page.about.title": "درباره ما | هوم فرم",
     "page.about.description":
-      "فلسفه پشت هوم فرم را کشف کنید — مبلمان طراحی‌شده در ایتالیا که از قرن‌ها کارگری به وجود آمده است، متریال‌های استثنایی و شیکاپی که همیشگرد می‌گیرد.",
+      "فلسفه پشت هوم فرم را کشف کنید — مبلمان طراحی‌شده در ایتالیا که از قرن‌ها هنر صنعتگری، متریال‌های استثنایی و ظرافتی بی‌زمان سرچشمه می‌گیرد.",
     "page.contact.title": "تماس | هوم فرم",
     "page.contact.description":
       "با هوم فرم تماس بگیرید — نمایشگاه، دفتر خبری و مرکز اصلی.",
     "page.catalogue.title": "کاتالوگ | هوم فرم",
     "page.catalogue.description":
       "کاتالوگ‌ها و انتشارات مجموعه‌های هوم فرم را دانلود کنید.",
-    "page.collections.title": "مجموعه‌ها | هوم فرم",
+    "page.collections.title": "کلکسیون‌ها | هوم فرم",
     "page.collections.description":
-      "مجموعه‌های منحصر به فرد هوم فرم از مبلمان طراحی‌شده در ایتالیا را کشف کنید.",
-    "page.collection.title": "مجموعه {name} | هوم فرم",
+      "کلکسیون‌های منحصربه‌فرد هوم فرم از مبلمان طراحی‌شده در ایتالیا را کشف کنید.",
+    "page.collection.title": "کلکسیون {name} | هوم فرم",
     "page.collection.description":
-      "مجموعه {name} هوم فرم را کشف کنید — مبلمان طراحی‌شده در ایتالیا با متریال‌های استثنایی و کارگری.",
-    "page.materials.title": "مواد | هوم فرم",
+      "کلکسیون {name} هوم فرم را کشف کنید — مبلمان طراحی‌شده در ایتالیا با متریال‌های استثنایی و صنعتگری.",
+    "page.materials.title": "متریال‌ها | هوم فرم",
     "page.materials.description":
-      "کتابخانه متریال‌های هوم فرم را که برای مجموعه‌های مبلمان ما انتخاب شده‌اند، کاوش کنید.",
-    "page.material.title": "{name} | مواد هوم فرم",
+      "کتابخانه متریال‌های هوم فرم را که برای کلکسیون‌های مبلمان ما انتخاب شده‌اند، کاوش کنید.",
+    "page.material.title": "{name} | متریال‌های هوم فرم",
     "page.material.description":
-      "مواد {name} هوم فرم را کاوش کنید — فینیش‌ها، بافت‌ها و جزئیات کارگری.",
+      "متریال‌های {name} هوم فرم را کاوش کنید — فینیش‌ها، بافت‌ها و جزئیات صنعتگری.",
     "page.designers.title": "طراحان | هوم فرم",
     "page.designers.description":
       "با صنعتگران و طراحان برجسته پشت مبلمان طراحی‌شده در ایتالیا هوم فرم آشنا شوید.",
@@ -689,14 +685,14 @@ export const translations = {
       "تمام محصولات مبلمان طراحی‌شده در ایتالیا هوم فرم را از صندلی‌ها تا لوازم نورپذیری مرور کنید.",
     "page.product.title": "{name} | هوم فرم",
     "page.product.description":
-      "مجموعه {name} هوم فرم را کشف کنید — مبلمان طراحی‌شده در ایتالیا با متریال‌های استثنایی و کارگری.",
-    "page.flagships.title": "فروشگاه‌های عطف | هوم فرم",
+      "کلکسیون {name} هوم فرم را کشف کنید — مبلمان طراحی‌شده در ایتالیا با متریال‌های استثنایی و صنعتگری.",
+    "page.flagships.title": "فروشگاه‌های اصلی | هوم فرم",
     "page.flagships.description":
-      "فروشگاه‌های عطف هوم فرم در سراسر جهان را کاوش کنید.",
-    "page.flagship.title": "{name} | فروشگاه‌های عطف هوم فرم",
+      "فروشگاه‌های اصلی هوم فرم در سراسر جهان را کاوش کنید.",
+    "page.flagship.title": "{name} | فروشگاه‌های اصلی هوم فرم",
     "page.flagship.description":
-      "فروشگاه عطف {name} هوم فرم را بازدید کنید — مجموعه‌های منحصر به فرد مبلمان طراحی‌شده در ایتالیا ما را کشف کنید.",
-    "page.projects.title": "پروژه ها",
+      "فروشگاه اصلی {name} هوم فرم را بازدید کنید — کلکسیون‌های منحصربه‌فرد مبلمان طراحی‌شده در ایتالیا ما را کشف کنید.",
+    "page.projects.title": "پروژه‌ها | هوم فرم",
     "page.projects.description":
       "پروژه‌های منحصر به فرد هوم فرم را که مبلمان طراحی‌شده در ایتالیا را در فضاهای استثنایی نشان می‌دهند، کاوش کنید.",
     "page.s34.title": "S/34 | هوم فرم",
