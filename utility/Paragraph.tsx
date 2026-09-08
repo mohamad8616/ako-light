@@ -17,7 +17,7 @@ export function Paragraph({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.7, delay: 0.2, ease: EASE }}
-      className={` ${lang === "fa" ? "font-noora tracking-tight" : "font-din"} text-justify text-[15px] leading-relaxed font-light text-pretty md:text-base ${className} ${textColor ?? "text-background/90"}`}
+      className={` ${lang === "fa" ? "font-noora tracking-tight" : "font-din"} max-w-prose text-justify text-[15px] leading-relaxed font-light text-pretty md:text-base ${className} ${textColor ?? "text-background/90"}`}
     >
       {children}
     </motion.p>

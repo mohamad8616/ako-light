@@ -14,9 +14,10 @@ export default function NewsletterSection() {
 
   return (
     <section className="bg-background-secondary flex h-[75vh] px-6  py-24 md:px-12 lg:px-20 xl:px-[8.5vw]">
-      <div className="mx-auto grid max-w-[1600px] w-full items-center gap-16 lg:grid-cols-[0.9fr_1fr] lg:gap-24">
-        {/* Left */}
-        <div>
+      <div className="grid w-full items-center gap-16 lg:grid-cols-[0.9fr_1fr] lg:gap-24">
+        {/* Left — reading-width cap so the copy stays readable when the
+            fluid section spans very wide viewports. */}
+        <div className="max-w-2xl">
           <SectionTitle>
             {t("newsletter.title1")}
             <br />

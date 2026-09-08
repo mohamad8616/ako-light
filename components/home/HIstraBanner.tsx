@@ -15,7 +15,9 @@ export default function HIstraBanner() {
 
   return (
     <section className="bg-background-secondary relative -bottom-18 w-full pt-20 pb-0 md:pt-28 lg:-bottom-80">
-      <HomepageSection className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
+      {/* Fluid width from HomepageSection itself — no duplicated container
+          (the old explicit max-w-1600 also double-applied the gutters). */}
+      <HomepageSection>
         {/* Title */}
         <div className="overflow-hidden">
           <SectionSubTitle>{t("istra.kicker")}</SectionSubTitle>

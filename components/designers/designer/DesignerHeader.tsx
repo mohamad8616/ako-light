@@ -9,7 +9,9 @@ export default function DesignerHeader({ name }: { name: string }) {
   const { t } = useLanguage();
   return (
     <header className="w-full bg-background pt-28 md:pt-36">
-      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
+      {/* Fluid gutters only — no max-width cap, consistent with the
+          shared section system on large screens. */}
+      <div className="px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
         {/* Breadcrumb + divider */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}

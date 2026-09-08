@@ -43,8 +43,9 @@ export default function VideoSection() {
 
   return (
     <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
-      <div className="mx-auto max-w-[1600px] px-6 md:px-12 lg:px-20 xl:px-[8.5vw]">
-        <div ref={sectionRef} className="relative">
+      {/* One width system: the section's own fluid gutters. No nested
+          container — the video uses the full fluid width on large screens. */}
+      <div ref={sectionRef} className="relative">
           <div className="bg-background relative aspect-video w-full overflow-hidden">
             {/* Placeholder shown until the video is actually playing */}
             <AnimatePresence>
@@ -79,8 +80,8 @@ export default function VideoSection() {
               </video>
             )}
           </div>
-        </div>
       </div>
     </HomepageSection>
   );
 }
+
