@@ -10,6 +10,7 @@ export default function MaterialsPage() {
     <main className="bg-background w-full">
       <ProjectsHeader />
       <ProjectssList />
+      
     </main>
   );
 }

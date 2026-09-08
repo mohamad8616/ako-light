@@ -328,7 +328,7 @@ export const translations = {
     "page.flagship.title": "{name} | Home Form Flagships",
     "page.flagship.description":
       "Visit the {name} Home Form flagship showroom — discover our curated Italian design furniture collections.",
-    "page.projects.title": "Projects | Home Form",
+    "page.projects.title": "Projects",
     "page.projects.description":
       "Explore Home Form's curated projects showcasing Italian design furniture in exceptional spaces.",
     "page.s34.title": "S/34 | Home Form",
@@ -601,7 +601,8 @@ export const translations = {
     "cart.empty": "سبد خرید شما خالی است.",
     "cart.total": "جمع کل",
     "cart.notes": "توضیحات ویژه برای فروشنده",
-    "cart.shippingNote": "هزینه ارسال و کدهای تخفیف در مرحله پرداخت اضافه می‌شوند.",
+    "cart.shippingNote":
+      "هزینه ارسال و کدهای تخفیف در مرحله پرداخت اضافه می‌شوند.",
     "cart.checkout": "پرداخت",
     "cart.redirecting": "در حال انتقال…",
     "cart.decreaseQuantity": "کاهش تعداد",
@@ -668,7 +669,7 @@ export const translations = {
     "page.flagship.title": "{name} | فروشگاه‌های عطف هوم فرم",
     "page.flagship.description":
       "فروشگاه عطف {name} هوم فرم را بازدید کنید — مجموعه‌های منحصر به فرد مبلمان طراحی‌شده در ایتالیا ما را کشف کنید.",
-    "page.projects.title": "پروژه‌ها | هوم فرم",
+    "page.projects.title": "پروژه ها",
     "page.projects.description":
       "پروژه‌های منحصر به فرد هوم فرم را که مبلمان طراحی‌شده در ایتالیا را در فضاهای استثنایی نشان می‌دهند، کاوش کنید.",
     "page.s34.title": "S/34 | هوم فرم",
