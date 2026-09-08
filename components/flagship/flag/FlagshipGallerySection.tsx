@@ -25,7 +25,7 @@ export default function FlagshipGallerySection({ flagship }: { flagship: Flagshi
           <div key={i} className="relative aspect-square w-full overflow-hidden">
             <Image
               src={src}
-              alt={`${name} gallery ${i + 1}`}
+              alt={t("gallery.photoAlt").replace("{name}", name).replace("{number}", String(i + 1))}
               fill
               sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
               className="object-cover"

@@ -9,7 +9,6 @@ import {
   type ProductCategory,
 } from "@/lib/data/productCategories";
 import { getProjectById } from "@/lib/data/projects";
-import { loc } from "@/lib/i18n/localized";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -68,7 +67,7 @@ const page = async ({ params }: PageProps) => {
         />
         <ProductsInCollectionSection
           categories={groupedCategories}
-          title={loc("Products Used", "محصولات استفاده‌شده در پروژه")}
+          titleKey="projects.productsUsed"
           viewAllHref="/products"
         />
       </div>

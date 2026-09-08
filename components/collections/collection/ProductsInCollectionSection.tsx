@@ -27,8 +27,14 @@ const ENTER_EXIT_OFFSET = 500;
 interface Props {
   /** Optional list of categories to render. Defaults to all `productCategories`. */
   categories?: ProductCategory[];
-  /** Heading text. Defaults to the "collections.productsInCollection" translation. */
+  /**
+   * Heading text. Defaults to the "collections.productsInCollection" translation.
+   * Either a `Localized` object, a plain string, or (preferred for UI labels)
+   * a translation key resolved via `titleKey`.
+   */
   title?: Localized | string;
+  /** Translation key resolved via `t()` for the heading. Takes precedence over `title`. */
+  titleKey?: string;
   /** "View all" link target. Defaults to "/products". */
   viewAllHref?: string;
   /** "View all" link text. Defaults to the "ui.viewAllProducts" translation. */
@@ -68,6 +74,7 @@ interface HoveredState {
 export default function ProductsInCollectionSection({
   categories = productCategories,
   title,
+  titleKey,
   viewAllHref = "/products",
   viewAllLabel,
 }: Props) {
@@ -75,13 +82,15 @@ export default function ProductsInCollectionSection({
   const isDesktop = useIsDesktop();
   const listRef = useRef<HTMLDivElement>(null);
 
-  // Resolve the heading: a `Localized` prop, a plain string prop, or fallback
-  // to the default i18n key.
-  const headingText = title
-    ? typeof title === "string"
-      ? title
-      : (title[lang] ?? title.en)
-    : t("collections.productsInCollection");
+  // Resolve the heading: a translation key, a `Localized` prop, a plain
+  // string prop, or fallback to the default i18n key.
+  const headingText = titleKey
+    ? t(titleKey)
+    : title
+      ? typeof title === "string"
+        ? title
+        : (title[lang] ?? title.en)
+      : t("collections.productsInCollection");
 
   const allLabel = viewAllLabel ?? t("ui.viewAllProducts");
 

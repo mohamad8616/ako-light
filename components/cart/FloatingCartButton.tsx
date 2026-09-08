@@ -2,6 +2,7 @@
 
 import { ShoppingCart } from "lucide-react";
 import { useCartCount, useCartHydrated } from "@/lib/cart/store";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 interface Props {
   onClick: () => void;
@@ -10,6 +11,7 @@ interface Props {
 export default function FloatingCartButton({ onClick }: Props) {
   const hydrated = useCartHydrated();
   const count = useCartCount();
+  const { t } = useLanguage();
 
   // Hidden until hydrated (avoids a mismatch) and until something's
   // actually in the cart.
@@ -18,7 +20,7 @@ export default function FloatingCartButton({ onClick }: Props) {
   return (
     <button
       onClick={onClick}
-      aria-label={`Cart (${count} item${count === 1 ? "" : "s"})`}
+      aria-label={t("cart.itemsCount").replace("{count}", String(count))}
       className="fixed right-6 bottom-6 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-stone-950 text-white shadow-lg transition-transform hover:scale-105 md:right-8 md:bottom-8"
     >
       <ShoppingCart size={20} strokeWidth={2} />

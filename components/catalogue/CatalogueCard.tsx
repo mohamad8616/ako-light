@@ -13,7 +13,7 @@ export default function CatalogueCard({ item }: { item: CatalogueItem }) {
         target="_blank"
         rel="noopener noreferrer"
         download
-        aria-label={`Download ${item.title} catalogue`}
+        aria-label={t("catalogue.downloadAria").replace("{title}", item.title)}
         className="group relative block aspect-square w-full overflow-hidden"
         style={{ backgroundColor: item.coverColor }}
       >

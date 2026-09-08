@@ -9,7 +9,7 @@ import { Paragraph } from "@/utility/Paragraph";
 import Link from "next/link";
 
 export default function ProjectInfoSection({ project }: { project: Project }) {
-  const { lang } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const projectName = pick(project.name, lang);
   const projectDescription = pick(project.description, lang);
@@ -29,7 +29,7 @@ export default function ProjectInfoSection({ project }: { project: Project }) {
                 lang === "fa" ? "font-noora" : "font-din",
               )}
             >
-              {lang === "fa" ? "پروژه‌ها" : "Projects"}
+              {t("projects.title")}
             </Link>
             <span>/</span>
             <span
@@ -54,7 +54,7 @@ export default function ProjectInfoSection({ project }: { project: Project }) {
                 lang === "fa" ? "font-noora" : "font-din",
               )}
             >
-              {lang === "fa" ? "اعتبارها" : "Credits"}
+              {t("footer.credits")}
             </span>
             <div className="mt-2 flex flex-col gap-1.5 text-sm text-stone-950">
               {project.credits.map((credit, idx) => (

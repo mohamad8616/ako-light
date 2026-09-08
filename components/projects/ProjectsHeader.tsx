@@ -6,7 +6,7 @@ export default function ProjectsHeader() {
   const { t } = useLanguage();
   return (
     <header className="bg-background w-full pt-28 md:pt-36">
-      <PageTitle>{t("page.projects.title")}</PageTitle>
+      <PageTitle>{t("projects.title")}</PageTitle>
     </header>
   );
 }

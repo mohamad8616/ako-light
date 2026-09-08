@@ -32,7 +32,7 @@ export default function ProductInfoSection({ product }: { product: Product }) {
                 lang === "fa" ? "font-noora" : "font-din",
               )}
             >
-              {lang === "fa" ? "محصولات" : "products"}
+              {t("nav.products")}
             </Link>
             <span>/</span>
             <Link

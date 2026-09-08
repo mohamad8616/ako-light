@@ -51,7 +51,7 @@ export default function CartSheet({ open, onOpenChange }: Props) {
       const { url } = await createCheckout(items);
       window.location.href = url;
     } catch (err) {
-      setCheckoutError(err instanceof Error ? err.message : "Checkout failed");
+      setCheckoutError(err instanceof Error ? err.message : t("cart.error"));
     } finally {
       setCheckingOut(false);
     }

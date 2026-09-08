@@ -19,6 +19,7 @@ export const translations = {
     "ui.viewWebsite": "view website",
     "ui.imageGallery": "Image Gallery",
     "lightbox.photoCount": "Photo {current} of {total}",
+    "gallery.photoAlt": "{name} gallery {number}",
 
     "menu.company": "Company",
     "menu.products": "Products",
@@ -162,6 +163,7 @@ export const translations = {
     "catalogue.title": "S34/5",
     "catalogue.cta": "Download S34/5",
     "catalogue.download": "Download",
+    "catalogue.downloadAria": "Download {title} catalogue",
     "catalogue.description":
       "Ritual Gravity is not only a collection of new products, it is the expansion of a brand universe. From the master bedroom to the table, from light to the domestic lounge, from private space to collective experience, Henge continues to define places where every piece is given its own weight, its own gesture, its own reason to be.",
 
@@ -272,6 +274,8 @@ export const translations = {
     "cart.redirecting": "Redirecting…",
     "cart.decreaseQuantity": "Decrease quantity",
     "cart.increaseQuantity": "Increase quantity",
+    "cart.itemsCount": "Cart ({count})",
+    "cart.error": "Checkout failed",
 
     "logo.text": "home form",
 
@@ -342,6 +346,9 @@ export const translations = {
     "page.s34.description":
       "Discover S/34 — Home Form's research project exploring the intersection of design and light.",
 
+    "projects.title": "Projects",
+    "projects.productsUsed": "Products Used",
+
     "search.title": "Search",
     "search.placeholder": "Type here ...",
     "search.products": "Products",
@@ -368,6 +375,7 @@ export const translations = {
     "ui.viewWebsite": "مشاهده وب‌سایت",
     "ui.imageGallery": "گالری تصاویر",
     "lightbox.photoCount": "تصویر {current} از {total}",
+    "gallery.photoAlt": "{name} گالری {number}",
 
     "menu.company": "شرکت",
     "menu.products": "محصولات",
@@ -509,6 +517,7 @@ export const translations = {
     "catalogue.title": "اس ۳۴/۵",
     "catalogue.cta": "دانلود اس ۳۴/۵",
     "catalogue.download": "دانلود",
+    "catalogue.downloadAria": "دانلود کاتالوگ {title}",
     "catalogue.description":
       "«ریچوال گراویتی» نه تنها مجموعه‌ای از محصولات جدید است، بلکه گسترش جهانی از برند است. از اتاق خواب اصلی گرفته تا میز، از نور گرفته تا سالن نشیمن خانگی، از فضای خصوصی گرفته تا تجربه جمعی، هِنگه همچنان به تعریف مکان‌هایی می‌پردازد که در آن‌ها به هر قطعه وزن، ژست و دلیل وجودی خاص خود داده می‌شود.",
 
@@ -620,6 +629,8 @@ export const translations = {
     "cart.redirecting": "در حال انتقال…",
     "cart.decreaseQuantity": "کاهش تعداد",
     "cart.increaseQuantity": "افزایش تعداد",
+    "cart.itemsCount": "سبد خرید ({count})",
+    "cart.error": "پرداخت ناموفق شد",
 
     "logo.text": "هوم فرم",
 
@@ -689,6 +700,9 @@ export const translations = {
     "page.s34.title": "S/34 | هوم فرم",
     "page.s34.description":
       "S/34 را کشف کنید — پروژه تحقیقاتی هوم فرم که به بررسی تلاقی طراحی و نور می‌پردازد.",
+
+    "projects.title": "پروژه‌ها",
+    "projects.productsUsed": "محصولات استفاده‌شده در پروژه",
 
     "search.title": "جستجو",
     "search.placeholder": "تایپ کنید ...",

@@ -40,7 +40,7 @@ export default function CatalogueDownloadSection({ link }: { link: string }) {
           >
             <Image
               src={downloadCatalogue}
-              alt="download catalogue"
+              alt={t("products.catalogue.aria")}
               fill
               sizes="(min-width: 1024px) 33vw, 100vw"
               className="object-cover group-hover:scale-102 transition-transform duration-1500 ease-[cubic-bezier(0.22,1,0.36,1)]"
