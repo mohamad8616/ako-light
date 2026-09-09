@@ -5,6 +5,10 @@ import ProductsInCollectionSection from "@/components/collections/collection/Pro
 import { pick } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
 import { collections } from "@/lib/data/collections";
+import {
+  buildLocalizedMetadata,
+  resolveLocale,
+} from "@/lib/seo/metadata";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -15,20 +19,22 @@ interface PageProps {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const collection = collections.find((c) => c.id === slug);
 
-  if (!collection) return notFound();
+  if (!collection) notFound();
 
-  const { locale } = await params;
-  const lang = locale as "fa" | "en";
+  const lang = resolveLocale(locale);
   const t = translations[lang];
   const name = pick(collection.name, lang);
 
-  return {
+  return buildLocalizedMetadata({
+    locale,
+    path: `/collections/${slug}`,
     title: t["page.collection.title"].replace("{name}", name),
     description: t["page.collection.description"].replace("{name}", name),
-  };
+    image: collection.image,
+  });
 }
 
 const page = async ({ params }: PageProps) => {

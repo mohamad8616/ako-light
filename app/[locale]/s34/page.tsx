@@ -6,6 +6,7 @@ import Secuence from "@/components/s34/Secuence";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import { getS34GalleryImages } from "@/lib/data/s34";
 import { translations } from "@/lib/i18n/translations";
+import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -14,13 +15,14 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const lang = locale as "fa" | "en";
-  const t = translations[lang];
+  const t = translations[resolveLocale(locale)];
 
-  return {
+  return buildLocalizedMetadata({
+    locale,
+    path: "/s34",
     title: t["page.s34.title"],
     description: t["page.s34.description"],
-  };
+  });
 }
 
 export default function S34Page() {

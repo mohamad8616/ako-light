@@ -296,54 +296,58 @@ export const translations = {
       "The page you are looking for does not exist or has been moved.",
     "notFound.backHome": "Back home",
 
-    "page.home.title": "Home Form | Italian Design Furniture",
+    // Titles are suffix-free: the root layout template appends "| Ako Lighting".
+    "page.home.title": "Ako Lighting | Architectural & Decorative Lighting",
     "page.home.description":
-      "Unveil timeless design. Home Form: Italian furniture that transcends trends. Handcrafted for enduring beauty, each piece elevates your space. Explore Home Form's legacy of exceptional Italian craftsmanship.",
-    "page.about.title": "About | Home Form",
+      "Ako Lighting designs and crafts architectural and decorative lighting — sculptural pendant, floor, wall and table lights for refined residential and commercial spaces.",
+    "page.about.title": "About Us",
     "page.about.description":
-      "Discover the philosophy behind Home Form — Italian design furniture born from centuries of craftsmanship, exceptional materials and timeless elegance.",
-    "page.contact.title": "Contact | Home Form",
+      "The philosophy behind Ako Lighting — sculptural luminaires born from craftsmanship, exceptional materials and a passion for light.",
+    "page.contact.title": "Contact",
     "page.contact.description":
-      "Get in touch with Home Form — showroom, press office, and headquarters contact details.",
-    "page.catalogue.title": "Catalogue | Home Form",
+      "Get in touch with Ako Lighting — showroom, press office and headquarters contact details.",
+    "page.catalogue.title": "Catalogues",
     "page.catalogue.description":
-      "Download Home Form's catalogues and collection publications.",
-    "page.collections.title": "Collections | Home Form",
+      "Download Ako Lighting catalogues and collection publications.",
+    "page.collections.title": "Collections",
     "page.collections.description":
-      "Explore Home Form's curated collections of Italian design furniture.",
-    "page.collection.title": "{name} Collection | Home Form",
+      "Explore Ako Lighting's curated collections of decorative and architectural lighting.",
+    "page.collection.title": "{name} Collection",
     "page.collection.description":
-      "Discover the {name} collection from Home Form — Italian design furniture with exceptional materials and craftsmanship.",
-    "page.materials.title": "Materials | Home Form",
+      "Discover the {name} collection from Ako Lighting — sculptural lighting crafted with exceptional materials.",
+    "page.materials.title": "Materials",
     "page.materials.description":
-      "Explore Home Form's material library, hand-selected for our furniture collections.",
-    "page.material.title": "{name} | Home Form Materials",
+      "Explore Ako Lighting's material library — finishes and textures hand-selected for our lighting collections.",
+    "page.material.title": "{name}",
     "page.material.description":
-      "Explore Home Form's {name} materials — finishes, textures and craftsmanship details.",
-    "page.designers.title": "Designers | Home Form",
+      "Explore {name} materials at Ako Lighting — finishes, textures and craftsmanship details.",
+    "page.designers.title": "Designers",
     "page.designers.description":
-      "Meet the master artisans and designers behind Home Form's exceptional Italian furniture.",
-    "page.designer.title": "{name} | Home Form Designer",
+      "Meet the designers and artisans behind Ako Lighting's collections.",
+    "page.designer.title": "{name}",
     "page.designer.description":
-      "Discover the work of {name}, a celebrated designer at Home Form.",
-    "page.products.title": "Products | Home Form",
+      "Discover the work of {name}, a designer collaborating with Ako Lighting.",
+    "page.products.title": "Products",
     "page.products.description":
-      "Browse Home Form's full range of Italian design furniture, from sofas to lighting.",
-    "page.product.title": "{name} | Home Form",
+      "Browse Ako Lighting's full range of decorative and architectural lighting — from pendant lights to wall sconces and table lamps.",
+    "page.product.title": "{name}",
     "page.product.description":
-      "Discover the {name} from Home Form — Italian design furniture with exceptional materials and craftsmanship.",
-    "page.flagships.title": "Flagships | Home Form",
+      "Discover the {name} collection by Ako Lighting — sculptural design crafted with exceptional materials and attention to detail.",
+    "page.flagships.title": "Flagships",
     "page.flagships.description":
-      "Explore Home Form's flagship showrooms around the world.",
-    "page.flagship.title": "{name} | Home Form Flagships",
+      "Explore Ako Lighting flagship showrooms around the world.",
+    "page.flagship.title": "{name}",
     "page.flagship.description":
-      "Visit the {name} Home Form flagship showroom — discover our curated Italian design furniture collections.",
-    "page.projects.title": "Projects | Home Form",
+      "Visit the {name} Ako Lighting flagship showroom — discover our curated lighting collections.",
+    "page.projects.title": "Projects",
     "page.projects.description":
-      "Explore Home Form's curated projects showcasing Italian design furniture in exceptional spaces.",
-    "page.s34.title": "S/34 | Home Form",
+      "Explore projects showcasing Ako Lighting in exceptional residential and commercial spaces.",
+    "page.s34.title": "S/34",
     "page.s34.description":
-      "Discover S/34 — Home Form's research project exploring the intersection of design and light.",
+      "Discover S/34 — Ako Lighting's research project exploring the intersection of design and light.",
+    "page.search.title": "Search",
+    "page.search.description":
+      "Search Ako Lighting products and designers.",
 
     "projects.title": "Projects",
     "projects.productsUsed": "Products Used",
@@ -650,54 +654,58 @@ export const translations = {
       "صفحه‌ای که به دنبال آن هستید وجود ندارد یا منتقل شده است.",
     "notFound.backHome": "بازگشت به خانه",
 
-    "page.home.title": "هوم فرم | مبلمان طراحی‌شده در ایتالیا",
+    // عنوان‌ها بدون پسوند: قالب لایوت ریشه "| Ako Lighting" را اضافه می‌کند.
+    "page.home.title": "اِکو لایتینگ | نورپردازی معماری و تزئینی",
     "page.home.description":
-      "طراحی‌های بی‌زمان را کشف کنید. هوم فرم: مبلمان ایتالیایی که فراتر از روندها است. با دست‌ساز بودن برای زیبایی که پایدار می‌ماند، هر قطعه فضای شما را بالا می‌برد. با میراث استثنایی کارگری ایتالیایی هوم فرم همراه شوید.",
-    "page.about.title": "درباره ما | هوم فرم",
+      "اِکو لایتینگ — طراحی و ساخت چراغ‌های معماری و تزئینی؛ آویز، ایستاده، دیواری و رومیزی برای فضاهای مسکونی و تجاری.",
+    "page.about.title": "درباره ما",
     "page.about.description":
-      "فلسفه پشت هوم فرم را کشف کنید — مبلمان طراحی‌شده در ایتالیا که از قرن‌ها هنر صنعتگری، متریال‌های استثنایی و ظرافتی بی‌زمان سرچشمه می‌گیرد.",
-    "page.contact.title": "تماس | هوم فرم",
+      "فلسفه پشت اِکو لایتینگ — چراغ‌های مجسمه‌وار که از هنر صنعتگری، متریال‌های استثنایی و عشق به نور سرچشمه می‌گیرند.",
+    "page.contact.title": "تماس",
     "page.contact.description":
-      "با هوم فرم تماس بگیرید — نمایشگاه، دفتر خبری و مرکز اصلی.",
-    "page.catalogue.title": "کاتالوگ | هوم فرم",
+      "با اِکو لایتینگ در تماس باشید — نشانی شوروم، دفتر مطبوعاتی و دفتر مرکزی.",
+    "page.catalogue.title": "کاتالوگ‌ها",
     "page.catalogue.description":
-      "کاتالوگ‌ها و انتشارات مجموعه‌های هوم فرم را دانلود کنید.",
-    "page.collections.title": "کلکسیون‌ها | هوم فرم",
+      "کاتالوگ‌ها و انتشارات کلکسیون‌های اِکو لایتینگ را دانلود کنید.",
+    "page.collections.title": "کلکسیون‌ها",
     "page.collections.description":
-      "کلکسیون‌های منحصربه‌فرد هوم فرم از مبلمان طراحی‌شده در ایتالیا را کشف کنید.",
-    "page.collection.title": "کلکسیون {name} | هوم فرم",
+      "کلکسیون‌های نورپردازی معماری و تزئینی اِکو لایتینگ را کشف کنید.",
+    "page.collection.title": "کلکسیون {name}",
     "page.collection.description":
-      "کلکسیون {name} هوم فرم را کشف کنید — مبلمان طراحی‌شده در ایتالیا با متریال‌های استثنایی و صنعتگری.",
-    "page.materials.title": "متریال‌ها | هوم فرم",
+      "کلکسیون {name} از اِکو لایتینگ را کشف کنید — چراغ‌های مجسمه‌وار با متریال‌های استثنایی.",
+    "page.materials.title": "متریال‌ها",
     "page.materials.description":
-      "کتابخانه متریال‌های هوم فرم را که برای کلکسیون‌های مبلمان ما انتخاب شده‌اند، کاوش کنید.",
-    "page.material.title": "{name} | متریال‌های هوم فرم",
+      "کتابخانه متریال‌های اِکو لایتینگ — فینیش‌ها و بافت‌هایی که برای کلکسیون‌های نورپردازی ما انتخاب شده‌اند.",
+    "page.material.title": "{name}",
     "page.material.description":
-      "متریال‌های {name} هوم فرم را کاوش کنید — فینیش‌ها، بافت‌ها و جزئیات صنعتگری.",
-    "page.designers.title": "طراحان | هوم فرم",
+      "متریال‌های {name} اِکو لایتینگ را کاوش کنید — فینیش‌ها، بافت‌ها و جزئیات صنعتگری.",
+    "page.designers.title": "طراحان",
     "page.designers.description":
-      "با صنعتگران و طراحان برجسته پشت مبلمان طراحی‌شده در ایتالیا هوم فرم آشنا شوید.",
-    "page.designer.title": "{name} | طراح هوم فرم",
+      "با طراحان و صنعتگران پشت کلکسیون‌های اِکو لایتینگ آشنا شوید.",
+    "page.designer.title": "{name}",
     "page.designer.description":
-      "کارهای {name}، یک طراح برجسته در هوم فرم را کشف کنید.",
-    "page.products.title": "محصولات | هوم فرم",
+      "کارهای {name}، طراح همکار اِکو لایتینگ را کشف کنید.",
+    "page.products.title": "محصولات",
     "page.products.description":
-      "تمام محصولات مبلمان طراحی‌شده در ایتالیا هوم فرم را از صندلی‌ها تا لوازم نورپذیری مرور کنید.",
-    "page.product.title": "{name} | هوم فرم",
+      "مجموعه کامل نورپردازی معماری و تزئینی اِکو لایتینگ را مرور کنید — از چراغ آویز تا چراغ دیواری و رومیزی.",
+    "page.product.title": "{name}",
     "page.product.description":
-      "کلکسیون {name} هوم فرم را کشف کنید — مبلمان طراحی‌شده در ایتالیا با متریال‌های استثنایی و صنعتگری.",
-    "page.flagships.title": "فروشگاه‌های اصلی | هوم فرم",
+      "کلکسیون {name} اِکو لایتینگ را کشف کنید — طراحی با متریال‌های استثنایی و توجه به جزئیات.",
+    "page.flagships.title": "فروشگاه‌های اصلی",
     "page.flagships.description":
-      "فروشگاه‌های اصلی هوم فرم در سراسر جهان را کاوش کنید.",
-    "page.flagship.title": "{name} | فروشگاه‌های اصلی هوم فرم",
+      "فروشگاه‌های اصلی اِکو لایتینگ در سراسر جهان را کاوش کنید.",
+    "page.flagship.title": "{name}",
     "page.flagship.description":
-      "فروشگاه اصلی {name} هوم فرم را بازدید کنید — کلکسیون‌های منحصربه‌فرد مبلمان طراحی‌شده در ایتالیا ما را کشف کنید.",
-    "page.projects.title": "پروژه‌ها | هوم فرم",
+      "فروشگاه اصلی {name} اِکو لایتینگ را بازدید کنید — کلکسیون‌های نورپردازی ما را کشف کنید.",
+    "page.projects.title": "پروژه‌ها",
     "page.projects.description":
-      "پروژه‌های منحصر به فرد هوم فرم را که مبلمان طراحی‌شده در ایتالیا را در فضاهای استثنایی نشان می‌دهند، کاوش کنید.",
-    "page.s34.title": "S/34 | هوم فرم",
+      "پروژه‌هایی که اِکو لایتینگ را در فضاهای مسکونی و تجاری استثنایی نشان می‌دهند، کاوش کنید.",
+    "page.s34.title": "اس ۳۴",
     "page.s34.description":
-      "S/34 را کشف کنید — پروژه تحقیقاتی هوم فرم که به بررسی تلاقی طراحی و نور می‌پردازد.",
+      "اس ۳۴ را کشف کنید — پروژه پژوهشی اِکو لایتینگ در تلاقی طراحی و نور.",
+    "page.search.title": "جستجو",
+    "page.search.description":
+      "محصولات و طراحان اِکو لایتینگ را جستجو کنید.",
 
     "projects.title": "پروژه‌ها",
     "projects.productsUsed": "محصولات استفاده‌شده در پروژه",

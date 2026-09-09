@@ -3,6 +3,7 @@ import DesignerHeader from "@/components/designers/designer/DesignerHeader";
 import { designers } from "@/lib/data/designers";
 import { pick } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
+import { buildLocalizedMetadata, resolveLocale, trimDescription } from "@/lib/seo/metadata";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -17,26 +18,22 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const designer = designers.find((d) => d.slug === slug);
 
-  const { locale } = await params;
-  const lang = locale as "fa" | "en";
+  if (!designer) notFound();
+
+  const lang = resolveLocale(locale);
   const t = translations[lang];
 
-  if (!designer) {
-    return {
-      title: t["page.designers.title"],
-      description: t["page.designers.description"],
-    };
-  }
-
-  const name = pick(designer.name, lang);
-
-  return {
-    title: t["page.designer.title"].replace("{name}", name),
-    description: t["page.designer.description"].replace("{name}", name),
-  };
+  return buildLocalizedMetadata({
+    locale,
+    path: `/designers/${slug}`,
+    // Designer names are proper nouns — never translated.
+    title: t["page.designer.title"].replace("{name}", designer.name),
+    description: trimDescription(pick(designer.bio[0], lang)),
+    image: designer.image,
+  });
 }
 
 export default async function DesignerDetailPage({ params }: PageProps) {

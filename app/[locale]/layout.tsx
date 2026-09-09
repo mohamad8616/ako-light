@@ -9,6 +9,7 @@ import Preloader from "@/components/ui/Preloader";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import { getLocalizedPath, isLocale, type Locale } from "@/lib/i18n/routing";
 import { translations } from "@/lib/i18n/translations";
+import { siteName, siteUrl } from "@/lib/seo/config";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -106,24 +107,35 @@ export async function generateMetadata({
   const { locale } = await params;
   const lang: Locale = isLocale(locale) ? locale : "fa";
   const t = translations[lang];
+  const homePath = "/";
 
   return {
+    metadataBase: new URL(siteUrl),
     title: {
+      // Home title is brand-complete; child pages get "| Ako Lighting".
       default: t["page.home.title"],
-      template: `%s`,
+      template: `%s | ${siteName}`,
     },
     description: t["page.home.description"],
     alternates: {
+      canonical: getLocalizedPath(homePath, lang),
       languages: {
-        "en-US": getLocalizedPath("/", "en"),
-        "fa-IR": "/",
+        "fa-IR": getLocalizedPath(homePath, "fa"),
+        "en-US": getLocalizedPath(homePath, "en"),
+        "x-default": getLocalizedPath(homePath, "fa"),
       },
     },
     openGraph: {
       title: t["page.home.title"],
       description: t["page.home.description"],
+      url: getLocalizedPath(homePath, lang),
+      siteName,
       locale: lang === "fa" ? "fa_IR" : "en_US",
       alternateLocale: lang === "fa" ? "en_US" : "fa_IR",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
     },
   };
 }

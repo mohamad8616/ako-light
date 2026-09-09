@@ -1,7 +1,25 @@
 import SearchHeader from "@/components/search/SearchHeader";
+import { translations } from "@/lib/i18n/translations";
+import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
+import type { Metadata } from "next";
 
-// TODO(localized-metadata pass): add generateMetadata here. It needs new
-// `page.search.*` dictionary keys, which don't exist yet.
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  const t = translations[resolveLocale(locale)];
+
+  return buildLocalizedMetadata({
+    locale,
+    path: "/search",
+    title: t["page.search.title"],
+    description: t["page.search.description"],
+    // Internal search interface: keep it crawlable but out of the index.
+    noindex: true,
+  });
+}
 
 export default function DesignersPage() {
   return (

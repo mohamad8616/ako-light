@@ -9,10 +9,37 @@ import {
   type ProductCategory,
 } from "@/lib/data/productCategories";
 import { getProjectById } from "@/lib/data/projects";
+import { pick } from "@/lib/i18n/localized";
+import {
+  buildLocalizedMetadata,
+  resolveLocale,
+  trimDescription,
+} from "@/lib/seo/metadata";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 
 interface PageProps {
   params: Promise<{ locale: string; id: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { id, locale } = await params;
+  const project = getProjectById(id);
+
+  if (!project) notFound();
+
+  const lang = resolveLocale(locale);
+
+  return buildLocalizedMetadata({
+    locale,
+    path: `/projects/${id}`,
+    // Project names are proper nouns; the layout template adds the brand.
+    title: pick(project.name, lang),
+    description: trimDescription(pick(project.description, lang)),
+    image: project.image,
+  });
 }
 
 /**

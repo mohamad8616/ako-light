@@ -6,6 +6,7 @@ import ProjectsSections from "@/components/ProjectsSections";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import { getAboutGalleryImages } from "@/lib/data/about";
 import { translations } from "@/lib/i18n/translations";
+import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -14,13 +15,14 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const lang = locale as "fa" | "en";
-  const t = translations[lang];
+  const t = translations[resolveLocale(locale)];
 
-  return {
+  return buildLocalizedMetadata({
+    locale,
+    path: "/about",
     title: t["page.about.title"],
     description: t["page.about.description"],
-  };
+  });
 }
 const images = getAboutGalleryImages();
 export default function AboutPage() {

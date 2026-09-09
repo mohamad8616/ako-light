@@ -8,6 +8,7 @@ import Vocla2026Section from "@/components/home/Vocla2026Section";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import { productCategories } from "@/lib/data/productCategories";
 import { translations } from "@/lib/i18n/translations";
+import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -16,13 +17,16 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const lang = locale as "fa" | "en";
-  const t = translations[lang];
+  const t = translations[resolveLocale(locale)];
 
-  return {
+  return buildLocalizedMetadata({
+    locale,
+    path: "/",
     title: t["page.home.title"],
     description: t["page.home.description"],
-  };
+    // The home title already carries the brand — no template suffix.
+    absoluteTitle: true,
+  });
 }
 
 export default function HomePage() {

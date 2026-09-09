@@ -1,6 +1,7 @@
 import ContactHero from "@/components/contact/ContactHero";
 import ContactInfoSection from "@/components/contact/ContactInfoSection";
 import { translations } from "@/lib/i18n/translations";
+import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -9,13 +10,14 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const lang = locale as "fa" | "en";
-  const t = translations[lang];
+  const t = translations[resolveLocale(locale)];
 
-  return {
+  return buildLocalizedMetadata({
+    locale,
+    path: "/contact",
     title: t["page.contact.title"],
     description: t["page.contact.description"],
-  };
+  });
 }
 
 export default function ContactPage() {

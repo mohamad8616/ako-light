@@ -11,6 +11,11 @@ import {
 } from "@/lib/data/flagships";
 import { pick } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
+import {
+  buildLocalizedMetadata,
+  resolveLocale,
+  trimDescription,
+} from "@/lib/seo/metadata";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -28,21 +33,22 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const flagship = getFlagship(slug);
   const detail = getFlagshipDetail(slug);
-  if (!flagship || !detail) return {};
+  if (!flagship || !detail) notFound();
 
-  const { locale } = await params;
-  const lang = locale as "fa" | "en";
+  const lang = resolveLocale(locale);
   const t = translations[lang];
   const name = pick(flagship.name, lang);
-  const description = pick(detail.description, lang).slice(0, 160);
 
-  return {
+  return buildLocalizedMetadata({
+    locale,
+    path: `/flagship/${slug}`,
     title: t["page.flagship.title"].replace("{name}", name),
-    description,
-  };
+    description: trimDescription(pick(detail.description, lang)),
+    image: flagship.image,
+  });
 }
 
 export default async function FlagshipPage({ params }: PageProps) {
@@ -55,7 +61,6 @@ export default async function FlagshipPage({ params }: PageProps) {
   // Merge summary (name/slug/city/image) with detail content into the
   // single shape the section components expect.
   const combined = { ...flagship, ...detail };
-  console.log(flagship, detail);
   return (
     <main className="bg-stone-950">
       <FlagshipHero flagship={combined} />

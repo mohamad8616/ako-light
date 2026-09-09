@@ -1,7 +1,13 @@
 import ProductPageClient from "@/components/products/prod/ProductPageClient";
 import { getProduct, products } from "@/lib/data/productCategories";
-import { pick } from "@/lib/i18n/localized";
+import { notFound } from "next/navigation";
 import { translations } from "@/lib/i18n/translations";
+import {
+  buildLocalizedMetadata,
+  resolveLocale,
+  trimDescription,
+} from "@/lib/seo/metadata";
+import { productDescription, productName } from "@/lib/i18n/localized";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -18,26 +24,24 @@ export function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const { product, prod } = await params;
+  const { product, prod, locale } = await params;
   const productt = getProduct(product, prod);
 
-  const { locale } = await params;
-  const lang = locale as "fa" | "en";
-  const t = translations[lang];
+  if (!productt) notFound();
 
-  if (!productt) {
-    return {
-      title: t["page.products.title"],
-      description: t["page.products.description"],
-    };
-  }
+  const lang = resolveLocale(locale);
+  // Server-side dictionary lookup adapter matching the t(key) signature
+  // that productName()/productDescription() expect.
+  const dict = translations[lang] as Record<string, string>;
+  const tFn = (key: string) => dict[key] ?? key;
 
-  const name = pick(productt.name, lang);
-
-  return {
-    title: t["page.product.title"].replace("{name}", name),
-    description: t["page.product.description"].replace("{name}", name),
-  };
+  return buildLocalizedMetadata({
+    locale,
+    path: `/products/${product}/${prod}`,
+    title: productName(tFn, productt.slug),
+    description: trimDescription(productDescription(tFn, productt.slug)),
+    image: productt.images[0],
+  });
 }
 
 export default async function ProductPage({ params }: PageProps) {
