@@ -10,6 +10,11 @@ import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import { getLocalizedPath, isLocale, type Locale } from "@/lib/i18n/routing";
 import { translations } from "@/lib/i18n/translations";
 import { siteName, siteUrl } from "@/lib/seo/config";
+import {
+  jsonLdScript,
+  organizationJsonLd,
+  webSiteJsonLd,
+} from "@/lib/seo/structuredData";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
@@ -112,7 +117,7 @@ export async function generateMetadata({
   return {
     metadataBase: new URL(siteUrl),
     title: {
-      // Home title is brand-complete; child pages get "| Ako Lighting".
+      // Home title is brand-complete; child pages get "| Home Form".
       default: t["page.home.title"],
       template: `%s | ${siteName}`,
     },
@@ -150,6 +155,17 @@ export default async function LocaleLayout({
   const initialLang: Locale = locale;
   const initialDir = initialLang === "fa" ? "rtl" : "ltr";
 
+  // Global structured data, emitted once per page (server-rendered).
+  const siteDescription = translations[initialLang]["page.home.description"];
+  const homeUrl = `${siteUrl}${getLocalizedPath("/", initialLang)}`;
+  const org = organizationJsonLd(siteName, siteDescription);
+  const webSite = webSiteJsonLd(
+    siteName,
+    siteDescription,
+    homeUrl,
+    org,
+  );
+
   return (
     <html
       lang={initialLang}
@@ -166,6 +182,14 @@ export default async function LocaleLayout({
     >
       <body className="no-scrollbar bg-background text-background-secondary flex min-h-full flex-col font-sans text-sm leading-normal md:text-base">
         <PageLoadInitializer />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(org) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLdScript(webSite) }}
+        />
         <SmoothScroll>
           <LanguageProvider locale={initialLang}>
             <Navbar />

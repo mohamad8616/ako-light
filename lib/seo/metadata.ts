@@ -5,6 +5,7 @@ import {
   type Locale,
 } from "@/lib/i18n/routing";
 import { defaultOgType, hreflangTags, siteName } from "./config";
+import type { JsonLdObject } from "./structuredData";
 
 /**
  * Resolve a route locale param to a Locale. The [locale] route + proxy
@@ -15,6 +16,11 @@ export function resolveLocale(locale: string): Locale {
   return isLocale(locale) ? locale : "fa";
 }
 
+/**
+ * LocalizedMetadata carries an optional page-level JSON-LD payload. Next
+ * renders `jsonLd` via the <JsonLdRenderer> server component (see below),
+ * which emits the <script type="application/ld+json"> tags.
+ */
 export interface LocalizedMetadataInput {
   /** Raw route locale param. */
   locale: string;
@@ -31,11 +37,13 @@ export interface LocalizedMetadataInput {
   image?: string;
   /**
    * Use when the title already carries the brand (e.g. the home page) and
-   * must not receive the "%s | Ako Lighting" template suffix.
+   * must not receive the "%s | Home Form" template suffix.
    */
   absoluteTitle?: boolean;
   /** Internal interfaces (e.g. search) → noindex, follow. */
   noindex?: boolean;
+  /** Optional Schema.org JSON-LD payload(s) rendered server-side. */
+  jsonLd?: JsonLdObject[];
 }
 
 /**
@@ -54,6 +62,7 @@ export function buildLocalizedMetadata({
   image,
   absoluteTitle = false,
   noindex = false,
+  jsonLd,
 }: LocalizedMetadataInput): Metadata {
   const lang = resolveLocale(locale);
 
@@ -86,6 +95,7 @@ export function buildLocalizedMetadata({
       ...(image ? { images: [{ url: image }] } : {}),
     },
     ...(noindex ? { robots: { index: false, follow: true } } : {}),
+    ...(jsonLd ? { jsonLd } : {}),
   };
 }
 

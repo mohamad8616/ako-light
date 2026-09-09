@@ -53,7 +53,7 @@ export const translations = {
     "materials.categories.metals": "Metals",
     "materials.categories.marbles": "Marbles",
 
-    "flagship.breadcrumb": "Henge Flagships",
+    "flagship.breadcrumb": "Home Form Flagships",
     "flagship.infoLabel": "Info",
     "flagship.contactHeading": "Send us a message",
     "flagship.contactIntro":
@@ -82,7 +82,7 @@ export const translations = {
     "hero.ritualGravity": "Ritual Gravity",
     "hero.readMore": "Read more",
 
-    "video.akoLighting": "AKO LIGHTING",
+    "video.akoLighting": "HOME FORM",
     "video.player": "Video player",
     "video.close": "Close video",
 
@@ -244,9 +244,9 @@ export const translations = {
     "products.sculpture": "Sculpture",
 
     "product.description":
-      "Discover the {name} collection by Henge. Italian-designed furniture crafted with exceptional materials and attention to detail.",
+      "Discover the {name} collection by Home Form. Sculptural lighting crafted with exceptional materials and attention to detail.",
     "product.moreInfo":
-      "Available in a range of finishes and configurations — contact your Henge representative for full technical specifications, dimensions, and lead times.",
+      "Available in a range of finishes and configurations — contact your Home Form representative for full technical specifications, dimensions, and lead times.",
     "product.moreInfoToggle": "more info",
     "product.download": "Download",
     "product.designer": "Designer",
@@ -296,58 +296,58 @@ export const translations = {
       "The page you are looking for does not exist or has been moved.",
     "notFound.backHome": "Back home",
 
-    // Titles are suffix-free: the root layout template appends "| Ako Lighting".
-    "page.home.title": "Ako Lighting | Architectural & Decorative Lighting",
+    // Titles are suffix-free: the root layout template appends "| Home Form".
+    "page.home.title": "Home Form | Architectural & Decorative Lighting",
     "page.home.description":
-      "Ako Lighting designs and crafts architectural and decorative lighting — sculptural pendant, floor, wall and table lights for refined residential and commercial spaces.",
+      "Home Form designs and crafts architectural and decorative lighting — sculptural pendant, floor, wall and table lights for refined residential and commercial spaces.",
     "page.about.title": "About Us",
     "page.about.description":
-      "The philosophy behind Ako Lighting — sculptural luminaires born from craftsmanship, exceptional materials and a passion for light.",
+      "The philosophy behind Home Form — sculptural luminaires born from craftsmanship, exceptional materials and a passion for light.",
     "page.contact.title": "Contact",
     "page.contact.description":
-      "Get in touch with Ako Lighting — showroom, press office and headquarters contact details.",
+      "Get in touch with Home Form — showroom, press office and headquarters contact details.",
     "page.catalogue.title": "Catalogues",
     "page.catalogue.description":
-      "Download Ako Lighting catalogues and collection publications.",
+      "Download Home Form catalogues and collection publications.",
     "page.collections.title": "Collections",
     "page.collections.description":
-      "Explore Ako Lighting's curated collections of decorative and architectural lighting.",
+      "Explore Home Form's curated collections of decorative and architectural lighting.",
     "page.collection.title": "{name} Collection",
     "page.collection.description":
-      "Discover the {name} collection from Ako Lighting — sculptural lighting crafted with exceptional materials.",
+      "Discover the {name} collection from Home Form — sculptural lighting crafted with exceptional materials.",
     "page.materials.title": "Materials",
     "page.materials.description":
-      "Explore Ako Lighting's material library — finishes and textures hand-selected for our lighting collections.",
+      "Explore Home Form's material library — finishes and textures hand-selected for our lighting collections.",
     "page.material.title": "{name}",
     "page.material.description":
-      "Explore {name} materials at Ako Lighting — finishes, textures and craftsmanship details.",
+      "Explore {name} materials at Home Form — finishes, textures and craftsmanship details.",
     "page.designers.title": "Designers",
     "page.designers.description":
-      "Meet the designers and artisans behind Ako Lighting's collections.",
+      "Meet the designers and artisans behind Home Form's lighting collections.",
     "page.designer.title": "{name}",
     "page.designer.description":
-      "Discover the work of {name}, a designer collaborating with Ako Lighting.",
+      "Discover the work of {name}, a designer collaborating with Home Form.",
     "page.products.title": "Products",
     "page.products.description":
-      "Browse Ako Lighting's full range of decorative and architectural lighting — from pendant lights to wall sconces and table lamps.",
+      "Browse Home Form's full range of decorative and architectural lighting — from pendant lights to wall sconces and table lamps.",
     "page.product.title": "{name}",
     "page.product.description":
-      "Discover the {name} collection by Ako Lighting — sculptural design crafted with exceptional materials and attention to detail.",
+      "Discover the {name} collection by Home Form — sculptural design crafted with exceptional materials and attention to detail.",
     "page.flagships.title": "Flagships",
     "page.flagships.description":
-      "Explore Ako Lighting flagship showrooms around the world.",
+      "Explore Home Form flagship showrooms around the world.",
     "page.flagship.title": "{name}",
     "page.flagship.description":
-      "Visit the {name} Ako Lighting flagship showroom — discover our curated lighting collections.",
+      "Visit the {name} Home Form flagship showroom — discover our curated lighting collections.",
     "page.projects.title": "Projects",
     "page.projects.description":
-      "Explore projects showcasing Ako Lighting in exceptional residential and commercial spaces.",
+      "Explore projects showcasing Home Form lighting in exceptional residential and commercial spaces.",
     "page.s34.title": "S/34",
     "page.s34.description":
-      "Discover S/34 — Ako Lighting's research project exploring the intersection of design and light.",
+      "Discover S/34 — Home Form's research project exploring the intersection of design and light.",
     "page.search.title": "Search",
     "page.search.description":
-      "Search Ako Lighting products and designers.",
+      "Search Home Form products and designers.",
 
     "projects.title": "Projects",
     "projects.productsUsed": "Products Used",
@@ -441,7 +441,7 @@ export const translations = {
     "hero.ritualGravity": "ریچوال گرویتی",
     "hero.readMore": "بیشتر بخوانید",
 
-    "video.akoLighting": "اِکو لایتینگ",
+    "video.akoLighting": "هوم فرم",
     "video.player": "پخش‌کننده ویدیو",
     "video.close": "بستن ویدیو",
 
@@ -601,9 +601,9 @@ export const translations = {
     "products.sculpture": "مجسمه",
 
     "product.description":
-      "مجموعه {name} هنژ را کشف کنید. مبلمان طراحی‌شده در ایتالیا با متریال‌های استثنایی و توجه به جزئیات.",
+      "مجموعه {name} هوم فرم را کشف کنید. نورپردازی مجسمه‌وار با متریال‌های استثنایی و توجه به جزئیات.",
     "product.moreInfo":
-      "در طیفی از فینیش‌ها و پیکربندی‌ها موجود است — برای مشخصات فنی کامل، ابعاد و زمان تحویل با نماینده هنژ خود تماس بگیرید.",
+      "در طیفی از فینیش‌ها و پیکربندی‌ها موجود است — برای مشخصات فنی کامل، ابعاد و زمان تحویل با نماینده هوم فرم خود تماس بگیرید.",
     "product.moreInfoToggle": "اطلاعات بیشتر",
     "product.download": "دانلود",
     "product.designer": "طراح",
@@ -654,58 +654,58 @@ export const translations = {
       "صفحه‌ای که به دنبال آن هستید وجود ندارد یا منتقل شده است.",
     "notFound.backHome": "بازگشت به خانه",
 
-    // عنوان‌ها بدون پسوند: قالب لایوت ریشه "| Ako Lighting" را اضافه می‌کند.
-    "page.home.title": "اِکو لایتینگ | نورپردازی معماری و تزئینی",
+    // عنوان‌ها بدون پسوند: قالب لایوت ریشه "| Home Form" را اضافه می‌کند.
+    "page.home.title": "هوم فرم | نورپردازی معماری و تزئینی",
     "page.home.description":
-      "اِکو لایتینگ — طراحی و ساخت چراغ‌های معماری و تزئینی؛ آویز، ایستاده، دیواری و رومیزی برای فضاهای مسکونی و تجاری.",
+      "هوم فرم — طراحی و ساخت چراغ‌های معماری و تزئینی؛ آویز، ایستاده، دیواری و رومیزی برای فضاهای مسکونی و تجاری.",
     "page.about.title": "درباره ما",
     "page.about.description":
-      "فلسفه پشت اِکو لایتینگ — چراغ‌های مجسمه‌وار که از هنر صنعتگری، متریال‌های استثنایی و عشق به نور سرچشمه می‌گیرند.",
+      "فلسفه پشت هوم فرم — چراغ‌های مجسمه‌وار که از هنر صنعتگری، متریال‌های استثنایی و عشق به نور سرچشمه می‌گیرند.",
     "page.contact.title": "تماس",
     "page.contact.description":
-      "با اِکو لایتینگ در تماس باشید — نشانی شوروم، دفتر مطبوعاتی و دفتر مرکزی.",
+      "با هوم فرم در تماس باشید — نشانی شوروم، دفتر مطبوعاتی و دفتر مرکزی.",
     "page.catalogue.title": "کاتالوگ‌ها",
     "page.catalogue.description":
-      "کاتالوگ‌ها و انتشارات کلکسیون‌های اِکو لایتینگ را دانلود کنید.",
+      "کاتالوگ‌ها و انتشارات کلکسیون‌های هوم فرم را دانلود کنید.",
     "page.collections.title": "کلکسیون‌ها",
     "page.collections.description":
-      "کلکسیون‌های نورپردازی معماری و تزئینی اِکو لایتینگ را کشف کنید.",
+      "کلکسیون‌های نورپردازی معماری و تزئینی هوم فرم را کشف کنید.",
     "page.collection.title": "کلکسیون {name}",
     "page.collection.description":
-      "کلکسیون {name} از اِکو لایتینگ را کشف کنید — چراغ‌های مجسمه‌وار با متریال‌های استثنایی.",
+      "کلکسیون {name} از هوم فرم را کشف کنید — چراغ‌های مجسمه‌وار با متریال‌های استثنایی.",
     "page.materials.title": "متریال‌ها",
     "page.materials.description":
-      "کتابخانه متریال‌های اِکو لایتینگ — فینیش‌ها و بافت‌هایی که برای کلکسیون‌های نورپردازی ما انتخاب شده‌اند.",
+      "کتابخانه متریال‌های هوم فرم — فینیش‌ها و بافت‌هایی که برای کلکسیون‌های نورپردازی ما انتخاب شده‌اند.",
     "page.material.title": "{name}",
     "page.material.description":
-      "متریال‌های {name} اِکو لایتینگ را کاوش کنید — فینیش‌ها، بافت‌ها و جزئیات صنعتگری.",
+      "متریال‌های {name} هوم فرم را کاوش کنید — فینیش‌ها، بافت‌ها و جزئیات صنعتگری.",
     "page.designers.title": "طراحان",
     "page.designers.description":
-      "با طراحان و صنعتگران پشت کلکسیون‌های اِکو لایتینگ آشنا شوید.",
+      "با طراحان و صنعتگران پشت کلکسیون‌های هوم فرم آشنا شوید.",
     "page.designer.title": "{name}",
     "page.designer.description":
-      "کارهای {name}، طراح همکار اِکو لایتینگ را کشف کنید.",
+      "کارهای {name}، طراح همکار هوم فرم را کشف کنید.",
     "page.products.title": "محصولات",
     "page.products.description":
-      "مجموعه کامل نورپردازی معماری و تزئینی اِکو لایتینگ را مرور کنید — از چراغ آویز تا چراغ دیواری و رومیزی.",
+      "مجموعه کامل نورپردازی معماری و تزئینی هوم فرم را مرور کنید — از چراغ آویز تا چراغ دیواری و رومیزی.",
     "page.product.title": "{name}",
     "page.product.description":
-      "کلکسیون {name} اِکو لایتینگ را کشف کنید — طراحی با متریال‌های استثنایی و توجه به جزئیات.",
+      "کلکسیون {name} هوم فرم را کشف کنید — طراحی با متریال‌های استثنایی و توجه به جزئیات.",
     "page.flagships.title": "فروشگاه‌های اصلی",
     "page.flagships.description":
-      "فروشگاه‌های اصلی اِکو لایتینگ در سراسر جهان را کاوش کنید.",
+      "فروشگاه‌های اصلی هوم فرم در سراسر جهان را کاوش کنید.",
     "page.flagship.title": "{name}",
     "page.flagship.description":
-      "فروشگاه اصلی {name} اِکو لایتینگ را بازدید کنید — کلکسیون‌های نورپردازی ما را کشف کنید.",
+      "فروشگاه اصلی {name} هوم فرم را بازدید کنید — کلکسیون‌های نورپردازی ما را کشف کنید.",
     "page.projects.title": "پروژه‌ها",
     "page.projects.description":
-      "پروژه‌هایی که اِکو لایتینگ را در فضاهای مسکونی و تجاری استثنایی نشان می‌دهند، کاوش کنید.",
+      "پروژه‌هایی که روشنایی هوم فرم را در فضاهای مسکونی و تجاری استثنایی نشان می‌دهند، کاوش کنید.",
     "page.s34.title": "اس ۳۴",
     "page.s34.description":
-      "اس ۳۴ را کشف کنید — پروژه پژوهشی اِکو لایتینگ در تلاقی طراحی و نور.",
+      "اس ۳۴ را کشف کنید — پروژه پژوهشی هوم فرم در تلاقی طراحی و نور.",
     "page.search.title": "جستجو",
     "page.search.description":
-      "محصولات و طراحان اِکو لایتینگ را جستجو کنید.",
+      "محصولات و طراحان هوم فرم را جستجو کنید.",
 
     "projects.title": "پروژه‌ها",
     "projects.productsUsed": "محصولات استفاده‌شده در پروژه",

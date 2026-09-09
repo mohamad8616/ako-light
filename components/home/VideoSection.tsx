@@ -15,7 +15,7 @@ export default function VideoSection() {
   // triggers the (possibly large) video source to actually start loading.
   const [shouldLoad, setShouldLoad] = useState(false);
   // Becomes true once the video reports it's actually playing, so we
-  // know it's safe to fade the "AKO LIGHTING" placeholder out.
+  // know it's safe to fade the "HOME FORM" placeholder out.
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
@@ -57,7 +57,7 @@ export default function VideoSection() {
                   className="bg-background absolute inset-0 z-10 flex items-center justify-center"
                 >
                   <span className="text-background-secondary text-sm font-light tracking-[0.4em] uppercase md:text-base">
-                    {t("video.akoLighting")}
+                    {t("video.brand")}
                   </span>
                 </motion.div>
               )}

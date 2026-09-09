@@ -16,6 +16,12 @@ import {
   resolveLocale,
   trimDescription,
 } from "@/lib/seo/metadata";
+import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
+import {
+  absoluteUrl,
+  breadcrumbListJsonLd,
+  webPageJsonLd,
+} from "@/lib/seo/structuredData";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -41,34 +47,78 @@ export async function generateMetadata({
   const lang = resolveLocale(locale);
   const t = translations[lang];
   const name = pick(flagship.name, lang);
+  const title = t["page.flagship.title"].replace("{name}", name);
+  const description = trimDescription(pick(detail.description, lang));
+  const url = absoluteUrl(`/flagship/${slug}`, lang);
+
+  const homeLabel = lang === "fa" ? "خانه" : "Home";
+  const flagshipsLabel = t["page.flagships.title"];
+
+  const jsonLdData = [
+    webPageJsonLd(title, description, url),
+    breadcrumbListJsonLd(
+      [
+        { name: homeLabel, path: "/" },
+        { name: flagshipsLabel, path: "/flagship" },
+        { name: name, path: `/flagship/${slug}` },
+      ],
+      lang,
+    ),
+  ];
 
   return buildLocalizedMetadata({
     locale,
     path: `/flagship/${slug}`,
-    title: t["page.flagship.title"].replace("{name}", name),
-    description: trimDescription(pick(detail.description, lang)),
+    title,
+    description,
     image: flagship.image,
+    jsonLd: jsonLdData,
   });
 }
 
 export default async function FlagshipPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
   const flagship = getFlagship(slug);
   const detail = getFlagshipDetail(slug);
 
   if (!flagship || !detail) notFound();
 
+  const lang = resolveLocale(locale);
+  const t = translations[lang];
+  const name = pick(flagship.name, lang);
+  const title = t["page.flagship.title"].replace("{name}", name);
+  const description = trimDescription(pick(detail.description, lang));
+  const url = absoluteUrl(`/flagship/${slug}`, lang);
+
+  const homeLabel = lang === "fa" ? "خانه" : "Home";
+  const flagshipsLabel = t["page.flagships.title"];
+
+  const jsonLdData = [
+    webPageJsonLd(title, description, url),
+    breadcrumbListJsonLd(
+      [
+        { name: homeLabel, path: "/" },
+        { name: flagshipsLabel, path: "/flagship" },
+        { name: name, path: `/flagship/${slug}` },
+      ],
+      lang,
+    ),
+  ];
+
   // Merge summary (name/slug/city/image) with detail content into the
   // single shape the section components expect.
   const combined = { ...flagship, ...detail };
   return (
-    <main className="bg-stone-950">
-      <FlagshipHero flagship={combined} />
-      <FlagshipInfoSection flagship={combined} />
-      <FlagshipGallerySection flagship={combined} />
-      <FlagshipVideoSection flagship={combined} />
-      <FlagshipContactSection />
-      <FloatingRequestInfoButton />
-    </main>
+    <>
+      <JsonLdRenderer data={jsonLdData} />
+      <main className="bg-stone-950">
+        <FlagshipHero flagship={combined} />
+        <FlagshipInfoSection flagship={combined} />
+        <FlagshipGallerySection flagship={combined} />
+        <FlagshipVideoSection flagship={combined} />
+        <FlagshipContactSection />
+        <FloatingRequestInfoButton />
+      </main>
+    </>
   );
 }
