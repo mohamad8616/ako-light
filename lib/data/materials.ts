@@ -6,7 +6,15 @@ export interface Material {
   category: string;
   image: string;
   description: Localized;
-  type: 'stone' | 'metal' | 'glass' | 'wood' | 'fabric' | 'leather' | 'marble' | 'stone-composite';
+  type:
+    | "stone"
+    | "metal"
+    | "glass"
+    | "wood"
+    | "fabric"
+    | "leather"
+    | "marble"
+    | "stone-composite";
 }
 
 export const materials: Material[] = [
@@ -47,7 +55,7 @@ export const materials: Material[] = [
   {
     id: "glass",
     name: loc("Crystal Glass", "شیشه کریستال"),
-    type: "rugs",
+    type: "glass",
     category: "Glass",
     image:
       "https://www.henge07.com/app/uploads/2026/04/henge-home-collection-2026-001.jpg",
@@ -62,11 +70,31 @@ export const materials: Material[] = [
 // components/materials/material/MaterialsSwitcher.tsx. Slugs/labels are a
 // placeholder set; swap in the real ones.
 export const materialCategories = [
-  { label: "Fabrics", href: "/materials/fabrics", i18nKey: "materials.categories.fabrics" },
-  { label: "Leathers", href: "/materials/leathers", i18nKey: "materials.categories.leathers" },
-  { label: "Woods", href: "/materials/woods", i18nKey: "materials.categories.woods" },
-  { label: "Metals", href: "/materials/metals", i18nKey: "materials.categories.metals" },
-  { label: "Marbles", href: "/materials/marbles", i18nKey: "materials.categories.marbles" },
+  {
+    label: "Fabrics",
+    href: "/materials/fabrics",
+    i18nKey: "materials.categories.fabrics",
+  },
+  {
+    label: "Leathers",
+    href: "/materials/leathers",
+    i18nKey: "materials.categories.leathers",
+  },
+  {
+    label: "Woods",
+    href: "/materials/woods",
+    i18nKey: "materials.categories.woods",
+  },
+  {
+    label: "Metals",
+    href: "/materials/metals",
+    i18nKey: "materials.categories.metals",
+  },
+  {
+    label: "Marbles",
+    href: "/materials/marbles",
+    i18nKey: "materials.categories.marbles",
+  },
 ];
 
 // Fabric swatch list \u2014 previously hardcoded in
@@ -82,14 +110,74 @@ export interface FabricItem {
 }
 
 export const fabrics: FabricItem[] = [
-  { id: "abarth-26", name: "Abarth 26", code: "26", category: "Fabrics", swatchColor: "#726A50" },
-  { id: "abarth-25", name: "Abarth 25", code: "25", category: "Fabrics", swatchColor: "#D89B2A" },
-  { id: "abarth-24", name: "Abarth 24", code: "24", category: "Fabrics", swatchColor: "#D9C7A8" },
-  { id: "abarth-23", name: "Abarth 23", code: "23", category: "Fabrics", swatchColor: "#3B2E22" },
-  { id: "abarth-22", name: "Abarth 22", code: "22", category: "Fabrics", swatchColor: "#8C6F63" },
-  { id: "abarth-21", name: "Abarth 21", code: "21", category: "Fabrics", swatchColor: "#5C5240" },
-  { id: "abarth-20", name: "Abarth 20", code: "20", category: "Fabrics", swatchColor: "#C7A560" },
-  { id: "abarth-19", name: "Abarth 19", code: "19", category: "Fabrics", swatchColor: "#E3D5B8" },
-  { id: "abarth-18", name: "Abarth 18", code: "18", category: "Fabrics", swatchColor: "#4A362A" },
-  { id: "abarth-17", name: "Abarth 17", code: "17", category: "Fabrics", swatchColor: "#9C7A6A" },
+  {
+    id: "abarth-26",
+    name: "Abarth 26",
+    code: "26",
+    category: "Fabrics",
+    swatchColor: "#726A50",
+  },
+  {
+    id: "abarth-25",
+    name: "Abarth 25",
+    code: "25",
+    category: "Fabrics",
+    swatchColor: "#D89B2A",
+  },
+  {
+    id: "abarth-24",
+    name: "Abarth 24",
+    code: "24",
+    category: "Fabrics",
+    swatchColor: "#D9C7A8",
+  },
+  {
+    id: "abarth-23",
+    name: "Abarth 23",
+    code: "23",
+    category: "Fabrics",
+    swatchColor: "#3B2E22",
+  },
+  {
+    id: "abarth-22",
+    name: "Abarth 22",
+    code: "22",
+    category: "Fabrics",
+    swatchColor: "#8C6F63",
+  },
+  {
+    id: "abarth-21",
+    name: "Abarth 21",
+    code: "21",
+    category: "Fabrics",
+    swatchColor: "#5C5240",
+  },
+  {
+    id: "abarth-20",
+    name: "Abarth 20",
+    code: "20",
+    category: "Fabrics",
+    swatchColor: "#C7A560",
+  },
+  {
+    id: "abarth-19",
+    name: "Abarth 19",
+    code: "19",
+    category: "Fabrics",
+    swatchColor: "#E3D5B8",
+  },
+  {
+    id: "abarth-18",
+    name: "Abarth 18",
+    code: "18",
+    category: "Fabrics",
+    swatchColor: "#4A362A",
+  },
+  {
+    id: "abarth-17",
+    name: "Abarth 17",
+    code: "17",
+    category: "Fabrics",
+    swatchColor: "#9C7A6A",
+  },
 ];
