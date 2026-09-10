@@ -32,7 +32,7 @@ export async function generateMetadata({
   const lang = resolveLocale(locale);
   const t = translations[lang];
 
-  const title = t["page.designer.title"].replace("{name}", designer.name);
+  const title = t["page.designer.title"].replace("{name}", pick(designer.name, lang));
   const description = trimDescription(pick(designer.bio[0], lang));
   const url = absoluteUrl(`/designers/${slug}`, lang);
 
@@ -41,7 +41,7 @@ export async function generateMetadata({
 
   const jsonLdData = [
     personJsonLd({
-      name: designer.name,
+      name: pick(designer.name, lang),
       description,
       url,
       image: designer.image,
@@ -50,7 +50,7 @@ export async function generateMetadata({
       [
         { name: homeLabel, path: "/" },
         { name: designersLabel, path: "/designers" },
-        { name: designer.name, path: `/designers/${slug}` },
+        { name: pick(designer.name, lang), path: `/designers/${slug}` },
       ],
       lang,
     ),
@@ -85,7 +85,7 @@ export default async function DesignerDetailPage({ params }: PageProps) {
 
   const jsonLdData = [
     personJsonLd({
-      name: designer.name,
+      name: pick(designer.name, lang),
       description,
       url,
       image: designer.image,
@@ -94,7 +94,7 @@ export default async function DesignerDetailPage({ params }: PageProps) {
       [
         { name: homeLabel, path: "/" },
         { name: designersLabel, path: "/designers" },
-        { name: designer.name, path: `/designers/${slug}` },
+        { name: pick(designer.name, lang), path: `/designers/${slug}` },
       ],
       lang,
     ),
@@ -104,9 +104,9 @@ export default async function DesignerDetailPage({ params }: PageProps) {
     <>
       <JsonLdRenderer data={jsonLdData} />
       <main className="w-full">
-        <DesignerHeader name={designer.name} />
+        <DesignerHeader name={pick(designer.name, lang)} />
         <DesignerBio
-          name={designer.name}
+          name={pick(designer.name, lang)}
           image={designer.image}
           bio={designer.bio}
           website={designer.website}

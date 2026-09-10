@@ -2,8 +2,6 @@
 
 import { homepageSections } from "@/lib/data/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { Paragraph } from "@/utility/Paragraph";
-import SectionTitle from "@/utility/SectionTitle";
 import PlusTextBtn from "../ui/PlusTextBtn";
 import SplitBanner from "./SplitBanner";
 

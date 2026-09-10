@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";

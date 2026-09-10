@@ -1,8 +1,6 @@
 "use client";
 
 import { collections } from "@/lib/data/collections";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { pick } from "@/lib/i18n/localized";
 import HomepageSection from "@/utility/HomepageSection";
 import Row from "../ui/Row";
 
@@ -21,7 +19,6 @@ const ROWS_ON_LOAD = 2;
 // }));
 
 export default function CollectionsList() {
-  const { lang } = useLanguage();
   return (
     <HomepageSection
       animateOnLoad
@@ -33,7 +30,7 @@ export default function CollectionsList() {
           index={i}
           animateOnLoad={i < ROWS_ON_LOAD}
           route="collections"
-          name={pick(collection.name, lang)}
+          name={collection.name}
           image={collection.image}
           slug={collection.slug}
         />

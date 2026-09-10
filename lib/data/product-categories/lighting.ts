@@ -1,0 +1,142 @@
+import { loc } from "@/lib/i18n/localized";
+import { commonDownloads } from "./commonDownloads";
+import type { ProductCategory } from "./types";
+
+export const lighting: ProductCategory = {
+  id: "lighting",
+  name: loc("Lighting", "نورپردازی"),
+  slug: "lighting",
+  i18nKey: "products.lighting",
+  products: [
+    {
+      id: "pendant-light",
+      name: loc("Pendant Light", "چراغ آویز"),
+      slug: "pendant-light",
+      images: [
+        "https://picsum.photos/seed/lighting-pendant-1/700/525",
+        "https://picsum.photos/seed/lighting-pendant-2/700/525",
+        "https://picsum.photos/seed/lighting-pendant-3/700/525",
+        "https://picsum.photos/seed/lighting-pendant-4/700/525",
+        "https://picsum.photos/seed/lighting-pendant-5/700/525",
+        "https://picsum.photos/seed/lighting-pendant-6/700/525",
+      ],
+      hoverImage: "https://picsum.photos/seed/lighting-pendant-hover/700/525",
+      price: 299,
+      store: { existsInStore: true, quantity: 12 },
+      category: "lighting",
+      heroImage: "https://picsum.photos/seed/lighting-pendant/1200/900",
+      description: loc(
+        "Discover the Pendant Light collection by Home Form. Sculptural lighting crafted with exceptional materials and attention to detail.",
+        "کلکسیون چراغ آویز را کشف کنید — نورپردازی مجسمه‌وار که با متریال‌های استثنایی و توجه به جزئیات ساخته شده است.",
+      ),
+      moreInfo: loc(
+        "Available in a range of finishes and configurations — contact your Home Form representative for full technical specifications, dimensions, and lead times.",
+        "در طیفی از پرداخت‌ها و پیکربندی‌ها موجود است — برای مشخصات فنی کامل، ابعاد و زمان‌های تحویل با نماینده Home Form تماس بگیرید.",
+      ),
+      downloads: commonDownloads,
+      designer: {
+        name: loc("Massimo Castagna", "ماسیمو کاستانیا"),
+        href: "/designers/massimo-castagna",
+      },
+      related: [],
+    },
+    {
+      id: "floor-lamp",
+      name: loc("Floor Lamp", "چراغ ایستاده"),
+      slug: "floor-lamp",
+      images: [
+        "https://picsum.photos/seed/lighting-floor-1/700/525",
+        "https://picsum.photos/seed/lighting-floor-2/700/525",
+        "https://picsum.photos/seed/lighting-floor-3/700/525",
+        "https://picsum.photos/seed/lighting-floor-4/700/525",
+        "https://picsum.photos/seed/lighting-floor-5/700/525",
+        "https://picsum.photos/seed/lighting-floor-6/700/525",
+      ],
+      hoverImage: "https://picsum.photos/seed/lighting-floor-hover/700/525",
+      price: 450,
+      store: { existsInStore: true, quantity: 8 },
+      category: "lighting",
+      heroImage: "https://picsum.photos/seed/lighting-floor/1200/900",
+      description: loc(
+        "Discover the Floor Lamp collection by Home Form. Sculptural lighting crafted with exceptional materials and attention to detail.",
+        "کلکسیون چراغ ایستاده را کشف کنید — نورپردازی مجسمه‌وار که با متریال‌های استثنایی و توجه به جزئیات ساخته شده است.",
+      ),
+      moreInfo: loc(
+        "Available in a range of finishes and configurations — contact your Home Form representative for full technical specifications, dimensions, and lead times.",
+        "در طیفی از پرداخت‌ها و پیکربندی‌ها موجود است — برای مشخصات فنی کامل، ابعاد و زمان‌های تحویل با نماینده Home Form تماس بگیرید.",
+      ),
+      downloads: commonDownloads,
+      designer: {
+        name: loc("Massimo Castagna", "ماسیمو کاستانیا"),
+        href: "/designers/massimo-castagna",
+      },
+      related: [],
+    },
+    {
+      id: "wall-sconce",
+      name: loc("Wall Sconce", "دیوارکوب"),
+      slug: "wall-sconce",
+      images: [
+        "https://picsum.photos/seed/lighting-sconce-1/700/525",
+        "https://picsum.photos/seed/lighting-sconce-2/700/525",
+        "https://picsum.photos/seed/lighting-sconce-3/700/525",
+        "https://picsum.photos/seed/lighting-sconce-4/700/525",
+        "https://picsum.photos/seed/lighting-sconce-5/700/525",
+        "https://picsum.photos/seed/lighting-sconce-6/700/525",
+      ],
+      hoverImage: "https://picsum.photos/seed/lighting-sconce-hover/700/525",
+      price: 189,
+      store: { existsInStore: true, quantity: 20 },
+      category: "lighting",
+      categoryLabel: loc("Lighting", "نورپردازی"),
+      heroImage: "https://picsum.photos/seed/lighting-sconce/1200/900",
+      description: loc(
+        "Discover the Wall Sconce collection by Home Form. Sculptural lighting crafted with exceptional materials and attention to detail.",
+        "کلکسیون دیوارکوب را کشف کنید — نورپردازی مجسمه‌وار که با متریال‌های استثنایی و توجه به جزئیات ساخته شده است.",
+      ),
+      moreInfo: loc(
+        "Available in a range of finishes and configurations — contact your Home Form representative for full technical specifications, dimensions, and lead times.",
+        "در طیفی از پرداخت‌ها و پیکربندی‌ها موجود است — برای مشخصات فنی کامل، ابعاد و زمان‌های تحویل با نماینده Home Form تماس بگیرید.",
+      ),
+      downloads: commonDownloads,
+      designer: {
+        name: loc("Massimo Castagna", "ماسیمو کاستانیا"),
+        href: "/designers/massimo-castagna",
+      },
+      related: [],
+    },
+    {
+      id: "table-lamp",
+      name: loc("Table Lamp", "چراغ رومیزی"),
+      slug: "table-lamp",
+      images: [
+        "https://picsum.photos/seed/lighting-table-1/700/525",
+        "https://picsum.photos/seed/lighting-table-2/700/525",
+        "https://picsum.photos/seed/lighting-table-3/700/525",
+        "https://picsum.photos/seed/lighting-table-4/700/525",
+        "https://picsum.photos/seed/lighting-table-5/700/525",
+        "https://picsum.photos/seed/lighting-table-6/700/525",
+      ],
+      hoverImage: "https://picsum.photos/seed/lighting-table-hover/700/525",
+      price: 220,
+      store: { existsInStore: true, quantity: 15 },
+      category: "lighting",
+      categoryLabel: loc("Lighting", "نورپردازی"),
+      heroImage: "https://picsum.photos/seed/lighting-table/1200/900",
+      description: loc(
+        "Discover the Table Lamp collection by Home Form. Sculptural lighting crafted with exceptional materials and attention to detail.",
+        "کلکسیون چراغ رومیزی را کشف کنید — نورپردازی مجسمه‌وار که با متریال‌های استثنایی و توجه به جزئیات ساخته شده است.",
+      ),
+      moreInfo: loc(
+        "Available in a range of finishes and configurations — contact your Home Form representative for full technical specifications, dimensions, and lead times.",
+        "در طیفی از پرداخت‌ها و پیکربندی‌ها موجود است — برای مشخصات فنی کامل، ابعاد و زمان‌های تحویل با نماینده Home Form تماس بگیرید.",
+      ),
+      downloads: commonDownloads,
+      designer: {
+        name: loc("Massimo Castagna", "ماسیمو کاستانیا"),
+        href: "/designers/massimo-castagna",
+      },
+      related: [],
+    },
+  ],
+};

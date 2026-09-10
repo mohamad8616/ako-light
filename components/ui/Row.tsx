@@ -8,9 +8,10 @@ import { usePathname } from "next/navigation";
 import { EASE } from "../../utility/HomepageSection";
 import { stripLocalePrefix } from "@/lib/i18n/routing";
 import PlusTextBtn from "../ui/PlusTextBtn";
+import { Localized, pick } from "@/lib/i18n/localized";
 
 interface RowProps {
-  name: string;
+  name: Localized;
   slug?: string;
   image: string;
   description?: string;
@@ -29,8 +30,9 @@ export default function Row({
   index,
   animateOnLoad = false,
 }: RowProps) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const pathname = stripLocalePrefix(usePathname()).slice(1);
+  const nameStr = pick(name, lang);
   return (
     <motion.div
       initial={{ opacity: 0, y: 44 }}
@@ -53,7 +55,7 @@ export default function Row({
         >
           <Image
             src={image}
-            alt={name}
+            alt={nameStr}
             fill
             className="object-cover grayscale transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-102"
           />
@@ -66,7 +68,7 @@ export default function Row({
           viewport={{ once: true }}
           className="flex-1 text-lg leading-normal font-medium tracking-tighter text-white uppercase transition-all duration-700 sm:text-xl md:text-3xl lg:text-4xl"
         >
-          {name}
+          {nameStr}
         </motion.h2>
 
         {/* Discover CTA */}

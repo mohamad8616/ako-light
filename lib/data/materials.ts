@@ -6,14 +6,14 @@ export interface Material {
   category: string;
   image: string;
   description: Localized;
-  type: string;
+  type: 'stone' | 'metal' | 'glass' | 'wood' | 'fabric' | 'leather' | 'marble' | 'stone-composite';
 }
 
 export const materials: Material[] = [
   {
     id: "breccia-medicea",
     name: loc("Breccia Medicea", "برچیا مدیچه"),
-    type: "leather",
+    type: "stone",
     category: "Stone",
     image: "https://www.henge07.com/app/uploads/2022/06/he1408m-400x400.jpg",
     description: loc(

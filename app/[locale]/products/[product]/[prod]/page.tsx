@@ -1,21 +1,21 @@
 import ProductPageClient from "@/components/products/prod/ProductPageClient";
 import { getProduct, products } from "@/lib/data/productCategories";
-import { notFound } from "next/navigation";
+import { productDescription, productName } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
+import { siteName } from "@/lib/seo/config";
+import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
 import {
   buildLocalizedMetadata,
   resolveLocale,
   trimDescription,
 } from "@/lib/seo/metadata";
-import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
-import { productDescription, productName } from "@/lib/i18n/localized";
 import {
   absoluteUrl,
   breadcrumbListJsonLd,
   productJsonLd,
 } from "@/lib/seo/structuredData";
-import { siteName } from "@/lib/seo/config";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 interface PageProps {
   params: Promise<{ locale: string; product: string; prod: string }>;
@@ -48,7 +48,7 @@ export async function generateMetadata({
 
   const homeLabel = lang === "fa" ? "خانه" : "Home";
   const productsLabel = dict["page.products.title"];
-  const categoryLabel = dict[productt.categoryLabel] ?? productt.categoryLabel;
+  const categoryLabel = dict[productt.category] ?? productt.category;
 
   const jsonLdData = [
     productJsonLd({
@@ -94,7 +94,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   const homeLabel = lang === "fa" ? "خانه" : "Home";
   const productsLabel = dict["page.products.title"];
-  const categoryLabel = dict[productt.categoryLabel] ?? productt.categoryLabel;
+  const categoryLabel = dict[productt.category] ?? productt.category;
 
   const jsonLdData = [
     productJsonLd({

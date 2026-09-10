@@ -1,9 +1,7 @@
 ﻿import { loc, type Localized } from "@/lib/i18n/localized";
 
 export interface Designer {
-  name: string;
-  /** Persian transliteration of the name — used by search and fa display. */
-  nameFa?: string;
+  name: Localized;
   slug: string;
   image: string;
   bio: Localized[];
@@ -12,8 +10,7 @@ export interface Designer {
 
 export const designers: Designer[] = [
   {
-    name: "Massimo Castagna",
-    nameFa: "ماسیمو کاستانیا",
+    name: loc("Massimo Castagna", "ماسیمو کاستانیا"),
     slug: "massimo-castagna",
     image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Massimo+Castagna",
     website: "#",
@@ -24,8 +21,7 @@ export const designers: Designer[] = [
     ],
   },
   {
-    name: "Yabu Pushelberg",
-    nameFa: "یابو پوشلبرگ",
+    name: loc("Yabu Pushelberg", "یابو پوشلبرگ"),
     slug: "glenn-pushelberg-george-yabu",
     image: "https://dummyimage.com/900x1000/e2e8f0/334155&text=Yabu+Pushelberg",
     website: "#",

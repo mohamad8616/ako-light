@@ -5,6 +5,7 @@ import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import type { Product } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import {
+  pick,
   productDescription,
   productKey,
   productName,
@@ -102,11 +103,11 @@ export default function ProductInfoSection({ product }: { product: Product }) {
             <div className={cn("mt-4 flex flex-col gap-2 text-sm text-stone-950", lang === "fa" ? "font-noora" : "font-din")}>
               {product.downloads.map((d) => (
                 <a
-                  key={d.label}
+                  key={d.href}
                   href={d.href}
                   className="w-fit underline underline-offset-2 transition-colors hover:text-stone-600"
                 >
-                  {t(d.label)}
+                  {pick(d.label, lang)}
                 </a>
               ))}
             </div>
@@ -129,7 +130,7 @@ export default function ProductInfoSection({ product }: { product: Product }) {
                   lang === "fa" ? "font-noora" : "font-din",
                 )}
               >
-                {product.designer.name}
+                {pick(product.designer.name, lang)}
               </a>
             </div>
             <BuyBtn product={product} />
