@@ -3,9 +3,9 @@
 import { designers } from "@/lib/data/designers";
 import { products } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { productKey } from "@/lib/i18n/localized";
-import { cn } from "@/lib/utils";
+import { pick, productKey, type Localized } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
+import { cn } from "@/lib/utils";
 import { useDeferredValue, useMemo } from "react";
 import SearchCard from "./SearchCard";
 
@@ -33,6 +33,15 @@ interface IndexedDesigner {
   condensed: string;
 }
 
+function localizedText(
+  value: Localized | string | undefined,
+  lang: "en" | "fa" = "en",
+) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  return pick(value, lang);
+}
+
 // Persian product display names live in translations.fa (keyed by productKey).
 // They must be part of the searchable haystack or Persian queries never match.
 const faTranslations = translations.fa as Record<string, string>;
@@ -44,46 +53,60 @@ function faProductName(slug: string): string {
 }
 
 // Designer lookup keyed by normalised EN and FA names. Products reference
-// their designer by a plain EN name (p.designer.name), so this maps that
-// back to the designer record (including its Persian name).
+// their designer by a localized name object, so this maps that back to the
+// designer record (including the Persian display name).
 const designerByKey = new Map<
   string,
-  { slug: string; name: string; nameFa?: string }
+  { slug: string; name: string; nameFa: string }
 >();
 for (const d of designers) {
-  const entry = { slug: d.slug, name: d.name, nameFa: d.nameFa };
-  designerByKey.set(normalise(d.name), entry);
-  if (d.nameFa) designerByKey.set(normalise(d.nameFa), entry);
+  const entry = {
+    slug: d.slug,
+    name: localizedText(d.name, "en"),
+    nameFa: localizedText(d.name, "fa"),
+  };
+  designerByKey.set(normalise(entry.name), entry);
+  if (entry.nameFa) designerByKey.set(normalise(entry.nameFa), entry);
 }
 
 // designer slug -> searchable text of every product they designed (EN + FA).
 const productTextByDesigner = new Map<string, string[]>();
 for (const p of products) {
-  const designer = designerByKey.get(normalise(p.designer.name));
+  const designer = designerByKey.get(
+    normalise(localizedText(p.designer.name, "en")),
+  );
   if (!designer) continue;
   const texts = productTextByDesigner.get(designer.slug) ?? [];
-  texts.push(p.name, faProductName(p.slug));
+  texts.push(
+    localizedText(p.name, "en"),
+    localizedText(p.name, "fa"),
+    faProductName(p.slug),
+  );
   productTextByDesigner.set(designer.slug, texts);
 }
 
 const indexedProducts: IndexedProduct[] = products.map((p) => {
-  const designer = designerByKey.get(normalise(p.designer.name));
+  const designer = designerByKey.get(
+    normalise(localizedText(p.designer.name, "en")),
+  );
   // A product's haystack includes its designer's EN + FA names, so
   // searching for a designer surfaces BOTH the designer card and all of
   // their products.
   const haystack = normalise(
     [
-      p.name,
+      localizedText(p.name, "en"),
+      localizedText(p.name, "fa"),
       faProductName(p.slug),
       p.slug,
       p.category,
-      p.designer.name,
+      localizedText(p.designer.name, "en"),
+      localizedText(p.designer.name, "fa"),
       designer?.nameFa ?? "",
     ].join(" "),
   );
   return {
     id: p.id,
-    name: p.name,
+    name: localizedText(p.name, "en"),
     slug: p.slug,
     category: p.category,
     image: p.images[0] ?? p.heroImage,
@@ -93,19 +116,18 @@ const indexedProducts: IndexedProduct[] = products.map((p) => {
 });
 
 const indexedDesigners: IndexedDesigner[] = designers.map((d) => {
+  const name = localizedText(d.name, "en");
+  const nameFa = localizedText(d.name, "fa");
   // ...and a designer's haystack includes the EN + FA names of every product
   // they designed, so searching for a product surfaces its designer too.
   const haystack = normalise(
-    [
-      d.name,
-      d.nameFa ?? "",
-      d.slug,
-      ...(productTextByDesigner.get(d.slug) ?? []),
-    ].join(" "),
+    [name, nameFa, d.slug, ...(productTextByDesigner.get(d.slug) ?? [])].join(
+      " ",
+    ),
   );
   return {
-    name: d.name,
-    nameFa: d.nameFa,
+    name,
+    nameFa,
     slug: d.slug,
     image: d.image,
     haystack,
@@ -164,7 +186,10 @@ interface SearchResultsProps {
   className?: string;
 }
 
-export default function SearchResults({ query, className }: SearchResultsProps) {
+export default function SearchResults({
+  query,
+  className,
+}: SearchResultsProps) {
   const { t, lang } = useLanguage();
 
   // The query arriving here is already debounced by SearchHeader, so this
@@ -214,7 +239,7 @@ export default function SearchResults({ query, className }: SearchResultsProps) 
               const displayName =
                 localised && localised !== productKey(p.slug)
                   ? localised
-                  : p.name;
+                  : localizedText(p.name, lang);
 
               return (
                 <SearchCard

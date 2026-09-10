@@ -1,0 +1,58 @@
+// common translations (en/fa). Pure data module - do not import components.
+export const commonEn = {
+  "ui.discover": "Discover",
+  "ui.loadMore": "Load More",
+  "ui.viewAllProducts": "view all products",
+  "ui.viewWebsite": "view website",
+  "ui.imageGallery": "Image Gallery",
+  "lightbox.photoCount": "Photo {current} of {total}",
+  "gallery.photoAlt": "{name} gallery {number}",
+  "video.akoLighting": "HOME FORM",
+  "video.player": "Video player",
+  "video.close": "Close video",
+  "logo.text": "home form",
+  "footer.credits": "Credits",
+  "footer.privacy": "Privacy",
+  "footer.vat": "P.IVA 04630340265 / Henge 2019 2026",
+  "newsletter.title1": "Subscribe to",
+  "newsletter.title2": "our newsletter",
+  "newsletter.description":
+      "To stay up to date on new products and events of the Henge world",
+  "newsletter.emailPlaceholder": "Email*",
+  "newsletter.agree": "Agree to",
+  "newsletter.terms": "terms and conditions",
+  "newsletter.subscribe": "Subscribe",
+  "notFound.title": "404",
+  "notFound.subtitle":
+      "The page you are looking for does not exist or has been moved.",
+  "notFound.backHome": "Back home",
+} as const;
+
+export const commonFa = {
+  "ui.discover": "کشف",
+  "ui.loadMore": "بارگذاری بیشتر",
+  "ui.viewAllProducts": "مشاهده همه محصولات",
+  "ui.viewWebsite": "مشاهده وب‌سایت",
+  "ui.imageGallery": "گالری تصاویر",
+  "lightbox.photoCount": "تصویر {current} از {total}",
+  "gallery.photoAlt": "{name} گالری {number}",
+  "video.akoLighting": "هوم فرم",
+  "video.player": "پخش‌کننده ویدیو",
+  "video.close": "بستن ویدیو",
+  "logo.text": "هوم فرم",
+  "footer.credits": "اعتبارات",
+  "footer.privacy": "حریم خصوصی",
+  "footer.vat": "پ.آی‌وی‌ای ۰۴۶۳۰۳۴۰۲۶۵ / هنژ ۲۰۱۹ ۲۰۲۶",
+  "newsletter.title1": "عضویت در",
+  "newsletter.title2": "خبرنامه ما",
+  "newsletter.description":
+      "برای اطلاع از محصولات جدید و رویدادهای دنیای هنژ",
+  "newsletter.emailPlaceholder": "ایمیل*",
+  "newsletter.agree": "موافقت با",
+  "newsletter.terms": "شرایط و ضوابط",
+  "newsletter.subscribe": "عضویت",
+  "notFound.title": "۴۰۴",
+  "notFound.subtitle":
+      "صفحه‌ای که به دنبال آن هستید وجود ندارد یا منتقل شده است.",
+  "notFound.backHome": "بازگشت به خانه",
+} as const;

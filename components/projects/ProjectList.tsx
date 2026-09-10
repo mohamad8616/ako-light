@@ -23,7 +23,7 @@ export default function ProjectssList() {
           index={i}
           animateOnLoad={i < ROWS_ON_LOAD}
           slug={project.id}
-          name={pick(project.name, lang)}
+          name={project.name}
           description={pick(project.description, lang)}
           image={project.image}
           width={"40"}

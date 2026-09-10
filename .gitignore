@@ -42,3 +42,9 @@ next-env.d.ts
 
 # kilo agent
 /.kilo
+
+
+# continue agent
+/.continue
+
+data-model.md
