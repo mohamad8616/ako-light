@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Tool/local data that must never be traversed by ESLint:
+    ".continue/**",
+    ".kilo/**",
   ]),
 ]);
 

@@ -1,5 +1,4 @@
 allowBuilds:
-  9router: set this to true or false
   '@prisma/engines': set this to true or false
   prisma: set this to true or false
   sharp: true

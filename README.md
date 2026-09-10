@@ -126,3 +126,182 @@ npm run lint
 
 پروژه خصوصی — تمامی حقوق محفوظ است.
 Private project — all rights reserved.
+
+
+
+## SEO & Technical SEO
+
+Home Form uses a structured SEO architecture designed for a multilingual Next.js 16 App Router application.
+
+### SEO Architecture
+
+The project includes:
+
+* Localized page metadata
+* Canonical URLs
+* `hreflang` / locale alternates
+* Open Graph metadata
+* Twitter metadata
+* Dynamic metadata for content-driven pages
+* XML sitemap generation
+* `robots.txt` generation
+* Structured data using Schema.org / JSON-LD
+* Breadcrumb structured data
+* Product structured data
+* Collection structured data
+* Project structured data
+* Organization / website structured data
+* LocalBusiness structured data for applicable flagship locations
+* Localized structured data for Persian and English pages
+* Search-page indexing controls
+* SEO-friendly internal linking
+* Image `alt` text auditing
+* Canonical URL normalization
+* Protection against duplicate locale URLs
+
+### Multilingual SEO
+
+Persian (`fa`) is the primary language and uses unprefixed canonical URLs:
+
+```text
+/
+ /about
+ /products
+ /collections
+ /projects
+ /designers
+ /materials
+ /flagship
+ /contact
+ /search
+ /catalogue
+ /s34
+```
+
+English (`en`) uses the `/en` prefix:
+
+```text
+/en
+/en/about
+/en/products
+/en/collections
+/en/projects
+/en/designers
+/en/materials
+/en/flagship
+/en/contact
+/en/search
+/en/catalogue
+/en/s34
+```
+
+The `/fa/...` URL form is non-canonical and is redirected to the corresponding unprefixed Persian route.
+
+The URL is authoritative for the active locale. Cookies and local storage may remember the user's language preference, but they do not override an explicitly requested locale URL.
+
+### SEO-Related Files
+
+Important SEO and localization infrastructure includes:
+
+```text
+app/
+├── [locale]/
+│   ├── layout.tsx
+│   ├── page.tsx
+│   ├── about/
+│   ├── products/
+│   ├── collections/
+│   ├── projects/
+│   ├── designers/
+│   ├── materials/
+│   ├── flagship/
+│   ├── contact/
+│   ├── search/
+│   ├── catalogue/
+│   └── s34/
+│
+├── robots.ts
+└── sitemap.ts
+
+lib/
+└── i18n/
+    ├── routing.ts
+    ├── localized.ts
+    └── translations/
+```
+
+### Canonical URLs & Locale Routing
+
+The localization routing system centralizes locale-aware URL generation and canonicalization.
+
+Important helpers include:
+
+```text
+getLocalizedPath()
+stripLocalePrefix()
+toCanonicalPath()
+```
+
+These helpers are used to prevent inconsistent URLs between Persian and English pages.
+
+Canonical URLs should always use:
+
+```text
+Persian → /...
+English → /en/...
+```
+
+and never:
+
+```text
+/fa/...
+```
+
+### Structured Data
+
+The website uses Schema.org structured data where appropriate to help search engines understand the site's content and entities.
+
+Depending on the page type, structured data can represent:
+
+* Home Form as an organization
+* The website itself
+* Individual web pages
+* Products
+* Collections
+* Projects
+* Designers
+* Flagship locations
+* Breadcrumb navigation
+
+Structured data must be generated from real project data. Fake prices, reviews, ratings, availability, addresses, or other business information must not be invented for SEO purposes.
+
+### SEO Content Principles
+
+SEO implementation follows these principles:
+
+* Home Form is the current public brand.
+* The website is positioned primarily around decorative, architectural, and premium lighting.
+* Metadata should accurately describe the actual page content.
+* Titles and descriptions are localized.
+* Existing content should not be rewritten solely to insert keywords.
+* Keywords must remain natural and relevant.
+* H1 headings should accurately represent page content.
+* Images should have meaningful `alt` text where appropriate.
+* Internal links should use meaningful destinations and anchor text.
+* Search result pages should not create unnecessary indexable duplicate URLs.
+* Query parameters should not create uncontrolled duplicate pages.
+* SEO metadata must not contain fabricated information.
+
+### SEO and Rendering
+
+SEO-critical metadata and structured data should be generated server-side whenever possible so that search engines can discover them without depending on client-side JavaScript execution.
+
+The SEO system is designed to work with the existing:
+
+* Next.js App Router
+* Persian RTL / English LTR architecture
+* locale-aware routing
+* static and dynamic routes
+* future PostgreSQL/Prisma data layer
+
+The SEO architecture should remain compatible with the future transition from static content to database-driven content and the future admin dashboard.
