@@ -1,4 +1,4 @@
-﻿import Footer from "@/components/footer/footer";
+import Footer from "@/components/footer/footer";
 import NewsletterSectionWrapper from "@/components/footer/NewsLetterSectionWrapper";
 import Navbar from "@/components/navbar/Navbar";
 import SmoothScroll from "@/components/smoothScroll";
@@ -86,8 +86,8 @@ const noora = localFont({
 /**
  * The URL is the source of truth for the active locale:
  *
- *   /about      â†’ fa (unprefixed â€” Persian is the primary language)
- *   /en/about   â†’ en
+ *   /about      -> fa (unprefixed -- Persian is the primary language)
+ *   /en/about   -> en
  *
  * The proxy rewrites unprefixed URLs to /fa/... internally, so every request
  * that reaches this layout has a valid locale param.

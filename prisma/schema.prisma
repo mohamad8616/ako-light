@@ -12,22 +12,20 @@ datasource db {
   provider = "postgresql"
 }
 
-model Test {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-}
-
 model User {
-  id            String    @id
-  name          String
-  email         String
-  emailVerified Boolean   @default(false)
-  image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  sessions      Session[]
-  accounts      Account[]
+  id                  String    @id
+  name                String
+  email               String
+  emailVerified       Boolean   @default(false)
+  image               String?
+  /// Allowed values: "user" | "admin" | "owner"
+  role                String    @default("user")
+  phoneNumber         String?   @unique
+  phoneNumberVerified Boolean   @default(false)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  sessions            Session[]
+  accounts            Account[]
 
   @@unique([email])
   @@map("user")
