@@ -26,14 +26,14 @@ export default function HomeCollectionBanner() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 1.1, ease: EASE }}
-              className="group relative  aspect-video w-full overflow-hidden lg:aspect-auto lg:h-full lg:min-h-105"
+              className="group relative aspect-video w-full overflow-hidden"
             >
               <Image
                 sizes="(max-width: 1024px) 100vw, 58vw"
                 fill
                 src={homeCollection.image}
                 alt={t("homeCollection.title")}
-                className="h absolute object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+                className="absolute object-contain transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
               />
             </motion.div>
           </div>
