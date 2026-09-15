@@ -22,6 +22,10 @@ model User {
   role                String    @default("user")
   phoneNumber         String?   @unique
   phoneNumberVerified Boolean   @default(false)
+  /// Ban support required by better-auth's admin plugin.
+  banned              Boolean   @default(false)
+  banReason           String?
+  banExpires          DateTime?
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   sessions            Session[]
@@ -32,15 +36,17 @@ model User {
 }
 
 model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String   @id
+  expiresAt      DateTime
+  token          String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  ipAddress      String?
+  userAgent      String?
+  userId         String
+  /// Set when an owner/admin impersonates this session (admin plugin).
+  impersonatedBy String?
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
   @@index([userId])

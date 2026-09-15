@@ -1,7 +1,15 @@
+import {
+  ADMIN_ROLES,
+  ROLES,
+  accessControl,
+  rolePermissions,
+} from "@/lib/auth/permissions";
+import { sendOtpSms } from "@/lib/auth/sms";
 import { prisma } from "@/lib/db/prisma";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
+import { admin, phoneNumber } from "better-auth/plugins";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -10,5 +18,27 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  plugins: [nextCookies()], // make sure this is the last plugin in the array
+  plugins: [
+    phoneNumber({
+      // Defaults pinned explicitly so the OTP contract is visible to the
+      // login UI step: 6 digits, 5 minutes, 3 verification attempts.
+      otpLength: 6,
+      expiresIn: 300,
+      allowedAttempts: 3,
+      // Every OTP delivery goes through the mock sender in lib/auth/sms.ts —
+      // a real SMS provider is swapped in there, not here.
+      sendOTP: async ({ phoneNumber: to, code }) => {
+        await sendOtpSms(to, code);
+      },
+    }),
+    admin({
+      defaultRole: ROLES.user,
+      // Both roles are admin-level actors, but their permissions differ (see
+      // lib/auth/permissions.ts): only `owner` may impersonate other admins.
+      adminRoles: [...ADMIN_ROLES],
+      ac: accessControl,
+      roles: rolePermissions,
+    }),
+    nextCookies(), // make sure this is the last plugin in the array
+  ],
 });
