@@ -3,8 +3,12 @@
 # dependencies
 /node_modules
 /.pnp
+/home-form
 .pnp.*
 .yarn/*
+.agents/*
+.claude/
+.windsurf/
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
@@ -48,3 +52,4 @@ next-env.d.ts
 /.continue
 
 data-model.md
+/generated/prisma
