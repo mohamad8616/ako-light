@@ -2,7 +2,7 @@
 
 import FabricsGrid from "./FabricsGrid";
 import MaterialsSwitcher from "./MaterialsSwitcher";
-import type { Material } from "@/lib/data/materials";
+import type { FabricItem, Material } from "@/lib/data/materials";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { pick } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
@@ -55,9 +55,12 @@ function resolveActive(
 export default function MaterialCategoryView({
   slug,
   materials,
+  fabrics,
 }: {
   slug: string;
   materials: Material[];
+  /** DB-sourced fabric swatches (FabricItem rows, sortOrder order). */
+  fabrics: FabricItem[];
 }) {
   const { t, lang } = useLanguage();
   const title = resolveTitle(slug, materials, lang, t);
@@ -98,7 +101,7 @@ export default function MaterialCategoryView({
         </p>
       </section>
 
-      <FabricsGrid />
+      <FabricsGrid fabrics={fabrics} />
     </main>
   );
 }

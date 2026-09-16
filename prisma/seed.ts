@@ -12,10 +12,11 @@
 import "dotenv/config";
 
 import { MaterialType, Prisma } from "@/generated/prisma/client";
+import { catalogueItems } from "@/lib/data/catalogue";
 import { collections } from "@/lib/data/collections";
 import { designers } from "@/lib/data/designers";
 import { flagshipDetails, flagships } from "@/lib/data/flagships";
-import { materials, type Material } from "@/lib/data/materials";
+import { fabrics, materials, type Material } from "@/lib/data/materials";
 import { productCategories } from "@/lib/data/productCategories";
 import { projects } from "@/lib/data/projects";
 import { prisma } from "@/lib/db/prisma";
@@ -261,7 +262,9 @@ async function seedProducts(): Promise<void> {
 
       const data = {
         name: asJson(product.name),
-        images: product.images,
+        // Note: `images` is no longer a Product column — the flat array was
+        // replaced by the relational ProductImage table, seeded separately
+        // below by seedProductImages() from the same source arrays.
         hoverImage: product.hoverImage,
         price: product.price,
         existsInStore: product.store.existsInStore,
@@ -347,6 +350,85 @@ async function seedProjects(): Promise<void> {
   }
 }
 
+/** lib/data/product-categories/* `Product.images[]` → ProductImage rows.
+ * Idempotent on a synthetic `{ productId, sortOrder }` unique constraint is NOT
+ * available (no unique constraint covers both columns), so we delete-then-create
+ * per product to keep the table in sync with the source arrays.
+ */
+async function seedProductImages(): Promise<void> {
+  const allProducts = productCategories.flatMap((c) => c.products);
+
+  for (const product of allProducts) {
+    if (!product.slug) continue;
+
+    // Replace the whole image set for this product so the table mirrors the
+    // source arrays exactly (order, count, URLs).
+    await prisma.productImage.deleteMany({ where: { productId: product.slug } });
+
+    const images = product.images || [];
+    if (images.length === 0) continue;
+
+    const rows = images.map((url, idx) => ({
+      id: `${product.slug}-img-${String(idx).padStart(3, "0")}`,
+      productId: product.slug,
+      url,
+      alt: product.name?.en || undefined,
+      sortOrder: idx,
+      isPrimary: idx === 0,
+    }));
+
+    await prisma.productImage.createMany({ data: rows });
+  }
+}
+
+/** lib/data/materials.ts `fabrics[]` → FabricItem rows. Idempotent on `id`. */
+async function seedFabricItems(): Promise<void> {
+  for (const [sortOrder, fabric] of fabrics.entries()) {
+    await prisma.fabricItem.upsert({
+      where: { id: fabric.id },
+      create: {
+        id: fabric.id,
+        name: fabric.name,
+        code: fabric.code,
+        category: fabric.category,
+        swatchColor: fabric.swatchColor,
+        sortOrder,
+      },
+      update: {
+        name: fabric.name,
+        code: fabric.code,
+        category: fabric.category,
+        swatchColor: fabric.swatchColor,
+        sortOrder,
+      },
+    });
+  }
+}
+
+/** lib/data/catalogue.ts `catalogueItems[]` → CatalogueItem rows. Idempotent on `id`. */
+async function seedCatalogueItems(): Promise<void> {
+  for (const [sortOrder, item] of catalogueItems.entries()) {
+    await prisma.catalogueItem.upsert({
+      where: { id: item.id },
+      create: {
+        id: item.id,
+        title: item.title,
+        href: item.href,
+        coverColor: item.coverColor,
+        coverTextColor: item.coverTextColor ?? null,
+        sortOrder,
+      },
+      update: {
+        title: item.title,
+        href: item.href,
+        coverColor: item.coverColor,
+        coverTextColor: item.coverTextColor ?? null,
+        sortOrder,
+      },
+    });
+  }
+}
+
 async function main(): Promise<void> {
   const startedAt = Date.now();
   const allProducts = productCategories.flatMap((c) => c.products);
@@ -372,8 +454,11 @@ async function main(): Promise<void> {
   await seedProductCategories();
   await seedDesigners();
   await seedProducts();
+  await seedProductImages();   // depends on products (productId = product.slug)
   await seedCollections();
   await seedMaterials();
+  await seedFabricItems();
+  await seedCatalogueItems();
   await seedFlagships();
   await seedProjects();
 
@@ -381,8 +466,11 @@ async function main(): Promise<void> {
     ["product_category", () => prisma.productCategory.count()],
     ["designer", () => prisma.designer.count()],
     ["product", () => prisma.product.count()],
+    ["product_image", () => prisma.productImage.count()],
     ["collection", () => prisma.collection.count()],
     ["material", () => prisma.material.count()],
+    ["fabric_item", () => prisma.fabricItem.count()],
+    ["catalogue_item", () => prisma.catalogueItem.count()],
     ["flagship", () => prisma.flagship.count()],
     ["project", () => prisma.project.count()],
     ["project_product", () => prisma.projectProduct.count()],
@@ -392,7 +480,8 @@ async function main(): Promise<void> {
   console.log(
     `source arrays: ${productCategories.length} categories, ${allProducts.length} products, ` +
       `${collections.length} collections, ${designers.length} designers, ` +
-      `${materials.length} materials, ${flagships.length} flagships, ` +
+      `${materials.length} materials, ${fabrics.length} fabrics, ` +
+      `${catalogueItems.length} catalogue items, ${flagships.length} flagships, ` +
       `${projects.length} projects (${Object.keys(flagshipDetails).length} with detail content)`,
   );
   console.log("rows in database:");

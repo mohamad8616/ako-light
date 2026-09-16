@@ -165,7 +165,6 @@ model Product {
   slug          String   @unique
   /// Localized { en, fa }
   name          Json
-  images        String[]
   hoverImage    String
   price         Decimal  @db.Decimal(12, 2)
   /// Product.store.existsInStore in the source data.
@@ -195,6 +194,7 @@ model Product {
   category     ProductCategory  @relation(fields: [categoryId], references: [slug], onDelete: Cascade)
   designer     Designer?        @relation(fields: [designerId], references: [slug], onDelete: SetNull)
   projectsUsed ProjectProduct[]
+  productImages ProductImage[]
 
   @@index([categoryId])
   @@index([designerId])
@@ -241,6 +241,63 @@ model Material {
 
   @@index([category])
   @@map("material")
+}
+
+/// lib/data/materials.ts `fabrics[]` -> FabricItem
+///
+/// FabricItem is a separate entity from Material — materials cover stone/metal/
+/// glass/wood/etc., while fabric items are upholstery textile swatches with
+/// codes and colors. They are NOT merged.
+///
+/// Source: the `fabrics: FabricItem[]` array in lib/data/materials.ts. Preserves
+/// existing identifiers/slugs, ordering, and the category field from the static data.
+model FabricItem {
+  /// Stable identifier matching the static data's `id` (e.g. "abarth-26").
+  /// Also serves as the slug for any future `/fabrics/<id>` route.
+  id          String   @id
+  /// Fabric name from the static data (plain string, not localized in the source).
+  name        String
+  /// Fabric code from the static data (e.g. "26").
+  code        String
+  /// Category grouping from the static data (e.g. "Fabrics").
+  category    String
+  /// Swatch color from the static data (hex, e.g. "#726A50"). Placeholder until
+  /// real photography is available.
+  swatchColor String
+  /// Display position (matches the order of the `fabrics` array in the static data).
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("fabric_item")
+}
+
+/// lib/data/catalogue.ts -> CatalogueItem
+///
+/// CatalogueItem represents a catalogue PDF/card shown on the `/catalogue` page.
+/// Previously a hardcoded static array; now a real database entity that can be
+/// managed from the admin dashboard.
+///
+/// Source: the `catalogueItems: CatalogueItem[]` array in lib/data/catalogue.ts.
+/// Preserves existing identifiers/slugs, ordering, and cover colors from the static data.
+model CatalogueItem {
+  /// Stable identifier matching the static data's `id` (e.g. "s34-5").
+  /// Also serves as the slug for any future `/catalogue/<id>` route.
+  id            String   @id
+  /// Catalogue title (e.g. "S34/5").
+  title         String
+  /// Direct link to the PDF file.
+  href          String
+  /// Cover background color (hex, e.g. "#3a3530").
+  coverColor    String
+  /// Cover text color (hex, optional, e.g. "#232323").
+  coverTextColor String?
+  /// Display position (matches the order of the `catalogueItems` array in the static data).
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("catalogue_item")
 }
 
 /// lib/data/flagships.ts -> Flagship (+ FlagshipDetail)
@@ -296,6 +353,38 @@ model Project {
   productsUsed ProjectProduct[]
 
   @@map("project")
+}
+
+/// One image belonging to a Product. Replaces the flat `images String[]` array
+/// on Product with a proper relational model that supports ordering, primary
+/// image designation, and alt text.
+///
+/// Source: the `images` array that was previously embedded on Product records
+/// in `lib/data/product-categories/*`. The seed synthesizes ProductImage rows
+/// from those arrays so this table is populated automatically.
+///
+/// FK convention: follows the schema-wide convention of referencing the parent
+/// by `slug` (see the header note above the catalog models).
+model ProductImage {
+  id        String   @id
+  /// Product.slug — the image belongs to this product.
+  productId String
+  product   Product  @relation(fields: [productId], references: [slug], onDelete: Cascade)
+
+  /// Publicly served image URL/path.
+  url       String
+  /// Alt text for accessibility / SEO.
+  alt       String?
+  /// Zero-based display order inside the product's image list.
+  sortOrder Int      @default(0)
+  /// Whether this image is the primary/hero image for the product.
+  isPrimary Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@map("product_image")
 }
 
 /// Join table for Project.productsUsed <-> Product (many-to-many) with an

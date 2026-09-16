@@ -1,0 +1,11 @@
+-- Pass 11B — drop the flat `Product.images` (TEXT[]) column.
+--
+-- The relational `product_image` table (added in Pass 11A) is now the single
+-- source of truth for product imagery:
+--   - the product detail page fetches gallery + primary image via
+--     `lib/repositories/product-images.ts`
+--   - grid-card images and category metadata derive `images` from the
+--     ProductImage relation inside `lib/repositories/products.ts`
+-- (`Product.hoverImage` / `Product.heroImage` are separate, unrelated fields
+-- and remain untouched.)
+ALTER TABLE "product" DROP COLUMN "images";

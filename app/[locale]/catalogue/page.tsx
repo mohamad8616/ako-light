@@ -1,4 +1,5 @@
 import CatalogueGrid from "@/components/catalogue/CatalogueGrid";
+import { getCatalogueItems } from "@/lib/repositories/catalogue";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
@@ -39,6 +40,8 @@ export default async function CataloguePage({
   const { locale } = await params;
   const lang = resolveLocale(locale);
   const t = translations[lang];
+  // DB-sourced catalogue items (CatalogueItem rows, sortOrder order).
+  const items = await getCatalogueItems();
 
   const jsonLdData = [
     webPageJsonLd(
@@ -52,7 +55,7 @@ export default async function CataloguePage({
     <>
       <JsonLdRenderer data={jsonLdData} />
       <main className="min-h-screen bg-stone-950 pt-32 md:pt-52">
-        <CatalogueGrid />
+        <CatalogueGrid items={items} />
       </main>
     </>
   );

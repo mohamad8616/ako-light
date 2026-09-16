@@ -17,10 +17,16 @@ import {
   asRelatedProducts,
 } from "./casting";
 
-/** Shared `include` for every product read in this layer. */
+/** Shared `include` for every product read in this layer.
+ *
+ * `productImages` is included so {@link mapProductRow} can derive the
+ * backward-compatible `images: string[]` from the relational ProductImage
+ * table (the flat `Product.images` column was dropped in Pass 11B).
+ */
 export const productInclude = {
   category: true,
   designer: true,
+  productImages: { orderBy: { sortOrder: "asc" } },
 } satisfies Prisma.ProductInclude;
 
 /** A `product` row after {@link productInclude} has been applied. */
@@ -39,13 +45,16 @@ export type ProductRow = Prisma.ProductGetPayload<{
  * - `categoryLabel` has no column of its own — the source data duplicated the
  *   parent category's localized name there, so it is derived from the relation.
  * - `price` is a Postgres `Decimal`; `Product.price` in the app is a number.
+ * - `images` is derived from the product's ProductImage rows in `sortOrder`
+ *   order (the flat `images` column was removed in Pass 11B; the DB rows are
+ *   pre-ordered by the shared `include`).
  */
 export function mapProductRow(row: ProductRow): Product {
   return {
     id: row.id,
     name: asLocalized(row.name),
     slug: row.slug,
-    images: row.images,
+    images: row.productImages.map((img) => img.url),
     hoverImage: row.hoverImage,
     price: row.price.toNumber(),
     store: { existsInStore: row.existsInStore, quantity: row.quantity },

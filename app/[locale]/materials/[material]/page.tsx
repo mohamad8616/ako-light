@@ -1,5 +1,6 @@
 import MaterialCategoryView from "@/components/materials/material/MaterialCategoryView";
 import { getMaterial, getMaterials } from "@/lib/repositories/materials";
+import { getFabricItems } from "@/lib/repositories/fabrics";
 import { pick } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
@@ -71,13 +72,20 @@ export default async function MaterialPage({ params }: PageProps) {
   const { material, locale } = await params;
   const lang = resolveLocale(locale);
   const t = translations[lang];
-  const [category, allMaterials] = await Promise.all([
+  const [category, allMaterials, fabrics] = await Promise.all([
     getMaterial(material),
     getMaterials(),
+    getFabricItems(),
   ]);
 
   if (!category) {
-    return <MaterialCategoryView slug={material} materials={allMaterials} />;
+    return (
+      <MaterialCategoryView
+        slug={material}
+        materials={allMaterials}
+        fabrics={fabrics}
+      />
+    );
   }
 
   const name = pick(category.name, lang);
@@ -106,7 +114,11 @@ export default async function MaterialPage({ params }: PageProps) {
   return (
     <>
       <JsonLdRenderer data={jsonLdData} />
-      <MaterialCategoryView slug={material} materials={allMaterials} />
+      <MaterialCategoryView
+        slug={material}
+        materials={allMaterials}
+        fabrics={fabrics}
+      />
     </>
   );
 }

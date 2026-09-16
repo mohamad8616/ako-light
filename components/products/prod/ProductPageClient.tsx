@@ -12,12 +12,15 @@ interface ProductPageClientProps {
   productt: Product;
   link: string;
   sameCategoryProducts: Product[];
+  /** Gallery image URLs (DB-sourced ProductImage rows, sortOrder order). */
+  galleryImages: string[];
 }
 
 export default function ProductPageClient({
   productt,
   link,
   sameCategoryProducts,
+  galleryImages,
 }: ProductPageClientProps) {
   return (
     <main className="bg-background-secondary relative">
@@ -29,7 +32,7 @@ export default function ProductPageClient({
       <ImageGalleryCarousel
         multiWidth={true}
         mobileColumn={true}
-        images={productt.images}
+        images={galleryImages}
       />
       <RelatedProductsSection
         product={productt}

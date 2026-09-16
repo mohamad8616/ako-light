@@ -27,6 +27,8 @@ Home Form is a storefront and product-showcase website built with Next.js — fe
   **Bilingual (Persian/English)** — built-in i18n system supporting `en` and `fa`
 - **انیمیشن و تجربه کاربری** — اسکرول نرم (Lenis)، ترنزیشن صفحات، پری‌لودر و انیمیشن‌های GSAP/Framer Motion
   **Motion & UX** — smooth scrolling (Lenis), page transitions, preloader and GSAP/Framer Motion animations
+- **دیتابیس و مدیریت محتوا** — PostgreSQL + Prisma با مدل‌های Product، Collection، Designer، Project، Material، FabricItem، CatalogueItem و ProductImage
+  **Database & content management** — PostgreSQL + Prisma with models for Product, Collection, Designer, Project, Material, FabricItem, CatalogueItem and ProductImage
 
 ---
 
