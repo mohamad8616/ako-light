@@ -1,5 +1,9 @@
 import ProductPageClient from "@/components/products/prod/ProductPageClient";
-import { getProduct, products } from "@/lib/data/productCategories";
+import {
+  getProduct,
+  getProducts,
+  getProductsByCategory,
+} from "@/lib/repositories/products";
 import { productDescription, productName } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
 import { siteName } from "@/lib/seo/config";
@@ -21,8 +25,9 @@ interface PageProps {
   params: Promise<{ locale: string; product: string; prod: string }>;
 }
 
-export function generateStaticParams() {
-  return Object.values(products).map((p) => ({
+export async function generateStaticParams() {
+  const allProducts = await getProducts();
+  return allProducts.map((p) => ({
     product: p.category,
     prod: p.slug,
   }));
@@ -32,7 +37,7 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { product, prod, locale } = await params;
-  const productt = getProduct(product, prod);
+  const productt = await getProduct(product, prod);
 
   if (!productt) notFound();
 
@@ -81,8 +86,14 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: PageProps) {
   const { product, prod, locale } = await params;
-  const productt = getProduct(product, prod);
+  const productt = await getProduct(product, prod);
   if (!productt) notFound();
+
+  // Same-category candidates for the related-products section (self
+  // excluded); fetched server-side so the client never needs the catalog.
+  const sameCategoryProducts = (await getProductsByCategory(product)).filter(
+    (p) => p.slug !== prod,
+  );
 
   const lang = resolveLocale(locale);
   const dict = translations[lang] as Record<string, string>;
@@ -118,7 +129,11 @@ export default async function ProductPage({ params }: PageProps) {
   return (
     <>
       <JsonLdRenderer data={jsonLdData} />
-      <ProductPageClient productSlug={product} prodSlug={prod} link="link" />
+      <ProductPageClient
+        productt={productt}
+        link="link"
+        sameCategoryProducts={sameCategoryProducts}
+      />
     </>
   );
 }

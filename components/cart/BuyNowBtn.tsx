@@ -3,7 +3,7 @@
 import CartSheet from "@/components/cart/CartSheet";
 import FloatingCartButton from "@/components/cart/FloatingCartButton";
 import ProductModal from "@/components/cart/ProductModal";
-import { Product } from "@/lib/data/productCategories";
+import type { Product } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useLenis } from "@/lib/lenisStore";
 import { cn } from "@/lib/utils";

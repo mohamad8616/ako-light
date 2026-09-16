@@ -2,21 +2,19 @@
 
 import ProductsGrid from "@/components/products/ProductsGrid";
 import ProductsHeader from "@/components/products/ProductsHeader";
-import { productCategories } from "@/lib/data/productCategories";
+import type { ProductCategory } from "@/lib/data/product-categories/types";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { notFound } from "next/navigation";
 
 interface ProductCategoryPageClientProps {
   productSlug: string;
+  category: ProductCategory;
 }
 
 export default function ProductCategoryPageClient({
   productSlug,
+  category,
 }: ProductCategoryPageClientProps) {
   const { t } = useLanguage();
-
-  const category = productCategories.find((c) => c.slug === productSlug);
-  if (!category) notFound();
 
   const categoryName = t(category.i18nKey);
 

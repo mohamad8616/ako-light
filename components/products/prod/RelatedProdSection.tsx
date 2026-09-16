@@ -1,7 +1,6 @@
 "use client";
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import type { Product, RelatedProduct } from "@/lib/data/productCategories";
-import { products } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { productName } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
@@ -10,15 +9,14 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "@/lib/i18n/Link";
 
-function getRelatedProducts(product: Product): RelatedProduct[] {
-  const sameCategory = products.filter(
-    (p) => p.category === product.category && p.slug !== product.slug,
-  );
-
+function getRelatedProducts(
+  product: Product,
+  sameCategoryProducts: Product[],
+): RelatedProduct[] {
   const seed = product.slug
     .split("")
     .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const shuffled = [...sameCategory];
+  const shuffled = [...sameCategoryProducts];
   let random = seed;
   for (let i = shuffled.length - 1; i > 0; i--) {
     random = (random * 1103515245 + 12345) & 0x7fffffff;
@@ -35,13 +33,14 @@ function getRelatedProducts(product: Product): RelatedProduct[] {
 }
 
 export default function RelatedProductsSection({
-  
   product,
+  sameCategoryProducts,
 }: {
   product: Product;
+  sameCategoryProducts: Product[];
 }) {
   const { t,lang } = useLanguage();
-  const related = getRelatedProducts(product);
+  const related = getRelatedProducts(product, sameCategoryProducts);
 
   return (
     <HomepageSection>

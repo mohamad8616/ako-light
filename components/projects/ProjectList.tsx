@@ -3,12 +3,16 @@
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { pick } from "@/lib/i18n/localized";
 import HomepageSection from "@/utility/HomepageSection";
-import { projects } from "../../lib/data/projects";
+import type { Project } from "@/lib/data/projects";
 import Row from "../ui/Row";
 
 const ROWS_ON_LOAD = 2;
 
-export default function ProjectssList() {
+export default function ProjectssList({
+  projects,
+}: {
+  projects: Project[];
+}) {
   const { lang } = useLanguage();
 
   return (

@@ -1,12 +1,16 @@
 "use client";
 
 import HomepageSection from "@/utility/HomepageSection";
-import { materials } from "../../lib/data/materials";
+import type { Material } from "@/lib/data/materials";
 import Row from "../ui/Row";
 
 export const ROWS_ON_LOAD = 2;
 
-export default function MaterialsList() {
+export default function MaterialsList({
+  materials,
+}: {
+  materials: Material[];
+}) {
   return (
     <HomepageSection
       animateOnLoad

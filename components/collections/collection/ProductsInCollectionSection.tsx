@@ -1,10 +1,7 @@
 "use client";
 
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
-import {
-  productCategories,
-  type ProductCategory,
-} from "@/lib/data/productCategories";
+import type { ProductCategory } from "@/lib/data/product-categories/types";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { productName, type Localized } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
@@ -25,8 +22,8 @@ const PHOTO_HEIGHT = 200;
 const ENTER_EXIT_OFFSET = 500;
 
 interface Props {
-  /** Optional list of categories to render. Defaults to all `productCategories`. */
-  categories?: ProductCategory[];
+  /** Categories to render — always provided by the parent page (server-fetched). */
+  categories: ProductCategory[];
   /**
    * Heading text. Defaults to the "collections.productsInCollection" translation.
    * Either a `Localized` object, a plain string, or (preferred for UI labels)
@@ -72,7 +69,7 @@ interface HoveredState {
 }
 
 export default function ProductsInCollectionSection({
-  categories = productCategories,
+  categories,
   title,
   titleKey,
   viewAllHref = "/products",

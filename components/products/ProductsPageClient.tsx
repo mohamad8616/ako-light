@@ -2,13 +2,17 @@
 
 import ProductsGrid from "@/components/products/ProductsGrid";
 import ProductsHeader from "@/components/products/ProductsHeader";
-import { productCategories } from "@/lib/data/productCategories";
+import type { ProductCategory } from "@/lib/data/product-categories/types";
 
-export default function ProductsPageClient() {
+export default function ProductsPageClient({
+  categories,
+}: {
+  categories: ProductCategory[];
+}) {
   return (
     <main className="bg-background w-full">
       <ProductsHeader titleKey="products.title" />
-      <ProductsGrid categories={productCategories} />
+      <ProductsGrid categories={categories} />
     </main>
   );
 }

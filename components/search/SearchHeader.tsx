@@ -8,10 +8,20 @@ import { motion } from "framer-motion";
 import { useRef, useState } from "react";
 import SearchInput, { type SearchInputHandle } from "./SearchInput";
 import SearchResults from "./SearchResults";
+import type { Designer } from "@/lib/data/designers";
+import type { Product } from "@/lib/data/product-categories/types";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
-export default function SearchHeader() {
+interface SearchHeaderProps {
+  products: Product[];
+  designers: Designer[];
+}
+
+export default function SearchHeader({
+  products,
+  designers,
+}: SearchHeaderProps) {
   const { t, lang } = useLanguage();
   const [query, setQuery] = useState("");
   // The input keeps the raw value so typing stays instant; the results
@@ -61,7 +71,11 @@ export default function SearchHeader() {
           transition={{ duration: 0.4, delay: 0.3 }}
           className={cn(lang === "fa" ? "font-noora" : "font-din")}
         >
-          <SearchResults query={debouncedQuery} />
+          <SearchResults
+            query={debouncedQuery}
+            products={products}
+            designers={designers}
+          />
         </motion.div>
       </HomepageSection>
     </header>

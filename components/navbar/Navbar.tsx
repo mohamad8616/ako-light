@@ -4,6 +4,7 @@ import CollapsibleNavItem from "@/components/navbar/CollapsibleNavItem";
 import FullscreenMenu from "@/components/navbar/fullScreenMenu";
 import Logo from "@/components/ui/Logo";
 import ProductsSheet from "@/components/ui/ProductsSheet";
+import type { ProductCategory } from "@/lib/data/product-categories/types";
 import { useHeroVideoStore } from "@/lib/heroVideoStore";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
@@ -51,7 +52,11 @@ type ActiveOverlay = "products" | "menu" | null;
  * background/border/width change — so the logo and nav buttons never
  * move vertically.
  */
-export default function Navbar() {
+export default function Navbar({
+  categories,
+}: {
+  categories: ProductCategory[];
+}) {
   const [activeOverlay, setActiveOverlay] = useState<ActiveOverlay>(null);
   const [hidden, setHidden] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -163,6 +168,7 @@ export default function Navbar() {
               <ProductsSheet
                 open={activeOverlay === "products"}
                 onOpenChange={(o) => setActiveOverlay(o ? "products" : null)}
+                categories={categories}
               />
             </CollapsibleNavItem>
 

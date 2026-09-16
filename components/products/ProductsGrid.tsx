@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { Product, ProductCategory } from "@/lib/data/productCategories";
+import type { Product, ProductCategory } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { productName } from "@/lib/i18n/localized";
 import HomepageSection from "@/utility/HomepageSection";

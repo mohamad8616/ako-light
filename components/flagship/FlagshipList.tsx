@@ -1,12 +1,16 @@
 "use client";
 
 import HomepageSection from "@/utility/HomepageSection";
-import { flagships } from "../../lib/data/flagships";
+import type { Flagship } from "@/lib/data/flagships";
 import Row from "../ui/Row";
 
 const ROWS_ON_LOAD = 2;
 
-export default function FlagshipList() {
+export default function FlagshipList({
+  flagships,
+}: {
+  flagships: Flagship[];
+}) {
   return (
     <HomepageSection
       animateOnLoad

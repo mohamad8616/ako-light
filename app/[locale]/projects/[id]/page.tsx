@@ -4,13 +4,11 @@ import ProjectInfoSection from "@/components/projects/project/ProjectInfoSection
 import ProjectTextImageSection from "@/components/projects/project/ProjectTextImageSection";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import PictureHero from "@/components/ui/PictureHero";
-import {
-  productCategories,
-  type ProductCategory,
-} from "@/lib/data/productCategories";
-import { getProjectById } from "@/lib/data/projects";
+import type { ProductCategory } from "@/lib/data/product-categories/types";
 import { pick } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
+import { getProductCategories } from "@/lib/repositories/product-categories";
+import { getProjectById } from "@/lib/repositories/projects";
 import {
   buildLocalizedMetadata,
   resolveLocale,
@@ -33,7 +31,7 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { id, locale } = await params;
-  const project = getProjectById(id);
+  const project = await getProjectById(id);
 
   if (!project) notFound();
 
@@ -77,18 +75,22 @@ export async function generateMetadata({
 /**
  * Group a flat list of products by their `category` slug into
  * `ProductCategory` shape expected by `ProductsInCollectionSection`.
+ *
+ * Runs in the page (not the repository layer) so the resolved product groups
+ * keep the result type the client section component already expects.
  */
-function groupProductsByCategory(
+async function groupProductsByCategory(
   products: ProductCategory["products"],
-): ProductCategory[] {
+): Promise<ProductCategory[]> {
   const bySlug = new Map<string, ProductCategory["products"]>();
   for (const p of products) {
     const list = bySlug.get(p.category) ?? [];
     list.push(p);
     bySlug.set(p.category, list);
   }
+  const categories = await getProductCategories();
   const result: ProductCategory[] = [];
-  for (const cat of productCategories) {
+  for (const cat of categories) {
     const list = bySlug.get(cat.slug);
     if (list && list.length > 0) {
       result.push({ ...cat, products: list });
@@ -99,7 +101,7 @@ function groupProductsByCategory(
 
 const page = async ({ params }: PageProps) => {
   const { id, locale } = await params;
-  const project = getProjectById(id);
+  const project = await getProjectById(id);
 
   if (!project) return notFound();
 
@@ -129,7 +131,7 @@ const page = async ({ params }: PageProps) => {
     ),
   ];
 
-  const groupedCategories = groupProductsByCategory(project.productsUsed);
+  const groupedCategories = await groupProductsByCategory(project.productsUsed);
 
   return (
     <>

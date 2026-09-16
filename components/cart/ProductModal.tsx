@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useCart } from "@/lib/cart/store";
-import { Product } from "@/lib/data/productCategories";
+import type { Product } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { productDescription, productName } from "@/lib/i18n/localized";
 import Image from "next/image";

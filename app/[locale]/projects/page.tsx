@@ -1,6 +1,7 @@
 import ProjectssList from "@/components/projects/ProjectList";
 import ProjectsHeader from "@/components/projects/ProjectsHeader";
 import { translations } from "@/lib/i18n/translations";
+import { getProjects } from "@/lib/repositories/projects";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
 import { absoluteUrl, webPageJsonLd } from "@/lib/seo/structuredData";
@@ -40,6 +41,7 @@ export default async function ProjectsPage({
   const { locale } = await params;
   const lang = resolveLocale(locale);
   const t = translations[lang];
+  const projects = await getProjects();
 
   const jsonLdData = [
     webPageJsonLd(
@@ -54,7 +56,7 @@ export default async function ProjectsPage({
       <JsonLdRenderer data={jsonLdData} />
       <main className="bg-background w-full">
         <ProjectsHeader />
-        <ProjectssList />
+        <ProjectssList projects={projects} />
       </main>
     </>
   );

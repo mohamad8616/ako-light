@@ -1,6 +1,6 @@
 "use client";
 
-import { collections } from "@/lib/data/collections";
+import type { Collection } from "@/lib/data/collections";
 import HomepageSection from "@/utility/HomepageSection";
 import Row from "../ui/Row";
 
@@ -18,7 +18,11 @@ const ROWS_ON_LOAD = 2;
 //   image: `https://loremflickr.com/800/1000/architecture?lock=${i + 1}`,
 // }));
 
-export default function CollectionsList() {
+export default function CollectionsList({
+  collections,
+}: {
+  collections: Collection[];
+}) {
   return (
     <HomepageSection
       animateOnLoad

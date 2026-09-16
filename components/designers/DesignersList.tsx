@@ -1,12 +1,16 @@
 "use client";
 
 import HomepageSection from "@/utility/HomepageSection";
-import { designers } from "../../lib/data/designers";
+import type { Designer } from "@/lib/data/designers";
 import Row from "../ui/Row";
 
 const ROWS_ON_LOAD = 2;
 
-export default function DesignersList() {
+export default function DesignersList({
+  designers,
+}: {
+  designers: Designer[];
+}) {
   return (
     <HomepageSection
       animateOnLoad

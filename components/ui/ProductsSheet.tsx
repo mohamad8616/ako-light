@@ -1,25 +1,24 @@
 ﻿"use client";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // adjust import path
-import { productCategories } from "@/lib/data/productCategories";
+import type { ProductCategory } from "@/lib/data/product-categories/types";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useLenis } from "@/lib/lenisStore";
 import { cn } from "@/lib/utils";
 import Link from "@/lib/i18n/Link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import UnderLineEffect from "./UnderLineEffect";
 
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  categories: ProductCategory[];
 }
 
 // Font-family is inherited from the SheetContent wrapper, which applies
 // Noora for Persian / DinNext for English.
 const linkClasses =
   "w-fit text-sm tracking-tighter text-white uppercase no-underline transition-colors hover:text-stone-400 text-center";
-const categoryKeys = productCategories.map((c) => c.i18nKey);
-const categoryLink = productCategories.map((c) => c.slug);
 
 function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() => {
@@ -39,7 +38,11 @@ function useMediaQuery(query: string): boolean {
   return matches;
 }
 
-export default function ProductsSheet({ open, onOpenChange }: Props) {
+export default function ProductsSheet({
+  open,
+  onOpenChange,
+  categories,
+}: Props) {
   const { lock, unlock } = useLenis();
   const { lang } = useLanguage();
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -49,6 +52,10 @@ export default function ProductsSheet({ open, onOpenChange }: Props) {
   );
 
   const closeSheet = () => onOpenChange(false);
+
+  // Derived once per categories change (not on every render).
+  const categoryKeys = useMemo(() => categories.map((c) => c.i18nKey), [categories]);
+  const categoryLink = useMemo(() => categories.map((c) => c.slug), [categories]);
 
   useEffect(() => {
     if (open) lock();

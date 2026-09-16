@@ -1,6 +1,8 @@
 import SearchHeader from "@/components/search/SearchHeader";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
+import { getDesigners } from "@/lib/repositories/designers";
+import { getProducts } from "@/lib/repositories/products";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -21,10 +23,15 @@ export async function generateMetadata({
   });
 }
 
-export default function DesignersPage() {
+export default async function DesignersPage() {
+  const [products, designers] = await Promise.all([
+    getProducts(),
+    getDesigners(),
+  ]);
+
   return (
     <main className="bg-background min-h-screen h-auto mt-40 lg:mt-56">
-      <SearchHeader />
+      <SearchHeader products={products} designers={designers} />
     </main>
   );
 }

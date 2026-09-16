@@ -1,6 +1,7 @@
 import DesignersHeader from "@/components/designers/DesignersHeader";
 import DesignersList from "@/components/designers/DesignersList";
 import { translations } from "@/lib/i18n/translations";
+import { getDesigners } from "@/lib/repositories/designers";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
 import { absoluteUrl, webPageJsonLd } from "@/lib/seo/structuredData";
@@ -40,6 +41,7 @@ export default async function DesignersPage({
   const { locale } = await params;
   const lang = resolveLocale(locale);
   const t = translations[lang];
+  const designers = await getDesigners();
 
   const jsonLdData = [
     webPageJsonLd(
@@ -54,7 +56,7 @@ export default async function DesignersPage({
       <JsonLdRenderer data={jsonLdData} />
       <main className=" bg-background">
         <DesignersHeader />
-        <DesignersList />
+        <DesignersList designers={designers} />
       </main>
     </>
   );

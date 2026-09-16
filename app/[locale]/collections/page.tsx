@@ -1,6 +1,7 @@
 import CollectionsHeader from "@/components/collections/CollectionsHeader";
 import CollectionsGrid from "@/components/collections/CollectionsList";
 import { translations } from "@/lib/i18n/translations";
+import { getCollections } from "@/lib/repositories/collections";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
 import { absoluteUrl, webPageJsonLd } from "@/lib/seo/structuredData";
@@ -40,6 +41,7 @@ export default async function CollectionsPage({
   const { locale } = await params;
   const lang = resolveLocale(locale);
   const t = translations[lang];
+  const collections = await getCollections();
 
   const jsonLdData = [
     webPageJsonLd(
@@ -54,7 +56,7 @@ export default async function CollectionsPage({
       <JsonLdRenderer data={jsonLdData} />
       <main className="w-full bg-background">
         <CollectionsHeader />
-        <CollectionsGrid />
+        <CollectionsGrid collections={collections} />
       </main>
     </>
   );

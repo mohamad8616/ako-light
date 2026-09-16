@@ -5,10 +5,10 @@ import FlagshipInfoSection from "@/components/flagship/flag/FlagshipInfoSection"
 import FlagshipVideoSection from "@/components/flagship/flag/FlagshipVideoSection";
 import FloatingRequestInfoButton from "@/components/flagship/flag/FloatingRequestInfoButton";
 import {
-  flagshipDetails,
   getFlagship,
   getFlagshipDetail,
-} from "@/lib/data/flagships";
+  getFlagshipsWithDetail,
+} from "@/lib/repositories/flagships";
 import { pick } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
 import {
@@ -29,19 +29,20 @@ interface PageProps {
   params: Promise<{ locale: string; slug: string }>;
 }
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
   // Only pre-render flagships that actually have detail content built
   // out. A flagship can exist in the summary list (shows a card) without
-  // an entry in flagshipDetails yet — it just won't have a page here.
-  return Object.keys(flagshipDetails).map((slug) => ({ slug }));
+  // detail content yet — it just won't have a page here.
+  const withDetail = await getFlagshipsWithDetail();
+  return withDetail.map((f) => ({ slug: f.slug }));
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
-  const flagship = getFlagship(slug);
-  const detail = getFlagshipDetail(slug);
+  const flagship = await getFlagship(slug);
+  const detail = await getFlagshipDetail(slug);
   if (!flagship || !detail) notFound();
 
   const lang = resolveLocale(locale);
@@ -78,8 +79,8 @@ export async function generateMetadata({
 
 export default async function FlagshipPage({ params }: PageProps) {
   const { slug, locale } = await params;
-  const flagship = getFlagship(slug);
-  const detail = getFlagshipDetail(slug);
+  const flagship = await getFlagship(slug);
+  const detail = await getFlagshipDetail(slug);
 
   if (!flagship || !detail) notFound();
 

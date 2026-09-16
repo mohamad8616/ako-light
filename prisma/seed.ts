@@ -94,7 +94,7 @@ async function seedProductCategories(): Promise<void> {
 }
 
 async function seedDesigners(): Promise<void> {
-  for (const designer of designers) {
+  for (const [sortOrder, designer] of designers.entries()) {
     const slug = designer.slug;
     if (!slug) {
       note("Designer", designer.name.en, "missing slug");
@@ -109,19 +109,21 @@ async function seedDesigners(): Promise<void> {
         image: designer.image,
         website: designer.website ?? null,
         bio: asJson(designer.bio),
+        sortOrder,
       },
       update: {
         name: asJson(designer.name),
         image: designer.image,
         website: designer.website ?? null,
         bio: asJson(designer.bio),
+        sortOrder,
       },
     });
   }
 }
 
 async function seedCollections(): Promise<void> {
-  for (const collection of collections) {
+  for (const [sortOrder, collection] of collections.entries()) {
     await prisma.collection.upsert({
       where: { slug: collection.slug },
       create: {
@@ -131,19 +133,21 @@ async function seedCollections(): Promise<void> {
         year: collection.year,
         image: collection.image,
         description: asJson(collection.description),
+        sortOrder,
       },
       update: {
         name: asJson(collection.name),
         year: collection.year,
         image: collection.image,
         description: asJson(collection.description),
+        sortOrder,
       },
     });
   }
 }
 
 async function seedMaterials(): Promise<void> {
-  for (const material of materials) {
+  for (const [sortOrder, material] of materials.entries()) {
     const type = MATERIAL_TYPES[material.type];
     if (!type) {
       note("Material", material.id, `unmapped type "${material.type}"`);
@@ -161,6 +165,7 @@ async function seedMaterials(): Promise<void> {
         type,
         image: material.image,
         description: asJson(material.description),
+        sortOrder,
       },
       update: {
         name: asJson(material.name),
@@ -168,13 +173,14 @@ async function seedMaterials(): Promise<void> {
         type,
         image: material.image,
         description: asJson(material.description),
+        sortOrder,
       },
     });
   }
 }
 
 async function seedFlagships(): Promise<void> {
-  for (const flagship of flagships) {
+  for (const [sortOrder, flagship] of flagships.entries()) {
     // `detail` stays SQL NULL for flagships whose detail page is not built yet
     // (Prisma.DbNull writes NULL on both create and update).
     const detail = flagshipDetails[flagship.slug];
@@ -187,12 +193,14 @@ async function seedFlagships(): Promise<void> {
         city: asJson(flagship.city),
         image: flagship.image,
         detail: detail ? asJson(detail) : Prisma.DbNull,
+        sortOrder,
       },
       update: {
         name: asJson(flagship.name),
         city: asJson(flagship.city),
         image: flagship.image,
         detail: detail ? asJson(detail) : Prisma.DbNull,
+        sortOrder,
       },
     });
   }
@@ -208,7 +216,7 @@ async function seedProducts(): Promise<void> {
   const designerSlugs = new Set(designers.map((d) => d.slug));
 
   for (const category of productCategories) {
-    for (const product of category.products) {
+    for (const [sortOrder, product] of category.products.entries()) {
       if (!product.slug) {
         note("Product", product.id, "missing slug");
         continue;
@@ -265,6 +273,7 @@ async function seedProducts(): Promise<void> {
         related: asJson(product.related),
         categoryId,
         designerId,
+        sortOrder,
       };
 
       await prisma.product.upsert({
@@ -281,7 +290,7 @@ async function seedProjects(): Promise<void> {
     productCategories.flatMap((c) => c.products.map((p) => p.slug)),
   );
 
-  for (const project of projects) {
+  for (const [sortOrder, project] of projects.entries()) {
     // `Project` has no slug in the source data — it is added by this step. The
     // existing `id` values are already URL-safe (h-istra, vocla-2026, ...), so
     // they double as the route handle.
@@ -298,6 +307,7 @@ async function seedProjects(): Promise<void> {
       moreDescription: asJson(project.moreDescription),
       credits: asJson(project.credits),
       portfolioImages: project.portfolioImages,
+      sortOrder,
     };
 
     await prisma.project.upsert({

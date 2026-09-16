@@ -1,5 +1,5 @@
 import MaterialCategoryView from "@/components/materials/material/MaterialCategoryView";
-import { materials } from "@/lib/data/materials";
+import { getMaterial, getMaterials } from "@/lib/repositories/materials";
 import { pick } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
@@ -19,7 +19,7 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { material, locale } = await params;
-  const category = materials.find((m) => m.id === material);
+  const category = await getMaterial(material);
   const lang = resolveLocale(locale);
   const t = translations[lang];
 
@@ -71,10 +71,13 @@ export default async function MaterialPage({ params }: PageProps) {
   const { material, locale } = await params;
   const lang = resolveLocale(locale);
   const t = translations[lang];
-  const category = materials.find((m) => m.id === material);
+  const [category, allMaterials] = await Promise.all([
+    getMaterial(material),
+    getMaterials(),
+  ]);
 
   if (!category) {
-    return <MaterialCategoryView slug={material} />;
+    return <MaterialCategoryView slug={material} materials={allMaterials} />;
   }
 
   const name = pick(category.name, lang);
@@ -103,7 +106,7 @@ export default async function MaterialPage({ params }: PageProps) {
   return (
     <>
       <JsonLdRenderer data={jsonLdData} />
-      <MaterialCategoryView slug={material} />
+      <MaterialCategoryView slug={material} materials={allMaterials} />
     </>
   );
 }

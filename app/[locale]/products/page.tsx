@@ -1,5 +1,6 @@
 import ProductsPageClient from "@/components/products/ProductsPageClient";
 import { translations } from "@/lib/i18n/translations";
+import { getProductCategories } from "@/lib/repositories/product-categories";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
 import { absoluteUrl, webPageJsonLd } from "@/lib/seo/structuredData";
@@ -39,6 +40,7 @@ export default async function ProductsPage({
   const { locale } = await params;
   const lang = resolveLocale(locale);
   const t = translations[lang];
+  const categories = await getProductCategories();
 
   const jsonLdData = [
     webPageJsonLd(
@@ -51,7 +53,7 @@ export default async function ProductsPage({
   return (
     <>
       <JsonLdRenderer data={jsonLdData} />
-      <ProductsPageClient />
+      <ProductsPageClient categories={categories} />
     </>
   );
 }

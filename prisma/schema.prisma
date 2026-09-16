@@ -149,6 +149,8 @@ model Designer {
   website   String?
   /// Localized[] — array of biography paragraphs.
   bio       Json
+  /// Display position (matches the order of `designers`).
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -180,6 +182,8 @@ model Product {
   /// RelatedProduct[] — kept denormalized (name/slug/category/image snapshot)
   /// until the admin dashboard decides whether this becomes a self-relation.
   related       Json
+  /// Display position within its category (matches the source array order).
+  sortOrder     Int      @default(0)
   /// ProductCategory.slug ("coffee-tables", ...) — see FK convention above.
   categoryId    String
   /// Designer.slug derived from Product.designer.href; null when no designer
@@ -208,6 +212,8 @@ model Collection {
   image       String
   /// CollectionDescription — { p1: Localized, p2: Localized, p3: Localized }
   description Json
+  /// Display position (matches the order of `collections`).
+  sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -228,8 +234,10 @@ model Material {
   image       String
   /// Localized { en, fa }
   description Json
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  /// Display position (matches the order of `materials`).
+  sortOrder   Int            @default(0)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   @@index([category])
   @@map("material")
@@ -249,6 +257,8 @@ model Flagship {
   /// undefined today). Holds heroImage, heading, description, info
   /// (addressLines/hours/appointmentNote/phone/email), video and gallery.
   detail    Json?
+  /// Display position (matches the order of `flagships`).
+  sortOrder Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -278,8 +288,10 @@ model Project {
   /// (Localized | string)[] — mixed entries are valid in the source data.
   credits         Json
   portfolioImages String[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  /// Display position (matches the order of projects).
+  sortOrder       Int              @default(0)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
 
   productsUsed ProjectProduct[]
 

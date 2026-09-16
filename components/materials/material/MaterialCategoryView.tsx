@@ -2,7 +2,7 @@
 
 import FabricsGrid from "./FabricsGrid";
 import MaterialsSwitcher from "./MaterialsSwitcher";
-import { materials } from "@/lib/data/materials";
+import type { Material } from "@/lib/data/materials";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { pick } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,7 @@ function isCategorySlug(slug: string): boolean {
 // Resolves the page heading for a `/materials/[material]` slug.
 function resolveTitle(
   slug: string,
+  materials: Material[],
   lang: "en" | "fa",
   t: (key: string) => string,
 ): string {
@@ -41,17 +42,26 @@ function resolveTitle(
 }
 
 // Resolves the active category key for the switcher, if any.
-function resolveActive(slug: string): string | undefined {
+function resolveActive(
+  slug: string,
+  materials: Material[],
+): string | undefined {
   const material = materials.find((m) => m.id === slug);
   if (material) return CATEGORY_TO_KEY[material.category];
   if (isCategorySlug(slug)) return `materials.categories.${slug}`;
   return undefined;
 }
 
-export default function MaterialCategoryView({ slug }: { slug: string }) {
+export default function MaterialCategoryView({
+  slug,
+  materials,
+}: {
+  slug: string;
+  materials: Material[];
+}) {
   const { t, lang } = useLanguage();
-  const title = resolveTitle(slug, lang, t);
-  const active = resolveActive(slug);
+  const title = resolveTitle(slug, materials, lang, t);
+  const active = resolveActive(slug, materials);
 
   return (
     <main className="min-h-screen bg-stone-950 pt-32 md:pt-52">

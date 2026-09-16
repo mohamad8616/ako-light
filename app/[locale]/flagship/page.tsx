@@ -1,6 +1,7 @@
 import FlagshipHeader from "@/components/flagship/FlagshipHeader";
 import FlagshipList from "@/components/flagship/FlagshipList";
 import { translations } from "@/lib/i18n/translations";
+import { getFlagships } from "@/lib/repositories/flagships";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
 import { absoluteUrl, webPageJsonLd } from "@/lib/seo/structuredData";
@@ -40,6 +41,7 @@ export default async function FlagshipPage({
   const { locale } = await params;
   const lang = resolveLocale(locale);
   const t = translations[lang];
+  const flagships = await getFlagships();
 
   const jsonLdData = [
     webPageJsonLd(
@@ -54,7 +56,7 @@ export default async function FlagshipPage({
       <JsonLdRenderer data={jsonLdData} />
       <main className="w-full bg-background">
         <FlagshipHeader />
-        <FlagshipList />
+        <FlagshipList flagships={flagships} />
       </main>
     </>
   );

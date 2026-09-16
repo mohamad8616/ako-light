@@ -1,11 +1,11 @@
 import type { MetadataRoute } from "next";
-import { collections } from "@/lib/data/collections";
-import { designers } from "@/lib/data/designers";
-import { flagshipDetails } from "@/lib/data/flagships";
-import { materials } from "@/lib/data/materials";
-import { productCategories } from "@/lib/data/productCategories";
-import { projects } from "@/lib/data/projects";
 import { getLocalizedPath, type Locale } from "@/lib/i18n/routing";
+import { getCollections } from "@/lib/repositories/collections";
+import { getDesigners } from "@/lib/repositories/designers";
+import { getFlagshipsWithDetail } from "@/lib/repositories/flagships";
+import { getMaterials } from "@/lib/repositories/materials";
+import { getProductCategories } from "@/lib/repositories/product-categories";
+import { getProjects } from "@/lib/repositories/projects";
 import { siteUrl } from "@/lib/seo/config";
 
 const SITEMAP_LOCALES: Locale[] = ["fa", "en"];
@@ -35,7 +35,23 @@ function localizedEntry(path: string, locale: Locale): MetadataRoute.Sitemap[num
   };
 }
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [
+    collections,
+    productCategories,
+    designers,
+    materials,
+    flagshipsWithDetail,
+    projects,
+  ] = await Promise.all([
+    getCollections(),
+    getProductCategories(),
+    getDesigners(),
+    getMaterials(),
+    getFlagshipsWithDetail(),
+    getProjects(),
+  ]);
+
   const staticPaths = [
     "/",
     "/about",
@@ -64,7 +80,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Material pages
     ...materials.map((m) => `/materials/${m.id}`),
     // Flagship detail pages — only the ones that exist (have detail content)
-    ...Object.keys(flagshipDetails).map((slug) => `/flagship/${slug}`),
+    ...flagshipsWithDetail.map((f) => `/flagship/${f.slug}`),
     // Project pages
     ...projects.map((p) => `/projects/${p.id}`),
   ];

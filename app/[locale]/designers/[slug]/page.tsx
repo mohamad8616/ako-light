@@ -1,6 +1,6 @@
 import DesignerBio from "@/components/designers/designer/DesignerBio";
 import DesignerHeader from "@/components/designers/designer/DesignerHeader";
-import { designers } from "@/lib/data/designers";
+import { getDesigner, getDesigners } from "@/lib/repositories/designers";
 import { pick } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale, trimDescription } from "@/lib/seo/metadata";
@@ -17,15 +17,16 @@ interface PageProps {
   params: Promise<{ locale: string; slug: string }>;
 }
 
-export function generateStaticParams() {
-  return designers.map((d) => ({ slug: d.slug }));
+export async function generateStaticParams() {
+  const allDesigners = await getDesigners();
+  return allDesigners.map((d) => ({ slug: d.slug }));
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
-  const designer = designers.find((d) => d.slug === slug);
+  const designer = await getDesigner(slug);
 
   if (!designer) notFound();
 
@@ -69,7 +70,7 @@ export async function generateMetadata({
 
 export default async function DesignerDetailPage({ params }: PageProps) {
   const { slug, locale } = await params;
-  const designer = designers.find((d) => d.slug === slug);
+  const designer = await getDesigner(slug);
 
   if (!designer) {
     notFound();
@@ -103,7 +104,7 @@ export default async function DesignerDetailPage({ params }: PageProps) {
   return (
     <>
       <JsonLdRenderer data={jsonLdData} />
-      <main className="w-full">
+      <main className="w-full mt-24 lg:mt-48">
         <DesignerHeader name={pick(designer.name, lang)} />
         <DesignerBio
           name={pick(designer.name, lang)}

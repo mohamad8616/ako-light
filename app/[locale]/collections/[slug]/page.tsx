@@ -4,7 +4,8 @@ import ImageGallery from "@/components/collections/collection/ImageGallery";
 import ProductsInCollectionSection from "@/components/collections/collection/ProductsInCollectionSection";
 import { pick } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
-import { collections } from "@/lib/data/collections";
+import { getCollection } from "@/lib/repositories/collections";
+import { getProductCategories } from "@/lib/repositories/product-categories";
 import {
   buildLocalizedMetadata,
   resolveLocale,
@@ -26,7 +27,7 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
-  const collection = collections.find((c) => c.id === slug);
+  const collection = await getCollection(slug);
 
   if (!collection) notFound();
 
@@ -64,7 +65,7 @@ export async function generateMetadata({
 
 const page = async ({ params }: PageProps) => {
   const { slug, locale } = await params;
-  const collection = collections.find((c) => c.id === slug);
+  const collection = await getCollection(slug);
 
   if (!collection) return notFound();
 
@@ -90,6 +91,8 @@ const page = async ({ params }: PageProps) => {
     ),
   ];
 
+  const groupedCategories = await getProductCategories();
+
   return (
     <>
       <JsonLdRenderer data={jsonLdData} />
@@ -97,7 +100,7 @@ const page = async ({ params }: PageProps) => {
         <CollectionHero collection={collection} />
         <AboutCollection collection={collection} />
         <ImageGallery />
-        <ProductsInCollectionSection />
+        <ProductsInCollectionSection categories={groupedCategories} />
       </main>
     </>
   );

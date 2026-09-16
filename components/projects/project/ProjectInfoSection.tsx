@@ -1,6 +1,6 @@
 "use client";
 
-import { Project } from "@/lib/data/projects";
+import type { Project } from "@/lib/data/projects";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { pick } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";

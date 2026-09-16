@@ -1,5 +1,8 @@
 import ProductCategoryPageClient from "@/components/products/ProductCategoryPageClient";
-import { productCategories } from "@/lib/data/productCategories";
+import {
+  getProductCategories,
+  getProductCategory,
+} from "@/lib/repositories/product-categories";
 import { notFound } from "next/navigation";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
@@ -16,14 +19,15 @@ interface PageProps {
 }
 
 export async function generateStaticParams() {
-  return productCategories.map((c) => ({ product: c.slug }));
+  const categories = await getProductCategories();
+  return categories.map((c) => ({ product: c.slug }));
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { product, locale } = await params;
-  const category = productCategories.find((c) => c.slug === product);
+  const category = await getProductCategory(product);
 
   if (!category) notFound();
 
@@ -67,7 +71,7 @@ export default async function ProductCategoryPage({ params }: PageProps) {
   const { product, locale } = await params;
   const lang = resolveLocale(locale);
   const dict = translations[lang] as Record<string, string>;
-  const category = productCategories.find((c) => c.slug === product);
+  const category = await getProductCategory(product);
   if (!category) notFound();
 
   const name = dict[category.i18nKey] ?? category.name;
@@ -93,7 +97,7 @@ export default async function ProductCategoryPage({ params }: PageProps) {
   return (
     <>
       <JsonLdRenderer data={jsonLdData} />
-      <ProductCategoryPageClient productSlug={product} />
+      <ProductCategoryPageClient productSlug={product} category={category} />
     </>
   );
 }

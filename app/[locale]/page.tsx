@@ -6,7 +6,7 @@ import HomeCollectionBanner from "@/components/home/HomeCollectionBanner";
 import VideoSection from "@/components/home/VideoSection";
 import Vocla2026Section from "@/components/home/Vocla2026Section";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
-import { productCategories } from "@/lib/data/productCategories";
+import { getProductCategories } from "@/lib/repositories/product-categories";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
@@ -29,7 +29,8 @@ export async function generateMetadata({
   });
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const productCategories = await getProductCategories();
   const productCategory = productCategories.map((category) => {
     return {
       name: category.i18nKey,
