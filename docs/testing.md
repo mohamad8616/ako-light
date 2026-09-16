@@ -1,6 +1,7 @@
 # Testing Strategy — Home Form
 
-Status: **Pass 8.5 — testing foundation + core utilities.**
+Status: **Pass 10.5 — server/data-access tests (integration tier live since
+Pass 9.5).**
 
 ## Framework
 
@@ -27,10 +28,14 @@ any test placed under `tests/` with a `.test.ts` suffix is picked up automatical
 
 ```text
 tests/
+  helpers/    shared setup for the database-backed tiers (env guard,
+              Localized/jsonb shape assertions, React cache-scope simulator)
   unit/
     i18n/       routing, localization helpers, translation dictionaries
     data/       product catalogue, content lookups, data integrity
     seo/        metadata builders, JSON-LD structured data
+  integration/  schema + seed integrity against the dev database (Pass 9.5)
+  server/       repository/data-access reads against the dev database (Pass 10.5)
 ```
 
 Future checkpoints will add sibling trees alongside `unit/`:
@@ -80,7 +85,61 @@ the exact same specifiers the application uses (`@/lib/...`).
   CreativeWork/Person/BreadcrumbList builders (including "no fabricated
   commerce data" guarantees).
 
-All tests are deterministic, fast, network-free and database-free.
+**Pass 8.5 scope (above) stays deterministic, fast, network-free and
+database-free.** The two tiers below intentionally talk to the real seeded dev
+database (read-only, safe to run while the dev server is up) and are skipped
+with a clear message when `DATABASE_URL` is not available in the test
+environment; the `beforeAll` probe fails loudly instead of leaving tests
+silently skipped if the database itself is unreachable.
+
+**Pass 9.5 — database/schema integration** (`tests/integration/schema.test.ts`,
+`integration` project):
+
+- **Connectivity guard** — opens with a `SELECT 1` probe so an unreachable
+  database fails clearly rather than per-test.
+- **Seeded-table population** — non-zero row counts for every seeded table
+  (`product_category`, `designer`, `product`, `collection`, `material`,
+  `flagship`, `project`, `project_product`), catching a seed that ran against
+  the wrong database or failed partway.
+- **Referential integrity** — every `Product.categoryId` resolves to a real
+  `ProductCategory`, every non-null `Product.designerId` to a real `Designer`,
+  and every `ProjectProduct` row to a real `Project` **and** `Product`.
+- **Slug uniqueness** — no duplicate slugs within `ProductCategory`, `Product`,
+  `Designer`, `Collection`, `Material`, `Flagship` or `Project`.
+- **Localized jsonb integrity** — every model's `name` column (full row
+  coverage) plus a spot-checked sample of the deeper jsonb fields
+  (`Product.description`/`moreInfo`, `Designer.bio`, `Collection.description`
+  `p1–p3`, `Material.description`, `Flagship.city` and the `henge-milan`
+  `detail` block, `Project.description`/`paragraph`/`moreDescription`) hold
+  `{ en, fa }` objects with non-empty strings — the same guarantee
+  `tests/unit/data` enforces on the static files, now enforced on the DB copy.
+
+**Pass 10.5 — server/data-access** (`tests/server/*.test.ts`, one file per
+repository from Step 4, `server` project):
+
+- **Shape parity** — every repository function returns data carrying exactly
+  the keys of the matching `lib/data/*` interface (`Product`,
+  `ProductCategory`, `Designer`, `Collection`, `Material`, `Flagship`,
+  `FlagshipDetail`/`FlagshipWithDetail`, `Project`), with `Localized` jsonb
+  columns properly parsed back into `{ en, fa }` objects (never raw strings),
+  `Decimal` → `number` prices, and the Prisma `MaterialType` enum mapped back
+  onto the app's `"stone-composite"`-style union.
+- **Not-found contract** — unknown slugs resolve to `null` (not `undefined`,
+  not an error), including the slug→id fallback paths in the collections,
+  materials and projects repositories.
+- **List count + ordering** — list functions return exactly the seeded row
+  count, and the id sequence matches a direct `prisma.*.findMany` with the
+  intended `orderBy` (`sortOrder`-driven for designers, collections,
+  materials, flagships, projects and product categories; category-then-position
+  for products).
+- **React `cache()` de-duping** — the vitest `server` project resolves `react`
+  to the **react-server build** (the build Next.js hands to server components;
+  the client build's `cache()` is a passthrough stub), and
+  `withRequestCache()` in `tests/helpers/db.ts` installs a minimal RSC
+  dispatcher around the assertions. Each file proves with `vi.spyOn` that
+  repeat calls inside one request cache scope hit the database once (even when
+  one wrapper delegates to another, as `getProjectById` → `getProject`), and
+  `products.test.ts` additionally proves a *fresh* scope re-executes.
 
 ## What is intentionally NOT tested yet
 
@@ -89,18 +148,24 @@ All tests are deterministic, fast, network-free and database-free.
   dimensions. The project is still undergoing visual development.
 - **Components** — React component rendering requires jsdom + React Testing
   Library; not needed for the current pure-logic scope.
-- **`proxy.ts` middleware** — `/fa` 308 redirects & internal rewrites need a
-  Next request/response context; covered by the future E2E checkpoint.
-- **Database** — Prisma/PostgreSQL are deliberately out of scope until later
-  passes; no database, migration, or seed tests exist. Data remains static/local.
-- **Anything network/API-dependent** — no live fetch, no external services.
+- **Database writes** — the Prisma/PostgreSQL integration and server tiers
+  (Pass 9.5 / 10.5) cover the schema, seed and read path against the real dev
+  database, but they are read-only: no migration execution, write paths or
+  transactions are tested (admin CRUD arrives with Pass 12.5).
+- **`proxy.ts` middleware wiring** — the pure decision core
+  (`resolveProxyAction`, `shouldBypassAuth`) is unit tested under
+  `tests/unit`; the actual NextRequest/NextResponse behaviour (`/fa` 308
+  redirects, internal rewrites) needs a Next request context and stays with
+  the future E2E checkpoint.
+- **Anything network/API-dependent** — no live fetch, no external services
+  (the dev database connection in the two DB tiers is the one exception).
 
 ## Planned progression
 
 ```text
-Pass 8.5    Testing foundation + core utilities        ← current
-Pass 9.5    Database/schema/integration tests
-Pass 10.5   Server/data-access tests
+Pass 8.5    Testing foundation + core utilities        ✅ complete
+Pass 9.5    Database/schema/integration tests          ✅ complete
+Pass 10.5   Server/data-access tests                   ✅ complete
 Pass 11.5   Authentication + authorization tests
 Pass 12.5   Admin CRUD/integration tests
 Pass 13.5   Media management tests

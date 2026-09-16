@@ -12,30 +12,66 @@ import { NextResponse, type NextRequest } from "next/server";
  * paths are ALWAYS Persian and /en paths are ALWAYS English, regardless of
  * any stored preference. No Accept-Language detection — deterministic URLs.
  */
-export function proxy(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
 
+/** What the middleware should do with a request path. */
+export type ProxyAction =
+  | { type: "pass" }
+  | { type: "redirect"; target: string }
+  | { type: "rewrite"; target: string };
+
+/**
+ * Pure decision core of the locale middleware, extracted so it can be unit
+ * tested without a NextRequest/NextResponse context (the E2E checkpoint
+ * covers the wiring itself).
+ */
+export function resolveProxyAction(pathname: string): ProxyAction {
   // Explicit English tree — pass through untouched.
   if (pathname === "/en" || pathname.startsWith("/en/")) {
-    return NextResponse.next();
+    return { type: "pass" };
   }
 
   // Legacy /fa prefix is not canonical (Persian is unprefixed).
   // Redirect /fa → / and /fa/<path> → /<path>.
   if (pathname === "/fa" || pathname.startsWith("/fa/")) {
-    const target = pathname === "/fa" ? "/" : pathname.slice(3);
-    return NextResponse.redirect(
-      new URL(`${target}${search}`, request.url),
-      308,
-    );
+    return {
+      type: "redirect",
+      target: pathname === "/fa" ? "/" : pathname.slice(3),
+    };
   }
 
   // Every other page path is Persian. Rewrite internally so the browser URL
   // stays unprefixed while app/[locale=fa]/ renders the page.
   const internalPath = pathname === "/" ? "" : pathname;
-  return NextResponse.rewrite(
-    new URL(`/fa${internalPath}${search}`, request.url),
+  return { type: "rewrite", target: `/fa${internalPath}` };
+}
+
+/**
+ * Whether a request path must reach its handler without the session gate
+ * (Better Auth API routes and the sign-in page stay public). Pure so the
+ * auth checkpoint can unit test it; the matcher in {@link config} already
+ * keeps `api` away from this middleware either way.
+ */
+export function shouldBypassAuth(pathAndQuery: string): boolean {
+  const { pathname } = new URL(pathAndQuery, "http://localhost");
+  return (
+    pathname.startsWith("/api/") ||
+    pathname === "/sign-in" ||
+    pathname.startsWith("/sign-in/")
   );
+}
+
+export function proxy(request: NextRequest) {
+  const { pathname, search } = request.nextUrl;
+  const action = resolveProxyAction(pathname);
+
+  if (action.type === "pass") {
+    return NextResponse.next();
+  }
+
+  const target = new URL(`${action.target}${search}`, request.url);
+  return action.type === "redirect"
+    ? NextResponse.redirect(target, 308)
+    : NextResponse.rewrite(target);
 }
 
 export const config = {
