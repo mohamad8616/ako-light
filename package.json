@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate --config prisma7.config.ts && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "postinstall": "prisma skills sync || exit 0"
+    "postinstall": "prisma generate --config prisma7.config.ts && prisma skills sync || exit 0"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -51,6 +51,7 @@
     "prettier-plugin-tailwindcss": "^0.8.1",
     "prisma": "^7.10.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.13",
     "typescript": "^5",
     "vitest": "^5.0.0"
   }

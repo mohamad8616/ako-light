@@ -5,6 +5,11 @@ import { defineConfig, env } from "prisma/config";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
-  migrations: { path: "prisma/migrations" },
+  migrations: {
+    path: "prisma/migrations",
+    // Prisma 7 reads the seed command from here (older versions used the
+    // "prisma" field in package.json). Run it with `npx prisma db seed`.
+    seed: "tsx prisma/seed.ts",
+  },
   datasource: { url: env("DATABASE_URL") },
 });
