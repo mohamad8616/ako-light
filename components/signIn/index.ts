@@ -31,7 +31,16 @@ export type { AuthSegmentedOption } from "./AuthSegmentedControl";
 export { default as AuthTextField } from "./AuthTextField";
 export { default as EmailPasswordFields } from "./EmailPasswordFields";
 export { default as FeedbackMessage } from "./FeedbackMessage";
+export { default as PhoneEntryStep } from "./PhoneEntryStep";
 export { default as PhoneFields } from "./PhoneFields";
+export { default as PhoneVerifyStep } from "./PhoneVerifyStep";
 export { useSignInForm } from "./useSignInForm";
-export { initialForm, OTP_LENGTH } from "./types";
+export {
+  isGetCodeDisabled,
+  isOtpComplete,
+  phoneStep,
+  toPersianDigits,
+} from "./phoneFlow";
+export type { PhoneStep } from "./phoneFlow";
+export { initialForm, OTP_EXPIRES_IN_SECONDS, OTP_LENGTH } from "./types";
 export type { AuthMethod, AuthMode, FormState } from "./types";

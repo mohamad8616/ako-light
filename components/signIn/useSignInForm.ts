@@ -50,19 +50,21 @@ function readRedirectTo(): string | null {
  * better-auth calls and the translated labels — everything the card needs.
  * `SignInForm.tsx` renders what this returns and nothing else holds state.
  *
- * Request matrix (each row is one click of the submit button):
+ * Request matrix (the card's submit button is email-only; the phone flow
+ * verifies from its own step):
  *
- *   mode \ method   email                        phone
- *   signIn          POST /sign-in/email          POST /sign-in/phone-number
- *                   { email, password,           { phoneNumber, password,
- *                     rememberMe }                 rememberMe }
- *   createAccount   POST /sign-up/email          POST /phone-number/verify
- *                   { email, password, name }    { phoneNumber, code }
+ *   mode \ method   email                        phone (unified, no mode)
+ *   signIn          POST /sign-in/email          POST /phone-number/verify
+ *                   { email, password,           { phoneNumber, code,
+ *                     rememberMe }                 referredByCode? }
+ *   createAccount   POST /sign-up/email          (same phone request —
+ *                   { email, password, name }    signUpOnVerification creates
+ *                                                or logs in transparently)
  *
  * The rendered inputs mirror those bodies exactly (see EmailPasswordFields /
  * PhoneFields): a field is only shown when the request on that row consumes it.
- * That is what fixed phone sign-in, which used to collect an OTP and then send
- * an empty password.
+ * The phone flow is unified — there is no sign-in/create-account toggle for
+ * it, so its title/submit label never depend on authMode.
  *
  * Server error codes are mapped to one translated sentence each:
  *
@@ -110,8 +112,9 @@ function readRedirectTo(): string | null {
  * Adding a third method (e.g. username):
  *   1. widen `AuthMethod` in types.ts and the fields of `FormState`;
  *   2. add the inputs to a new field component next to EmailPasswordFields;
- *   3. add a `handle<Method>Submit` here, a branch in `handleSubmit`, and an
- *      option in SignInForm's method segmented control.
+ *   3. add a `handle<Method>Submit` here, wire it into the card (email's
+ *      shared submit vs the method's own step action), and add an option in
+ *      SignInForm's method segmented control.
  */
 export function useSignInForm() {
   const { t } = useLanguage();
@@ -124,6 +127,9 @@ export function useSignInForm() {
   const [authMethod, setAuthMethod] = useState<AuthMethod>("email");
   // All input values; per-field ownership is documented on FormState.
   const [form, setForm] = useState<FormState>(initialForm);
+  // Terms acceptance for the phone flow — lifted out of PhoneFields so the
+  // checkbox state survives step transitions and resets with the form.
+  const [termsAccepted, setTermsAccepted] = useState(false);
   // True while a code is waiting to be typed (phone sign-up only); reset by
   // changeMode/changeMethod.
   const [otpSent, setOtpSent] = useState(false);
@@ -136,10 +142,11 @@ export function useSignInForm() {
   const [success, setSuccess] = useState<string>("");
 
   /** Post-auth navigation: the proxy's `redirectTo` when it is a safe local
-   *  path, otherwise the home page (see {@link readRedirectTo}). */
-  const goToAfterAuth = () => {
+   *  path, otherwise the home page (see {@link readRedirectTo}). Stable ref so
+   *  verify callbacks (auto-submit effect) don't re-fire on every render. */
+  const goToAfterAuth = useCallback(() => {
     router.push(readRedirectTo() ?? "/");
-  };
+  }, [router]);
 
   /** Drops both feedback strings — used before every new attempt. */
   const resetFeedback = () => {
@@ -162,6 +169,7 @@ export function useSignInForm() {
     setAuthMode(mode);
     resetFeedback();
     setOtpSent(false);
+    setTermsAccepted(false);
   };
 
   /** Email/phone toggle. Same reset as {@link changeMode} — see above. */
@@ -169,6 +177,7 @@ export function useSignInForm() {
     setAuthMethod(method);
     resetFeedback();
     setOtpSent(false);
+    setTermsAccepted(false);
   };
 
   /**
@@ -270,16 +279,16 @@ export function useSignInForm() {
   };
 
   /**
-   * Phone flows use the same verify endpoint for both modes:
+   * Phone flows use one unified verify endpoint (no sign-in/create-account
+   * mode):
    *
-   *   signIn        POST /phone-number/verify  { phoneNumber, code }
-   *   createAccount POST /phone-number/verify  { phoneNumber, code }
+   *   POST /phone-number/verify  { phoneNumber, code, referredByCode? }
    *
-   * The code is sent via `handleSendOtp` (triggered by the "Send code"
-   * button in PhoneFields) before submitting. The success message
-   * differs by mode.
+   * signUpOnVerification (lib/auth/auth.ts) creates a new account for an
+   * unknown number or logs in an existing one. The code is sent via
+   * `handleSendOtp` (the entry step's "Get code" button) before verifying.
    */
-  const handlePhoneSubmit = async () => {
+  const handlePhoneSubmit = useCallback(async () => {
     const phone = form.phoneNumber.trim();
     if (!phone) {
       setError(t("auth.errors.phoneRequired"));
@@ -295,10 +304,26 @@ export function useSignInForm() {
     setIsSubmitting(true);
 
     try {
-      const verify = await authClient.phoneNumber.verify({
-        phoneNumber: phone,
-        code: form.otp,
-      });
+      // Unified verify: creates a new account for an unknown number or logs
+      // in an existing one (see signUpOnVerification in lib/auth/auth.ts).
+      // referredByCode is forwarded directly — the verify endpoint spreads
+      // extra body fields into createUser on the sign-up path (parsed via
+      // user.additionalFields), so no follow-up update call is needed. Sent
+      // only when the user typed a code; omitted otherwise so logins and
+      // empty inputs never overwrite the stored value.
+      const referral = form.referralCode.trim();
+      const verify = await authClient.phoneNumber.verify(
+        referral
+          ? {
+              phoneNumber: phone,
+              code: form.otp,
+              referredByCode: referral,
+            }
+          : {
+              phoneNumber: phone,
+              code: form.otp,
+            },
+      );
 
       if (verify?.error) {
         const code = verify.error?.code ?? "";
@@ -312,11 +337,7 @@ export function useSignInForm() {
         return;
       }
 
-      setSuccess(
-        authMode === "signIn"
-          ? t("auth.success.phone.signIn")
-          : t("auth.success.phone.signUp"),
-      );
+      setSuccess(t("auth.success.phone.signIn"));
       goToAfterAuth();
     } catch (err) {
       const message =
@@ -325,7 +346,7 @@ export function useSignInForm() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [form.phoneNumber, form.otp, form.referralCode, goToAfterAuth, t]);
 
   /** Clears the OTP and hides the code section so the user can edit their number. */
   const handleEditNumber = useCallback(() => {
@@ -334,16 +355,12 @@ export function useSignInForm() {
   }, []);
 
   /**
-   * Submit-button entry point. Kept as a thin dispatcher on `authMethod` so
-   * the card's onClick is stable across all four flows — the mode-specific
-   * branching lives in the handlers above.
+   * Submit-button entry point. The card's button is email-only now (the
+   * phone flow verifies from PhoneVerifyStep via handlePhoneSubmit), so this
+   * dispatches email submits only.
    */
   const handleSubmit = async () => {
-    if (authMethod === "email") {
-      await handleEmailSubmit();
-      return;
-    }
-    await handlePhoneSubmit();
+    await handleEmailSubmit();
   };
 
   // The card's whole surface. Adding a key here is the only step needed to
@@ -354,14 +371,18 @@ export function useSignInForm() {
     authMethod,
     form,
     otpSent,
+    termsAccepted,
+    setTermsAccepted,
     isSubmitting,
     isSendingOtp,
     error,
     success,
     title:
-      authMode === "signIn"
-        ? t("auth.title.signIn")
-        : t("auth.title.createAccount"),
+      authMethod === "phone"
+        ? t("auth.title.phone")
+        : authMode === "signIn"
+          ? t("auth.title.signIn")
+          : t("auth.title.createAccount"),
     submitLabel:
       authMode === "signIn"
         ? t("auth.submit.signIn")
@@ -370,6 +391,7 @@ export function useSignInForm() {
     changeMethod,
     updateField,
     handleSubmit,
+    handlePhoneSubmit,
     handleSendOtp,
     onEditNumber: handleEditNumber,
   };

@@ -7,12 +7,16 @@
  *
  * How the pieces fit together (`components/signIn/`):
  *   types.ts                -> this file: AuthMode, AuthMethod, FormState
+ *   phoneFlow.ts            -> pure step/gating predicates (unit-testable)
  *   useSignInForm.ts        -> state machine + better-auth calls + labels
  *   SignInForm.tsx          -> composes the card (import this from a route)
  *   EmailPasswordFields.tsx -> which inputs the email flows show
- *   PhoneFields.tsx         -> which inputs the phone flows show
+ *   PhoneFields.tsx         -> entry/verify step container (one at a time)
+ *   PhoneEntryStep.tsx      -> number + terms + referral + Get code
+ *   PhoneVerifyStep.tsx     -> code boxes + resend + Verify (auto-submit)
  *   AuthTextField.tsx       -> one labelled input (presentation only)
- *   AuthSegmentedControl.tsx-> the email/phone and sign-in/create toggles
+ *   AuthSegmentedControl.tsx-> the email/phone method toggle (email-only mode
+ *                              switch lives inline in SignInForm)
  *   FeedbackMessage.tsx     -> the error/success banner
  *
  * Everything is "props in, callbacks out": only useSignInForm holds state, so
@@ -35,6 +39,15 @@
  * it here (then bump the server option to match) — nothing else hardcodes 6.
  */
 export const OTP_LENGTH = 6;
+
+/**
+ * Lifetime of a phone OTP code, in seconds — the countdown's starting value.
+ *
+ * Must match lib/auth/auth.ts's `phoneNumber({ expiresIn: 300 })`. Change it
+ * here (then bump the server option to match) — nothing else hardcodes the
+ * countdown start.
+ */
+export const OTP_EXPIRES_IN_SECONDS = 300;
 
 /** Which account operation the form is performing. */
 export type AuthMode = "signIn" | "createAccount";
@@ -61,6 +74,8 @@ export interface FormState {
   phoneNumber: string;
   /** Digits of the SMS code — phone sign-up (`/phone-number/verify`) only. */
   otp: string;
+  /** Optional referral code typed on the phone-entry step; sign-up only. */
+  referralCode: string;
 }
 
 /**
@@ -75,4 +90,5 @@ export const initialForm: FormState = {
   password: "",
   phoneNumber: "",
   otp: "",
+  referralCode: "",
 };

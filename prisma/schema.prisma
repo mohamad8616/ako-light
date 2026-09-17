@@ -22,6 +22,11 @@ model User {
   role                String    @default("user")
   phoneNumber         String?   @unique
   phoneNumberVerified Boolean   @default(false)
+  /// Optional referral/invitation code captured on the phone-entry step and
+  /// stored on sign-up only (passed through phoneNumber.verify() — see
+  /// user.additionalFields in lib/auth/auth.ts). Null for email sign-ups
+  /// and for phone logins where no code was typed.
+  referredByCode      String?
   /// Ban support required by better-auth's admin plugin.
   banned              Boolean   @default(false)
   banReason           String?

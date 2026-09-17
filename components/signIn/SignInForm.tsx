@@ -17,14 +17,15 @@ import { useSignInForm } from "./useSignInForm";
  *
  * Layout, top to bottom:
  *   1. privacy eyebrow `auth.footer.privacy` + the `title` heading (the heading
- *      follows the selected mode);
+ *      follows the selected email mode, or the unified phone title);
  *   2. method toggle — "Email & password" | "Phone number";
- *   3. mode toggle — "Sign in" | "Create account";
- *   4. the field group for that combination (EmailPasswordFields/PhoneFields);
- *   5. <FeedbackMessage> plus the submit button;
- *   6. a footer line that duplicates the mode toggle ("New here? /
- *      Already have an account?") because a text link is the more discoverable
- *      affordance under a form.
+ *   3. the field group for that method (EmailPasswordFields/PhoneFields);
+ *      the sign-in/create-account mode toggle + footer link are email-only —
+ *      the unified phone flow has no mode;
+ *   4. <FeedbackMessage> plus the submit button (email only — the phone flow
+ *      verifies from its own Verify step);
+ *   5. a footer line for email ("New here? / Already have an account?")
+ *      because a text link is the more discoverable affordance under a form.
  *
  * Usage — from a route (see app/[locale]/sign-in/page.tsx):
  *
@@ -58,6 +59,8 @@ export default function SignInForm() {
     authMethod,
     form,
     otpSent,
+    termsAccepted,
+    setTermsAccepted,
     isSubmitting,
     isSendingOtp,
     error,
@@ -68,6 +71,7 @@ export default function SignInForm() {
     changeMethod,
     updateField,
     handleSubmit,
+    handlePhoneSubmit,
     handleSendOtp,
     onEditNumber,
   } = useSignInForm();
@@ -76,6 +80,7 @@ export default function SignInForm() {
     { value: "email", label: t("auth.method.email") },
     { value: "phone", label: t("auth.method.phone") },
   ];
+  const isPhone = authMethod === "phone";
 
   return (
     <motion.section
@@ -93,8 +98,9 @@ export default function SignInForm() {
         </h1>
       </div>
 
-      {/* Method first, then mode: users decide *how* they authenticate before
-          whether they are signing in or registering. */}
+      {/* Method toggle: users decide *how* they authenticate. The email flow
+          additionally offers a sign-in/create-account switch (submit button +
+          footer link); the unified phone flow has no mode. */}
       <AuthSegmentedControl
         ariaLabel={t("auth.method.groupLabel")}
         options={methodOptions}
@@ -104,55 +110,64 @@ export default function SignInForm() {
       />
 
       <div className="space-y-4">
-        {authMethod === "email" ? (
-          <p className="text-background-secondary mt-4">
-            {t("auth.emailHint")}
-          </p>
-        ) : (
+        {isPhone ? (
           <p className="text-background-secondary mt-4">
             {t("auth.phoneHint")}
           </p>
+        ) : (
+          <p className="text-background-secondary mt-4">
+            {t("auth.emailHint")}
+          </p>
         )}
         {/* The field group changes the shape of the request, so it is the only
-            part that varies by method; feedback and submit stay shared. */}
-        {authMethod === "email" ? (
+            part that varies by method; feedback and submit stay shared.
+            The phone flow is unified (no sign-in/create-account mode), so it
+            carries no mode toggle — PhoneFields owns its per-step actions. */}
+        {isPhone ? (
+          <PhoneFields
+            form={form}
+            onChange={updateField}
+            otpSent={otpSent}
+            termsAccepted={termsAccepted}
+            onTermsChange={setTermsAccepted}
+            isSendingOtp={isSendingOtp}
+            isSubmitting={isSubmitting}
+            onSendOtp={handleSendOtp}
+            onEditNumber={onEditNumber}
+            onVerify={handlePhoneSubmit}
+          />
+        ) : (
           <EmailPasswordFields
             mode={authMode}
             form={form}
             onChange={updateField}
           />
-        ) : (
-          <PhoneFields
-            mode={authMode}
-            form={form}
-            onChange={updateField}
-            otpSent={otpSent}
-            isSendingOtp={isSendingOtp}
-            isSubmitting={isSubmitting}
-            onSendOtp={handleSendOtp}
-            onEditNumber={onEditNumber}
-          />
         )}
 
         <FeedbackMessage error={error} success={success} />
 
-        <Button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isSubmitting || isSendingOtp}
-          className="h-11 w-full cursor-pointer"
-        >
-          {isSubmitting
-            ? authMode === "signIn"
-              ? t("auth.submit.signingIn")
-              : t("auth.submit.creatingAccount")
-            : submitLabel}
-        </Button>
+
+        {!isPhone && (
+          <Button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting || isSendingOtp}
+            className="h-11 w-full cursor-pointer"
+          >
+            {isSubmitting
+              ? authMode === "signIn"
+                ? t("auth.submit.signingIn")
+                : t("auth.submit.creatingAccount")
+              : submitLabel}
+          </Button>
+        )}
       </div>
 
-      <div className="text-muted-foreground mt-6 text-center text-sm">
-        {/* Secondary affordance for the same switch as the mode toggle above;
-            both go through changeMode, so neither can leave stale feedback. */}
+      {!isPhone && (
+        <div className="text-muted-foreground mt-6 text-center text-sm">
+          {/* Email-only mode switch; the unified phone flow has no mode, so it
+              stays hidden there. Goes through changeMode like the (removed)
+              toggle, so neither path can leave stale feedback. */}
         {authMode === "signIn"
           ? t("auth.toggle.help.signIn")
           : t("auth.toggle.help.createAccount")}{" "}
@@ -167,7 +182,8 @@ export default function SignInForm() {
             ? t("auth.toggle.link.signIn")
             : t("auth.toggle.link.createAccount")}
         </button>
-      </div>
+        </div>
+      )}
     </motion.section>
   );
 }
