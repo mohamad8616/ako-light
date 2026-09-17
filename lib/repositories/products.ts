@@ -38,8 +38,9 @@ export type ProductRow = Prisma.ProductGetPayload<{
  * Maps a row onto the `Product` interface from
  * `lib/data/product-categories/types.ts`.
  *
- * - `category` is `categoryId`: the FK column holds the `ProductCategory.slug`
- *   per the schema's FK convention.
+ * - `category` is the parent `ProductCategory`'s *slug* (the route handle).
+ *   The FK column `Product.categoryId` holds `ProductCategory.id` per the
+ *   id-based FK convention, so the slug is read off the joined relation.
  * - `designer.href` is rebuilt from the designer's slug (`/designers/<slug>`),
  *   which is exactly what the source data stored.
  * - `categoryLabel` has no column of its own — the source data duplicated the
@@ -58,7 +59,7 @@ export function mapProductRow(row: ProductRow): Product {
     hoverImage: row.hoverImage,
     price: row.price.toNumber(),
     store: { existsInStore: row.existsInStore, quantity: row.quantity },
-    category: row.categoryId,
+    category: row.category.slug,
     categoryLabel: row.category ? asLocalized(row.category.name) : undefined,
     heroImage: row.heroImage,
     description: asLocalized(row.description),
@@ -99,7 +100,7 @@ export const getProduct = cache(
     });
 
     if (!row) return null;
-    if (row.categoryId !== categoryOrSlug) return null;
+    if (row.category.slug !== categoryOrSlug) return null;
 
     return mapProductRow(row);
   },
@@ -126,8 +127,14 @@ export const getProducts = cache(async (): Promise<Product[]> => {
  */
 export const getProductsByCategory = cache(
   async (categorySlug: string): Promise<Product[]> => {
+    const category = await prisma.productCategory.findUnique({
+      where: { slug: categorySlug },
+      select: { id: true },
+    });
+    if (!category) return [];
     const rows = await prisma.product.findMany({
-      where: { categoryId: categorySlug },
+      // Resolve the route handle first; the relation itself is keyed by id.
+      where: { categoryId: category.id },
       include: productInclude,
       orderBy: { sortOrder: "asc" },
     });

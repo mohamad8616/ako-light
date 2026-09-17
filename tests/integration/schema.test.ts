@@ -7,7 +7,9 @@
  * catalog data (the static-file equivalents live in tests/unit/data):
  *
  * - referential integrity of every FK (Product→Category, Product→Designer,
- *   ProjectProduct→Project+Product),
+ *   ProjectProduct→Project+Product), asserted twice over: the FK *values* all
+ *   resolve to the parent's `id` (not its slug), and the Postgres constraint
+ *   definitions themselves target the parent's `id` column,
  * - slug uniqueness within every seeded model,
  * - non-zero row counts (catches a seed that ran against the wrong database
  *   or failed partway),
@@ -19,6 +21,13 @@
 import "dotenv/config";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { catalogueItems } from "@/lib/data/catalogue";
+import { collections } from "@/lib/data/collections";
+import { designers } from "@/lib/data/designers";
+import { flagships } from "@/lib/data/flagships";
+import { fabrics, materials } from "@/lib/data/materials";
+import { productCategories } from "@/lib/data/productCategories";
+import { projects } from "@/lib/data/projects";
 import { prisma } from "@/lib/db/prisma";
 import {
   expectLocalized,
@@ -61,6 +70,60 @@ describeDb("catalog schema & seed integrity (dev database)", () => {
 
     for (const [table, count] of counts) {
       expect(await count(), `${table} rows`).toBeGreaterThan(0);
+    }
+  });
+
+  it("holds exactly as many rows as the static lib/data sources", async () => {
+    // Pass 11C row-count parity. The FK conversion ran as an
+    // additive-then-drop migration (no DELETE, no DROP COLUMN), so every
+    // seeded row must still be present. Counting against the static sources —
+    // the seed's own input — is what catches a backfill that silently dropped
+    // rows; a `> 0` check cannot.
+    const categorySlugs = new Set(productCategories.map((c) => c.slug));
+    // Mirrors seedProducts(): a product needs a slug AND a known category.
+    const seededProducts = productCategories.flatMap((category) =>
+      category.products.filter(
+        (product) =>
+          product.slug && categorySlugs.has(product.category || category.slug),
+      ),
+    );
+    // Mirrors seedProjects(): unknown product slugs are skipped and repeated
+    // slugs deduplicated before each join row is written.
+    const productSlugs = new Set(seededProducts.map((product) => product.slug));
+    const seededLinks = projects.reduce((total, project) => {
+      const seen = new Set<string>();
+      for (const used of project.productsUsed) {
+        if (productSlugs.has(used.slug)) seen.add(used.slug);
+      }
+      return total + seen.size;
+    }, 0);
+
+    const expected: [string, number, () => Promise<number>][] = [
+      ["product_category", productCategories.length, () => prisma.productCategory.count()],
+      ["designer", designers.length, () => prisma.designer.count()],
+      ["product", seededProducts.length, () => prisma.product.count()],
+      [
+        "product_image",
+        seededProducts.reduce(
+          (total, product) => total + product.images.length,
+          0,
+        ),
+        () => prisma.productImage.count(),
+      ],
+      ["collection", collections.length, () => prisma.collection.count()],
+      ["material", materials.length, () => prisma.material.count()],
+      ["fabric_item", fabrics.length, () => prisma.fabricItem.count()],
+      ["catalogue_item", catalogueItems.length, () => prisma.catalogueItem.count()],
+      ["flagship", flagships.length, () => prisma.flagship.count()],
+      ["project", projects.length, () => prisma.project.count()],
+      ["project_product", seededLinks, () => prisma.projectProduct.count()],
+    ];
+
+    for (const [table, staticCount, dbCount] of expected) {
+      expect(staticCount, `${table}: static source is empty`).toBeGreaterThan(0);
+      expect(await dbCount(), `${table}: database rows vs static source rows`).toBe(
+        staticCount,
+      );
     }
   });
 
@@ -124,15 +187,15 @@ describeDb("catalog schema & seed integrity (dev database)", () => {
     }
   });
 
-  it("resolves every Product.categoryId to a real ProductCategory", async () => {
+  it("resolves every Product.categoryId to a real ProductCategory, by id", async () => {
     const [products, categories] = await Promise.all([
       prisma.product.findMany({ select: { categoryId: true } }),
-      prisma.productCategory.findMany({ select: { slug: true } }),
+      prisma.productCategory.findMany({ select: { id: true } }),
     ]);
 
-    // Per the schema's FK convention, Product.categoryId references the
-    // parent's *slug*.
-    const known = new Set(categories.map((category) => category.slug));
+    // Product.categoryId references ProductCategory.id — the id-based FK
+    // convention. The slug is only a route handle and is never the target.
+    const known = new Set(categories.map((category) => category.id));
     const orphans = products
       .map((product) => product.categoryId)
       .filter((categoryId) => !known.has(categoryId));
@@ -140,16 +203,16 @@ describeDb("catalog schema & seed integrity (dev database)", () => {
     expect(orphans, "orphaned Product.categoryId values").toEqual([]);
   });
 
-  it("resolves every non-null Product.designerId to a real Designer", async () => {
+  it("resolves every non-null Product.designerId to a real Designer, by id", async () => {
     const [products, designers] = await Promise.all([
       prisma.product.findMany({
         select: { designerId: true },
         where: { designerId: { not: null } },
       }),
-      prisma.designer.findMany({ select: { slug: true } }),
+      prisma.designer.findMany({ select: { id: true } }),
     ]);
 
-    const known = new Set(designers.map((designer) => designer.slug));
+    const known = new Set(designers.map((designer) => designer.id));
     const orphans = products
       .map((product) => product.designerId)
       .filter((designerId) => designerId !== null && !known.has(designerId));
@@ -157,25 +220,74 @@ describeDb("catalog schema & seed integrity (dev database)", () => {
     expect(orphans, "orphaned Product.designerId values").toEqual([]);
   });
 
-  it("resolves every ProjectProduct row to a real Project and Product", async () => {
+  it("resolves every ProjectProduct row to a real Project and Product, by id", async () => {
     const [links, projects, products] = await Promise.all([
       prisma.projectProduct.findMany(),
-      prisma.project.findMany({ select: { slug: true } }),
-      prisma.product.findMany({ select: { slug: true } }),
+      prisma.project.findMany({ select: { id: true } }),
+      prisma.product.findMany({ select: { id: true } }),
     ]);
 
-    const projectSlugs = new Set(projects.map((project) => project.slug));
-    const productSlugs = new Set(products.map((product) => product.slug));
+    const projectIds = new Set(projects.map((project) => project.id));
+    const productIds = new Set(products.map((product) => product.id));
 
     const orphanedProjects = links
       .map((link) => link.projectId)
-      .filter((projectId) => !projectSlugs.has(projectId));
+      .filter((projectId) => !projectIds.has(projectId));
     const orphanedProducts = links
       .map((link) => link.productId)
-      .filter((productId) => !productSlugs.has(productId));
+      .filter((productId) => !productIds.has(productId));
 
     expect(orphanedProjects, "orphaned ProjectProduct.projectId").toEqual([]);
     expect(orphanedProducts, "orphaned ProjectProduct.productId").toEqual([]);
+  });
+
+  it("binds every catalog FK constraint to the parent's id column, not slug", async () => {
+    // Read straight from the Postgres catalog. Because `id` and `slug` hold
+    // identical values for every seeded row, the FK *values* alone can never
+    // distinguish a slug-target from an id-target — only the constraint
+    // definition can. This pins the id-based FK convention at the schema level
+    // and fails if a future migration rebinds a catalog FK back to "slug".
+    const constraints = await prisma.$queryRaw<
+      { child: string; conname: string; target: string }[]
+    >`
+      SELECT c.conrelid::regclass::text AS child,
+             c.conname,
+             a.attname AS target
+      FROM pg_constraint c
+      JOIN pg_attribute a
+        ON a.attrelid = c.confrelid AND a.attnum = c.confkey[1]
+      WHERE c.contype = 'f'
+        AND c.connamespace = 'public'::regnamespace
+        AND c.conname IN (
+          'product_categoryId_fkey',
+          'product_designerId_fkey',
+          'product_image_productId_fkey',
+          'project_product_projectId_fkey',
+          'project_product_productId_fkey'
+        )
+      ORDER BY c.conname
+    `;
+
+    expect(
+      // Sorted on both sides: the constraint names are the assertion, not
+      // Postgres' collation-dependent ORDER BY.
+      constraints.map((constraint) => constraint.conname).sort(),
+      "converted catalog FK constraints",
+    ).toEqual(
+      [
+        "product_categoryId_fkey",
+        "product_designerId_fkey",
+        "product_image_productId_fkey",
+        "project_product_projectId_fkey",
+        "project_product_productId_fkey",
+      ].sort(),
+    );
+    for (const constraint of constraints) {
+      expect(
+        constraint.target,
+        `${constraint.conname} on ${constraint.child} targets`,
+      ).toBe("id");
+    }
   });
 
   it("stores every Localized name column as { en, fa } with non-empty strings", async () => {

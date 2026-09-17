@@ -3,6 +3,7 @@ import {
   getProductCategories,
   getProductCategory,
 } from "@/lib/repositories/product-categories";
+import { redirectIfSlugRenamed } from "@/lib/navigation/slugRedirect";
 import { notFound } from "next/navigation";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
@@ -29,7 +30,11 @@ export async function generateMetadata({
   const { product, locale } = await params;
   const category = await getProductCategory(product);
 
-  if (!category) notFound();
+  if (!category) {
+    // Renamed category slug → permanent redirect to the current URL.
+    await redirectIfSlugRenamed("productCategory", product, { locale });
+    notFound();
+  }
 
   const lang = resolveLocale(locale);
   // Server-side dictionary lookup (the useLanguage t() function is
@@ -72,7 +77,11 @@ export default async function ProductCategoryPage({ params }: PageProps) {
   const lang = resolveLocale(locale);
   const dict = translations[lang] as Record<string, string>;
   const category = await getProductCategory(product);
-  if (!category) notFound();
+  if (!category) {
+    // Renamed category slug → permanent redirect to the current URL.
+    await redirectIfSlugRenamed("productCategory", product, { locale });
+    notFound();
+  }
 
   const name = dict[category.i18nKey] ?? category.name;
   const title = dict["page.product.title"].replace("{name}", name);

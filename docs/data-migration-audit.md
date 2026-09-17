@@ -40,7 +40,7 @@ These entities already have Prisma models, repositories, and are seeded:
 ### Added Models (Prisma schema)
 
 1. **ProductImage** — Separate relational model for product images
-   - Fields: id, productId (FK to Product.slug), url, alt, sortOrder, isPrimary, timestamps
+   - Fields: id, productId (FK to Product.id — converted from Product.slug in Pass 11C, §3c), url, alt, sortOrder, isPrimary, timestamps
    - Migration: `20260916150027_add_product_image_fabric_item_catalogue_item`
 
 2. **FabricItem** — Separate entity from Material for fabric swatches
@@ -115,11 +115,120 @@ three Pass 11A entities.
   slug-based parent FKs (shared with `Product.categoryId`, `Product.designerId`,
   `ProjectProduct.productId`), and for placeholder data id == slug. Changing
   only ProductImage would split the schema into two FK styles.
-- **PROPOSED SCOPE CHANGE (needs confirmation before any future pass):**
+- **PROPOSED SCOPE CHANGE — CONFIRMED AND IMPLEMENTED in Pass 11C (§3c):**
   migrate all catalog FKs from slug-based to id-based (`ProductImage`,
   `ProjectProduct`, `Product.categoryId/designerId`). Slugs can change while
-  ids shouldn't, so the id-based FKs are arguably more correct — but it is a
-  schema-wide convention change and must be a dedicated, confirmed pass.
+  ids shouldn't, so the id-based FKs are more correct — but it was a
+  schema-wide convention change and had to be a dedicated, confirmed pass.
+
+## 3c. Pass 11C — Catalog FKs converted to `id` (+ slug-rename redirects)
+
+Date: 2026-09-17. Confirms and implements the scope change §3b proposed and
+left pending. It is the precondition for Step 7 admin CRUD: once slugs are
+editable from the dashboard they can no longer be load-bearing for relational
+integrity.
+
+### Foreign keys converted (slug → id)
+
+Every foreign key in the schema followed the slug-reference convention, so all
+five were converted — the list below is the complete set, not a subset. The
+Better Auth tables needed no change: `Session.userId` and `Account.userId`
+already referenced `User.id`.
+
+| Child FK column | Was → | Now → |
+| --- | --- | --- |
+| `Product.categoryId` | `ProductCategory.slug` | `ProductCategory.id` |
+| `Product.designerId` | `Designer.slug` | `Designer.id` |
+| `ProductImage.productId` | `Product.slug` | `Product.id` |
+| `ProjectProduct.projectId` | `Project.slug` | `Project.id` |
+| `ProjectProduct.productId` | `Product.slug` | `Product.id` |
+
+`slug` is still `@unique` on `ProductCategory`, `Designer`, `Product`,
+`Collection`, `Material`, `Flagship` and `Project`, and is still the
+routing/`getBySlug` handle — it is simply never a foreign-key target any more.
+
+### Migrations
+
+1. `20260916204550_convert_catalog_fks_to_id` — drops the five slug-targeting
+   FK constraints, backfills each FK column from the parent's `slug` to its
+   `id`, creates `slug_history`, then adds the id-targeting constraints. There
+   is no `DELETE` and no `DROP COLUMN` anywhere: the `ADD CONSTRAINT` step is
+   the integrity gate, and it fails the whole migration if even one orphan
+   value remains.
+2. `20260916220000_catalog_fk_additive_column_swap` — the strictly additive
+   form of the same swap (`*_new_id` column → backfill via the constraint's
+   *actual* target → validate → `SET NOT NULL` → add FK → drop the old column →
+   rename), added because migration 1 had already been applied in dev. It
+   asserts row counts before/after inside the migration itself and raises if
+   they differ, then restores the indexes and the `project_product` composite
+   primary key that the column drop removed.
+
+Both are applied: `npx prisma migrate status` reports the database up to date.
+
+### Row-count verification (no rows were dropped)
+
+The seed was **not** re-run: the counts below are the post-migration database
+counts, and `tests/integration/schema.test.ts` now asserts each one to be
+*exactly* the number derived from the static `lib/data` sources — a `> 0` check
+could not catch a silently dropped row.
+
+| Table | Rows |
+| --- | --- |
+| `product_category` | 11 |
+| `designer` | 9 |
+| `product` | 31 |
+| `product_image` | 186 |
+| `collection` | 6 |
+| `material` | 4 |
+| `flagship` | 12 |
+| `project` | 4 |
+| `project_product` | 12 |
+
+Orphans across all five converted FKs: **0**. `id = slug` holds for all 77 rows
+across the seven slugged models (11+9+31+6+4+12+4), verified *before* relying on
+it, so the backfill had no drifted values to repair. `slug_history` holds 0 rows
+(nothing has been renamed yet — admin CRUD does not exist).
+
+### Code changes
+
+- `prisma/schema.prisma` — the five `references: [slug]` → `references: [id]`,
+  the rewritten FK-convention header note, and the new `SlugHistory` model.
+- `prisma/seed.ts` — now resolves every parent *slug* from the static data to
+  the parent's *id* before writing an FK column (`categoryIdsBySlug`,
+  `designerIdsBySlug`, `productIdsBySlug`), and keys `ProductImage` rows on
+  `product.id` instead of `product.slug`. Previously the seed wrote slugs into
+  the FK columns, which worked only because `id == slug` for placeholder data —
+  exactly the assumption Step 7 removes.
+- `lib/repositories/products.ts` — `mapProductRow()` derives `category` from
+  the joined relation's `slug` (the FK column no longer *is* a slug);
+  `getProduct()` compares `row.category.slug`; `getProductsByCategory()`
+  resolves the route slug to `ProductCategory.id` and queries the relation by
+  id.
+- `lib/repositories/product-images.ts` — `getProductImages()` and
+  `getProductPrimaryImage()` take the product's `id` (parameter renamed from
+  `productSlug`).
+- `lib/repositories/slug-history.ts` (new) — `recordSlugChange(modelType,
+  entityId, oldSlug, db?)` for Step 7's update mutations, plus
+  `getCatalogRedirectPath()` / `getCatalogPathRedirect()`.
+- `lib/navigation/slugRedirect.ts` (new) — `redirectIfSlugRenamed()`, the thin
+  route-level wrapper that keeps `next/navigation` out of the repository layer.
+- The seven dynamic catalog `page.tsx` files (products category, product
+  detail, collections, designers, materials, flagship, projects) call it from
+  **both** `generateMetadata` and the page body before `notFound()` — if only
+  the page body called it, `generateMetadata`'s own `notFound()` would win and
+  the redirect would never be served.
+- `app/[locale]/products/[product]/[prod]/page.tsx` — the ProductImage lookups
+  now pass `productt.id`.
+
+### Redirect status code: 308, not 301
+
+The App Router cannot emit a 301: `redirect()` serves 307 and
+`permanentRedirect()` serves **308 (Permanent)**. These routes use
+`permanentRedirect()`; 308 is a permanent, method-preserving redirect and the
+correct equivalent for a renamed public URL. A literal 301 would require
+`next.config.js` redirects or the Proxy — `getCatalogPathRedirect()` in
+`lib/repositories/slug-history.ts` is the ready-made Proxy entry point if that
+is ever wanted.
 
 ## 4. Static data intentionally retained
 
@@ -150,7 +259,7 @@ Created migration: `20260916150027_add_product_image_fabric_item_catalogue_item`
 Tables created:
 - `fabric_item` — FabricItem model
 - `catalogue_item` — CatalogueItem model  
-- `product_image` — ProductImage model with FK to product.slug
+- `product_image` — ProductImage model (FK moved from `Product.slug` to `Product.id` in Pass 11C, §3c)
 
 ## 7. Commands executed
 

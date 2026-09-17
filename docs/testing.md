@@ -101,9 +101,13 @@ silently skipped if the database itself is unreachable.
   (`product_category`, `designer`, `product`, `collection`, `material`,
   `flagship`, `project`, `project_product`), catching a seed that ran against
   the wrong database or failed partway.
-- **Referential integrity** — every `Product.categoryId` resolves to a real
-  `ProductCategory`, every non-null `Product.designerId` to a real `Designer`,
-  and every `ProjectProduct` row to a real `Project` **and** `Product`.
+- **Referential integrity (id-based)** — every `Product.categoryId` resolves to
+  a real `ProductCategory.id`, every non-null `Product.designerId` to a real
+  `Designer.id`, and every `ProjectProduct` row to a real `Project.id` **and**
+  `Product.id`. Because `id == slug` for every seeded row, FK *values* alone
+  can never distinguish a slug-target from an id-target, so a companion test
+  inspects the Postgres catalog (`pg_constraint`) and proves each converted FK
+  targets the parent's `id` column.
 - **Slug uniqueness** — no duplicate slugs within `ProductCategory`, `Product`,
   `Designer`, `Collection`, `Material`, `Flagship` or `Project`.
 - **Localized jsonb integrity** — every model's `name` column (full row
@@ -141,6 +145,28 @@ repository from Step 4, `server` project):
   one wrapper delegates to another, as `getProjectById` → `getProject`), and
   `products.test.ts` additionally proves a *fresh* scope re-executes.
 
+**Pass 11C — catalog FK conversion + slug-rename redirects** (Step 7 admin-CRUD
+prep; the scope change Pass 11B proposed and deferred):
+
+- **`tests/integration/schema.test.ts`** — the integrity tests now resolve on
+  `id`, and a new test reads `pg_constraint` to prove all five converted
+  catalog FKs (`product → product_category`, `product → designer`,
+  `product_image → product`, `project_product → project`,
+  `project_product → product`) target the parent's `id` column, not `slug`.
+  A seed-parity test additionally compares the live row counts with the counts
+  derived from the static `lib/data` sources, so a migration that silently
+  dropped rows cannot pass.
+- **`tests/integration/catalog-fk.test.ts`** (new) — runtime proof, isolated in
+  rolled-back transactions: for a category/product pair whose `id` and `slug`
+  deliberately differ, the `id` is accepted into the child FK column and the
+  `slug` is rejected with a foreign-key violation (the pre-migration schema
+  accepted the slug); and an id-based relation survives a parent slug rename
+  untouched.
+- **`tests/integration/slug-history.test.ts`** — `recordSlugChange()` +
+  `getCatalogRedirectPath()` resolve a renamed product and a renamed category
+  segment purely through ids, never self-redirect on the current URL, and
+  refuse to redirect under a category the product does not belong to.
+
 ## What is intentionally NOT tested yet
 
 - **Visual/UI implementation** — CSS, Tailwind classes, layout, spacing, colors,
@@ -150,8 +176,10 @@ repository from Step 4, `server` project):
   Library; not needed for the current pure-logic scope.
 - **Database writes** — the Prisma/PostgreSQL integration and server tiers
   (Pass 9.5 / 10.5) cover the schema, seed and read path against the real dev
-  database, but they are read-only: no migration execution, write paths or
-  transactions are tested (admin CRUD arrives with Pass 12.5).
+  database. Write paths stay untested, with one exception: the Pass 11C
+  integrity tests write only inside transactions that are always rolled back
+  (including when an assertion fails). Migration execution and the admin CRUD
+  write paths themselves arrive with Pass 12.5.
 - **`proxy.ts` middleware wiring** — the pure decision core
   (`resolveProxyAction`, `shouldBypassAuth`) is unit tested under
   `tests/unit`; the actual NextRequest/NextResponse behaviour (`/fa` 308

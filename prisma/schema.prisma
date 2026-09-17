@@ -97,9 +97,14 @@ model Verification {
 //   - Ordered string[] / object[] content also lives in `Json` (order is part
 //     of the content: paragraphs, gallery lists, downloads, related items).
 //   - `id` identifies the row, `slug` is the human/route handle.
-//   - Parent/child FKs reference the parent's `slug`, because that is exactly
-//     what the source data stores (e.g. `Product.category` holds a
-//     ProductCategory slug, `Product.designer.href` ends with a Designer slug).
+//   - Parent/child FKs reference the parent's `id` (not `slug`): slugs are
+//     human/route handles and may change, so they must not be load-bearing for
+//     relational integrity. Each FK column is named after the parent entity's
+//     `id` (e.g. `Product.categoryId` → `ProductCategory.id`).
+//     `slug` remains a `@unique` column used for URL routing / `getBySlug` lookups
+//     but is never used as a foreign-key target.
+//   - When an entity's slug changes, its old slug is recorded in `SlugHistory`
+//     so that inbound links to the old URL can 301-redirect to the new slug.
 // ---------------------------------------------------------------------------
 
 /**
@@ -183,16 +188,18 @@ model Product {
   related       Json
   /// Display position within its category (matches the source array order).
   sortOrder     Int      @default(0)
-  /// ProductCategory.slug ("coffee-tables", ...) — see FK convention above.
+  /// ProductCategory.id — the FK column holds the parent's `id` (not slug);
+  /// see the FK convention note above the catalog models. The URL route param
+  /// is still a category *slug*, resolved to this id by the repository layer.
   categoryId    String
-  /// Designer.slug derived from Product.designer.href; null when no designer
-  /// record matches the href.
+  /// Designer.id — derived from Product.designer.href; null when no designer
+  /// record matches the href. References Designer.id (not slug).
   designerId    String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  category     ProductCategory  @relation(fields: [categoryId], references: [slug], onDelete: Cascade)
-  designer     Designer?        @relation(fields: [designerId], references: [slug], onDelete: SetNull)
+  category     ProductCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  designer     Designer?        @relation(fields: [designerId], references: [id], onDelete: SetNull)
   projectsUsed ProjectProduct[]
   productImages ProductImage[]
 
@@ -363,13 +370,14 @@ model Project {
 /// in `lib/data/product-categories/*`. The seed synthesizes ProductImage rows
 /// from those arrays so this table is populated automatically.
 ///
-/// FK convention: follows the schema-wide convention of referencing the parent
-/// by `slug` (see the header note above the catalog models).
+/// FK convention: references the parent's `id` (not `slug`), per the schema-wide
+/// convention noted above the catalog models. `slug` is a route handle only.
 model ProductImage {
   id        String   @id
-  /// Product.slug — the image belongs to this product.
+  /// Product.id — the image belongs to this product (id-based FK; `slug` is
+  /// the route handle, not the referential key).
   productId String
-  product   Product  @relation(fields: [productId], references: [slug], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   /// Publicly served image URL/path.
   url       String
@@ -390,17 +398,42 @@ model ProductImage {
 /// Join table for Project.productsUsed <-> Product (many-to-many) with an
 /// explicit display order, mirroring the `pickProducts()` result order.
 model ProjectProduct {
-  /// Project.slug / Product.slug — repo FK convention (see header note).
+  /// Project.id / Product.id — id-based FKs (see header note above catalog).
   projectId String
   productId String
   /// Zero-based position inside the project's product list.
   order     Int
   createdAt DateTime @default(now())
 
-  project Project @relation(fields: [projectId], references: [slug], onDelete: Cascade)
-  product Product @relation(fields: [productId], references: [slug], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@id([projectId, productId])
   @@index([productId])
   @@map("project_product")
+}
+
+// ---------------------------------------------------------------------------
+// Slug rename redirect history.
+//
+// When an entity's slug changes (admin CRUD, Step 7), recordSlugChange()
+// inserts a row here *before* the slug update runs. Public dynamic routes
+// then look up the old slug here on a 404 and permanently redirect to the
+// current URL, so inbound links / bookmarks don't break.
+//
+// Next's App Router has no 301 emitter: `permanentRedirect()` serves an HTTP
+// 308 (Permanent) in a server-rendered route — the supported equivalent of a
+// 301 for this purpose. A literal 301 is only possible via next.config.js
+// redirects or the Proxy (see lib/repositories/slug-history.ts).
+// ---------------------------------------------------------------------------
+model SlugHistory {
+  id        String   @id @default(uuid())
+  modelType String
+  entityId  String
+  oldSlug   String
+  createdAt DateTime @default(now())
+
+  @@unique([modelType, oldSlug])
+  @@index([entityId])
+  @@map("slug_history")
 }

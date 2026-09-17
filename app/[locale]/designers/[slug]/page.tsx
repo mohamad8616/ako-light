@@ -10,6 +10,7 @@ import {
   breadcrumbListJsonLd,
   personJsonLd,
 } from "@/lib/seo/structuredData";
+import { redirectIfSlugRenamed } from "@/lib/navigation/slugRedirect";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -28,7 +29,11 @@ export async function generateMetadata({
   const { slug, locale } = await params;
   const designer = await getDesigner(slug);
 
-  if (!designer) notFound();
+  if (!designer) {
+    // Renamed slug → permanent redirect to the current URL instead of a 404.
+    await redirectIfSlugRenamed("designer", slug, { locale });
+    notFound();
+  }
 
   const lang = resolveLocale(locale);
   const t = translations[lang];
@@ -73,6 +78,8 @@ export default async function DesignerDetailPage({ params }: PageProps) {
   const designer = await getDesigner(slug);
 
   if (!designer) {
+    // Renamed slug → permanent redirect to the current URL instead of a 404.
+    await redirectIfSlugRenamed("designer", slug, { locale });
     notFound();
   }
 

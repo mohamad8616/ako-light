@@ -22,6 +22,7 @@ import {
   breadcrumbListJsonLd,
   productJsonLd,
 } from "@/lib/seo/structuredData";
+import { redirectIfSlugRenamed } from "@/lib/navigation/slugRedirect";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
@@ -43,12 +44,22 @@ export async function generateMetadata({
   const { product, prod, locale } = await params;
   const productt = await getProduct(product, prod);
 
-  if (!productt) notFound();
+  if (!productt) {
+    // Slug-rename fallback: a renamed *product* slug redirects to its current
+    // URL, and a renamed *category* segment resolves through the category's
+    // own history (the product's category ownership is re-checked by id).
+    await redirectIfSlugRenamed("product", prod, {
+      locale,
+      categorySlug: product,
+    });
+    notFound();
+  }
 
   // DB-sourced product images (ProductImage rows). The flat Product.images
   // column was dropped in Pass 11B. The primary image (isPrimary, falling
   // back to the first image by sortOrder) backs JSON-LD / OG metadata.
-  const primaryImage = await getProductPrimaryImage(productt.slug);
+  // ProductImage.productId references Product.id (id-based FK convention).
+  const primaryImage = await getProductPrimaryImage(productt.id);
   const detailImage = primaryImage?.url ?? productt.heroImage;
 
   const lang = resolveLocale(locale);
@@ -97,12 +108,23 @@ export async function generateMetadata({
 export default async function ProductPage({ params }: PageProps) {
   const { product, prod, locale } = await params;
   const productt = await getProduct(product, prod);
-  if (!productt) notFound();
+  if (!productt) {
+    // Slug-rename fallback: a renamed *product* slug redirects to its current
+    // URL, and a renamed *category* segment resolves through the category's
+    // own history (the product's category ownership is re-checked by id).
+    await redirectIfSlugRenamed("product", prod, {
+      locale,
+      categorySlug: product,
+    });
+    notFound();
+  }
 
   // DB-sourced gallery images (ProductImage rows, sortOrder order), fetched
   // server-side and passed down like every other catalog migration.
-  const productImages = await getProductImages(productt.slug);
-  const primaryPageImage = await getProductPrimaryImage(productt.slug);
+  // DB-sourced gallery images (ProductImage rows, sortOrder order), keyed by
+  // the product's `id` — ProductImage.productId references Product.id.
+  const productImages = await getProductImages(productt.id);
+  const primaryPageImage = await getProductPrimaryImage(productt.id);
 
   // Same-category candidates for the related-products section (self
   // excluded); fetched server-side so the client never needs the catalog.

@@ -23,8 +23,11 @@ data to Postgres the following conventions are locked:
   `getBySlug`-style lookups.
 - **`id` vs `slug`:** `id` identifies the row; `slug` is the human/route handle.
   They are allowed to coincide for now but are not required to.
-- **Parent/child FKs** reference the parent's `slug` (e.g. `ProductSubCategory`
-  belongs to `ProductCategory` by `category` slug).
+- **Parent/child FKs** reference the parent's `id`, never `slug` (added during
+  the catalog FK-migration pass). `id` is stable; `slug` is the human/route handle
+  and may be renamed — when it is, the old value is recorded in `SlugHistory` so
+  inbound URLs can be 301-redirected. `slug` stays `@unique` for routing but is
+  not load-bearing for relational integrity.
 
 ## Data storage policy (`string[]` content)
 

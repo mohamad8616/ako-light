@@ -128,12 +128,18 @@ describeDb("products repository", () => {
   });
 
   it("lists one category's products in curated order", async () => {
-    const [products, count, dbRows] = await Promise.all([
+    // The FK column holds ProductCategory.id, so the query resolves the route
+    // slug to an id first (same as the repository's getProductsByCategory).
+    const [products, category, count, dbRows] = await Promise.all([
       getProductsByCategory("lighting"),
-      prisma.product.count({ where: { categoryId: "lighting" } }),
-      prisma.product.findMany({
-        where: { categoryId: "lighting" },
+      prisma.productCategory.findUniqueOrThrow({
+        where: { slug: "lighting" },
         select: { id: true },
+      }),
+      prisma.product.count({ where: { category: { slug: "lighting" } } }),
+      prisma.product.findMany({
+        where: { category: { slug: "lighting" } },
+        select: { id: true, categoryId: true },
         orderBy: { sortOrder: "asc" },
       }),
     ]);
@@ -142,6 +148,12 @@ describeDb("products repository", () => {
     expect(products.map((product) => product.id)).toEqual(
       dbRows.map((row) => row.id),
     );
+    // The route handle is a *slug*, but the FK column stores the category's
+    // *id* — every row of this category carries exactly that id.
+    expect(
+      [...new Set(dbRows.map((row) => row.categoryId))],
+      "Product.categoryId values for the lighting category",
+    ).toEqual([category.id]);
   });
 
   it("resolves batch lookups by id or slug", async () => {

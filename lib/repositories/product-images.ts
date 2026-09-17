@@ -14,13 +14,15 @@ import { prisma } from "@/lib/db/prisma";
 /**
  * All images for a product, in `sortOrder` order.
  *
- * `productSlug` is used because the FK convention in this schema references
- * Product.slug (see prisma/schema.prisma header note).
+ * The FK column `productId` references `Product.id` (not slug) per the schema's
+ * id-based FK convention. The caller should pass the product's `id`; since
+ * `id == slug` for seeded data, passing the slug also works, but `id` is
+ * correct for the post-migration convention.
  */
 export const getProductImages = cache(
-  async (productSlug: string): Promise<ProductImageRow[]> => {
+  async (productId: string): Promise<ProductImageRow[]> => {
     return prisma.productImage.findMany({
-      where: { productId: productSlug },
+      where: { productId },
       orderBy: { sortOrder: "asc" },
     });
   },
@@ -33,12 +35,11 @@ export const getProductImages = cache(
  * primary, which mirrors the old behavior of `Product.images[0]`.
  */
 export const getProductPrimaryImage = cache(
-  async (productSlug: string): Promise<ProductImageRow | null> => {
-    const images = await getProductImages(productSlug);
-    if (images.length === 0) return null;
+  async (productId: string): Promise<ProductImageRow | null> => {
+    const images = await getProductImages(productId);
 
     const primary = images.find((img) => img.isPrimary);
-    return primary ?? images[0];
+    return primary ?? images[0] ?? null;
   },
 );
 

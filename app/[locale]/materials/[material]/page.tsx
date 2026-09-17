@@ -10,6 +10,7 @@ import {
   breadcrumbListJsonLd,
   webPageJsonLd,
 } from "@/lib/seo/structuredData";
+import { redirectIfSlugRenamed } from "@/lib/navigation/slugRedirect";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -25,8 +26,10 @@ export async function generateMetadata({
   const t = translations[lang];
 
   if (!category) {
-    // Unknown material slug — generic materials metadata, matching the
+    // Renamed slug → permanent redirect to the current URL. Otherwise an
+    // unknown material slug gets generic materials metadata, matching the
     // page's own fallback rendering.
+    await redirectIfSlugRenamed("material", material, { locale });
     return buildLocalizedMetadata({
       locale,
       path: `/materials/${material}`,
@@ -79,6 +82,10 @@ export default async function MaterialPage({ params }: PageProps) {
   ]);
 
   if (!category) {
+    // Renamed slug → permanent redirect to the current URL. A route param that
+    // is a materials *category* ("fabrics", "metals", …) has no entity and no
+    // history, so it still falls through to the category view below.
+    await redirectIfSlugRenamed("material", material, { locale });
     return (
       <MaterialCategoryView
         slug={material}

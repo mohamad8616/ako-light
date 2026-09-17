@@ -16,6 +16,7 @@ import {
   breadcrumbListJsonLd,
   collectionPageJsonLd,
 } from "@/lib/seo/structuredData";
+import { redirectIfSlugRenamed } from "@/lib/navigation/slugRedirect";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -29,7 +30,11 @@ export async function generateMetadata({
   const { slug, locale } = await params;
   const collection = await getCollection(slug);
 
-  if (!collection) notFound();
+  if (!collection) {
+    // Renamed slug → permanent redirect to the current URL instead of a 404.
+    await redirectIfSlugRenamed("collection", slug, { locale });
+    notFound();
+  }
 
   const lang = resolveLocale(locale);
   const t = translations[lang];
@@ -67,7 +72,11 @@ const page = async ({ params }: PageProps) => {
   const { slug, locale } = await params;
   const collection = await getCollection(slug);
 
-  if (!collection) return notFound();
+  if (!collection) {
+    // Renamed slug → permanent redirect to the current URL instead of a 404.
+    await redirectIfSlugRenamed("collection", slug, { locale });
+    return notFound();
+  }
 
   const lang = resolveLocale(locale);
   const t = translations[lang];

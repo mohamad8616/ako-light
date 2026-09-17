@@ -213,8 +213,18 @@ async function seedFlagships(): Promise<void> {
  * two categories would be a real conflict, and is reported instead of crashing.
  */
 async function seedProducts(): Promise<void> {
-  const categorySlugs = new Set(productCategories.map((c) => c.slug));
-  const designerSlugs = new Set(designers.map((d) => d.slug));
+  // Slug -> id maps. The FK columns hold the parent's `id` (id-based FK
+  // convention), while the source data only ever gives us parent *slugs*, so
+  // every incoming slug is resolved to the row it belongs to before it is
+  // written into a `*Id` column.
+  const categoryIdsBySlug = new Map(
+    productCategories.map((category) => [category.slug, category.id]),
+  );
+  // Designer.id is the designer's slug: the static data carries no id of its
+  // own, so seedDesigners() uses the slug as the row id.
+  const designerIdsBySlug = new Map(
+    designers.map((designer) => [designer.slug, designer.slug]),
+  );
 
   for (const category of productCategories) {
     for (const [sortOrder, product] of category.products.entries()) {
@@ -223,29 +233,35 @@ async function seedProducts(): Promise<void> {
         continue;
       }
 
-      // Product.category holds a ProductCategory.slug and is the FK value.
-      const categoryId = product.category || category.slug;
-      if (!categorySlugs.has(categoryId)) {
+      // The source data stores the parent category's *slug*; the FK column
+      // holds ProductCategory.id (id-based FK convention).
+      const categorySlug = product.category || category.slug;
+      const categoryId = categoryIdsBySlug.get(categorySlug);
+      if (!categoryId) {
         note(
           "Product",
           product.slug,
-          `category "${categoryId}" has no ProductCategory row (skipped: FK)`,
+          `category "${categorySlug}" has no ProductCategory row (skipped: FK)`,
         );
         continue;
       }
-      if (categoryId !== category.slug) {
+      if (categorySlug !== category.slug) {
         note(
           "Product",
           product.slug,
-          `category "${categoryId}" differs from the module it lives in ("${category.slug}")`,
+          `category "${categorySlug}" differs from the module it lives in ("${category.slug}")`,
         );
       }
 
-      // Product.designer.href ends with the Designer.slug.
+      // Product.designer.href ends with the Designer.slug, which is resolved to
+      // the Designer.id the FK column stores.
       let designerId: string | null = null;
       const designerSlug = designerSlugFromHref(product.designer.href);
-      if (designerSlug && designerSlugs.has(designerSlug)) {
-        designerId = designerSlug;
+      const resolvedDesignerId = designerSlug
+        ? designerIdsBySlug.get(designerSlug)
+        : undefined;
+      if (resolvedDesignerId) {
+        designerId = resolvedDesignerId;
       } else if (designerSlug) {
         note(
           "Product",
@@ -289,8 +305,12 @@ async function seedProducts(): Promise<void> {
 }
 
 async function seedProjects(): Promise<void> {
-  const productSlugs = new Set(
-    productCategories.flatMap((c) => c.products.map((p) => p.slug)),
+  // Slug -> id for the join table's product FK (id-based FK convention). The
+  // project's own id doubles as its slug (see below), so it needs no mapping.
+  const productIdsBySlug = new Map(
+    productCategories.flatMap((category) =>
+      category.products.map((product) => [product.slug, product.id]),
+    ),
   );
 
   for (const [sortOrder, project] of projects.entries()) {
@@ -326,7 +346,8 @@ async function seedProjects(): Promise<void> {
     const seen = new Set<string>();
     const rows: { projectId: string; productId: string; order: number }[] = [];
     for (const used of project.productsUsed) {
-      if (!productSlugs.has(used.slug)) {
+      const productId = productIdsBySlug.get(used.slug);
+      if (!productId) {
         note(
           "Project",
           slug,
@@ -344,7 +365,7 @@ async function seedProjects(): Promise<void> {
       }
       seen.add(used.slug);
       // Contiguous order: skips above must not leave gaps.
-      rows.push({ projectId: slug, productId: used.slug, order: rows.length });
+      rows.push({ projectId: slug, productId, order: rows.length });
     }
     if (rows.length > 0) await prisma.projectProduct.createMany({ data: rows });
   }
@@ -361,16 +382,19 @@ async function seedProductImages(): Promise<void> {
   for (const product of allProducts) {
     if (!product.slug) continue;
 
+    // ProductImage.productId references Product.id (id-based FK convention).
+    const productId = product.id;
+
     // Replace the whole image set for this product so the table mirrors the
     // source arrays exactly (order, count, URLs).
-    await prisma.productImage.deleteMany({ where: { productId: product.slug } });
+    await prisma.productImage.deleteMany({ where: { productId } });
 
     const images = product.images || [];
     if (images.length === 0) continue;
 
     const rows = images.map((url, idx) => ({
       id: `${product.slug}-img-${String(idx).padStart(3, "0")}`,
-      productId: product.slug,
+      productId,
       url,
       alt: product.name?.en || undefined,
       sortOrder: idx,

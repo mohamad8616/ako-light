@@ -22,6 +22,7 @@ import {
   breadcrumbListJsonLd,
   webPageJsonLd,
 } from "@/lib/seo/structuredData";
+import { redirectIfSlugRenamed } from "@/lib/navigation/slugRedirect";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -43,7 +44,11 @@ export async function generateMetadata({
   const { slug, locale } = await params;
   const flagship = await getFlagship(slug);
   const detail = await getFlagshipDetail(slug);
-  if (!flagship || !detail) notFound();
+  if (!flagship || !detail) {
+    // Renamed slug → permanent redirect to the current URL instead of a 404.
+    await redirectIfSlugRenamed("flagship", slug, { locale });
+    notFound();
+  }
 
   const lang = resolveLocale(locale);
   const t = translations[lang];
@@ -82,7 +87,11 @@ export default async function FlagshipPage({ params }: PageProps) {
   const flagship = await getFlagship(slug);
   const detail = await getFlagshipDetail(slug);
 
-  if (!flagship || !detail) notFound();
+  if (!flagship || !detail) {
+    // Renamed slug → permanent redirect to the current URL instead of a 404.
+    await redirectIfSlugRenamed("flagship", slug, { locale });
+    notFound();
+  }
 
   const lang = resolveLocale(locale);
   const t = translations[lang];

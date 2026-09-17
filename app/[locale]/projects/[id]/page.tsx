@@ -20,6 +20,7 @@ import {
   breadcrumbListJsonLd,
   creativeWorkJsonLd,
 } from "@/lib/seo/structuredData";
+import { redirectIfSlugRenamed } from "@/lib/navigation/slugRedirect";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
@@ -33,7 +34,11 @@ export async function generateMetadata({
   const { id, locale } = await params;
   const project = await getProjectById(id);
 
-  if (!project) notFound();
+  if (!project) {
+    // Renamed slug → permanent redirect to the current URL instead of a 404.
+    await redirectIfSlugRenamed("project", id, { locale });
+    notFound();
+  }
 
   const lang = resolveLocale(locale);
   const t = translations[lang];
@@ -103,7 +108,11 @@ const page = async ({ params }: PageProps) => {
   const { id, locale } = await params;
   const project = await getProjectById(id);
 
-  if (!project) return notFound();
+  if (!project) {
+    // Renamed slug → permanent redirect to the current URL instead of a 404.
+    await redirectIfSlugRenamed("project", id, { locale });
+    return notFound();
+  }
 
   const lang = resolveLocale(locale);
   const t = translations[lang];
