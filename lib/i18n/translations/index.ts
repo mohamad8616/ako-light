@@ -1,18 +1,19 @@
-import { navigationEn, navigationFa } from "./navigation";
-import { commonEn, commonFa } from "./common";
-import { homeEn, homeFa } from "./home";
 import { aboutEn, aboutFa } from "./about";
-import { productsEn, productsFa } from "./products";
-import { productEn, productFa } from "./product";
+import { authEn, authFa } from "./auth";
 import { cartEn, cartFa } from "./cart";
 import { collectionsEn, collectionsFa } from "./collections";
+import { commonEn, commonFa } from "./common";
 import { flagshipEn, flagshipFa } from "./flagship";
-import { materialsEn, materialsFa } from "./materials";
-import { s34En, s34Fa } from "./s34";
 import { formsEn, formsFa } from "./forms";
-import { searchEn, searchFa } from "./search";
-import { projectsEn, projectsFa } from "./projects";
+import { homeEn, homeFa } from "./home";
+import { materialsEn, materialsFa } from "./materials";
+import { navigationEn, navigationFa } from "./navigation";
 import { pagesEn, pagesFa } from "./pages";
+import { productEn, productFa } from "./product";
+import { productsEn, productsFa } from "./products";
+import { projectsEn, projectsFa } from "./projects";
+import { s34En, s34Fa } from "./s34";
+import { searchEn, searchFa } from "./search";
 
 // Combined per-language dictionaries. Key order follows module order below;
 // lookups are by key so order has no runtime effect.
@@ -32,6 +33,7 @@ export const en = {
   ...searchEn,
   ...projectsEn,
   ...pagesEn,
+  ...authEn,
 } as const;
 
 export const fa = {
@@ -50,4 +52,5 @@ export const fa = {
   ...searchFa,
   ...projectsFa,
   ...pagesFa,
+  ...authFa,
 } as const;

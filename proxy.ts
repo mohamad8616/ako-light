@@ -1,5 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+const LOCALE_PREFIX = /^\/(en|fa)(?=\/|$)/;
+
+function stripLocalePrefix(pathname: string) {
+  return pathname.replace(LOCALE_PREFIX, "") || "/";
+}
+
+export function isAdminPath(pathname: string): boolean {
+  const normalized = stripLocalePrefix(pathname).replace(/\/+$/, "");
+  return normalized === "/admin" || normalized.startsWith("/admin/");
+}
+
 /**
  * Locale URL architecture (see lib/i18n/routing.ts):
  *
@@ -53,15 +64,33 @@ export function resolveProxyAction(pathname: string): ProxyAction {
  */
 export function shouldBypassAuth(pathAndQuery: string): boolean {
   const { pathname } = new URL(pathAndQuery, "http://localhost");
+  const publicPath = stripLocalePrefix(pathname);
+
   return (
     pathname.startsWith("/api/") ||
-    pathname === "/sign-in" ||
-    pathname.startsWith("/sign-in/")
+    publicPath === "/sign-in" ||
+    publicPath.startsWith("/sign-in/") ||
+    publicPath === "/login" ||
+    publicPath.startsWith("/login/")
   );
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  if (isAdminPath(pathname)) {
+    const { auth } = await import("@/lib/auth/auth");
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session) {
+      const redirectUrl = new URL("/sign-in", request.url);
+      redirectUrl.searchParams.set("redirectTo", `${pathname}${search}`);
+      return NextResponse.redirect(redirectUrl, 307);
+    }
+  }
+
   const action = resolveProxyAction(pathname);
 
   if (action.type === "pass") {

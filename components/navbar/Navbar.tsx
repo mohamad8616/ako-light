@@ -4,13 +4,15 @@ import CollapsibleNavItem from "@/components/navbar/CollapsibleNavItem";
 import FullscreenMenu from "@/components/navbar/fullScreenMenu";
 import Logo from "@/components/ui/Logo";
 import ProductsSheet from "@/components/ui/ProductsSheet";
+import { authClient } from "@/lib/auth/auth-client";
 import type { ProductCategory } from "@/lib/data/product-categories/types";
 import { useHeroVideoStore } from "@/lib/heroVideoStore";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import Link from "@/lib/i18n/Link";
 import { cn } from "@/lib/utils";
 import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { Search } from "lucide-react";
-import Link from "@/lib/i18n/Link";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 import MenuButton from "./MenuBtn";
 
@@ -62,11 +64,19 @@ export default function Navbar({
   const [scrolled, setScrolled] = useState(false);
 
   const { t } = useLanguage();
+  const router = useRouter();
   const { scrollY } = useScroll();
   const isVideoPlaying = useHeroVideoStore((s) => s.isPlaying);
+  const { data: session, isPending } = authClient.useSession();
 
   const overlayOpen = activeOverlay !== null;
   const menuOpen = activeOverlay === "menu";
+  const isAuthenticated = Boolean(session?.session);
+
+  const handleSignOut = useCallback(async () => {
+    await authClient.signOut();
+    router.refresh();
+  }, [router]);
 
   // The hero video also needs the navbar fully out of the way — named
   // once here instead of repeating `|| isVideoPlaying` at every use site.
@@ -160,6 +170,27 @@ export default function Navbar({
                 <Search size={18} strokeWidth={2.2} />
               </Link>
             </CollapsibleNavItem>
+
+            {!isPending && (
+              <CollapsibleNavItem hidden={overlayOpen}>
+                {isAuthenticated ? (
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    className="text-background-secondary cursor-pointer text-sm font-medium transition-all duration-300 hover:opacity-70"
+                  >
+                    {t("auth.nav.signOut")}
+                  </button>
+                ) : (
+                  <Link
+                    href="/sign-in"
+                    className="text-background-secondary cursor-pointer text-sm font-medium transition-all duration-300 hover:opacity-70"
+                  >
+                    {t("auth.nav.signIn")}
+                  </Link>
+                )}
+              </CollapsibleNavItem>
+            )}
 
             <CollapsibleNavItem
               hidden={activeOverlay === "menu"}

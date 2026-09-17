@@ -1,4 +1,4 @@
-import { resolveProxyAction, shouldBypassAuth } from "@/proxy";
+import { isAdminPath, resolveProxyAction, shouldBypassAuth } from "@/proxy";
 import { describe, expect, it } from "vitest";
 
 describe("resolveProxyAction", () => {
@@ -35,10 +35,21 @@ describe("shouldBypassAuth", () => {
     expect(shouldBypassAuth("/api/auth/login")).toBe(true);
     expect(shouldBypassAuth("/sign-in")).toBe(true);
     expect(shouldBypassAuth("/sign-in?redirectTo=%2Fabout")).toBe(true);
+    expect(shouldBypassAuth("/en/sign-in?redirectTo=%2Fadmin")).toBe(true);
   });
 
-  it("requires a session for app routes", () => {
+  it("requires a session for admin and app routes", () => {
     expect(shouldBypassAuth("/about")).toBe(false);
     expect(shouldBypassAuth("/en/about")).toBe(false);
+    expect(shouldBypassAuth("/admin")).toBe(false);
+    expect(shouldBypassAuth("/en/admin")).toBe(false);
+  });
+
+  it("detects admin paths before locale rewrite logic", () => {
+    expect(isAdminPath("/admin")).toBe(true);
+    expect(isAdminPath("/admin/users")).toBe(true);
+    expect(isAdminPath("/en/admin")).toBe(true);
+    expect(isAdminPath("/fa/admin/users")).toBe(true);
+    expect(isAdminPath("/about")).toBe(false);
   });
 });
