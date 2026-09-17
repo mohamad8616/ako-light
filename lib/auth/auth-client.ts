@@ -23,10 +23,10 @@ export const { signIn, signUp, useSession, phoneNumber } = authClient;
  * Phone-OTP methods exposed for the (not yet built) phone login/register UI:
  *
  *   phoneNumber.sendOtp({ phoneNumber })          → POST /phone-number/send-otp
- *   phoneNumber.verify({ phoneNumber, otp })      → POST /phone-number/verify
- *   phoneNumber.requestPasswordReset({ phoneNumber })
- *   phoneNumber.resetPassword({ phoneNumber, otp, newPassword })
- *   signIn.phoneNumber({ phoneNumber, password }) → POST /sign-in/phone-number
+  *   phoneNumber.verify({ phoneNumber, otp })      → POST /phone-number/verify
+  *   phoneNumber.requestPasswordReset({ phoneNumber })
+  *   phoneNumber.resetPassword({ phoneNumber, otp, newPassword })
+  *   signIn.phoneNumber({ phoneNumber, password }) → POST /sign-in/phone-number
  *
  * In development, `sendOtpSms` (lib/auth/sms.ts) prints the code to the server
  * console as `[DEV OTP] <phoneNumber>: <code>`.

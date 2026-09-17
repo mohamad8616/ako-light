@@ -17,9 +17,9 @@ export const authEn = {
   "auth.name.label": "Full name",
   "auth.name.placeholder": "Your name",
   "auth.password.label": "Password",
-  "auth.password.placeholder": "Enter your password",
+  "auth.password.placeholder": "Enter the code",
   "auth.phone.label": "Phone number",
-  "auth.phone.placeholder": "+1 555 123 4567",
+  "auth.phone.placeholder": "+98 999 123 4567",
   "auth.phone.otpLabel": "Verification code",
   "auth.phone.otpPlaceholder": "Enter 6-digit code",
   "auth.phone.sendCode": "Send code",
@@ -27,6 +27,11 @@ export const authEn = {
   "auth.phone.verifyCode": "Verify code",
   "auth.phone.codeSent": "Verification code sent.",
   "auth.phone.verified": "Phone number verified.",
+  "auth.otp.title": "Enter your code:",
+  "auth.otp.resendIn": "Resend in {time}",
+  "auth.terms.label": "I accept the terms and privacy policy.",
+  "auth.phone.isThisNumber": "Is this your mobile number?",
+  "auth.phone.editNumber": "Edit number",
   "auth.submit.signIn": "Sign in",
   "auth.submit.createAccount": "Create account",
   "auth.submit.continue": "Continue",
@@ -52,6 +57,9 @@ export const authEn = {
   "auth.footer.privacy": "Secure sign-in",
   "auth.nav.signIn": "Sign in",
   "auth.nav.signOut": "Sign out",
+  "auth.emailHint": "Enter your email and password",
+  "auth.phoneHint":
+    "Enter your phone number and a verification code will be sent to you.",
 } as const;
 
 export const authFa = {
@@ -82,6 +90,11 @@ export const authFa = {
   "auth.phone.verifyCode": "تأیید کد",
   "auth.phone.codeSent": "کد تأیید ارسال شد.",
   "auth.phone.verified": "شماره تلفن تأیید شد.",
+  "auth.otp.title": "کد تأیید را وارد کنید:",
+  "auth.otp.resendIn": "ارسال مجدد در {time}",
+  "auth.terms.label": "قوانین و حریم خصوصی را می‌پذیرم.",
+  "auth.phone.isThisNumber": "این شماره موبایل شماست؟",
+  "auth.phone.editNumber": "ویرایش شماره",
   "auth.submit.signIn": "ورود",
   "auth.submit.createAccount": "ساخت حساب",
   "auth.submit.continue": "ادامه",
@@ -106,4 +119,7 @@ export const authFa = {
   "auth.footer.privacy": "ورود امن",
   "auth.nav.signIn": "ورود",
   "auth.nav.signOut": "خروج",
+  "auth.emailHint": "ایمیل و رمز عبور خود را وارد کنید",
+  "auth.phoneHint":
+    "شماره تلفن خود را وارد کنید و یک کد تأیید به شما ارسال می‌شود.",
 } as const;

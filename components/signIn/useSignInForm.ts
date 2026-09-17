@@ -3,7 +3,7 @@
 import { authClient } from "@/lib/auth/auth-client";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   initialForm,
   type AuthMethod,
@@ -80,7 +80,7 @@ function readRedirectTo(): string | null {
  *
  *   authMode / authMethod   current selection — feed the two toggles
  *   form                    controlled values — feed the field components
- *   otpSent                 show the OTP input (phone sign-up only)
+   *   otpSent                 show the OTP section (both modes, after code requested)
  *   isSubmitting            submit in flight — disable submit + send/resend
  *   isSendingOtp            sendOtp in flight — disable send/resend
  *   error / success         translated feedback for <FeedbackMessage>
@@ -88,7 +88,8 @@ function readRedirectTo(): string | null {
  *   changeMode / changeMethod  toggle handlers (also reset feedback + OTP)
  *   updateField             `(field, value)` for every input's onChange
  *   handleSubmit            the card's submit button
- *   handleSendOtp           "Send code" / "Resend code"
+   *   handleSendOtp         "Send code" / "Resend code"
+   *   onEditNumber          clear OTP and hide code section (phone entry)
  *
  * Instructions:
  *   - Keep the auth calls here, not in the field components: the client only
@@ -100,7 +101,7 @@ function readRedirectTo(): string | null {
  *     success in place), while `changeMode` / `changeMethod` clear both and
  *     drop `otpSent` — a code requested for the previous choice must not
  *     linger.
- *   - Validation is deliberately minimal (non-empty number / password / code):
+   *   - Validation is deliberately minimal (non-empty number / code):
  *     formats and lengths are the server's business and its messages are
  *     surfaced verbatim when they have no dedicated mapping.
  *   - Anything async is wrapped in try/catch/finally so a thrown rejection
@@ -269,14 +270,14 @@ export function useSignInForm() {
   };
 
   /**
-   * Phone flows, split by mode because the endpoints and their bodies differ:
+   * Phone flows use the same verify endpoint for both modes:
    *
-   *   signIn        POST /sign-in/phone-number  { phoneNumber, password }
-   *   createAccount POST /phone-number/verify   { phoneNumber, code }
+   *   signIn        POST /phone-number/verify  { phoneNumber, code }
+   *   createAccount POST /phone-number/verify  { phoneNumber, code }
    *
-   * That asymmetry is why the password field exists only in sign-in mode and
-   * the code (with its send/resend UI) only in create-account mode. The number
-   * is trimmed once here and reused by both branches.
+   * The code is sent via `handleSendOtp` (triggered by the "Send code"
+   * button in PhoneFields) before submitting. The success message
+   * differs by mode.
    */
   const handlePhoneSubmit = async () => {
     const phone = form.phoneNumber.trim();
@@ -285,50 +286,6 @@ export function useSignInForm() {
       return;
     }
 
-    // Sign in: POST /sign-in/phone-number verifies the password — the OTP is
-    // not part of that request, so it is neither asked for nor required here.
-    if (authMode === "signIn") {
-      if (!form.password) {
-        setError(t("auth.errors.passwordRequired"));
-        return;
-      }
-
-      resetFeedback();
-      setIsSubmitting(true);
-
-      try {
-        const result = await authClient.signIn.phoneNumber({
-          phoneNumber: phone,
-          password: form.password,
-          rememberMe: true,
-        });
-
-        if (result?.error) {
-          const code = result.error?.code ?? "";
-          if (code === "INVALID_PHONE_NUMBER_OR_PASSWORD") {
-            setError(t("auth.errors.wrongPassword"));
-          } else if (code === "PHONE_NUMBER_NOT_VERIFIED") {
-            setError(t("auth.errors.invalidOtp"));
-          } else {
-            setError(result.error.message || t("auth.errors.generic"));
-          }
-          return;
-        }
-
-        setSuccess(t("auth.success.phone.signIn"));
-        goToAfterAuth();
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : t("auth.errors.generic");
-        setError(message);
-      } finally {
-        setIsSubmitting(false);
-      }
-      return;
-    }
-
-    // Create account: POST /phone-number/verify consumes the OTP code; it has
-    // no password parameter, so no password field is shown for this flow.
     if (!form.otp.trim()) {
       setError(t("auth.errors.otpRequired"));
       return;
@@ -355,7 +312,11 @@ export function useSignInForm() {
         return;
       }
 
-      setSuccess(t("auth.success.phone.signUp"));
+      setSuccess(
+        authMode === "signIn"
+          ? t("auth.success.phone.signIn")
+          : t("auth.success.phone.signUp"),
+      );
       goToAfterAuth();
     } catch (err) {
       const message =
@@ -365,6 +326,12 @@ export function useSignInForm() {
       setIsSubmitting(false);
     }
   };
+
+  /** Clears the OTP and hides the code section so the user can edit their number. */
+  const handleEditNumber = useCallback(() => {
+    setOtpSent(false);
+    setForm((cur) => ({ ...cur, otp: "" }));
+  }, []);
 
   /**
    * Submit-button entry point. Kept as a thin dispatcher on `authMethod` so
@@ -404,5 +371,6 @@ export function useSignInForm() {
     updateField,
     handleSubmit,
     handleSendOtp,
+    onEditNumber: handleEditNumber,
   };
 }

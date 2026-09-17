@@ -69,6 +69,7 @@ export default function SignInForm() {
     updateField,
     handleSubmit,
     handleSendOtp,
+    onEditNumber,
   } = useSignInForm();
 
   const methodOptions: AuthSegmentedOption<AuthMethod>[] = [
@@ -103,6 +104,15 @@ export default function SignInForm() {
       />
 
       <div className="space-y-4">
+        {authMethod === "email" ? (
+          <p className="text-background-secondary mt-4">
+            {t("auth.emailHint")}
+          </p>
+        ) : (
+          <p className="text-background-secondary mt-4">
+            {t("auth.phoneHint")}
+          </p>
+        )}
         {/* The field group changes the shape of the request, so it is the only
             part that varies by method; feedback and submit stay shared. */}
         {authMethod === "email" ? (
@@ -120,6 +130,7 @@ export default function SignInForm() {
             isSendingOtp={isSendingOtp}
             isSubmitting={isSubmitting}
             onSendOtp={handleSendOtp}
+            onEditNumber={onEditNumber}
           />
         )}
 

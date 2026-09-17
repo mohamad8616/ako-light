@@ -28,7 +28,7 @@ import SignInForm from "@/components/signIn";
  */
 export default function SignInPage() {
   return (
-    <main className="bg-background-secondary text-foreground flex min-h-screen items-center justify-center px-4 py-16">
+    <main className="bg-background mt-24 lg:mt-32 text-foreground flex min-h-screen items-center justify-center px-4 py-16">
       <SignInForm />
     </main>
   );
