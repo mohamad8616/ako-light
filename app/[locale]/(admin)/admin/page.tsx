@@ -1,66 +1,22 @@
-import { isLocale } from "@/lib/i18n/routing";
-import { translations } from "@/lib/i18n/translations";
-import {
-  getCollectionCount,
-  getDesignerCount,
-  getFlagshipCount,
-  getMaterialCount,
-  getProductCount,
-  getProjectCount,
-} from "@/lib/repositories/admin";
-import { notFound } from "next/navigation";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { DataTable } from "@/components/data-table";
+import { SectionCards } from "@/components/section-cards";
 
-const statConfig = [
-  { key: "admin.stat.products", getter: getProductCount },
-  { key: "admin.stat.designers", getter: getDesignerCount },
-  { key: "admin.stat.collections", getter: getCollectionCount },
-  { key: "admin.stat.materials", getter: getMaterialCount },
-  { key: "admin.stat.flagships", getter: getFlagshipCount },
-  { key: "admin.stat.projects", getter: getProjectCount },
-] as const;
+import data from "@/app/dashboard/data.json";
 
-export default async function AdminDashboardPage({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}) {
-  const { locale } = await params;
-  if (!isLocale(locale)) notFound();
-
-  const stats = await Promise.all(
-    statConfig.map(async ({ key, getter }) => ({
-      key,
-      value: await getter(),
-    })),
-  );
-
-  const t = translations[locale === "en" ? "en" : "fa"];
-
+// Dashboard chrome (SidebarProvider / AppSidebar / SiteHeader) lives in the
+// private (admin) group layout, rendered RTL via that layout.
+export default function Page() {
   return (
-    <div className="space-y-6">
-      <div className="space-y-1">
-        <h2 className="text-foreground text-2xl font-semibold">
-          {t["admin.overview.title"]}
-        </h2>
-        <p className="text-muted-foreground text-sm">
-          {t["admin.overview.subtitle"]}
-        </p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {stats.map((stat) => (
-          <div
-            key={stat.key}
-            className="border-border bg-card rounded-xl border p-5 shadow-sm"
-          >
-            <p className="text-muted-foreground text-xs tracking-[0.18em] uppercase">
-              {t[stat.key as keyof typeof t]}
-            </p>
-            <p className="text-foreground mt-3 text-3xl font-semibold">
-              {stat.value}
-            </p>
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-2">
+        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+          <SectionCards />
+          <div className="px-4 lg:px-6">
+            <ChartAreaInteractive />
           </div>
-        ))}
+          <DataTable data={data} />
+        </div>
       </div>
     </div>
   );

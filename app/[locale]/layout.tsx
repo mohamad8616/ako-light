@@ -1,15 +1,8 @@
-import Footer from "@/components/footer/footer";
-import NewsletterSectionWrapper from "@/components/footer/NewsLetterSectionWrapper";
-import Navbar from "@/components/navbar/Navbar";
 import SmoothScroll from "@/components/smoothScroll";
-import PageLoader from "@/components/ui/PageLoader";
 import { PageLoadInitializer } from "@/components/ui/PageLoadInitializer";
-import PageTransition from "@/components/ui/PageTransition";
-import Preloader from "@/components/ui/Preloader";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import { getLocalizedPath, isLocale, type Locale } from "@/lib/i18n/routing";
 import { translations } from "@/lib/i18n/translations";
-import { getProductCategories } from "@/lib/repositories/product-categories";
 import { siteName, siteUrl } from "@/lib/seo/config";
 import {
   jsonLdScript,
@@ -159,9 +152,6 @@ export default async function LocaleLayout({
   // Global structured data, emitted once per page (server-rendered).
   const siteDescription = translations[initialLang]["page.home.description"];
   const homeUrl = `${siteUrl}${getLocalizedPath("/", initialLang)}`;
-  // Fetched once per request (React cache()-deduped with page-level calls)
-  // and threaded through Navbar -> ProductsSheet for the nav categories.
-  const navCategories = await getProductCategories();
   const org = organizationJsonLd(siteName, siteDescription);
   const webSite = webSiteJsonLd(
     siteName,
@@ -196,12 +186,7 @@ export default async function LocaleLayout({
         />
         <SmoothScroll>
           <LanguageProvider locale={initialLang}>
-            <Navbar categories={navCategories} />
-            <PageLoader />
-            <Preloader />
-            <PageTransition>{children}</PageTransition>
-            <NewsletterSectionWrapper />
-            <Footer />
+            {children}
           </LanguageProvider>
         </SmoothScroll>
       </body>
