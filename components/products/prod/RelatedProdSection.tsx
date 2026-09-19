@@ -5,6 +5,7 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { productName } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
 import HomepageSection, { EASE } from "@/utility/HomepageSection";
+import { imageZoomClass } from "@/utility/animations";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "@/lib/i18n/Link";
@@ -71,7 +72,7 @@ export default function RelatedProductsSection({
                   alt={productName(t, item.slug)}
                   fill
                   sizes="(max-width: 640px) 100vw, 33vw"
-                  className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+                  className={imageZoomClass({ scale: 105 })}
                 />
                 <div className="absolute inset-0 bg-black/20 transition-colors duration-500 group-hover:bg-black/40" />
               </Link>

@@ -5,6 +5,7 @@ import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionImage from "@/utility/SectionImage";
 import SectionTitle from "@/utility/SectionTitle";
+import { imageZoomClass } from "@/utility/animations";
 import Image from "next/image";
 
 const CONCEPT_IMAGE =
@@ -41,7 +42,7 @@ export default function S34Concept() {
             src={CONCEPT_IMAGE}
             alt={kicker}
             fill
-            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+            className={imageZoomClass({ scale: 105 })}
           />
         </SectionImage>
 

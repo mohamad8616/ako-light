@@ -7,6 +7,7 @@ import downloadCatalogue from "@/public/photos/downloadCatalogue.jpg";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionTitle from "@/utility/SectionTitle";
+import { imageZoomClass } from "@/utility/animations";
 import Image from "next/image";
 import Link from "@/lib/i18n/Link";
 
@@ -43,7 +44,7 @@ export default function CatalogueDownloadSection({ link }: { link: string }) {
               alt={t("products.catalogue.aria")}
               fill
               sizes="(min-width: 1024px) 33vw, 100vw"
-              className="object-cover group-hover:scale-102 transition-transform duration-1500 ease-[cubic-bezier(0.22,1,0.36,1)]"
+              className={imageZoomClass({ scale: 102 })}
             />
 
             {/* Download icon */}

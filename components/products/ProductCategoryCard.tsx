@@ -1,6 +1,7 @@
 "use client";
 
 import { EASE } from "@/utility/HomepageSection";
+import { imageZoomClass } from "@/utility/animations";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "@/lib/i18n/Link";
@@ -43,11 +44,11 @@ export default function ProductCategoryCard({
             src={images[0]}
             alt={name}
             fill
-            className={`absolute object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+            className={
               images[1]
-                ? "group-hover:opacity-0"
-                : "transition duration-300 group-hover:scale-105"
-            }`}
+                ? "absolute object-cover transition duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:opacity-0"
+                : `absolute ${imageZoomClass({ scale: 105 })}`
+            }
           />
           {images[1] && (
             <Image

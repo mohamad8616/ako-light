@@ -24,6 +24,8 @@ export const adminEn = {
   "admin.placeholder.back": "Back to dashboard",
   "admin.topbar.greeting": "Welcome",
   "admin.topbar.signOut": "Sign out",
+  "admin.breadcrumb.label": "Breadcrumb",
+  "admin.breadcrumb.root": "Admin",
 } as const;
 
 export const adminFa = {
@@ -52,4 +54,6 @@ export const adminFa = {
   "admin.placeholder.back": "بازگشت به داشبورد",
   "admin.topbar.greeting": "خوش آمدید",
   "admin.topbar.signOut": "خروج",
+  "admin.breadcrumb.label": "مسیر صفحه",
+  "admin.breadcrumb.root": "مدیریت",
 } as const;

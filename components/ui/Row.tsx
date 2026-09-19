@@ -7,6 +7,7 @@ import Link from "@/lib/i18n/Link";
 import { usePathname } from "next/navigation";
 import { EASE } from "../../utility/HomepageSection";
 import { stripLocalePrefix } from "@/lib/i18n/routing";
+import { imageZoomClass } from "@/utility/animations";
 import PlusTextBtn from "../ui/PlusTextBtn";
 import { Localized, pick } from "@/lib/i18n/localized";
 
@@ -57,7 +58,11 @@ export default function Row({
             src={image}
             alt={nameStr}
             fill
-            className="object-cover grayscale transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-102"
+            className={imageZoomClass({
+              scale: 102,
+              grayscale: true,
+              standalone: true,
+            })}
           />
         </div>
 

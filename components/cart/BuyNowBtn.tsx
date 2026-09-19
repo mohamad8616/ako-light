@@ -29,7 +29,7 @@ export default function BuyBtn({ product }: { product: Product }) {
       <button
         onClick={() => setModalOpen(true)}
         className={cn(
-          "my-10 cursor-pointer bg-white px-8 py-3 text-sm font-medium text-stone-950",
+          "my-10 cursor-pointer bg-background text-background-secondary px-8 py-3 text-sm font-medium",
           lang === "fa" ? "font-noora" : "font-din",
         )}
       >

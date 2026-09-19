@@ -1,5 +1,7 @@
 /** Constants shared by the ImageGalleryCarousel family. */
 
+import { imageZoomClass } from "@/utility/animations";
+
 /** Custom cubic-bezier easing curve matching the rest of the site. */
 export const EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
@@ -23,8 +25,8 @@ export const DEFAULT_HEIGHT = "aspect-4/5";
 /** Fixed-height chain for the multiWidth (alternating) layout. */
 export const MULTI_HEIGHT = "h-[50vh] sm:h-[45vh] md:h-[60vh]";
 
-/** Shared image hover-zoom transition. */
-export const IMAGE_TRANSITION = `transition-transform duration-[1.3s] ease-[${EASE}] group-hover:scale-105`;
+/** Shared image hover-zoom transition (duration via IMAGE_ZOOM). */
+export const IMAGE_TRANSITION = imageZoomClass({ scale: 105 });
 
 /** Shared dark overlay transition on hover. */
 export const OVERLAY_TRANSITION =

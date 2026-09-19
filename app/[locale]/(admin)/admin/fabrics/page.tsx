@@ -5,5 +5,5 @@ export default function Page({
 }: {
   params: Promise<{ locale: string }>;
 }) {
-  return <AdminPlaceholderPage params={params} title="Admins" />;
+  return <AdminPlaceholderPage params={params} labelKey="admin.nav.fabrics" />;
 }

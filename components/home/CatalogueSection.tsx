@@ -48,13 +48,13 @@ export default function CatalogueSection() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 1, ease: EASE }}
-            className="group relative aspect-2/3 w-full"
+            className="group relative aspect-2/3 w-full overflow-hidden"
           >
             <Image
               src={catalogue.image}
-              alt="S34/5"
+              alt="catalogue download"
               fill
-              className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+              className="object-cover transition-transform duration-2500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
             />
 
             {/* Animated download circle */}

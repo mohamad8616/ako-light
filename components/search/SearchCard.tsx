@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "@/lib/i18n/Link";
+import { imageZoomClass } from "@/utility/animations";
 
 // ---------------------------------------------------------------------------
 // SearchCard — reusable result card shared by the PRODUCTS and DESIGNERS
@@ -21,17 +22,14 @@ const RESULT_CARD_CLASS =
 const NAME_CLASS =
   "text-background-secondary text-sm leading-snug font-medium tracking-tight uppercase sm:text-base md:text-lg";
 
-const IMAGE_BASE_CLASS =
-  "object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]";
-
 const VARIANT_CLASSES = {
   product: {
     imageWrapper: "aspect-4/3",
-    image: "group-hover:scale-105",
+    image: imageZoomClass({ scale: 105 }),
   },
   designer: {
     imageWrapper: "aspect-square",
-    image: "grayscale hover:scale-102",
+    image: imageZoomClass({ scale: 102, grayscale: true, standalone: true }),
   },
 } as const;
 
@@ -71,7 +69,7 @@ export default function SearchCard({
               alt={name}
               fill
               sizes="(max-width: 768px) 50vw, 25vw"
-              className={cn(IMAGE_BASE_CLASS, imageClass)}
+              className={imageClass}
             />
           </div>
           <div className="flex flex-1 items-center justify-center bg-[#1C1C1E] px-4 py-6 text-center sm:px-8 sm:py-10">

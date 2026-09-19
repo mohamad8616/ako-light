@@ -27,11 +27,7 @@ export default function HengeParisBanner() {
           textColor="text-background"
         />
       }
-      badge={
-        <div className="bg-background absolute top-4 left-4 flex h-9 w-9 items-center justify-center rounded-full text-white">
-          <span className="text-[10px] font-light">H</span>
-        </div>
-      }
+
     />
   );
 }
