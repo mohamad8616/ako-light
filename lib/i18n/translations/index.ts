@@ -1,4 +1,5 @@
 import { aboutEn, aboutFa } from "./about";
+import { adminEn, adminFa } from "./admin";
 import { authEn, authFa } from "./auth";
 import { cartEn, cartFa } from "./cart";
 import { collectionsEn, collectionsFa } from "./collections";
@@ -33,6 +34,7 @@ export const en = {
   ...searchEn,
   ...projectsEn,
   ...pagesEn,
+  ...adminEn,
   ...authEn,
 } as const;
 
@@ -52,5 +54,6 @@ export const fa = {
   ...searchFa,
   ...projectsFa,
   ...pagesFa,
+  ...adminFa,
   ...authFa,
 } as const;

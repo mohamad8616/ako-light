@@ -1,3 +1,4 @@
+import { ADMIN_ROLES } from "@/lib/auth/permissions";
 import { NextResponse, type NextRequest } from "next/server";
 
 const LOCALE_PREFIX = /^\/(en|fa)(?=\/|$)/;
@@ -89,6 +90,15 @@ export async function proxy(request: NextRequest) {
       redirectUrl.searchParams.set("redirectTo", `${pathname}${search}`);
       return NextResponse.redirect(redirectUrl, 307);
     }
+
+    // const role = session.user?.role;
+    // const isAdminRole =
+    //   typeof role === "string" &&
+    //   ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number]);
+
+    // if (!isAdminRole) {
+    //   return NextResponse.redirect(new URL("/", request.url), 307);
+    // }
   }
 
   const action = resolveProxyAction(pathname);
