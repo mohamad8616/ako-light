@@ -2,12 +2,27 @@ import { phoneNumberClient } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
 
 /**
+ * Normalize a base URL env value into something `new URL()` accepts.
+ *
+ * Vercel-style bare domains (`ako-light.vercel.app`, with no scheme) throw
+ * `ERR_INVALID_URL` inside better-auth's client at import time, which fails
+ * the production build during page prerendering. Accept the bare form and
+ * assume https (production domains are always https on Vercel).
+ */
+function normalizeBaseUrl(raw: string | undefined): string | undefined {
+  const value = raw?.trim().replace(/\/+$/, "");
+  if (!value) return undefined;
+  if (/^https?:\/\//i.test(value)) return value;
+  return `https://${value}`;
+}
+
+/**
  * The base URL of the auth server. Comes from NEXT_PUBLIC_APP_URL; in local
  * development we fall back to the Next.js dev server so the client works
  * without extra configuration.
  */
 const baseURL =
-  process.env.NEXT_PUBLIC_APP_URL ??
+  normalizeBaseUrl(process.env.NEXT_PUBLIC_APP_URL) ??
   (process.env.NODE_ENV === "development" ? "http://localhost:3000" : undefined);
 
 export const authClient = createAuthClient({

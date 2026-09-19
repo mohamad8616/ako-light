@@ -9,10 +9,21 @@ import type { Locale } from "@/lib/i18n/routing";
  * The production base URL comes from NEXT_PUBLIC_SITE_URL. Never hardcode a
  * domain in pages — canonical/OG/sitemap URLs all resolve through here.
  * Falls back to localhost for development/preview builds.
+ *
+ * A bare domain (`ako-light.vercel.app`, with no scheme) is accepted and
+ * treated as https so a missing scheme can never throw `ERR_INVALID_URL`
+ * during prerendering.
  */
+function normalizeSiteUrl(raw: string | undefined): string {
+  const value =
+    raw?.trim().replace(/\/+$/, "") || "http://localhost:3000";
+  if (/^https?:\/\//i.test(value)) return value;
+  return `https://${value}`;
+}
+
 const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
-export const siteUrl: string = rawSiteUrl.replace(/\/+$/, "");
+export const siteUrl: string = normalizeSiteUrl(rawSiteUrl);
 
 /** Metadata/structured-data brand name. */
 export const siteName = "Home Form";

@@ -11,7 +11,27 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 import { admin, phoneNumber } from "better-auth/plugins";
 
+/**
+ * Normalize a base URL env value into something `new URL()` accepts.
+ *
+ * A bare domain (`ako-light.vercel.app`, with no scheme) throws
+ * `ERR_INVALID_URL` at import time and fails the production build during
+ * page prerendering. Accept the bare form and assume https (production
+ * domains are always https on Vercel).
+ */
+function normalizeBaseUrl(raw: string | undefined): string | undefined {
+  const value = raw?.trim().replace(/\/+$/, "");
+  if (!value) return undefined;
+  if (/^https?:\/\//i.test(value)) return value;
+  return `https://${value}`;
+}
+
 export const auth = betterAuth({
+  // Prefer the server-side BETTER_AUTH_URL; fall back to the public app URL
+  // so a missing BETTER_AUTH_URL alone can never crash with Invalid URL.
+  baseURL: normalizeBaseUrl(
+    process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL,
+  ),
   database: prismaAdapter(prisma, {
     provider: "postgresql", // or "mysql", "sqlite", ...etc
   }),
