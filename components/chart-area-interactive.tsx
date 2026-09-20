@@ -4,6 +4,7 @@ import * as React from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useLanguage } from "@/lib/i18n/LanguageProvider"
 import {
   Card,
   CardAction,
@@ -126,26 +127,40 @@ const chartData = [
   { date: "2024-06-30", desktop: 446, mobile: 400 },
 ]
 
-const chartConfig = {
-  visitors: {
-    label: "Visitors",
-  },
-  desktop: {
-    label: "Desktop",
-    color: "var(--primary)",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--primary)",
-  },
-} satisfies ChartConfig
-
 export function ChartAreaInteractive() {
   const isMobile = useIsMobile()
+  const { lang, t } = useLanguage()
   // No effect needed: the default range is derived ("7d" on mobile, "90d"
   // elsewhere) until the user picks a range explicitly.
   const [timeRange, setTimeRange] = React.useState<string | null>(null)
   const range = timeRange ?? (isMobile ? "7d" : "90d")
+
+  const locale = lang === "fa" ? "fa-IR" : "en-US"
+  const formatTick = (value: string) =>
+    new Date(value).toLocaleDateString(locale, {
+      month: "short",
+      day: "numeric",
+    })
+
+  const chartConfig = {
+    visitors: {
+      label: t("admin.chart.title"),
+    },
+    desktop: {
+      label: t("admin.chart.desktop"),
+      color: "var(--primary)",
+    },
+    mobile: {
+      label: t("admin.chart.mobile"),
+      color: "var(--primary)",
+    },
+  } satisfies ChartConfig
+
+  const rangeOptions = [
+    { value: "90d", label: t("admin.chart.range.90d") },
+    { value: "30d", label: t("admin.chart.range.30d") },
+    { value: "7d", label: t("admin.chart.range.7d") },
+  ]
 
   const filteredData = chartData.filter((item) => {
     const date = new Date(item.date)
@@ -164,12 +179,14 @@ export function ChartAreaInteractive() {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Total Visitors</CardTitle>
+        <CardTitle>{t("admin.chart.title")}</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Total for the last 3 months
+            {t("admin.chart.description.long")}
           </span>
-          <span className="@[540px]/card:hidden">Last 3 months</span>
+          <span className="@[540px]/card:hidden">
+            {t("admin.chart.description.short")}
+          </span>
         </CardDescription>
         <CardAction>
           <ToggleGroup
@@ -181,9 +198,11 @@ export function ChartAreaInteractive() {
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:px-4! @[767px]/card:flex"
           >
-            <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
-            <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
-            <ToggleGroupItem value="7d">Last 7 days</ToggleGroupItem>
+            {rangeOptions.map((option) => (
+              <ToggleGroupItem key={option.value} value={option.value}>
+                {option.label}
+              </ToggleGroupItem>
+            ))}
           </ToggleGroup>
           <Select
             value={range}
@@ -196,20 +215,20 @@ export function ChartAreaInteractive() {
             <SelectTrigger
               className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
               size="sm"
-              aria-label="Select a value"
+              aria-label={t("admin.chart.select.aria")}
             >
-              <SelectValue placeholder="Last 3 months" />
+              <SelectValue placeholder={t("admin.chart.range.90d")} />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="90d" className="rounded-lg">
-                Last 3 months
-              </SelectItem>
-              <SelectItem value="30d" className="rounded-lg">
-                Last 30 days
-              </SelectItem>
-              <SelectItem value="7d" className="rounded-lg">
-                Last 7 days
-              </SelectItem>
+              {rangeOptions.map((option) => (
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                  className="rounded-lg"
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </CardAction>
@@ -253,20 +272,14 @@ export function ChartAreaInteractive() {
               axisLine={false}
               tickMargin={8}
               minTickGap={32}
-              tickFormatter={(value) => {
-                const date = new Date(value)
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })
-              }}
+              tickFormatter={formatTick}
             />
             <ChartTooltip
               cursor={false}
               content={
                 <ChartTooltipContent
                   labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
+                    return new Date(value).toLocaleDateString(locale, {
                       month: "short",
                       day: "numeric",
                     })

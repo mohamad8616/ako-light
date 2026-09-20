@@ -91,14 +91,21 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(redirectUrl, 307);
     }
 
-    // const role = session.user?.role;
-    // const isAdminRole =
-    //   typeof role === "string" &&
-    //   ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number]);
+    // Role gate: a signed-in user without an admin-level role (plain `user`)
+    // is bounced to the sign-in page with an access-denied message. This is
+    // the fast edge check; the React-tree backstop lives in
+    // lib/admin/access.ts (requireAdminAccess / requireOwnerAccess).
+    const role = session.user?.role;
+    const isAdminRole =
+      typeof role === "string" &&
+      ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number]);
 
-    // if (!isAdminRole) {
-    //   return NextResponse.redirect(new URL("/", request.url), 307);
-    // }
+    if (!isAdminRole) {
+      const redirectUrl = new URL("/sign-in", request.url);
+      redirectUrl.searchParams.set("denied", "1");
+      redirectUrl.searchParams.set("redirectTo", `${pathname}${search}`);
+      return NextResponse.redirect(redirectUrl, 307);
+    }
   }
 
   const action = resolveProxyAction(pathname);

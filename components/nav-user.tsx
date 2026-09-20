@@ -1,10 +1,6 @@
 "use client"
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,19 +16,52 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { ROLES } from "@/lib/auth/permissions"
+import { authClient } from "@/lib/auth/auth-client"
+import { useLanguage } from "@/lib/i18n/LanguageProvider"
+import { useRouter } from "next/navigation"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { MoreVerticalCircle01Icon, UserCircle02Icon, CreditCardIcon, Notification03Icon, Logout01Icon } from "@hugeicons/core-free-icons"
+import { Logout01Icon, UserCircle02Icon } from "@hugeicons/core-free-icons"
 
+/**
+ * The signed-in staff account, fed straight from better-auth's session.
+ *
+ * `role` renders as a small badge (admin vs owner) so it is always obvious
+ * which level of access the current session has. The demo Account / Billing
+ * / Notifications entries don't exist for staff accounts and are not shown;
+ * the profile-editing panel is a later step (see docs/admin-guide.md).
+ */
 export function NavUser({
   user,
 }: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
+  user?:
+    | {
+        name?: string | null
+        email?: string | null
+        image?: string | null
+        role?: string | null
+      }
+    | null
 }) {
   const { isMobile } = useSidebar()
+  const { t } = useLanguage()
+  const router = useRouter()
+
+  const displayName = user?.name || user?.email || "—"
+  const initials = displayName.trim().slice(0, 2).toUpperCase() || "—"
+  const roleLabel =
+    user?.role === ROLES.owner
+      ? t("admin.role.owner")
+      : user?.role === ROLES.admin
+        ? t("admin.role.admin")
+        : (user?.role ?? "")
+
+  const handleSignOut = async () => {
+    await authClient.signOut()
+    router.push("/")
+    router.refresh()
+  }
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -42,17 +71,28 @@ export function NavUser({
               <SidebarMenuButton size="lg" className="aria-expanded:bg-muted" />
             }
           >
-            <Avatar className="size-8 rounded-lg grayscale">
-              <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+            <Avatar className="size-8 rounded-lg">
+              <AvatarImage
+                src={user?.image ?? undefined}
+                alt={displayName}
+              />
+              <AvatarFallback className="rounded-lg">
+                {initials}
+              </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-medium">{user.name}</span>
-              <span className="truncate text-xs text-foreground/70">
-                {user.email}
-              </span>
+            <div className="grid flex-1 text-start text-sm leading-tight">
+              <span className="truncate font-medium">{displayName}</span>
+              {roleLabel ? (
+                <span className="text-muted-foreground truncate text-xs">
+                  {roleLabel}
+                </span>
+              ) : null}
             </div>
-            <HugeiconsIcon icon={MoreVerticalCircle01Icon} strokeWidth={2} className="ml-auto size-4" />
+            <HugeiconsIcon
+              icon={UserCircle02Icon}
+              strokeWidth={2}
+              className="ms-auto size-4"
+            />
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="min-w-56"
@@ -60,42 +100,34 @@ export function NavUser({
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuGroup>
-              <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                  <Avatar className="size-8">
-                    <AvatarImage src={user.avatar} alt={user.name} />
-                    <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                  </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-medium">{user.name}</span>
-                    <span className="truncate text-xs text-muted-foreground">
-                      {user.email}
+            <DropdownMenuLabel className="p-0 font-normal">
+              <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
+                <Avatar className="size-8">
+                  <AvatarImage
+                    src={user?.image ?? undefined}
+                    alt={displayName}
+                  />
+                  <AvatarFallback className="rounded-lg">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="grid flex-1 text-start leading-tight">
+                  <span className="truncate font-medium">{displayName}</span>
+                  {roleLabel ? (
+                    <span className="text-muted-foreground truncate text-xs">
+                      {roleLabel}
                     </span>
-                  </div>
+                  ) : null}
                 </div>
-              </DropdownMenuLabel>
-            </DropdownMenuGroup>
+              </div>
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <HugeiconsIcon icon={UserCircle02Icon} strokeWidth={2} />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <HugeiconsIcon icon={CreditCardIcon} strokeWidth={2} />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <HugeiconsIcon icon={Notification03Icon} strokeWidth={2} />
-                Notifications
+              <DropdownMenuItem onClick={handleSignOut}>
+                <HugeiconsIcon icon={Logout01Icon} strokeWidth={2} />
+                {t("admin.topbar.signOut")}
               </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <HugeiconsIcon icon={Logout01Icon} strokeWidth={2} />
-              Log out
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

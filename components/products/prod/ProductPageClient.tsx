@@ -32,6 +32,7 @@ export default function ProductPageClient({
       <ImageGalleryCarousel
         multiWidth={true}
         mobileColumn={true}
+        circle={true}
         images={galleryImages}
       />
       <RelatedProductsSection

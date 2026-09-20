@@ -35,7 +35,6 @@ import {
 } from "@tanstack/react-table";
 import * as React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
-import { toast } from "sonner";
 import { z } from "zod";
 
 import { Badge } from "@/components/ui/badge";
@@ -96,26 +95,60 @@ import {
   ChartUpIcon,
   CheckmarkCircle01Icon,
   DragDropVerticalIcon,
+  Edit01Icon,
   LeftToRightListBulletIcon,
   Loading03Icon,
   MoreVerticalCircle01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+
 const columnHelper = createColumnHelper<z.infer<typeof schema>>();
 
 export const schema = z.object({
   id: z.number(),
-  header: z.string(),
-  type: z.string(),
+  name: z.string(),
+  category: z.string(),
   status: z.string(),
-  target: z.string(),
-  limit: z.string(),
-  reviewer: z.string(),
+  designer: z.string(),
 });
+
+/**
+ * Product publish states. The values are i18n-neutral slugs so the sample
+ * rows stay language-independent; the visible labels come from the admin
+ * dictionary (admin.status.*), which is the basis for the future
+ * multi-language dashboard.
+ */
+export const PRODUCT_STATUSES = ["published", "draft", "pending"] as const;
+
+/** Icon per publish state — view-layer concern, like the nav icons. */
+const STATUS_ICONS = {
+  published: CheckmarkCircle01Icon,
+  draft: Edit01Icon,
+  pending: Loading03Icon,
+} as const;
+
+/** A row is "unassigned" when the designer field is empty. */
+const UNASSIGNED = "";
+
+/** Designers offered for assignment (sample data). */
+const DESIGNERS = [
+  "ماسیمو کاستانیا",
+  "ایزابلا جنووزه",
+  "اوگو کاچاتوری",
+  "جوهانا گراوندر",
+  "تانجو اوزلگین",
+  "داویده ناسیمبنی",
+  "هیلا هاوکین",
+  "استیون تیرنی",
+  "یابو پوشلبرگ",
+  "امیلی والن",
+];
 
 // Create a separate component for the drag handle
 function DragHandle({ id }: { id: number }) {
+  const { t } = useLanguage();
   const { attributes, listeners } = useSortable({
     id,
   });
@@ -132,11 +165,17 @@ function DragHandle({ id }: { id: number }) {
         strokeWidth={2}
         className="text-muted-foreground size-3"
       />
-      <span className="sr-only">Drag to reorder</span>
+      <span className="sr-only">{t("admin.table.dragToReorder")}</span>
     </Button>
   );
 }
-const columns = [
+/**
+ * Column definitions are built per render with the active dictionary, so every
+ * header, badge, placeholder and menu entry is translated (and the table works
+ * in the future multi-language dashboard without changes).
+ */
+function buildColumns(t: (key: string) => string) {
+  return [
   columnHelper.display({
     id: "drag",
     header: () => null,
@@ -153,7 +192,7 @@ const columns = [
             !table.getIsAllPageRowsSelected()
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
+          aria-label={t("admin.table.selectAll")}
         />
       </div>
     ),
@@ -162,126 +201,80 @@ const columns = [
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label={t("admin.table.selectRow")}
         />
       </div>
     ),
     enableSorting: false,
     enableHiding: false,
   }),
-  columnHelper.accessor("header", {
-    header: "Header",
+  columnHelper.accessor("name", {
+    header: t("admin.table.col.name"),
     cell: ({ row }) => {
       return <TableCellViewer item={row.original} />;
     },
     enableHiding: false,
   }),
-  columnHelper.accessor("type", {
-    header: "Section Type",
+  columnHelper.accessor("category", {
+    header: t("admin.table.col.category"),
     cell: ({ row }) => (
-      <div className="w-32">
+      <div className="w-40">
         <Badge variant="outline" className="text-muted-foreground px-1.5">
-          {row.original.type}
+          {t(`products.${row.original.category}`)}
         </Badge>
       </div>
     ),
   }),
   columnHelper.accessor("status", {
-    header: "Status",
-    cell: ({ row }) => (
-      <Badge variant="outline" className="text-muted-foreground px-1.5">
-        {row.original.status === "Done" ? (
-          <HugeiconsIcon
-            icon={CheckmarkCircle01Icon}
-            strokeWidth={2}
-            className="fill-green-500 dark:fill-green-400"
-          />
-        ) : (
-          <HugeiconsIcon icon={Loading03Icon} strokeWidth={2} />
-        )}
-        {row.original.status}
-      </Badge>
-    ),
-  }),
-  columnHelper.accessor("target", {
-    header: () => <div className="w-full text-right">Target</div>,
-    cell: ({ row }) => (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
-            success: "Done",
-            error: "Error",
-          });
-        }}
-      >
-        <Label htmlFor={`${row.original.id}-target`} className="sr-only">
-          Target
-        </Label>
-        <Input
-          className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent"
-          defaultValue={row.original.target}
-          id={`${row.original.id}-target`}
-        />
-      </form>
-    ),
-  }),
-  columnHelper.accessor("limit", {
-    header: () => <div className="w-full text-right">Limit</div>,
-    cell: ({ row }) => (
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: `Saving ${row.original.header}`,
-            success: "Done",
-            error: "Error",
-          });
-        }}
-      >
-        <Label htmlFor={`${row.original.id}-limit`} className="sr-only">
-          Limit
-        </Label>
-        <Input
-          className="hover:bg-input/30 focus-visible:bg-background dark:hover:bg-input/30 dark:focus-visible:bg-input/30 h-8 w-16 border-transparent bg-transparent text-right shadow-none focus-visible:border dark:bg-transparent"
-          defaultValue={row.original.limit}
-          id={`${row.original.id}-limit`}
-        />
-      </form>
-    ),
-  }),
-  columnHelper.accessor("reviewer", {
-    header: "Reviewer",
+    header: t("admin.table.col.status"),
     cell: ({ row }) => {
-      const isAssigned = row.original.reviewer !== "Assign reviewer";
+      const status = row.original.status as keyof typeof STATUS_ICONS;
+      const StatusIcon = STATUS_ICONS[status] ?? Loading03Icon;
+      return (
+        <Badge variant="outline" className="text-muted-foreground px-1.5">
+          <HugeiconsIcon
+            icon={StatusIcon}
+            strokeWidth={2}
+            className={
+              status === "published"
+                ? "fill-green-500 dark:fill-green-400"
+                : undefined
+            }
+          />
+          {t(`admin.status.${status}`)}
+        </Badge>
+      );
+    },
+  }),
+  columnHelper.accessor("designer", {
+    header: t("admin.table.col.designer"),
+    cell: ({ row }) => {
+      const isAssigned = row.original.designer !== UNASSIGNED;
       if (isAssigned) {
-        return row.original.reviewer;
+        return row.original.designer;
       }
       return (
         <>
-          <Label htmlFor={`${row.original.id}-reviewer`} className="sr-only">
-            Reviewer
+          <Label htmlFor={`${row.original.id}-designer`} className="sr-only">
+            {t("admin.table.col.designer")}
           </Label>
           <Select
-            items={[
-              { label: "Eddie Lake", value: "Eddie Lake" },
-              { label: "Jamik Tashpulatov", value: "Jamik Tashpulatov" },
-            ]}
+            value={isAssigned ? row.original.designer : undefined}
           >
             <SelectTrigger
               className="w-38 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate"
               size="sm"
-              id={`${row.original.id}-reviewer`}
+              id={`${row.original.id}-designer`}
             >
-              <SelectValue placeholder="Assign reviewer" />
+              <SelectValue placeholder={t("admin.table.assignDesigner")} />
             </SelectTrigger>
             <SelectContent align="end">
               <SelectGroup>
-                <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-                <SelectItem value="Jamik Tashpulatov">
-                  Jamik Tashpulatov
-                </SelectItem>
+                {DESIGNERS.map((name) => (
+                  <SelectItem key={name} value={name}>
+                    {name}
+                  </SelectItem>
+                ))}
               </SelectGroup>
             </SelectContent>
           </Select>
@@ -303,19 +296,22 @@ const columns = [
           }
         >
           <HugeiconsIcon icon={MoreVerticalCircle01Icon} strokeWidth={2} />
-          <span className="sr-only">Open menu</span>
+          <span className="sr-only">{t("admin.table.openMenu")}</span>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-32">
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Make a copy</DropdownMenuItem>
-          <DropdownMenuItem>Favorite</DropdownMenuItem>
+        <DropdownMenuContent align="end" className="w-40">
+          <DropdownMenuItem>{t("admin.table.edit")}</DropdownMenuItem>
+          <DropdownMenuItem>{t("admin.table.duplicate")}</DropdownMenuItem>
+          <DropdownMenuItem>{t("admin.table.favorite")}</DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+          <DropdownMenuItem variant="destructive">
+            {t("admin.table.delete")}
+          </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     ),
   }),
-];
+  ];
+}
 function DraggableRow({
   row,
 }: {
@@ -348,6 +344,9 @@ export function DataTable({
 }: {
   data: z.infer<typeof schema>[];
 }) {
+  const { lang, t } = useLanguage();
+  const numberFormat = new Intl.NumberFormat(lang === "fa" ? "fa-IR" : "en-US");
+  const columns = React.useMemo(() => buildColumns(t), [t]);
   const [data, setData] = React.useState(() => initialData);
   const [rowSelection, setRowSelection] =
     React.useState<RowSelectionState>({});
@@ -410,15 +409,15 @@ export function DataTable({
     >
       <div className="flex items-center justify-between px-4 lg:px-6">
         <Label htmlFor="view-selector" className="sr-only">
-          View
+          {t("admin.table.viewSelector")}
         </Label>
         <Select
           defaultValue="outline"
           items={[
-            { label: "Outline", value: "outline" },
-            { label: "Past Performance", value: "past-performance" },
-            { label: "Key Personnel", value: "key-personnel" },
-            { label: "Focus Documents", value: "focus-documents" },
+            { label: t("admin.tab.products"), value: "outline" },
+            { label: t("admin.tab.pastPerformance"), value: "past-performance" },
+            { label: t("admin.tab.keyPersonnel"), value: "key-personnel" },
+            { label: t("admin.tab.focusDocuments"), value: "focus-documents" },
           ]}
         >
           <SelectTrigger
@@ -426,26 +425,36 @@ export function DataTable({
             size="sm"
             id="view-selector"
           >
-            <SelectValue placeholder="Select a view" />
+            <SelectValue placeholder={t("admin.table.selectView")} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              <SelectItem value="outline">Outline</SelectItem>
-              <SelectItem value="past-performance">Past Performance</SelectItem>
-              <SelectItem value="key-personnel">Key Personnel</SelectItem>
-              <SelectItem value="focus-documents">Focus Documents</SelectItem>
+              <SelectItem value="outline">{t("admin.tab.products")}</SelectItem>
+              <SelectItem value="past-performance">
+                {t("admin.tab.pastPerformance")}
+              </SelectItem>
+              <SelectItem value="key-personnel">
+                {t("admin.tab.keyPersonnel")}
+              </SelectItem>
+              <SelectItem value="focus-documents">
+                {t("admin.tab.focusDocuments")}
+              </SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger value="outline">Outline</TabsTrigger>
+          <TabsTrigger value="outline">{t("admin.tab.products")}</TabsTrigger>
           <TabsTrigger value="past-performance">
-            Past Performance <Badge variant="secondary">3</Badge>
+            {t("admin.tab.pastPerformance")}{" "}
+            <Badge variant="secondary">3</Badge>
           </TabsTrigger>
           <TabsTrigger value="key-personnel">
-            Key Personnel <Badge variant="secondary">2</Badge>
+            {t("admin.tab.keyPersonnel")}{" "}
+            <Badge variant="secondary">2</Badge>
           </TabsTrigger>
-          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
+          <TabsTrigger value="focus-documents">
+            {t("admin.tab.focusDocuments")}
+          </TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -457,14 +466,14 @@ export function DataTable({
                 strokeWidth={2}
                 data-icon="inline-start"
               />
-              Columns
+              {t("admin.table.columns")}
               <HugeiconsIcon
                 icon={ArrowDown01Icon}
                 strokeWidth={2}
                 data-icon="inline-end"
               />
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-32">
+            <DropdownMenuContent align="end" className="w-40">
               {table
                 .getAllColumns()
                 .filter(
@@ -476,13 +485,20 @@ export function DataTable({
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
-                      className="capitalize"
                       checked={column.getIsVisible()}
                       onCheckedChange={(value) =>
                         column.toggleVisibility(!!value)
                       }
                     >
-                      {column.id}
+                      {column.id === "name"
+                        ? t("admin.table.col.name")
+                        : column.id === "category"
+                          ? t("admin.table.col.category")
+                          : column.id === "status"
+                            ? t("admin.table.col.status")
+                            : column.id === "designer"
+                              ? t("admin.table.col.designer")
+                              : column.id}
                     </DropdownMenuCheckboxItem>
                   );
                 })}
@@ -490,7 +506,9 @@ export function DataTable({
           </DropdownMenu>
           <Button variant="outline" size="sm">
             <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
-            <span className="hidden lg:inline">Add Section</span>
+            <span className="hidden lg:inline">
+              {t("admin.table.addSection")}
+            </span>
           </Button>
         </div>
       </div>
@@ -541,7 +559,7 @@ export function DataTable({
                       colSpan={columns.length}
                       className="h-24 text-center"
                     >
-                      No results.
+                      {t("admin.table.noResults")}
                     </TableCell>
                   </TableRow>
                 )}
@@ -551,13 +569,17 @@ export function DataTable({
         </div>
         <div className="flex items-center justify-between px-4">
           <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {numberFormat.format(
+              table.getFilteredSelectedRowModel().rows.length,
+            )}{" "}
+            {t("admin.table.of")}{" "}
+            {numberFormat.format(table.getFilteredRowModel().rows.length)}{" "}
+            {t("admin.table.rowsSelected")}
           </div>
           <div className="flex w-full items-center gap-8 lg:w-fit">
             <div className="hidden items-center gap-2 lg:flex">
               <Label htmlFor="rows-per-page" className="text-sm font-medium">
-                Rows per page
+                {t("admin.table.rowsPerPage")}
               </Label>
               <Select
                 value={`${table.getState().pagination.pageSize}`}
@@ -586,17 +608,20 @@ export function DataTable({
               </Select>
             </div>
             <div className="flex w-fit items-center justify-center text-sm font-medium">
-              Page {table.getState().pagination.pageIndex + 1} of{" "}
-              {table.getPageCount()}
+              {t("admin.table.page")}{" "}
+              {numberFormat.format(table.getState().pagination.pageIndex + 1)}{" "}
+              {t("admin.table.of")} {numberFormat.format(table.getPageCount())}
             </div>
-            <div className="ml-auto flex items-center gap-2 lg:ml-0">
+            <div className="ms-auto flex items-center gap-2 lg:ms-0">
               <Button
                 variant="outline"
                 className="hidden h-8 w-8 p-0 lg:flex"
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
               >
-                <span className="sr-only">Go to first page</span>
+                <span className="sr-only">
+                  {t("admin.table.goToFirstPage")}
+                </span>
                 <HugeiconsIcon icon={ArrowLeftDoubleIcon} strokeWidth={2} />
               </Button>
               <Button
@@ -606,7 +631,9 @@ export function DataTable({
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
               >
-                <span className="sr-only">Go to previous page</span>
+                <span className="sr-only">
+                  {t("admin.table.goToPreviousPage")}
+                </span>
                 <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
               </Button>
               <Button
@@ -616,7 +643,7 @@ export function DataTable({
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
               >
-                <span className="sr-only">Go to next page</span>
+                <span className="sr-only">{t("admin.table.goToNextPage")}</span>
                 <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
               </Button>
               <Button
@@ -626,7 +653,9 @@ export function DataTable({
                 onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 disabled={!table.getCanNextPage()}
               >
-                <span className="sr-only">Go to last page</span>
+                <span className="sr-only">
+                  {t("admin.table.goToLastPage")}
+                </span>
                 <HugeiconsIcon icon={ArrowRightDoubleIcon} strokeWidth={2} />
               </Button>
             </div>
@@ -651,50 +680,21 @@ export function DataTable({
     </Tabs>
   );
 }
-const chartData = [
-  {
-    month: "January",
-    desktop: 186,
-    mobile: 80,
-  },
-  {
-    month: "February",
-    desktop: 305,
-    mobile: 200,
-  },
-  {
-    month: "March",
-    desktop: 237,
-    mobile: 120,
-  },
-  {
-    month: "April",
-    desktop: 73,
-    mobile: 190,
-  },
-  {
-    month: "May",
-    desktop: 209,
-    mobile: 130,
-  },
-  {
-    month: "June",
-    desktop: 214,
-    mobile: 140,
-  },
-];
-const chartConfig = {
-  desktop: {
-    label: "Desktop",
-    color: "var(--primary)",
-  },
-  mobile: {
-    label: "Mobile",
-    color: "var(--primary)",
-  },
-} satisfies ChartConfig;
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
+  const { lang, t } = useLanguage();
   const isMobile = useIsMobile();
+  const drawerChartData = [
+    { month: lang === "fa" ? "ژانویه" : "January", desktop: 186, mobile: 80 },
+    { month: lang === "fa" ? "فوریه" : "February", desktop: 305, mobile: 200 },
+    { month: lang === "fa" ? "مارس" : "March", desktop: 237, mobile: 120 },
+    { month: lang === "fa" ? "آوریل" : "April", desktop: 73, mobile: 190 },
+    { month: lang === "fa" ? "مه" : "May", desktop: 209, mobile: 130 },
+    { month: lang === "fa" ? "ژوئن" : "June", desktop: 214, mobile: 140 },
+  ];
+  const drawerChartConfig = {
+    desktop: { label: t("admin.chart.desktop"), color: "var(--primary)" },
+    mobile: { label: t("admin.chart.mobile"), color: "var(--primary)" },
+  } satisfies ChartConfig;
   return (
     <Drawer swipeDirection={isMobile ? "down" : "right"}>
       <DrawerTrigger
@@ -705,22 +705,20 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           />
         }
       >
-        {item.header}
+        {item.name}
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader className="gap-1">
-          <DrawerTitle>{item.header}</DrawerTitle>
-          <DrawerDescription>
-            Showing total visitors for the last 6 months
-          </DrawerDescription>
+          <DrawerTitle>{item.name}</DrawerTitle>
+          <DrawerDescription>{t("admin.drawer.views")}</DrawerDescription>
         </DrawerHeader>
         <div className="flex flex-col gap-4 overflow-y-auto px-4 text-sm">
           {!isMobile && (
             <>
-              <ChartContainer config={chartConfig}>
+              <ChartContainer config={drawerChartConfig}>
                 <AreaChart
                   accessibilityLayer
-                  data={chartData}
+                  data={drawerChartData}
                   margin={{
                     left: 0,
                     right: 10,
@@ -760,7 +758,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
               <Separator />
               <div className="grid gap-2">
                 <div className="flex gap-2 leading-none font-medium">
-                  Trending up by 5.2% this month{" "}
+                  {t("admin.drawer.trend")}{" "}
                   <HugeiconsIcon
                     icon={ChartUpIcon}
                     strokeWidth={2}
@@ -768,9 +766,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
                   />
                 </div>
                 <div className="text-muted-foreground">
-                  Showing total visitors for the last 6 months. This is just
-                  some random text to test the layout. It spans multiple lines
-                  and should wrap around.
+                  {t("admin.drawer.trend.note")}
                 </div>
               </div>
               <Separator />
@@ -778,106 +774,104 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           )}
           <form className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
-              <Label htmlFor="header">Header</Label>
-              <Input id="header" defaultValue={item.header} />
+              <Label htmlFor="header">{t("admin.drawer.field.name")}</Label>
+              <Input id="header" defaultValue={item.name} />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-3">
-                <Label htmlFor="type">Type</Label>
+                <Label htmlFor="type">{t("admin.drawer.field.category")}</Label>
                 <Select
-                  defaultValue={item.type}
-                  items={[
-                    { label: "Table of Contents", value: "Table of Contents" },
-                    { label: "Executive Summary", value: "Executive Summary" },
-                    {
-                      label: "Technical Approach",
-                      value: "Technical Approach",
-                    },
-                    { label: "Design", value: "Design" },
-                    { label: "Capabilities", value: "Capabilities" },
-                    { label: "Focus Documents", value: "Focus Documents" },
-                    { label: "Narrative", value: "Narrative" },
-                    { label: "Cover Page", value: "Cover Page" },
-                  ]}
+                  defaultValue={item.category}
                 >
                   <SelectTrigger id="type" className="w-full">
-                    <SelectValue placeholder="Select a type" />
+                    <SelectValue
+                      placeholder={t("admin.drawer.field.category")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="Table of Contents">
-                        Table of Contents
+                      <SelectItem value="lighting">
+                        {t("products.lighting")}
                       </SelectItem>
-                      <SelectItem value="Executive Summary">
-                        Executive Summary
+                      <SelectItem value="bookcases">
+                        {t("products.bookcases")}
                       </SelectItem>
-                      <SelectItem value="Technical Approach">
-                        Technical Approach
+                      <SelectItem value="cabinets-and-sideboards">
+                        {t("products.cabinetsAndSideboards")}
                       </SelectItem>
-                      <SelectItem value="Design">Design</SelectItem>
-                      <SelectItem value="Capabilities">Capabilities</SelectItem>
-                      <SelectItem value="Focus Documents">
-                        Focus Documents
+                      <SelectItem value="chairs-and-stools">
+                        {t("products.chairsAndStools")}
                       </SelectItem>
-                      <SelectItem value="Narrative">Narrative</SelectItem>
-                      <SelectItem value="Cover Page">Cover Page</SelectItem>
+                      <SelectItem value="coffee-tables">
+                        {t("products.coffeeTables")}
+                      </SelectItem>
+                      <SelectItem value="kitchens">
+                        {t("products.kitchens")}
+                      </SelectItem>
+                      <SelectItem value="sofas-and-armchairs">
+                        {t("products.sofasAndArmchairs")}
+                      </SelectItem>
+                      <SelectItem value="tables">
+                        {t("products.tables")}
+                      </SelectItem>
+                      <SelectItem value="wall-panelling">
+                        {t("products.wallPanelling")}
+                      </SelectItem>
+                      <SelectItem value="accessories">
+                        {t("products.accessories")}
+                      </SelectItem>
+                      <SelectItem value="bedroom">
+                        {t("products.bedroom")}
+                      </SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
               </div>
               <div className="flex flex-col gap-3">
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="status">
+                  {t("admin.drawer.field.status")}
+                </Label>
                 <Select
                   defaultValue={item.status}
-                  items={[
-                    { label: "Done", value: "Done" },
-                    { label: "In Progress", value: "In Progress" },
-                    { label: "Not Started", value: "Not Started" },
-                  ]}
                 >
                   <SelectTrigger id="status" className="w-full">
-                    <SelectValue placeholder="Select a status" />
+                    <SelectValue placeholder={t("admin.drawer.field.status")} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="Done">Done</SelectItem>
-                      <SelectItem value="In Progress">In Progress</SelectItem>
-                      <SelectItem value="Not Started">Not Started</SelectItem>
+                      <SelectItem value="published">
+                        {t("admin.status.published")}
+                      </SelectItem>
+                      <SelectItem value="draft">
+                        {t("admin.status.draft")}
+                      </SelectItem>
+                      <SelectItem value="pending">
+                        {t("admin.status.pending")}
+                      </SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="target">Target</Label>
-                <Input id="target" defaultValue={item.target} />
-              </div>
-              <div className="flex flex-col gap-3">
-                <Label htmlFor="limit">Limit</Label>
-                <Input id="limit" defaultValue={item.limit} />
               </div>
             </div>
             <div className="flex flex-col gap-3">
-              <Label htmlFor="reviewer">Reviewer</Label>
+              <Label htmlFor="product-designer">
+                {t("admin.drawer.field.designer")}
+              </Label>
               <Select
-                defaultValue={item.reviewer}
-                items={[
-                  { label: "Eddie Lake", value: "Eddie Lake" },
-                  { label: "Jamik Tashpulatov", value: "Jamik Tashpulatov" },
-                  { label: "Emily Whalen", value: "Emily Whalen" },
-                ]}
+                defaultValue={item.designer}
               >
-                <SelectTrigger id="reviewer" className="w-full">
-                  <SelectValue placeholder="Select a reviewer" />
+                <SelectTrigger id="product-designer" className="w-full">
+                  <SelectValue
+                    placeholder={t("admin.drawer.field.designer")}
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
-                    <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
-                    <SelectItem value="Jamik Tashpulatov">
-                      Jamik Tashpulatov
-                    </SelectItem>
-                    <SelectItem value="Emily Whalen">Emily Whalen</SelectItem>
+                    {DESIGNERS.map((name) => (
+                      <SelectItem key={name} value={name}>
+                        {name}
+                      </SelectItem>
+                    ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>
@@ -885,8 +879,10 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </form>
         </div>
         <DrawerFooter>
-          <Button>Submit</Button>
-          <DrawerClose render={<Button variant="outline" />}>Done</DrawerClose>
+          <Button>{t("admin.drawer.submit")}</Button>
+          <DrawerClose render={<Button variant="outline" />}>
+            {t("admin.drawer.done")}
+          </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
     </Drawer>

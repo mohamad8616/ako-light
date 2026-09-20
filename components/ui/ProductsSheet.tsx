@@ -3,9 +3,9 @@
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // adjust import path
 import type { ProductCategory } from "@/lib/data/product-categories/types";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import Link from "@/lib/i18n/Link";
 import { useLenis } from "@/lib/lenisStore";
 import { cn } from "@/lib/utils";
-import Link from "@/lib/i18n/Link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import UnderLineEffect from "./UnderLineEffect";
 
@@ -54,8 +54,14 @@ export default function ProductsSheet({
   const closeSheet = () => onOpenChange(false);
 
   // Derived once per categories change (not on every render).
-  const categoryKeys = useMemo(() => categories.map((c) => c.i18nKey), [categories]);
-  const categoryLink = useMemo(() => categories.map((c) => c.slug), [categories]);
+  const categoryKeys = useMemo(
+    () => categories.map((c) => c.i18nKey),
+    [categories],
+  );
+  const categoryLink = useMemo(
+    () => categories.map((c) => c.slug),
+    [categories],
+  );
 
   useEffect(() => {
     if (open) lock();
@@ -160,7 +166,7 @@ export default function ProductsSheet({
           onExitComplete={() => actionsRef.current?.unmount()}
         >
           <div
-            className={`${lang === "fa" ? "font-noora" : "font-din"} mt-9 flex h-full flex-col items-center justify-center gap-6`}
+            className={`${lang === "fa" ? "font-noora" : "font-din"} mt-9 flex h-full flex-col items-center justify-center gap-6 xl:max-h-1/2`}
           >
             <Link
               href="/products"
