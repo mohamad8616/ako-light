@@ -325,7 +325,7 @@ function DraggableRow({
       data-state={row.getIsSelected() && "selected"}
       data-dragging={isDragging}
       ref={setNodeRef}
-      className="relative z-0 data-[dragging=true]:z-10 data-[dragging=true]:opacity-80"
+      className="relative z-0 odd:bg-emerald-500/[0.04] hover:bg-violet-500/[0.06] transition-colors data-[dragging=true]:z-10 data-[dragging=true]:opacity-80 data-[state=selected]:bg-emerald-500/10"
       style={{
         transform: CSS.Transform.toString(transform),
         transition: transition,
@@ -525,12 +525,16 @@ export function DataTable({
             id={sortableId}
           >
             <Table>
-              <TableHeader className="bg-muted sticky top-0 z-10">
+              <TableHeader className="bg-gradient-to-r from-emerald-500/10 to-violet-500/10 sticky top-0 z-10 border-b border-emerald-500/20">
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
+                  <TableRow key={headerGroup.id} className="text-muted-foreground">
                     {headerGroup.headers.map((header) => {
                       return (
-                        <TableHead key={header.id} colSpan={header.colSpan}>
+                        <TableHead
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          className="font-medium text-foreground/90"
+                        >
                           {header.isPlaceholder ? null : (
                             flexRender(
                               header.column.columnDef.header,

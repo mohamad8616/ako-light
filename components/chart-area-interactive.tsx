@@ -143,16 +143,14 @@ export function ChartAreaInteractive() {
     })
 
   const chartConfig = {
-    visitors: {
-      label: t("admin.chart.title"),
-    },
+    visitors: { label: t("admin.chart.title"), color: "hsl(160, 84%, 39%)" },
     desktop: {
       label: t("admin.chart.desktop"),
-      color: "var(--primary)",
+      color: "hsl(160, 84%, 39%)",
     },
     mobile: {
       label: t("admin.chart.mobile"),
-      color: "var(--primary)",
+      color: "hsl(262, 83%, 58%)",
     },
   } satisfies ChartConfig
 
@@ -178,7 +176,7 @@ export function ChartAreaInteractive() {
 
   return (
     <Card className="@container/card">
-      <CardHeader>
+      <CardHeader className= "relative"><div className="absolute inset-0 bg-linear-to-tr from-emerald-500/10 via-transparent to-violet-500/10 -z-10 rounded-xl" />
         <CardTitle>{t("admin.chart.title")}</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
@@ -236,32 +234,42 @@ export function ChartAreaInteractive() {
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <ChartContainer
           config={chartConfig}
-          className="aspect-auto h-[250px] w-full"
+          className="aspect-auto h-62.5 w-full"
         >
           <AreaChart data={filteredData}>
             <defs>
               <linearGradient id="fillDesktop" x1="0" y1="0" x2="0" y2="1">
                 <stop
-                  offset="5%"
-                  stopColor="var(--color-desktop)"
-                  stopOpacity={1.0}
+                  offset="0%"
+                  stopColor="hsl(160, 84%, 39%)"
+                  stopOpacity={0.9}
                 />
                 <stop
-                  offset="95%"
-                  stopColor="var(--color-desktop)"
-                  stopOpacity={0.1}
+                  offset="50%"
+                  stopColor="hsl(160, 84%, 45%)"
+                  stopOpacity={0.5}
+                />
+                <stop
+                  offset="100%"
+                  stopColor="hsl(160, 84%, 50%)"
+                  stopOpacity={0.05}
                 />
               </linearGradient>
               <linearGradient id="fillMobile" x1="0" y1="0" x2="0" y2="1">
                 <stop
-                  offset="5%"
-                  stopColor="var(--color-mobile)"
-                  stopOpacity={0.8}
+                  offset="0%"
+                  stopColor="hsl(262, 83%, 58%)"
+                  stopOpacity={0.9}
                 />
                 <stop
-                  offset="95%"
-                  stopColor="var(--color-mobile)"
-                  stopOpacity={0.1}
+                  offset="50%"
+                  stopColor="hsl(262, 83%, 65%)"
+                  stopOpacity={0.5}
+                />
+                <stop
+                  offset="100%"
+                  stopColor="hsl(262, 83%, 70%)"
+                  stopOpacity={0.05}
                 />
               </linearGradient>
             </defs>
@@ -292,14 +300,14 @@ export function ChartAreaInteractive() {
               dataKey="mobile"
               type="natural"
               fill="url(#fillMobile)"
-              stroke="var(--color-mobile)"
+              stroke="hsl(262, 83%, 58%)"
               stackId="a"
             />
             <Area
               dataKey="desktop"
               type="natural"
               fill="url(#fillDesktop)"
-              stroke="var(--color-desktop)"
+              stroke="hsl(160, 84%, 39%)"
               stackId="a"
             />
           </AreaChart>

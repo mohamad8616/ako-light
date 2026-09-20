@@ -115,7 +115,7 @@ export default function ProductsSheet({
           onExitComplete={() => actionsRef.current?.unmount()}
         >
           <div
-            className={`${lang === "fa" ? "font-noora" : "font-din"} mt-9 flex h-full flex-col items-center justify-center gap-3 lg:justify-end`}
+            className={`${lang === "fa" ? "font-noora" : "font-din"} mt-9 flex h-full flex-col items-center justify-center gap-3 lg:justify-end xl:max-h-150`}
           >
             <div
               className={cn(

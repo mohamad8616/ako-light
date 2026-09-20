@@ -100,18 +100,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="relative bg-gradient-to-br from-emerald-500/10 via-transparent to-violet-500/10 p-4 border-b border-emerald-500/10">
+        <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/10 via-transparent to-violet-500/10 -z-10" />
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
-              className="data-[slot=sidebar-menu-button]:p-1.5!"
+              className="data-[slot=sidebar-menu-button]:p-1.5! relative z-10"
               render={<Link href="/admin" />}
             >
-              <span className="bg-primary text-primary-foreground flex size-7 items-center justify-center rounded-md text-xs font-bold">
+              <span className="bg-gradient-to-r from-emerald-500 to-violet-500 text-primary-foreground flex size-7 items-center justify-center rounded-md text-xs font-bold">
                 HF
               </span>
               <span className="grid flex-1 text-start leading-tight">
-                <span className="text-base font-semibold">
+                <span className="text-base font-semibold text-foreground">
                   {t("admin.brand")}
                 </span>
                 <span className="text-muted-foreground text-xs">

@@ -32,7 +32,7 @@ type Props = {
  * The circle trails the cursor on a spring and the inner arrow drifts
  * toward the cursor (clamped) — re-centering as the circle catches up.
  */
-export default function CursorCircle({ x, y, visible, isRtl }: Props) {
+export default function CursorCircle({ x, y, visible }: Props) {
   // SSR-safe mount check.
   const isClient = useSyncExternalStore(
     () => () => {},
@@ -41,8 +41,8 @@ export default function CursorCircle({ x, y, visible, isRtl }: Props) {
   );
 
   // Smoothed cursor position — circle trails the cursor (spring lag).
-  const springX = useSpring(x, { stiffness: 300, damping: 30, mass: 0.5 });
-  const springY = useSpring(y, { stiffness: 300, damping: 30, mass: 0.5 });
+  const springX = useSpring(x, { stiffness: 200, damping: 50, mass: 0.5 });
+  const springY = useSpring(y, { stiffness: 220, damping: 50, mass: 0.5 });
 
   // Gap between the mouse and the lagging circle → arrow drift, recomputed
   // per animation frame.
@@ -66,7 +66,7 @@ export default function CursorCircle({ x, y, visible, isRtl }: Props) {
         opacity: { duration: 0.8, ease: MOTION_EASE },
         scale: { duration: 0.4, ease: MOTION_EASE },
       }}
-      className="pointer-events-none fixed z-50 hidden h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white mix-blend-difference md:flex"
+      className="pointer-events-none fixed z-50 hidden h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white mix-blend-exclusion invert-1 md:flex"
     >
       {/* Arrow pointing top-right (top-left in RTL), drifting toward cursor. */}
       <motion.svg
@@ -79,7 +79,7 @@ export default function CursorCircle({ x, y, visible, isRtl }: Props) {
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className={cn("text-white mix-blend-difference", isRtl && "rotate-180")}
+        className={cn("text-white mix-blend-difference")}
       >
         <path d="M7 7h10v10" />
         <path d="M7 17L17 7" />
