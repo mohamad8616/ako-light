@@ -49,7 +49,6 @@ export default function ProductsGrid({
           <ProductCategoryCard
             key={item.key}
             index={i}
-            animateOnLoad={i < 3}
             parentSlug={parentSlug}
             name={item.name}
             slug={item.slug}
