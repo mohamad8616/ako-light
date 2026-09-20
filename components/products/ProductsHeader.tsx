@@ -1,7 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import PageTitle from "@/utility/PageTitle";
+import PagesHeader from "../ui/PagesHeader";
 
 interface ProductsHeaderProps {
   titleKey?: string;
@@ -16,8 +16,6 @@ export default function ProductsHeader({
   const title = titleKey ? t(titleKey) : (titleProp ?? t("products.title"));
 
   return (
-    <header className="bg-background w-full pt-28">
-      <PageTitle className="font-medium">{title}</PageTitle>
-    </header>
+      <PagesHeader title={title} />
   );
 }

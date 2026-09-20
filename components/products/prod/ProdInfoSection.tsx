@@ -103,7 +103,7 @@ export default function ProductInfoSection({ product }: { product: Product }) {
             <div className={cn("mt-4 flex flex-col gap-2 text-sm text-stone-950", lang === "fa" ? "font-noora" : "font-din")}>
               {product.downloads.map((d) => (
                 <a
-                  key={d.href}
+                  key={`${d.href}-${pick(d.label, lang)}`}
                   href={d.href}
                   className="w-fit underline underline-offset-2 transition-colors hover:text-stone-600"
                 >

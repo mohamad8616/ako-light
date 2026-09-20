@@ -46,7 +46,7 @@ export default async function AdminLayout({
       }
     >
       <AppSidebar dir={dir} side={dir === "rtl" ? "right" : "left"} variant="inset" />
-      <SidebarInset className="text-background-secondary">
+      <SidebarInset className="text-background">
         <SiteHeader />
         {children}
       </SidebarInset>

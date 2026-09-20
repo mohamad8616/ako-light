@@ -55,7 +55,7 @@ export default async function MaterialsPage({
   return (
     <>
       <JsonLdRenderer data={jsonLdData} />
-      <main className="w-full bg-background mt-30 lg:mt-50">
+      <main className="w-full ">
         <MaterialsHeader />
         <MaterialsList materials={materials} />
       </main>

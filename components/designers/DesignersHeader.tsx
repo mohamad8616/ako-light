@@ -1,13 +1,9 @@
 ﻿"use client";
 
-import PageTitle from "@/utility/PageTitle";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import PagesHeader from "../ui/PagesHeader";
 
 export default function DesignersHeader() {
   const { t } = useLanguage();
-  return (
-    <header className="w-full bg-background pt-28 md:pt-36">
-      <PageTitle>{t("menu.designers")}</PageTitle>
-    </header>
-  );
+  return <PagesHeader title={t("menu.designers")} />;
 }

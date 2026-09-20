@@ -1,12 +1,11 @@
 "use client";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import PageTitle from "@/utility/PageTitle";
+import PagesHeader from "../ui/PagesHeader";
 
 export default function ProjectsHeader() {
   const { t } = useLanguage();
   return (
-    <header className="bg-background w-full pt-28 md:pt-36">
-      <PageTitle>{t("projects.title")}</PageTitle>
-    </header>
+      <PagesHeader title={t("menu.projects")}></PagesHeader>
+    
   );
 }

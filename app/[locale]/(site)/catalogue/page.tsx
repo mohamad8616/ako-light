@@ -54,7 +54,7 @@ export default async function CataloguePage({
   return (
     <>
       <JsonLdRenderer data={jsonLdData} />
-      <main className="min-h-screen bg-stone-950 pt-32 md:pt-52">
+      <main className="min-h-screen bg-background">
         <CatalogueGrid items={items} />
       </main>
     </>
