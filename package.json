@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate --config prisma7.config.ts && next build",
+    "build": "prisma generate --config prisma7.config.ts && node --max-old-space-size=8192 ./node_modules/next/dist/bin/next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",

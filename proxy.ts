@@ -101,10 +101,7 @@ export async function proxy(request: NextRequest) {
       ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number]);
 
     if (!isAdminRole) {
-      const redirectUrl = new URL("/sign-in", request.url);
-      redirectUrl.searchParams.set("denied", "1");
-      redirectUrl.searchParams.set("redirectTo", `${pathname}${search}`);
-      return NextResponse.redirect(redirectUrl, 307);
+      return NextResponse.redirect(new URL("/", request.url), 307);
     }
   }
 

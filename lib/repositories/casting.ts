@@ -7,6 +7,7 @@
  * Prisma's `JsonValue` back to the app-level types on the way out of the
  * repositories, so downstream components keep seeing identical shapes.
  */
+import { Prisma } from "@/generated/prisma/client";
 import type {
   DownloadLink,
   RelatedProduct,
@@ -41,6 +42,29 @@ export function asDownloadLinks(value: unknown): DownloadLink[] {
 /** Narrows a `jsonb` column holding `RelatedProduct[]`. */
 export function asRelatedProducts(value: unknown): RelatedProduct[] {
   return (value ?? []) as RelatedProduct[];
+}
+
+/**
+ * Prisma's `InputJsonValue` only accepts object literals: branded interfaces
+ * such as `Localized` never get an implicit index signature. Widen app-level
+ * values through `unknown` once, here, so every repository write shares the
+ * same safe route into required `Json` columns.
+ */
+export function asJsonInput(value: unknown): Prisma.InputJsonValue {
+  return value as Prisma.InputJsonValue;
+}
+
+/**
+ * Same as {@link asJsonInput}, for OPTIONAL `Json?` columns
+ * (`Product.moreInfo`, `Flagship.detail`). `undefined`/`null` become
+ * `Prisma.DbNull` (real SQL NULL); any other value is widened like above.
+ * The return type is the EXACT generated union — a bare `Prisma.DbNull` type
+ * reference is a TS error, while `Prisma.DbNull` as a VALUE is accepted.
+ */
+export function asNullableJsonInput(
+  value: unknown,
+): Prisma.InputJsonValue | Prisma.NullableJsonNullValueInput {
+  return value == null ? Prisma.DbNull : asJsonInput(value);
 }
 
 /**

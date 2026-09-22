@@ -9,8 +9,10 @@
 import { cache } from "react";
 import type { Prisma } from "@/generated/prisma/client";
 import type { Project } from "@/lib/data/projects";
+import type { Localized } from "@/lib/i18n/localized";
 import { prisma } from "@/lib/db/prisma";
 import {
+  asJsonInput,
   asLocalized,
   asLocalizedList,
   asMixedLocalizedList,
@@ -93,3 +95,106 @@ export const getProjects = cache(async (): Promise<Project[]> => {
 
   return rows.map(mapProjectRow);
 });
+
+/** A project row as the admin form submits it (mirrors `projectFormSchema`). */
+export type ProjectWriteInput = {
+  slug: string;
+  /** Translation key prefix, e.g. "projects.hIstra". */
+  i18nKey: string;
+  name: Localized;
+  location: string;
+  /** The source data uses "2026" — a string, not a number. */
+  year: string;
+  image: string;
+  description: Localized;
+  paragraph: Localized;
+  moreDescription: Localized[];
+  /** Mixed entries are valid in the source data. */
+  credits: (Localized | string)[];
+  portfolioImages: string[];
+  sortOrder: number;
+  /** Product ids in display order; synced with the join table on save. */
+  productIds: string[];
+};
+
+export const createProject = async (
+  input: ProjectWriteInput,
+): Promise<string> => {
+  const row = await prisma.$transaction(async (tx) => {
+    const created = await tx.project.create({
+      data: {
+        id: input.slug,
+        slug: input.slug,
+        i18nKey: input.i18nKey,
+        name: asJsonInput(input.name),
+        location: input.location,
+        year: input.year,
+        image: input.image,
+        description: asJsonInput(input.description),
+        paragraph: asJsonInput(input.paragraph),
+        moreDescription: asJsonInput(input.moreDescription),
+        credits: asJsonInput(input.credits),
+        portfolioImages: input.portfolioImages,
+        sortOrder: input.sortOrder,
+      },
+    });
+
+    if (input.productIds.length > 0) {
+      await tx.projectProduct.createMany({
+        data: input.productIds.map((productId, order) => ({
+          projectId: created.id,
+          productId,
+          order,
+        })),
+      });
+    }
+
+    return created;
+  });
+
+  return row.id;
+};
+
+export const updateProject = async (
+  id: string,
+  input: ProjectWriteInput,
+): Promise<void> => {
+  await prisma.$transaction(async (tx) => {
+    await tx.project.update({
+      where: { id },
+      data: {
+        slug: input.slug,
+        i18nKey: input.i18nKey,
+        name: asJsonInput(input.name),
+        location: input.location,
+        year: input.year,
+        image: input.image,
+        description: asJsonInput(input.description),
+        paragraph: asJsonInput(input.paragraph),
+        moreDescription: asJsonInput(input.moreDescription),
+        credits: asJsonInput(input.credits),
+        portfolioImages: input.portfolioImages,
+        sortOrder: input.sortOrder,
+      },
+    });
+
+    // The ordered product list is a full replace: the composite PK
+    // (projectId, productId) makes upsert-with-reorder awkward, and the list is
+    // always submitted whole, so sync by clearing then recreating in order.
+    await tx.projectProduct.deleteMany({ where: { projectId: id } });
+    if (input.productIds.length > 0) {
+      await tx.projectProduct.createMany({
+        data: input.productIds.map((productId, order) => ({
+          projectId: id,
+          productId,
+          order,
+        })),
+      });
+    }
+  });
+};
+
+export const deleteProject = async (id: string): Promise<void> => {
+  // ProjectProduct rows cascade via the schema's onDelete: Cascade.
+  await prisma.project.delete({ where: { id } });
+};

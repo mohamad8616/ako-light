@@ -7,7 +7,6 @@
  * codes and colors.
  */
 import { cache } from "react";
-import type { FabricItem as FabricItemRow } from "@/generated/prisma/client";
 import type { FabricItem } from "@/lib/data/materials";
 import { prisma } from "@/lib/db/prisma";
 
@@ -37,3 +36,75 @@ export const getFabricItem = cache(
     };
   },
 );
+
+export type FabricItemAdminRow = {
+  id: string;
+  name: string;
+  code: string;
+  category: string;
+  swatchColor: string;
+  sortOrder: number;
+};
+
+export type FabricItemWriteInput = {
+  id: string;
+  name: string;
+  code: string;
+  category: string;
+  swatchColor: string;
+  sortOrder: number;
+};
+
+export const getFabricItemAdminRows = cache(
+  async (): Promise<FabricItemAdminRow[]> => {
+    const rows = await prisma.fabricItem.findMany({
+      orderBy: { sortOrder: "asc" },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      code: row.code,
+      category: row.category,
+      swatchColor: row.swatchColor,
+      sortOrder: row.sortOrder,
+    }));
+  },
+);
+
+export const createFabricItem = async (
+  input: FabricItemWriteInput,
+): Promise<string> => {
+  const row = await prisma.fabricItem.create({
+    data: {
+      id: input.id,
+      name: input.name,
+      code: input.code,
+      category: input.category,
+      swatchColor: input.swatchColor,
+      sortOrder: input.sortOrder,
+    },
+  });
+
+  return row.id;
+};
+
+export const updateFabricItem = async (
+  id: string,
+  input: FabricItemWriteInput,
+): Promise<void> => {
+  await prisma.fabricItem.update({
+    where: { id },
+    data: {
+      name: input.name,
+      code: input.code,
+      category: input.category,
+      swatchColor: input.swatchColor,
+      sortOrder: input.sortOrder,
+    },
+  });
+};
+
+export const deleteFabricItem = async (id: string): Promise<void> => {
+  await prisma.fabricItem.delete({ where: { id } });
+};

@@ -11,8 +11,9 @@ import {
   type Material as MaterialRow,
 } from "@/generated/prisma/client";
 import type { Material } from "@/lib/data/materials";
+import type { Localized } from "@/lib/i18n/localized";
 import { prisma } from "@/lib/db/prisma";
-import { asLocalized } from "./casting";
+import { asJsonInput, asLocalized } from "./casting";
 
 /**
  * Prisma enum -> the union `Material.type` uses in the app.
@@ -69,3 +70,85 @@ export const getMaterials = cache(async (): Promise<Material[]> => {
   });
   return rows.map(mapMaterialRow);
 });
+
+export type MaterialAdminRow = {
+  id: string;
+  slug: string;
+  name: Localized;
+  category: string;
+  type: Material["type"];
+  image: string;
+  description: Localized;
+  sortOrder: number;
+};
+
+export type MaterialWriteInput = {
+  slug: string;
+  name: Localized;
+  category: string;
+  type: Material["type"];
+  image: string;
+  description: Localized;
+  sortOrder: number;
+};
+
+export const getMaterialAdminRows = cache(
+  async (): Promise<MaterialAdminRow[]> => {
+    const rows = await prisma.material.findMany({
+      orderBy: { sortOrder: "asc" },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: asLocalized(row.name),
+      category: row.category,
+      type: MATERIAL_TYPES[row.type],
+      image: row.image,
+      description: asLocalized(row.description),
+      sortOrder: row.sortOrder,
+    }));
+  },
+);
+
+export const createMaterial = async (
+  input: MaterialWriteInput,
+): Promise<string> => {
+  const row = await prisma.material.create({
+    data: {
+      id: input.slug,
+      slug: input.slug,
+      name: asJsonInput(input.name),
+      category: input.category,
+      type: MaterialType[input.type === "stone-composite" ? "stone_composite" : input.type],
+      image: input.image,
+      description: asJsonInput(input.description),
+      sortOrder: input.sortOrder,
+    },
+  });
+
+  return row.id;
+};
+
+export const updateMaterial = async (
+  id: string,
+  input: MaterialWriteInput,
+): Promise<void> => {
+  await prisma.material.update({
+    where: { id },
+    data: {
+      slug: input.slug,
+      name: asJsonInput(input.name),
+      category: input.category,
+      type: MaterialType[input.type === "stone-composite" ? "stone_composite" : input.type],
+      image: input.image,
+      description: asJsonInput(input.description),
+      sortOrder: input.sortOrder,
+    },
+  });
+};
+
+export const deleteMaterial = async (id: string): Promise<void> => {
+  await prisma.material.delete({ where: { id } });
+};
+

@@ -8,12 +8,16 @@
  * a summary card without a detail page.
  */
 import { cache } from "react";
-import type { Flagship as FlagshipRow } from "@/generated/prisma/client";
+import {
+  Prisma,
+  type Flagship as FlagshipRow,
+} from "@/generated/prisma/client";
 import type {
   Flagship,
   FlagshipDetail,
   FlagshipWithDetail,
 } from "@/lib/data/flagships";
+import type { Localized } from "@/lib/i18n/localized";
 import { prisma } from "@/lib/db/prisma";
 import { asJson, asLocalized } from "./casting";
 
@@ -79,3 +83,54 @@ export const getFlagshipsWithDetail = cache(
     });
   },
 );
+
+export type FlagshipWriteInput = {
+  slug: string;
+  name: Localized;
+  city: Localized;
+  image: string;
+  /** SQL NULL when the flagship has no built-out detail page yet. */
+  detail: FlagshipDetail | null;
+  sortOrder: number;
+};
+
+export const createFlagship = async (
+  input: FlagshipWriteInput,
+): Promise<string> => {
+  const row = await prisma.flagship.create({
+    data: {
+      id: input.slug,
+      slug: input.slug,
+      name: asJson(input.name),
+      city: asJson(input.city),
+      image: input.image,
+      // `detail` stays SQL NULL when the detail page is not built out yet
+      // (same convention as prisma/seed.ts: Prisma.DbNull on create + update).
+      detail: input.detail ? asJson(input.detail) : Prisma.DbNull,
+      sortOrder: input.sortOrder,
+    },
+  });
+
+  return row.id;
+};
+
+export const updateFlagship = async (
+  id: string,
+  input: FlagshipWriteInput,
+): Promise<void> => {
+  await prisma.flagship.update({
+    where: { id },
+    data: {
+      slug: input.slug,
+      name: asJson(input.name),
+      city: asJson(input.city),
+      image: input.image,
+      detail: input.detail ? asJson(input.detail) : Prisma.DbNull,
+      sortOrder: input.sortOrder,
+    },
+  });
+};
+
+export const deleteFlagship = async (id: string): Promise<void> => {
+  await prisma.flagship.delete({ where: { id } });
+};

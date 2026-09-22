@@ -1,0 +1,48 @@
+"use client";
+
+import { homepageSections } from "@/lib/data/homepage";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { EASE } from "../../utility/HomepageSection";
+import PlusTextBtn from "../ui/PlusTextBtn";
+import SplitBanner from "./SplitBanner";
+
+export default function ProjectWithDarkBackground() {
+  const { t, lang } = useLanguage();
+  const { vocla } = homepageSections;
+
+  return (
+    <SplitBanner
+      sectionClassName="bg-background! text-background-secondary! relative w-full py-40 md:py-80"
+      paragraphTextColor="text-background-secondary"
+      titleTextColor="text-background-secondary"
+      image={vocla.image}
+      imageAlt={t("vocla.title")}
+      title={t("vocla.title")}
+      paragraphs={[t("vocla.p1"), t("vocla.p2")]}
+      cta={
+        <PlusTextBtn
+          className="text-sm tracking-tight"
+          text={t("vocla.cta")}
+          href="#"
+        />
+      }
+      imageClassName="bg-[#1c1c1e]"
+      ctaDelay={0.45}
+    >
+      <motion.span
+        initial={{ opacity: 0, y: 16 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.7, ease: EASE }}
+        className={cn(
+          "font-din mb-12 block text-3xl text-white md:mb-16 md:text-5xl",
+          lang === "fa" ? "font-noora" : "font-din",
+        )}
+      >
+        {t("vocla.hLife")}
+      </motion.span>
+    </SplitBanner>
+  );
+}

@@ -2,6 +2,7 @@ import {
   ADMIN_CATALOG_NAV,
   ADMIN_DASHBOARD_HREF,
   ADMIN_NAV_ITEMS,
+  ADMIN_SHELL_DIR,
   getAdminNavItem,
   isAdminNavItemActive,
 } from "@/lib/admin/sections";
@@ -83,6 +84,10 @@ describe("admin nav registry", () => {
   it("keeps every catalog href unique so no two items activate together", () => {
     const hrefs = ADMIN_CATALOG_NAV.map((item) => item.href);
     expect(new Set(hrefs).size).toBe(hrefs.length);
+  });
+
+  it("locks the shell direction to a supported value", () => {
+    expect(["ltr", "rtl"]).toContain(ADMIN_SHELL_DIR);
   });
 
   it("references translation keys that exist in both dictionaries", () => {

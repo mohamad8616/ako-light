@@ -24,17 +24,30 @@ export default function BuyBtn({ product }: { product: Product }) {
     else unlock();
   }, [modalOpen, lock, unlock, cartOpen]);
 
+  const outOfStock = !product.store.existsInStore;
+
   return (
     <>
-      <button
-        onClick={() => setModalOpen(true)}
-        className={cn(
-          "my-10 cursor-pointer bg-background text-background-secondary px-8 py-3 text-sm font-medium",
-          lang === "fa" ? "font-noora" : "font-din",
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => setModalOpen(true)}
+          disabled={outOfStock}
+          className={cn(
+            "my-10 cursor-pointer bg-background text-background-secondary px-8 py-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60",
+            lang === "fa" ? "font-noora" : "font-din",
+          )}
+        >
+          {t("product.buyNow")}
+        </button>
+
+        {outOfStock && (
+          <span
+            className={`${lang === "fa" ? "font-noora" : "font-din"} text-sm font-medium text-red-600`}
+          >
+            {t("product.outOfStock")}
+          </span>
         )}
-      >
-        {t("product.buyNow")}
-      </button>
+      </div>
 
       <ProductModal
         product={product}

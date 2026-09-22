@@ -22,6 +22,10 @@ export interface DataTableProps<TData> {
   toolbar?: React.ReactNode;
   pageSize?: number;
   className?: string;
+  /** Renders a free-text search box filtering across all columns. */
+  searchable?: boolean;
+  /** Message shown in the table body when no rows match (or data is empty). */
+  emptyMessage?: string;
 }
 
 export function DataTable<TData>({
@@ -30,12 +34,15 @@ export function DataTable<TData>({
   toolbar,
   pageSize = 10,
   className,
+  searchable = false,
+  emptyMessage,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize,
   });
+  const [globalFilter, setGlobalFilter] = React.useState("");
 
   const table = useReactTable({
     data,

@@ -1,6 +1,7 @@
-"use client"
+"use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,19 +10,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { ROLES } from "@/lib/auth/permissions"
-import { authClient } from "@/lib/auth/auth-client"
-import { useLanguage } from "@/lib/i18n/LanguageProvider"
-import { useRouter } from "next/navigation"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { Logout01Icon, UserCircle02Icon } from "@hugeicons/core-free-icons"
+} from "@/components/ui/sidebar";
+import { authClient } from "@/lib/auth/auth-client";
+import { ROLES } from "@/lib/auth/permissions";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { Logout01Icon, UserCircle02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useRouter } from "next/navigation";
 
 /**
  * The signed-in staff account, fed straight from better-auth's session.
@@ -34,33 +35,40 @@ import { Logout01Icon, UserCircle02Icon } from "@hugeicons/core-free-icons"
 export function NavUser({
   user,
 }: {
-  user?:
-    | {
-        name?: string | null
-        email?: string | null
-        image?: string | null
-        role?: string | null
-      }
-    | null
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+    role?: string | null;
+  } | null;
 }) {
-  const { isMobile } = useSidebar()
-  const { t } = useLanguage()
-  const router = useRouter()
+  const { isMobile } = useSidebar();
+  const { t } = useLanguage();
+  const router = useRouter();
 
-  const displayName = user?.name || user?.email || "—"
-  const initials = displayName.trim().slice(0, 2).toUpperCase() || "—"
+  const displayName = user?.name || user?.email || "—";
+
+  const initials = displayName.trim().slice(0, 2).toUpperCase() || "—";
+
   const roleLabel =
     user?.role === ROLES.owner
       ? t("admin.role.owner")
       : user?.role === ROLES.admin
         ? t("admin.role.admin")
-        : (user?.role ?? "")
+        : (user?.role ?? "");
+
+  const roleVariant =
+    user?.role === ROLES.owner
+      ? "default"
+      : user?.role === ROLES.admin
+        ? "secondary"
+        : "outline";
 
   const handleSignOut = async () => {
-    await authClient.signOut()
-    router.push("/")
-    router.refresh()
-  }
+    await authClient.signOut();
+    router.push("/");
+    router.refresh();
+  };
 
   return (
     <SidebarMenu>
@@ -72,20 +80,15 @@ export function NavUser({
             }
           >
             <Avatar className="size-8 rounded-lg">
-              <AvatarImage
-                src={user?.image ?? undefined}
-                alt={displayName}
-              />
-              <AvatarFallback className="rounded-lg">
-                {initials}
-              </AvatarFallback>
+              <AvatarImage src={user?.image ?? undefined} alt={displayName} />
+              <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
             </Avatar>
             <div className="grid flex-1 text-start text-sm leading-tight">
               <span className="truncate font-medium">{displayName}</span>
               {roleLabel ? (
-                <span className="text-muted-foreground truncate text-xs">
+                <Badge variant={roleVariant} className="mt-1 w-fit">
                   {roleLabel}
-                </span>
+                </Badge>
               ) : null}
             </div>
             <HugeiconsIcon
@@ -114,9 +117,9 @@ export function NavUser({
                 <div className="grid flex-1 text-start leading-tight">
                   <span className="truncate font-medium">{displayName}</span>
                   {roleLabel ? (
-                    <span className="text-muted-foreground truncate text-xs">
+                    <Badge variant={roleVariant} className="mt-1 w-fit">
                       {roleLabel}
-                    </span>
+                    </Badge>
                   ) : null}
                 </div>
               </div>
@@ -132,5 +135,5 @@ export function NavUser({
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
-  )
+  );
 }

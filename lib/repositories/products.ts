@@ -9,10 +9,13 @@
 import { cache } from "react";
 import type { Prisma } from "@/generated/prisma/client";
 import type { Product } from "@/lib/data/product-categories/types";
+import type { Localized } from "@/lib/i18n/localized";
 import { prisma } from "@/lib/db/prisma";
 import {
   asDownloadLinks,
+  asJsonInput,
   asLocalized,
+  asNullableJsonInput,
   asOptionalLocalized,
   asRelatedProducts,
 } from "./casting";
@@ -149,11 +152,13 @@ export const getProductsByCategory = cache(
  * fallback is handled by the caller; rows are simply keyed on either field.
  */
 export const getProductsByIdsOrSlugs = cache(
-  async (
-    keys: { productId?: string; slug?: string }[],
-  ): Promise<Product[]> => {
-    const ids = [...new Set(keys.map((k) => k.productId).filter(Boolean))] as string[];
-    const slugs = [...new Set(keys.map((k) => k.slug).filter(Boolean))] as string[];
+  async (keys: { productId?: string; slug?: string }[]): Promise<Product[]> => {
+    const ids = [
+      ...new Set(keys.map((k) => k.productId).filter(Boolean)),
+    ] as string[];
+    const slugs = [
+      ...new Set(keys.map((k) => k.slug).filter(Boolean)),
+    ] as string[];
     if (ids.length === 0 && slugs.length === 0) return [];
 
     const rows = await prisma.product.findMany({
@@ -169,3 +174,278 @@ export const getProductsByIdsOrSlugs = cache(
     return rows.map(mapProductRow);
   },
 );
+
+export type ProductAdminRow = {
+  id: string;
+  slug: string;
+  name: Localized;
+  categoryId: string;
+  categoryName: Localized;
+  designerId?: string | null;
+  designerName?: Localized | null;
+  price: number;
+  existsInStore: boolean;
+  quantity: number;
+  sortOrder: number;
+  imageCount: number;
+};
+
+export type ProductAdminDetail = {
+  id: string;
+  slug: string;
+  name: Localized;
+  hoverImage: string;
+  heroImage: string;
+  price: number;
+  existsInStore: boolean;
+  quantity: number;
+  description: Localized;
+  moreInfo?: Localized | null;
+  downloads: { label: Localized; href: string }[];
+  related: { name: Localized; slug: string; category: string; image: string }[];
+  sortOrder: number;
+  categoryId: string;
+  designerId: string | null;
+  images: {
+    id?: string;
+    url: string;
+    alt: string | null;
+    isPrimary: boolean;
+  }[];
+};
+
+export type ProductWriteInput = {
+  slug: string;
+  name: Localized;
+  hoverImage: string;
+  heroImage: string;
+  price: number;
+  existsInStore: boolean;
+  quantity: number;
+  description: Localized;
+  moreInfo?: Localized | null;
+  downloads: { label: Localized; href: string }[];
+  related: { name: Localized; slug: string; category: string; image: string }[];
+  sortOrder: number;
+  categoryId: string;
+  designerId: string | null;
+  images: {
+    id?: string;
+    url: string;
+    alt: string | null;
+    isPrimary: boolean;
+  }[];
+};
+
+export type ProductOption = {
+  id: string;
+  slug: string;
+  name: Localized;
+  categorySlug: string;
+};
+
+/**
+ * Every product as a picker option: `id`, `slug`, localized `name` and the
+ * parent category's slug (the `ProductsUsedField` group label). Ordered like
+ * {@link getProducts} — category navigation order, then curated position.
+ */
+export const getProductOptions = cache(async (): Promise<ProductOption[]> => {
+  const rows = await prisma.product.findMany({
+    orderBy: [{ category: { sortOrder: "asc" } }, { sortOrder: "asc" }],
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      category: { select: { slug: true } },
+    },
+  });
+
+  return rows.map((row) => ({
+    id: row.id,
+    slug: row.slug,
+    name: asLocalized(row.name),
+    categorySlug: row.category.slug,
+  }));
+});
+
+export const getProductAdminRows = cache(
+  async (): Promise<ProductAdminRow[]> => {
+    const rows = await prisma.product.findMany({
+      orderBy: [{ category: { sortOrder: "asc" } }, { sortOrder: "asc" }],
+      include: {
+        category: true,
+        designer: true,
+        _count: { select: { productImages: true } },
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: asLocalized(row.name),
+      categoryId: row.categoryId,
+      categoryName: asLocalized(row.category.name),
+      designerId: row.designerId,
+      designerName: row.designer ? asLocalized(row.designer.name) : null,
+      price: row.price.toNumber(),
+      existsInStore: row.existsInStore,
+      quantity: row.quantity,
+      sortOrder: row.sortOrder,
+      imageCount: row._count.productImages,
+    }));
+  },
+);
+
+export const getProductAdminDetail = cache(
+  async (id: string): Promise<ProductAdminDetail | null> => {
+    const row = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        category: true,
+        designer: true,
+        productImages: { orderBy: { sortOrder: "asc" } },
+      },
+    });
+
+    if (!row) return null;
+
+    return {
+      id: row.id,
+      slug: row.slug,
+      name: asLocalized(row.name),
+      hoverImage: row.hoverImage,
+      heroImage: row.heroImage,
+      price: row.price.toNumber(),
+      existsInStore: row.existsInStore,
+      quantity: row.quantity,
+      description: asLocalized(row.description),
+      moreInfo: asOptionalLocalized(row.moreInfo),
+      downloads: asDownloadLinks(row.downloads),
+      related: asRelatedProducts(row.related),
+      sortOrder: row.sortOrder,
+      categoryId: row.categoryId,
+      designerId: row.designerId,
+      images: row.productImages.map((image) => ({
+        id: image.id,
+        url: image.url,
+        alt: image.alt,
+        isPrimary: image.isPrimary,
+      })),
+    };
+  },
+);
+
+export const createProduct = async (
+  input: ProductWriteInput,
+): Promise<string> => {
+  const row = await prisma.$transaction(async (tx) => {
+    const created = await tx.product.create({
+      data: {
+        id: input.slug,
+        slug: input.slug,
+        name: asJsonInput(input.name),
+        hoverImage: input.hoverImage,
+        price: input.price,
+        existsInStore: input.existsInStore,
+        quantity: input.quantity,
+        heroImage: input.heroImage,
+        description: asJsonInput(input.description),
+        // Optional jsonb: real SQL NULL when the product has no extra info block.
+        moreInfo: asNullableJsonInput(input.moreInfo),
+        downloads: asJsonInput(input.downloads),
+        related: asJsonInput(input.related),
+        sortOrder: input.sortOrder,
+        categoryId: input.categoryId,
+        designerId: input.designerId,
+      },
+    });
+
+    if (input.images.length > 0) {
+      await tx.productImage.createMany({
+        data: input.images.map((image, index) => ({
+          id: image.id ?? crypto.randomUUID(),
+          productId: created.id,
+          url: image.url,
+          alt: image.alt ?? null,
+          isPrimary: image.isPrimary,
+          sortOrder: index,
+        })),
+      });
+    }
+
+    return created;
+  });
+
+  return row.id;
+};
+
+export const updateProduct = async (
+  id: string,
+  input: ProductWriteInput,
+): Promise<void> => {
+  await prisma.$transaction(async (tx) => {
+    await tx.product.update({
+      where: { id },
+      data: {
+        slug: input.slug,
+        name: asJsonInput(input.name),
+        hoverImage: input.hoverImage,
+        price: input.price,
+        existsInStore: input.existsInStore,
+        quantity: input.quantity,
+        heroImage: input.heroImage,
+        description: asJsonInput(input.description),
+        // Optional jsonb: real SQL NULL when the product has no extra info block.
+        moreInfo: asNullableJsonInput(input.moreInfo),
+        downloads: asJsonInput(input.downloads),
+        related: asJsonInput(input.related),
+        sortOrder: input.sortOrder,
+        categoryId: input.categoryId,
+        designerId: input.designerId,
+      },
+    });
+
+    const existing = await tx.productImage.findMany({
+      where: { productId: id },
+    });
+    const nextIds = new Set(
+      input.images.filter((image) => image.id).map((image) => image.id!),
+    );
+
+    const toDelete = existing.filter((image) => !nextIds.has(image.id));
+    if (toDelete.length > 0) {
+      await tx.productImage.deleteMany({
+        where: { id: { in: toDelete.map((image) => image.id) } },
+      });
+    }
+
+    for (const [index, image] of input.images.entries()) {
+      if (image.id) {
+        await tx.productImage.update({
+          where: { id: image.id },
+          data: {
+            url: image.url,
+            alt: image.alt ?? null,
+            isPrimary: image.isPrimary,
+            sortOrder: index,
+          },
+        });
+      } else {
+        await tx.productImage.create({
+          data: {
+            id: crypto.randomUUID(),
+            productId: id,
+            url: image.url,
+            alt: image.alt ?? null,
+            isPrimary: image.isPrimary,
+            sortOrder: index,
+          },
+        });
+      }
+    }
+  });
+};
+
+export const deleteProduct = async (id: string): Promise<void> => {
+  await prisma.product.delete({ where: { id } });
+};

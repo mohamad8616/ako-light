@@ -87,6 +87,11 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
   }, [activeImage]);
 
   function handleAddToCart() {
+    // Guard against out-of-stock products — the button is disabled when
+    // unavailable, so this only fires if the guard is bypassed.
+    if (!product.store.existsInStore) return;
+    // Clamp to the available stock; quantity selection is currently fixed at 1.
+    const quantity = Math.min(1, Math.max(1, product.store.quantity));
     addItem(
       {
         productId: product.id,
@@ -239,11 +244,20 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
 
                 <button
                   onClick={handleAddToCart}
-                  className={`${fontClass} flex-1 cursor-pointer bg-stone-950 py-3 text-sm font-medium tracking-tight text-white uppercase transition-colors hover:bg-stone-800`}
+                  disabled={!product.store.existsInStore}
+                  className={`${fontClass} flex-1 cursor-pointer bg-stone-950 py-3 text-sm font-medium tracking-tight text-white uppercase transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60`}
                 >
                   {t("product.addToCart")}
                 </button>
               </div>
+
+              {!product.store.existsInStore && (
+                <p
+                  className={`${fontClass} mt-2 text-sm font-medium text-red-600`}
+                >
+                  {t("product.outOfStock")}
+                </p>
+              )}
 
               <div
                 className={`${fontClass} mt-6 flex flex-col gap-4 text-sm leading-relaxed text-stone-600`}
