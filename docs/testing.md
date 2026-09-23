@@ -174,12 +174,14 @@ prep; the scope change Pass 11B proposed and deferred):
   dimensions. The project is still undergoing visual development.
 - **Components** — React component rendering requires jsdom + React Testing
   Library; not needed for the current pure-logic scope.
-- **Database writes** — the Prisma/PostgreSQL integration and server tiers
-  (Pass 9.5 / 10.5) cover the schema, seed and read path against the real dev
-  database. Write paths stay untested, with one exception: the Pass 11C
-  integrity tests write only inside transactions that are always rolled back
-  (including when an assertion fails). Migration execution and the admin CRUD
-  write paths themselves arrive with Pass 12.5.
+- **Database writes** — every write test runs only inside transactions that are
+  always rolled back (including when an assertion fails), so the dev seed is
+  never mutated. The Pass 11C integrity tests write through `tx` directly; the
+  admin CRUD suite (`tests/server/*-crud.test.ts` and `slug-change-fk.test.ts`)
+  drives the repository write functions, which accept an optional transaction
+  client (`db: Prisma.TransactionClient = prisma`, same pattern as
+  `recordSlugChange`) so the test's rolled-back transaction covers them. A test
+  run leaves zero rows behind. Migration execution itself stays untested.
 - **`proxy.ts` middleware wiring** — the pure decision core
   (`resolveProxyAction`, `shouldBypassAuth`) is unit tested under
   `tests/unit`; the actual NextRequest/NextResponse behaviour (`/fa` 308

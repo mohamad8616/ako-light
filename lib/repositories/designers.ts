@@ -98,8 +98,9 @@ export const getDesignerAdminRows = cache(
 
 export const createDesigner = async (
   input: DesignerWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<string> => {
-  const row = await prisma.designer.create({
+  const row = await db.designer.create({
     data: {
       id: input.slug,
       slug: input.slug,
@@ -117,8 +118,9 @@ export const createDesigner = async (
 export const updateDesigner = async (
   id: string,
   input: DesignerWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<void> => {
-  await prisma.designer.update({
+  await db.designer.update({
     where: { id },
     data: {
       slug: input.slug,
@@ -131,6 +133,9 @@ export const updateDesigner = async (
   });
 };
 
-export const deleteDesigner = async (id: string): Promise<void> => {
-  await prisma.designer.delete({ where: { id } });
+export const deleteDesigner = async (
+  id: string,
+  db: Prisma.TransactionClient = prisma,
+): Promise<void> => {
+  await db.designer.delete({ where: { id } });
 };

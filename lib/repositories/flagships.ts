@@ -96,8 +96,9 @@ export type FlagshipWriteInput = {
 
 export const createFlagship = async (
   input: FlagshipWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<string> => {
-  const row = await prisma.flagship.create({
+  const row = await db.flagship.create({
     data: {
       id: input.slug,
       slug: input.slug,
@@ -117,8 +118,9 @@ export const createFlagship = async (
 export const updateFlagship = async (
   id: string,
   input: FlagshipWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<void> => {
-  await prisma.flagship.update({
+  await db.flagship.update({
     where: { id },
     data: {
       slug: input.slug,
@@ -131,6 +133,9 @@ export const updateFlagship = async (
   });
 };
 
-export const deleteFlagship = async (id: string): Promise<void> => {
-  await prisma.flagship.delete({ where: { id } });
+export const deleteFlagship = async (
+  id: string,
+  db: Prisma.TransactionClient = prisma,
+): Promise<void> => {
+  await db.flagship.delete({ where: { id } });
 };

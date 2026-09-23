@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
+import AIReporter from "vitest-ai-reporter";
 
 /**
  * Vitest configuration (Pass 8.5 testing foundation, extended in Pass 10.5).
@@ -34,6 +35,7 @@ export default defineConfig({
     },
   },
   test: {
+    reporters: [new AIReporter()],
     projects: [
       {
         test: {

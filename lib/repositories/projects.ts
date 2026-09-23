@@ -119,8 +119,12 @@ export type ProjectWriteInput = {
 
 export const createProject = async (
   input: ProjectWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<string> => {
-  const row = await prisma.$transaction(async (tx) => {
+  // A caller-supplied client (the test suite passes its rolled-back
+  // transaction) is already transactional — run on it directly. The default
+  // client opens its own transaction so row + join rows stay atomic.
+  const run = async (tx: Prisma.TransactionClient) => {
     const created = await tx.project.create({
       data: {
         id: input.slug,
@@ -150,16 +154,18 @@ export const createProject = async (
     }
 
     return created;
-  });
+  };
 
+  const row = db === prisma ? await prisma.$transaction(run) : await run(db);
   return row.id;
 };
 
 export const updateProject = async (
   id: string,
   input: ProjectWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<void> => {
-  await prisma.$transaction(async (tx) => {
+  const run = async (tx: Prisma.TransactionClient) => {
     await tx.project.update({
       where: { id },
       data: {
@@ -191,10 +197,19 @@ export const updateProject = async (
         })),
       });
     }
-  });
+  };
+
+  if (db === prisma) {
+    await prisma.$transaction(run);
+  } else {
+    await run(db);
+  }
 };
 
-export const deleteProject = async (id: string): Promise<void> => {
+export const deleteProject = async (
+  id: string,
+  db: Prisma.TransactionClient = prisma,
+): Promise<void> => {
   // ProjectProduct rows cascade via the schema's onDelete: Cascade.
-  await prisma.project.delete({ where: { id } });
+  await db.project.delete({ where: { id } });
 };

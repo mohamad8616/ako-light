@@ -9,6 +9,7 @@ import { cache } from "react";
 import {
   MaterialType,
   type Material as MaterialRow,
+  type Prisma,
 } from "@/generated/prisma/client";
 import type { Material } from "@/lib/data/materials";
 import type { Localized } from "@/lib/i18n/localized";
@@ -113,8 +114,9 @@ export const getMaterialAdminRows = cache(
 
 export const createMaterial = async (
   input: MaterialWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<string> => {
-  const row = await prisma.material.create({
+  const row = await db.material.create({
     data: {
       id: input.slug,
       slug: input.slug,
@@ -133,8 +135,9 @@ export const createMaterial = async (
 export const updateMaterial = async (
   id: string,
   input: MaterialWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<void> => {
-  await prisma.material.update({
+  await db.material.update({
     where: { id },
     data: {
       slug: input.slug,
@@ -148,7 +151,9 @@ export const updateMaterial = async (
   });
 };
 
-export const deleteMaterial = async (id: string): Promise<void> => {
-  await prisma.material.delete({ where: { id } });
+export const deleteMaterial = async (
+  id: string,
+  db: Prisma.TransactionClient = prisma,
+): Promise<void> => {
+  await db.material.delete({ where: { id } });
 };
-

@@ -337,8 +337,12 @@ export const getProductAdminDetail = cache(
 
 export const createProduct = async (
   input: ProductWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<string> => {
-  const row = await prisma.$transaction(async (tx) => {
+  // A caller-supplied client (the test suite passes its rolled-back
+  // transaction) is already transactional — run on it directly. The default
+  // client opens its own transaction so row + images stay atomic.
+  const run = async (tx: Prisma.TransactionClient) => {
     const created = await tx.product.create({
       data: {
         id: input.slug,
@@ -374,16 +378,18 @@ export const createProduct = async (
     }
 
     return created;
-  });
+  };
 
+  const row = db === prisma ? await prisma.$transaction(run) : await run(db);
   return row.id;
 };
 
 export const updateProduct = async (
   id: string,
   input: ProductWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<void> => {
-  await prisma.$transaction(async (tx) => {
+  const run = async (tx: Prisma.TransactionClient) => {
     await tx.product.update({
       where: { id },
       data: {
@@ -443,9 +449,18 @@ export const updateProduct = async (
         });
       }
     }
-  });
+  };
+
+  if (db === prisma) {
+    await prisma.$transaction(run);
+  } else {
+    await run(db);
+  }
 };
 
-export const deleteProduct = async (id: string): Promise<void> => {
-  await prisma.product.delete({ where: { id } });
+export const deleteProduct = async (
+  id: string,
+  db: Prisma.TransactionClient = prisma,
+): Promise<void> => {
+  await db.product.delete({ where: { id } });
 };

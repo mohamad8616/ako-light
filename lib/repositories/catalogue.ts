@@ -5,6 +5,7 @@
 import { cache } from "react";
 import type { CatalogueItem } from "@/lib/data/catalogue";
 import { prisma } from "@/lib/db/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 
 export const getCatalogueItems = cache(async (): Promise<CatalogueItem[]> => {
   const rows = await prisma.catalogueItem.findMany({
@@ -70,8 +71,9 @@ export const getCatalogueItemAdminRows = cache(
 
 export const createCatalogueItem = async (
   input: CatalogueItemWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<string> => {
-  const row = await prisma.catalogueItem.create({
+  const row = await db.catalogueItem.create({
     data: {
       id: input.id,
       title: input.title,
@@ -88,8 +90,9 @@ export const createCatalogueItem = async (
 export const updateCatalogueItem = async (
   id: string,
   input: CatalogueItemWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<void> => {
-  await prisma.catalogueItem.update({
+  await db.catalogueItem.update({
     where: { id },
     data: {
       title: input.title,
@@ -101,6 +104,9 @@ export const updateCatalogueItem = async (
   });
 };
 
-export const deleteCatalogueItem = async (id: string): Promise<void> => {
-  await prisma.catalogueItem.delete({ where: { id } });
+export const deleteCatalogueItem = async (
+  id: string,
+  db: Prisma.TransactionClient = prisma,
+): Promise<void> => {
+  await db.catalogueItem.delete({ where: { id } });
 };

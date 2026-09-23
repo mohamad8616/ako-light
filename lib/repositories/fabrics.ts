@@ -9,6 +9,7 @@
 import { cache } from "react";
 import type { FabricItem } from "@/lib/data/materials";
 import { prisma } from "@/lib/db/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 
 export const getFabricItems = cache(async (): Promise<FabricItem[]> => {
   const rows = await prisma.fabricItem.findMany({
@@ -74,8 +75,9 @@ export const getFabricItemAdminRows = cache(
 
 export const createFabricItem = async (
   input: FabricItemWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<string> => {
-  const row = await prisma.fabricItem.create({
+  const row = await db.fabricItem.create({
     data: {
       id: input.id,
       name: input.name,
@@ -92,8 +94,9 @@ export const createFabricItem = async (
 export const updateFabricItem = async (
   id: string,
   input: FabricItemWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<void> => {
-  await prisma.fabricItem.update({
+  await db.fabricItem.update({
     where: { id },
     data: {
       name: input.name,
@@ -105,6 +108,9 @@ export const updateFabricItem = async (
   });
 };
 
-export const deleteFabricItem = async (id: string): Promise<void> => {
-  await prisma.fabricItem.delete({ where: { id } });
+export const deleteFabricItem = async (
+  id: string,
+  db: Prisma.TransactionClient = prisma,
+): Promise<void> => {
+  await db.fabricItem.delete({ where: { id } });
 };

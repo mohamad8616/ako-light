@@ -3,7 +3,7 @@
  * `lib/data/collections.ts`.
  */
 import { cache } from "react";
-import type { Collection as CollectionRow } from "@/generated/prisma/client";
+import type { Collection as CollectionRow, Prisma } from "@/generated/prisma/client";
 import type {
   Collection,
   CollectionDescription,
@@ -112,8 +112,9 @@ export const getCollectionAdminDetail = cache(
 
 export const createCollection = async (
   input: CollectionWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<string> => {
-  const row = await prisma.collection.create({
+  const row = await db.collection.create({
     data: {
       id: input.slug,
       slug: input.slug,
@@ -131,8 +132,9 @@ export const createCollection = async (
 export const updateCollection = async (
   id: string,
   input: CollectionWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<void> => {
-  await prisma.collection.update({
+  await db.collection.update({
     where: { id },
     data: {
       slug: input.slug,
@@ -145,6 +147,9 @@ export const updateCollection = async (
   });
 };
 
-export const deleteCollection = async (id: string): Promise<void> => {
-  await prisma.collection.delete({ where: { id } });
+export const deleteCollection = async (
+  id: string,
+  db: Prisma.TransactionClient = prisma,
+): Promise<void> => {
+  await db.collection.delete({ where: { id } });
 };

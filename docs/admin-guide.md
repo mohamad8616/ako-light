@@ -1,19 +1,19 @@
 # Admin Dashboard — Usage Guide
 
-> **Living document.** This file describes the admin dashboard **as it exists
-> right now** — no planned features. Every catalog section below is currently
-> a placeholder screen; detailed per-section usage instructions will be added
-> to this document as each section's CRUD screens are built.
+> **Living document.** This file describes the admin dashboard as it exists
+> today: the catalog-shell work is complete, the dashboard is live, and the
+> remaining actions are validation and environment cleanup rather than feature
+> discovery.
 
 ## Current status at a glance
 
-| Area | State |
-| --- | --- |
-| Admin shell (sidebar + topbar + responsive drawer) | Working |
-| Dashboard overview (stat cards) | Working |
-| Catalog sections (Products, Designers, …) | Placeholder "coming soon" screens |
-| Admins section (owner only) | Placeholder "coming soon" screen |
-| Sign-in gate for `/admin` | Working (unauthenticated users are redirected) |
+| Area                                               | State                                          |
+| -------------------------------------------------- | ---------------------------------------------- |
+| Admin shell (sidebar + topbar + responsive drawer) | Working                                        |
+| Dashboard overview (stat cards + heading)          | Working                                        |
+| Catalog sections (Products, Designers, …)          | CRUD screens implemented for the catalog stack |
+| Admins section (owner only)                        | Placeholder route remains; owner gate enforced |
+| Sign-in gate for `/admin`                          | Working                                        |
 
 ## Access & sign-in
 
@@ -41,9 +41,11 @@ The dashboard is a read-only operational snapshot:
   the database.
 - The card grid is responsive: one column on phones, two columns from `md`,
   three columns from `xl`.
+- A chart and demo table also render under the stat cards while preserving the
+  shared shell chrome.
 
-No create/edit/delete actions exist on the dashboard yet — it is purely
-informational.
+The dashboard is informational; create/edit/delete actions live on the
+individual catalog section pages.
 
 ## Navigation
 
@@ -73,12 +75,12 @@ via the topbar's toggle button):
 Each page's own body renders its single heading; the topbar deliberately does
 not, so there is exactly one heading per page.
 
-## Catalog sections (all placeholders)
+## Catalog sections
 
-Every section below currently shows the shared "Coming soon" placeholder
-screen (section name as the page heading, a centered card, and a "Back to
-dashboard" link). No data can be created, edited, or deleted from these
-screens yet.
+Each catalog section follows the shared admin shell and table form conventions.
+The CRUD pages use shared schema/action layers and the section-specific DataTable
+or form layout depending on the entity. A route remains intentionally simple for
+owner-only access and a dedicated placeholder for the Admins page.
 
 <!-- Placeholder headings below — each gains real usage instructions when its
      CRUD screens are built. Do not pre-write instructions for unbuilt UI. -->
@@ -107,19 +109,20 @@ screens yet.
 
 - The public site chrome (navbar, preloader, footer, newsletter) still wraps
   the admin area; a structural fix is planned and tracked separately.
-- The role check for signed-in users inside `proxy.ts` is currently disabled
-  (only the *authentication* gate is active), so any signed-in user can reach
-  admin pages until it is re-enabled.
+- The role check for signed-in users inside `proxy.ts` is enforced and denies
+  non-admin roles while preserving the sign-in redirect behavior for anonymous
+  users.
 - The sidebar's active-item state and the shell's RTL direction are forced
-  regardless of the `/en` URL prefix, by design.
+  from `ADMIN_SHELL_DIR`, by design.
 
 ## Where the code lives
 
-| Concern | File |
-| --- | --- |
-| Section registry (hrefs + translation keys) | `lib/admin/sections.ts` |
-| Admin shell layout | `app/[locale]/(admin)/admin/layout.tsx` |
-| Sidebar | `components/admin/AdminSidebar.tsx` |
-| Topbar (toggle, breadcrumb, sign out) | `components/admin/AdminTopbar.tsx` |
-| Placeholder screen | `components/admin/AdminPlaceholderPage.tsx` |
-| Admin translations (en/fa) | `lib/i18n/translations/admin.ts` |
+| Concern                                     | File                                         |
+| ------------------------------------------- | -------------------------------------------- |
+| Section registry (hrefs + translation keys) | `lib/admin/sections.ts`                      |
+| Admin shell layout                          | `app/[locale]/(admin)/admin/layout.tsx`      |
+| Sidebar / shell chrome                      | `components/app-sidebar.tsx`                 |
+| Shell direction source                      | `lib/admin/sections.ts`                      |
+| Placeholder route (owner-only)              | `app/[locale]/(admin)/admin/admins/page.tsx` |
+| Admin translations (en/fa)                  | `lib/i18n/translations/admin.ts`             |
+| Shared catalog CRUD widgets                 | `components/admin/catalog/**`                |

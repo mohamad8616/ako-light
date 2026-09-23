@@ -113,8 +113,9 @@ export const getProductCategoryAdminRows = cache(
 
 export const createProductCategory = async (
   input: ProductCategoryWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<string> => {
-  const row = await prisma.productCategory.create({
+  const row = await db.productCategory.create({
     data: {
       id: input.slug,
       slug: input.slug,
@@ -130,8 +131,9 @@ export const createProductCategory = async (
 export const updateProductCategory = async (
   id: string,
   input: ProductCategoryWriteInput,
+  db: Prisma.TransactionClient = prisma,
 ): Promise<void> => {
-  await prisma.productCategory.update({
+  await db.productCategory.update({
     where: { id },
     data: {
       slug: input.slug,
@@ -142,6 +144,9 @@ export const updateProductCategory = async (
   });
 };
 
-export const deleteProductCategory = async (id: string): Promise<void> => {
-  await prisma.productCategory.delete({ where: { id } });
+export const deleteProductCategory = async (
+  id: string,
+  db: Prisma.TransactionClient = prisma,
+): Promise<void> => {
+  await db.productCategory.delete({ where: { id } });
 };
