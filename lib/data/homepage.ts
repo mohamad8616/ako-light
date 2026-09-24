@@ -13,9 +13,6 @@ export const homepageSections = {
   paris: {
     image: "https://www.henge07.com/app/uploads/2026/01/7-scaled.jpg",
   },
-  london: {
-    image: "https://www.henge07.com/app/uploads/2026/01/7-scaled.jpg",
-  },
   catalogue: {
     image: "https://www.henge07.com/app/uploads/2026/07/H-S345-2.jpg",
   },

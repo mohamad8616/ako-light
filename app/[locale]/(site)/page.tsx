@@ -1,10 +1,10 @@
 import CatalogueSection from "@/components/home/CatalogueSection";
-import HengeParisBanner from "@/components/home/HengeParisBanner";
+import FlagshipOne from "@/components/home/flagshipOne";
 import HeroSection from "@/components/home/HeroSection";
-import HIstraBanner from "@/components/home/HIstraBanner";
 import HomeCollectionBanner from "@/components/home/HomeCollectionBanner";
+import ProjectBanner from "@/components/home/projectBanner";
+import ProjectWithDarkBackground from "@/components/home/projectWithDarkBackground";
 import VideoSection from "@/components/home/VideoSection";
-import Vocla2026Section from "@/components/home/Vocla2026Section";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import { getProductCategories } from "@/lib/repositories/product-categories";
 import { translations } from "@/lib/i18n/translations";
@@ -42,13 +42,12 @@ export default async function HomePage() {
     <main className="font-noora bg-background-secondary w-full space-y-18 lg:space-y-60">
       <HeroSection />
       <ImageGalleryCarousel purpose="link" category={productCategory} />
-      <HengeParisBanner />
-      {/* <HengeLondonBanner /> */}
+      <FlagshipOne />
       <VideoSection />
       <CatalogueSection />
       <HomeCollectionBanner />
-      <HIstraBanner />
-      <Vocla2026Section />
+      <ProjectBanner />
+      <ProjectWithDarkBackground />
     </main>
   );
 }
