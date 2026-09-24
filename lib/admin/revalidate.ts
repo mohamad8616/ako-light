@@ -20,33 +20,52 @@ export type AdminSection =
  */
 const PUBLIC_ROUTES: Record<AdminSection, readonly string[]> = {
   products: [
-    "/[locale]/products",
-    "/[locale]/products/[product]",
-    "/[locale]/products/[product]/[prod]",
+    "/[locale]/(site)/products",
+    "/[locale]/(site)/products/[product]",
+    "/[locale]/(site)/products/[product]/[prod]",
   ],
   categories: [
-    "/[locale]/products",
-    "/[locale]/products/[product]",
-    "/[locale]/products/[product]/[prod]",
+    "/[locale]/(site)/products",
+    "/[locale]/(site)/products/[product]",
+    "/[locale]/(site)/products/[product]/[prod]",
   ],
-  designers: ["/[locale]/designers", "/[locale]/designers/[slug]"],
-  collections: ["/[locale]/collections", "/[locale]/collections/[slug]"],
-  materials: ["/[locale]/materials", "/[locale]/materials/[material]"],
-  flagships: ["/[locale]/flagship", "/[locale]/flagship/[slug]"],
-  projects: ["/[locale]/projects", "/[locale]/projects/[id]"],
-  fabrics: ["/[locale]/materials", "/[locale]/materials/[material]"],
-  catalogue: ["/[locale]/catalogue"],
+  designers: [
+    "/[locale]/(site)/designers",
+    "/[locale]/(site)/designers/[slug]",
+  ],
+  collections: [
+    "/[locale]/(site)/collections",
+    "/[locale]/(site)/collections/[slug]",
+  ],
+  materials: [
+    "/[locale]/(site)/materials",
+    "/[locale]/(site)/materials/[material]",
+  ],
+  flagships: [
+    "/[locale]/(site)/flagship",
+    "/[locale]/(site)/flagship/[slug]",
+  ],
+  projects: [
+    "/[locale]/(site)/projects",
+    "/[locale]/(site)/projects/[id]",
+  ],
+  fabrics: [
+    "/[locale]/(site)/materials",
+    "/[locale]/(site)/materials/[material]",
+  ],
+  catalogue: ["/[locale]/(site)/catalogue"],
 };
 
 /**
  * Expires the affected routes after an admin mutation.
  *
- * `revalidatePath` matches the ROUTE FILE structure, and `proxy.ts` rewrites the
- * unprefixed `/admin/...` URL to `/fa/admin/...`, so the `/[locale]/...` patterns
- * are what actually match the cache entries — passing the browser-literal path
- * would silently invalidate nothing (the bundled revalidatePath docs call this
- * out for rewrites). `refresh()` then re-renders the page the action ran on so
- * the table reflects the change immediately.
+ * `revalidatePath` matches the ROUTE FILE structure, not the browser URL. The
+ * route groups are part of that structure, so both `(admin)` and `(site)` must
+ * be included in the patterns below. `proxy.ts` rewrites the unprefixed public
+ * URL to the `fa` locale internally, while `/en/...` passes through; using the
+ * route-file patterns invalidates both locale variants. `refresh()` then
+ * re-renders the page the action ran on so the table reflects the change
+ * immediately.
  *
  * SlugHistory recording stays out of this module on purpose: the dashboard's
  * slug rename is a TODO for the redemption pass (see the action modules).
@@ -55,12 +74,12 @@ export function revalidateCatalog(
   section: AdminSection,
   options: { id?: string } = {},
 ): void {
-  revalidatePath(`/[locale]/admin/${section}`, "page");
+  revalidatePath(`/[locale]/(admin)/admin/${section}`, "page");
   if (options.id) {
-    revalidatePath(`/[locale]/admin/${section}/[id]`, "page");
+    revalidatePath(`/[locale]/(admin)/admin/${section}/[id]`, "page");
   }
   // The overview's stat cards read the same rows — keep them honest too.
-  revalidatePath("/[locale]/admin", "page");
+  revalidatePath("/[locale]/(admin)/admin", "page");
 
   for (const route of PUBLIC_ROUTES[section]) {
     revalidatePath(route, "page");

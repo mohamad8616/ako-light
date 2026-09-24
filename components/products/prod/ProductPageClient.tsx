@@ -5,7 +5,6 @@ import RelatedProductsSection from "@/components/products/prod/RelatedProdSectio
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import PictureHero from "@/components/ui/PictureHero";
 import type { Product } from "@/lib/data/product-categories/types";
-import { productKey } from "@/lib/i18n/localized";
 import CatalogueDownloadSection from "./CatalogueDownloadSection";
 
 interface ProductPageClientProps {
@@ -22,12 +21,12 @@ export default function ProductPageClient({
   sameCategoryProducts,
   galleryImages,
 }: ProductPageClientProps) {
+  // Pass the bilingual name straight through: PictureHero resolves it against
+  // the active language (reactively), so it follows the page locale instead of
+  // always falling back to the first key in the object (which was `en`).
   return (
     <main className="bg-background-secondary relative">
-      <PictureHero
-        image={productt.heroImage}
-        nameKey={productKey(productt.slug)}
-      />
+      <PictureHero image={productt.heroImage} nameLocalized={productt.name} />
       <ProductInfoSection product={productt} />
       <ImageGalleryCarousel
         multiWidth={true}

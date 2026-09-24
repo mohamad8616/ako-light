@@ -6,11 +6,11 @@
  * every reader is wrapped in React's `cache()` so repeated lookups inside one
  * request (page + `generateMetadata`, nested layouts) hit the database once.
  */
-import { cache } from "react";
 import type { Prisma } from "@/generated/prisma/client";
 import type { Product } from "@/lib/data/product-categories/types";
-import type { Localized } from "@/lib/i18n/localized";
 import { prisma } from "@/lib/db/prisma";
+import type { Localized } from "@/lib/i18n/localized";
+import { cache } from "react";
 import {
   asDownloadLinks,
   asJsonInput,
@@ -104,7 +104,7 @@ export const getProduct = cache(
 
     if (!row) return null;
     if (row.category.slug !== categoryOrSlug) return null;
-
+    console.log(row, mapProductRow(row));
     return mapProductRow(row);
   },
 );
