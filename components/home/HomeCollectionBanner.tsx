@@ -1,7 +1,8 @@
 "use client";
 
-import { homepageSections } from "@/lib/data/homepage";
+import { pick } from "@/lib/i18n/localized";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import type { ResolvedHomeCollectionFeature } from "@/lib/repositories/homepage-features";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
@@ -9,10 +10,22 @@ import HomepageSection, { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 import Image from "next/image";
 
+interface HomeCollectionBannerProps {
+  /**
+   * Server-resolved slot data (`getHomeCollectionFeature()`); `null` renders
+   * nothing, exactly like a slot saved with `enabled: false`.
+   */
+  data: ResolvedHomeCollectionFeature | null;
+}
 
-export default function HomeCollectionBanner() {
-  const { t } = useLanguage();
-  const { homeCollection } = homepageSections;
+export default function HomeCollectionBanner({
+  data,
+}: HomeCollectionBannerProps) {
+  const { t, lang } = useLanguage();
+
+  if (!data || !data.enabled) return null;
+
+  const title = pick(data.title, lang);
 
   return (
     <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
@@ -30,8 +43,8 @@ export default function HomeCollectionBanner() {
               <Image
                 sizes="(max-width: 1024px) 100vw, 58vw"
                 fill
-                src={homeCollection.image}
-                alt={t("homeCollection.title")}
+                src={data.image}
+                alt={title}
                 className="absolute object-contain transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
               />
             </motion.div>
@@ -41,10 +54,10 @@ export default function HomeCollectionBanner() {
           <div className="order-2 flex flex-col lg:col-span-5 lg:justify-between lg:py-2">
             <div>
               <div className="mb-5">
-                <SectionTitle>{t("homeCollection.title")}</SectionTitle>
+                <SectionTitle>{title}</SectionTitle>
               </div>
 
-              <Paragraph className="font-noora">{t("homeCollection.description")}</Paragraph>
+              <Paragraph className="font-noora">{pick(data.text, lang)}</Paragraph>
             </div>
 
             <motion.div
@@ -55,7 +68,7 @@ export default function HomeCollectionBanner() {
               className="mt-10 lg:mt-16"
             >
               <PlusTextBtn
-                href="/collection"
+                href={data.ctaHref}
                 text={t("homeCollection.discover")}
                 textColor="text-background"
               />

@@ -7,6 +7,13 @@ import ProjectWithDarkBackground from "@/components/home/projectWithDarkBackgrou
 import VideoSection from "@/components/home/VideoSection";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import { getProductCategories } from "@/lib/repositories/product-categories";
+import {
+  getCatalogueFeature,
+  getFlagshipOneFeature,
+  getHomeCollectionFeature,
+  getProjectBannerFeature,
+  getProjectDarkBackgroundFeature,
+} from "@/lib/repositories/homepage-features";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import type { Metadata } from "next";
@@ -30,7 +37,24 @@ export async function generateMetadata({
 }
 
 export default async function HomePage() {
-  const productCategories = await getProductCategories();
+  // Every banner sources its content from its homepage feature slot (see
+  // lib/repositories/homepage-features.ts) — one parallel round of reads.
+  const [
+    productCategories,
+    flagshipOne,
+    catalogue,
+    homeCollection,
+    projectBanner,
+    projectDarkBackground,
+  ] = await Promise.all([
+    getProductCategories(),
+    getFlagshipOneFeature(),
+    getCatalogueFeature(),
+    getHomeCollectionFeature(),
+    getProjectBannerFeature(),
+    getProjectDarkBackgroundFeature(),
+  ]);
+
   const productCategory = productCategories.map((category) => {
     return {
       name: category.i18nKey,
@@ -42,12 +66,12 @@ export default async function HomePage() {
     <main className="font-noora bg-background-secondary w-full space-y-18 lg:space-y-60">
       <HeroSection />
       <ImageGalleryCarousel purpose="link" category={productCategory} />
-      <FlagshipOne />
+      <FlagshipOne data={flagshipOne} />
       <VideoSection />
-      <CatalogueSection />
-      <HomeCollectionBanner />
-      <ProjectBanner />
-      <ProjectWithDarkBackground />
+      <CatalogueSection data={catalogue} />
+      <HomeCollectionBanner data={homeCollection} />
+      <ProjectBanner data={projectBanner} />
+      <ProjectWithDarkBackground data={projectDarkBackground} />
     </main>
   );
 }

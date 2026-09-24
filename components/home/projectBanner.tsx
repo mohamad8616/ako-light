@@ -1,7 +1,8 @@
 "use client";
 
-import { homepageSections } from "@/lib/data/homepage";
+import { pick } from "@/lib/i18n/localized";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import type { ResolvedProjectBannerFeature } from "@/lib/repositories/homepage-features";
 import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
@@ -9,9 +10,20 @@ import Image from "next/image";
 import HomepageSection, { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 
-export default function ProjectBanner() {
-  const { t } = useLanguage();
-  const { istra } = homepageSections;
+interface ProjectBannerProps {
+  /**
+   * Server-resolved slot data (`getProjectBannerFeature()`); `null` renders
+   * nothing, exactly like a slot saved with `enabled: false`.
+   */
+  data: ResolvedProjectBannerFeature | null;
+}
+
+export default function ProjectBanner({ data }: ProjectBannerProps) {
+  const { t, lang } = useLanguage();
+
+  if (!data || !data.enabled) return null;
+
+  const title = pick(data.title, lang);
 
   return (
     <section className="bg-background-secondary relative -bottom-18 w-full pt-20 pb-0 md:pt-28 lg:-bottom-80">
@@ -20,8 +32,8 @@ export default function ProjectBanner() {
       <HomepageSection>
         {/* Title */}
         <div className="overflow-hidden">
-          <SectionSubTitle>{t("istra.kicker")}</SectionSubTitle>
-          <SectionTitle>{t("istra.title")}</SectionTitle>
+          <SectionSubTitle>{pick(data.kicker, lang)}</SectionSubTitle>
+          <SectionTitle>{title}</SectionTitle>
         </div>
 
         {/* Image — kept inside the same page container as the title (not
@@ -36,8 +48,8 @@ export default function ProjectBanner() {
           className="group relative z-10 mt-10 -mb-16 aspect-16/10 w-full overflow-hidden sm:aspect-video md:mt-14 md:-mb-16 lg:-mb-18"
         >
           <Image
-            src={istra.image}
-            alt={t("istra.title")}
+            src={data.image}
+            alt={title}
             fill
             className="object-cover transition-transform duration-3000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
           />
@@ -51,9 +63,10 @@ export default function ProjectBanner() {
           transition={{ duration: 0.7, delay: 0.55, ease: EASE }}
           className="relative z-20 mt-24"
         >
-          <PlusTextBtn href={"#"} text={t("istra.cta")} className="flex!" />
+          <PlusTextBtn href={data.ctaHref} text={t("istra.cta")} className="flex!" />
         </motion.div>
       </HomepageSection>
     </section>
   );
 }
+

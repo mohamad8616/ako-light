@@ -1,7 +1,7 @@
 "use client";
 
-import { homepageSections } from "@/lib/data/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import type { ResolvedCatalogueFeature } from "@/lib/repositories/homepage-features";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
@@ -11,9 +11,23 @@ import HomepageSection, { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
 import AnimatedDownloadCircle from "../ui/AnimateDownloadCircle";
 
-export default function CatalogueSection() {
-  const { catalogue } = homepageSections;
+interface CatalogueSectionProps {
+  /**
+   * Server-resolved slot data (`getCatalogueFeature()`); `null` renders nothing,
+   * exactly like a slot saved with `enabled: false`.
+   */
+  data: ResolvedCatalogueFeature | null;
+}
+
+export default function CatalogueSection({ data }: CatalogueSectionProps) {
   const { t } = useLanguage();
+
+  if (!data || !data.enabled) return null;
+
+  // The title and the PDF href belong to the referenced CatalogueItem, so the
+  // CTA label is composed from the static "Download" word plus that title —
+  // identical copy to before, but correct after the reference is repointed.
+  const ctaText = `${t("catalogue.download")} ${data.title}`;
 
   return (
     <HomepageSection className="grid w-full grid-cols-1 gap-3 py-20 md:py-28 lg:grid-cols-12 lg:grid-rows-2 lg:gap-6">
@@ -23,7 +37,7 @@ export default function CatalogueSection() {
       <div className="lg:hidden">
         <SectionSubTitle>{t("catalogue.kicker")}</SectionSubTitle>
         <div className="mt-3 mb-5 overflow-hidden">
-          <SectionTitle>{t("catalogue.title")}</SectionTitle>
+          <SectionTitle>{data.title}</SectionTitle>
         </div>
       </div>
 
@@ -33,7 +47,7 @@ export default function CatalogueSection() {
         <div className="hidden lg:block">
           <SectionSubTitle>{t("catalogue.kicker")}</SectionSubTitle>
           <div className="mt-3 mb-5 overflow-hidden">
-            <SectionTitle>{t("catalogue.title")}</SectionTitle>
+            <SectionTitle>{data.title}</SectionTitle>
           </div>
         </div>
 
@@ -51,7 +65,7 @@ export default function CatalogueSection() {
             className="group relative aspect-2/3 w-full overflow-hidden"
           >
             <Image
-              src={catalogue.image}
+              src={data.image}
               alt="catalogue download"
               fill
               className="object-cover transition-transform duration-2500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
@@ -72,9 +86,10 @@ export default function CatalogueSection() {
         className="mt-2 lg:col-span-6 lg:col-start-7 lg:ms-auto lg:max-w-95"
       >
         <PlusTextBtn
-          text={t("catalogue.cta")}
+          text={ctaText}
           textColor="text-background font-medium"
-          href="#"
+          href={data.downloadHref}
+          aria-label={t("catalogue.downloadAria").replace("{title}", data.title)}
           className="z-999"
         />
       </motion.div>
