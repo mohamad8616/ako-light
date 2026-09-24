@@ -1,8 +1,8 @@
-﻿"use client";
+﻿﻿"use client";
 
 import type { Product, ProductCategory } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { productName } from "@/lib/i18n/localized";
+import { pick } from "@/lib/i18n/localized";
 import HomepageSection from "@/utility/HomepageSection";
 import ProductCategoryCard from "./ProductCategoryCard";
 
@@ -17,17 +17,17 @@ export default function ProductsGrid({
   products,
   parentSlug,
 }: ProductsGridProps) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const items = products
     ? products.map((product) => ({
         key: product.slug,
-        name: productName(t, product.slug),
+        name: pick(product.name, lang),
         slug: product.slug,
         images: [product.images[0], product.hoverImage].filter(Boolean),
       }))
     : (categories ?? []).map((category) => ({
         key: category.slug,
-        name: t(category.i18nKey),
+        name: pick(category.name, lang),
         slug: category.slug,
         images: category.products[0]?.images ?? [],
       }));
