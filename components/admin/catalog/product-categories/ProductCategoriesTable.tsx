@@ -7,13 +7,21 @@ import {
   textColumn,
 } from "@/components/admin/catalog/columns";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
-import { NumberField, TextField } from "@/components/admin/catalog/fields/ScalarFields";
+import {
+  NumberField,
+  TextField,
+} from "@/components/admin/catalog/fields/ScalarFields";
 import { SlugField } from "@/components/admin/catalog/fields/SlugField";
 import { RowActions } from "@/components/admin/catalog/RowActions";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { DataTable } from "@/components/admin/data-table/DataTable";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   createProductCategoryAction,
   destroyProductCategoryAction,
@@ -32,9 +40,13 @@ import { FormProvider, useForm } from "react-hook-form";
  * The categories list screen — same DataTable pattern as products, but the
  * create/edit forms live in a dialog.
  */
-export function ProductCategoriesTable({ rows }: { rows: ProductCategoryAdminRow[] }) {
+export function ProductCategoriesTable({
+  rows,
+}: {
+  rows: ProductCategoryAdminRow[];
+}) {
   const { t, lang } = useLanguage();
-  const { run, pending: crudPending, applyFieldIssues } = useCrudSubmit();
+  const { run } = useCrudSubmit();
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [isCreating, setIsCreating] = React.useState(false);
 
@@ -67,7 +79,8 @@ export function ProductCategoriesTable({ rows }: { rows: ProductCategoryAdminRow
     textColumn({
       id: "productCount",
       label: t("admin.product.field.category"),
-      access: (row: ProductCategoryAdminRow) => `${row.productCount} ${t("admin.table.rowsSelected").replace("{count}", "")}`,
+      access: (row: ProductCategoryAdminRow) =>
+        `${row.productCount} ${t("admin.table.rowsSelected").replace("{count}", "")}`,
     }),
     {
       id: "actions",
@@ -80,7 +93,10 @@ export function ProductCategoriesTable({ rows }: { rows: ProductCategoryAdminRow
           onDestroy={() => destroy(ctx.row.original.id)}
           deleteWarning={
             ctx.row.original.productCount > 0
-              ? t("admin.crud.deleteCascadeCount").replace("{count}", String(ctx.row.original.productCount))
+              ? t("admin.crud.deleteCascadeCount").replace(
+                  "{count}",
+                  String(ctx.row.original.productCount),
+                )
               : undefined
           }
         />
@@ -98,7 +114,10 @@ export function ProductCategoriesTable({ rows }: { rows: ProductCategoryAdminRow
           <LocaleLink
             href="/admin/categories/new"
             className={cn(buttonVariants({ variant: "default", size: "sm" }))}
-            onClick={(e) => { e.preventDefault(); setIsCreating(true); }}
+            onClick={(e) => {
+              e.preventDefault();
+              setIsCreating(true);
+            }}
           >
             + {t("admin.crud.new")}
           </LocaleLink>
@@ -108,11 +127,16 @@ export function ProductCategoriesTable({ rows }: { rows: ProductCategoryAdminRow
       {isCreating && (
         <CategoryDialog
           open
-          onClose={() => { setIsCreating(false); }}
+          onClose={() => {
+            setIsCreating(false);
+          }}
           onSave={async (values) => {
-            const result = await run(() => createProductCategoryAction(values), {
-              successMessage: t("admin.crud.created"),
-            });
+            const result = await run(
+              () => createProductCategoryAction(values),
+              {
+                successMessage: t("admin.crud.created"),
+              },
+            );
             return result?.ok ?? false;
           }}
         />
@@ -121,12 +145,17 @@ export function ProductCategoriesTable({ rows }: { rows: ProductCategoryAdminRow
       {editingId && (
         <CategoryDialog
           open
-          initialData={rows.find(r => r.id === editingId)!}
-          onClose={() => { setEditingId(null); }}
+          initialData={rows.find((r) => r.id === editingId)!}
+          onClose={() => {
+            setEditingId(null);
+          }}
           onSave={async (values) => {
-            const result = await run(() => updateProductCategoryAction(editingId!, values), {
-              successMessage: t("admin.table.saved"),
-            });
+            const result = await run(
+              () => updateProductCategoryAction(editingId!, values),
+              {
+                successMessage: t("admin.table.saved"),
+              },
+            );
             return result?.ok ?? false;
           }}
         />
@@ -143,8 +172,19 @@ function CategoryDialog({
 }: {
   open: boolean;
   onClose: () => void;
-  onSave: (values: { slug: string; i18nKey: string; name: { en: string; fa: string }; sortOrder: number }) => Promise<boolean>;
-  initialData?: { id: string; slug: string; i18nKey: string; name: { en: string; fa: string }; sortOrder: number };
+  onSave: (values: {
+    slug: string;
+    i18nKey: string;
+    name: { en: string; fa: string };
+    sortOrder: number;
+  }) => Promise<boolean>;
+  initialData?: {
+    id: string;
+    slug: string;
+    i18nKey: string;
+    name: { en: string; fa: string };
+    sortOrder: number;
+  };
 }) {
   const { t } = useLanguage();
   const [pending, setPending] = React.useState(false);
@@ -152,7 +192,12 @@ function CategoryDialog({
 
   const form = useForm({
     resolver: zodResolver(productCategoryFormSchema),
-    values: initialData ?? { slug: "", i18nKey: "", name: { en: "", fa: "" }, sortOrder: 0 },
+    values: initialData ?? {
+      slug: "",
+      i18nKey: "",
+      name: { en: "", fa: "" },
+      sortOrder: 0,
+    },
   });
 
   const handleSubmit = form.handleSubmit(async (raw) => {
@@ -171,35 +216,43 @@ function CategoryDialog({
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEdit ? t("admin.product.edit") : t("admin.product.new")}</DialogTitle>
+          <DialogTitle>
+            {isEdit ? t("admin.product.edit") : t("admin.product.new")}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <FormProvider {...form}>
-          <LocalizedField
-            name="name"
-            label={t("admin.product.field.name")}
-            required
-          />
-          <SlugField
-            name="slug"
-            label={t("admin.product.field.slug")}
-            source="name.en"
-            required
-          />
-          <TextField
-            name="i18nKey"
-            label={t("admin.productCategory.field.i18nKey")}
-            required
-            placeholder="products.coffeeTables"
-          />
-          <NumberField
-            name="sortOrder"
-            label={t("admin.product.field.sortOrder")}
-            min={0}
-          />
+            <LocalizedField
+              name="name"
+              label={t("admin.product.field.name")}
+              required
+            />
+            <SlugField
+              name="slug"
+              label={t("admin.product.field.slug")}
+              source="name.en"
+              required
+            />
+            <TextField
+              name="i18nKey"
+              label={t("admin.productCategory.field.i18nKey")}
+              required
+              placeholder="products.coffeeTables"
+            />
+            <NumberField
+              name="sortOrder"
+              label={t("admin.product.field.sortOrder")}
+              min={0}
+            />
           </FormProvider>
           <div className="flex items-center justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={pending}>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              disabled={pending}
+            >
               {t("admin.crud.cancel")}
             </Button>
             <Button type="submit" size="sm" disabled={pending}>

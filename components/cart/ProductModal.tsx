@@ -29,7 +29,6 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
     null,
   );
   const [activeImage, setActiveImage] = useState(0);
-  const [quantity] = useState(1);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   // SSR-safe mount check — LightboxModal portals to `document.body`, which
   // only exists after hydration.
@@ -224,23 +223,6 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
               </p>
 
               <div className="mt-6 flex items-center gap-3">
-                {/* <div className="flex items-center border border-stone-300">
-                <button
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  aria-label={t("cart.decreaseQuantity")}
-                  className="flex h-10 w-10 cursor-pointer items-center justify-center text-stone-950 hover:bg-stone-100"
-                >
-                  −
-                </button>
-                <span className="w-8 text-center text-sm">{quantity}</span>
-                <button
-                  onClick={() => setQuantity((q) => q + 1)}
-                  aria-label={t("cart.increaseQuantity")}
-                  className="flex h-10 w-10 cursor-pointer items-center justify-center text-stone-950 hover:bg-stone-100"
-                >
-                  +
-                </button>
-              </div> */}
 
                 <button
                   onClick={handleAddToCart}

@@ -43,8 +43,8 @@ export function SlugField({
   const { t } = useLanguage();
   const { register, watch, setValue, formState } = useFormContext();
 
-  const initial = React.useRef<string>((watch(name) as string) ?? "");
-  const [manual, setManual] = React.useState(() => Boolean(initial.current));
+  const [initialSlug] = React.useState(() => (watch(name) as string) ?? "");
+  const [manual, setManual] = React.useState(false);
   const lastAuto = React.useRef("");
 
   const value = (watch(name) as string) ?? "";
@@ -57,7 +57,6 @@ export function SlugField({
     if (manual || !source) return;
     const derived = defaultSlugFromName(sourceValue);
     if (value !== "" && value !== lastAuto.current) {
-      // The editor typed a slug by hand — stop deriving from the name.
       setManual(true);
       return;
     }
@@ -67,7 +66,7 @@ export function SlugField({
     }
   }, [manual, name, setValue, source, sourceValue, value]);
 
-  const renamed = manual && initial.current !== "" && value !== initial.current;
+  const renamed = manual && initialSlug !== "" && value !== initialSlug;
 
   return (
     <FieldRow

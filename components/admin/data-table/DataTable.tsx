@@ -34,15 +34,13 @@ export function DataTable<TData>({
   toolbar,
   pageSize = 10,
   className,
-  searchable = false,
-  emptyMessage,
+
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
     pageSize,
   });
-  const [globalFilter, setGlobalFilter] = React.useState("");
 
   const table = useReactTable({
     data,

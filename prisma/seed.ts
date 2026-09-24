@@ -11,14 +11,17 @@
  */
 import "dotenv/config";
 
-import { MaterialType, Prisma } from "@/generated/prisma/client";
+import { MaterialType, Prisma, FeatureMode } from "@/generated/prisma/client";
 import { catalogueItems } from "@/lib/data/catalogue";
 import { collections } from "@/lib/data/collections";
 import { designers } from "@/lib/data/designers";
 import { flagshipDetails, flagships } from "@/lib/data/flagships";
+import { homepageSections } from "@/lib/data/homepage";
 import { fabrics, materials, type Material } from "@/lib/data/materials";
 import { productCategories } from "@/lib/data/productCategories";
 import { projects } from "@/lib/data/projects";
+import { loc } from "@/lib/i18n/localized";
+import { homeEn, homeFa } from "@/lib/i18n/translations/home";
 import { prisma } from "@/lib/db/prisma";
 
 /** A source record that could not be mapped 1:1 onto the schema. */
@@ -453,6 +456,99 @@ async function seedCatalogueItems(): Promise<void> {
   }
 }
 
+/**
+ * Homepage feature slots (myPlan.md Part B).
+ *
+ * One singleton row per homepage slot, addressed by a stable derived id
+ * (AGENTS.md). Defaults mirror what the homepage renders today: `reference`
+ * mode with every override column NULL, so content and the CTA destination
+ * come from the linked catalog entity (the Home Collection banner is
+ * standalone content and carries its own defaults).
+ *
+ * `update` is intentionally empty: these rows are admin *configuration*, not
+ * a mirror of lib/data/*, so re-running the seed creates missing rows without
+ * clobbering edits made in the dashboard.
+ *
+ * Parent ids are FKs to rows written by the seed steps above; they are
+ * resolved from the database so a source-side rename is reported like other
+ * unresolved FKs (`note()`) instead of crashing the run.
+ */
+async function seedHomepageFeatures(): Promise<void> {
+  const [flagship, istra, vocla, catalogueItem] = await Promise.all([
+    prisma.flagship.findUnique({ where: { slug: "henge-paris" }, select: { id: true } }),
+    prisma.project.findUnique({ where: { slug: "h-istra" }, select: { id: true } }),
+    prisma.project.findUnique({ where: { slug: "vocla-2026" }, select: { id: true } }),
+    prisma.catalogueItem.findUnique({ where: { id: "s34-5" }, select: { id: true } }),
+  ]);
+
+  if (flagship) {
+    await prisma.flagshipOneFeature.upsert({
+      where: { id: "flagship-one" },
+      create: { id: "flagship-one", mode: FeatureMode.reference, flagshipId: flagship.id },
+      update: {},
+    });
+  } else {
+    note("FlagshipOneFeature", "flagship-one", 'flagship "henge-paris" has no row (skipped: FK)');
+  }
+
+  if (istra) {
+    await prisma.projectBannerFeature.upsert({
+      where: { id: "project-banner" },
+      create: { id: "project-banner", mode: FeatureMode.reference, projectId: istra.id },
+      update: {},
+    });
+  } else {
+    note("ProjectBannerFeature", "project-banner", 'project "h-istra" has no row (skipped: FK)');
+  }
+
+  if (vocla) {
+    await prisma.projectDarkBackgroundFeature.upsert({
+      where: { id: "project-dark-background" },
+      create: {
+        id: "project-dark-background",
+        mode: FeatureMode.reference,
+        projectId: vocla.id,
+      },
+      update: {},
+    });
+  } else {
+    note(
+      "ProjectDarkBackgroundFeature",
+      "project-dark-background",
+      'project "vocla-2026" has no row (skipped: FK)',
+    );
+  }
+
+  if (catalogueItem) {
+    await prisma.catalogueFeature.upsert({
+      where: { id: "catalogue" },
+      create: {
+        id: "catalogue",
+        catalogueItemId: catalogueItem.id,
+        // Moved from lib/data/homepage.ts `catalogue.image` — CatalogueItem
+        // itself stores no image (only a cover color).
+        image: homepageSections.catalogue.image,
+      },
+      update: {},
+    });
+  } else {
+    note("CatalogueFeature", "catalogue", 'catalogue item "s34-5" has no row (skipped: FK)');
+  }
+
+  // Standalone slot — no FK: image from the homepage config, title/text from
+  // the translation dictionary (the same values the banner renders today).
+  await prisma.homeCollectionFeature.upsert({
+    where: { id: "home-collection" },
+    create: {
+      id: "home-collection",
+      image: homepageSections.homeCollection.image,
+      title: asJson(loc(homeEn["homeCollection.title"], homeFa["homeCollection.title"])),
+      text: asJson(loc(homeEn["homeCollection.description"], homeFa["homeCollection.description"])),
+    },
+    update: {},
+  });
+}
+
 async function main(): Promise<void> {
   const startedAt = Date.now();
   const allProducts = productCategories.flatMap((c) => c.products);
@@ -485,6 +581,8 @@ async function main(): Promise<void> {
   await seedCatalogueItems();
   await seedFlagships();
   await seedProjects();
+  // Depends on flagship / project / catalogue_item rows (FKs).
+  await seedHomepageFeatures();
 
   const counts: [string, () => Promise<number>][] = [
     ["product_category", () => prisma.productCategory.count()],
@@ -498,6 +596,11 @@ async function main(): Promise<void> {
     ["flagship", () => prisma.flagship.count()],
     ["project", () => prisma.project.count()],
     ["project_product", () => prisma.projectProduct.count()],
+    ["flagship_one_feature", () => prisma.flagshipOneFeature.count()],
+    ["project_banner_feature", () => prisma.projectBannerFeature.count()],
+    ["project_dark_bg_feature", () => prisma.projectDarkBackgroundFeature.count()],
+    ["home_collection_feature", () => prisma.homeCollectionFeature.count()],
+    ["catalogue_feature", () => prisma.catalogueFeature.count()],
   ];
 
   console.log("\n=== Catalog seed summary ===");

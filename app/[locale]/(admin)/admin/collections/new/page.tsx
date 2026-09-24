@@ -3,7 +3,6 @@ import { BackLink } from "@/components/admin/catalog/BackLink";
 import { CollectionForm } from "@/components/admin/catalog/collections/CollectionForm";
 import { isLocale } from "@/lib/i18n/routing";
 import { translations } from "@/lib/i18n/translations";
-import { getCollectionAdminDetail } from "@/lib/repositories/collections";
 import { notFound } from "next/navigation";
 
 /**

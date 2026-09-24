@@ -203,9 +203,9 @@ model Product {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  category     ProductCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  designer     Designer?        @relation(fields: [designerId], references: [id], onDelete: SetNull)
-  projectsUsed ProjectProduct[]
+  category      ProductCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  designer      Designer?        @relation(fields: [designerId], references: [id], onDelete: SetNull)
+  projectsUsed  ProjectProduct[]
   productImages ProductImage[]
 
   @@index([categoryId])
@@ -247,9 +247,9 @@ model Material {
   /// Localized { en, fa }
   description Json
   /// Display position (matches the order of `materials`).
-  sortOrder   Int            @default(0)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  sortOrder   Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([category])
   @@map("material")
@@ -295,19 +295,22 @@ model FabricItem {
 model CatalogueItem {
   /// Stable identifier matching the static data's `id` (e.g. "s34-5").
   /// Also serves as the slug for any future `/catalogue/<id>` route.
-  id            String   @id
+  id             String   @id
   /// Catalogue title (e.g. "S34/5").
-  title         String
+  title          String
   /// Direct link to the PDF file.
-  href          String
+  href           String
   /// Cover background color (hex, e.g. "#3a3530").
-  coverColor    String
+  coverColor     String
   /// Cover text color (hex, optional, e.g. "#232323").
   coverTextColor String?
   /// Display position (matches the order of the `catalogueItems` array in the static data).
-  sortOrder     Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  /// Homepage catalogue feature slots that reference this item.
+  catalogueFeatures CatalogueFeature[]
 
   @@map("catalogue_item")
 }
@@ -330,6 +333,9 @@ model Flagship {
   sortOrder Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  /// Homepage flagship-one feature slots that reference this flagship.
+  flagshipOneFeatures FlagshipOneFeature[]
 
   @@map("flagship")
 }
@@ -358,11 +364,14 @@ model Project {
   credits         Json
   portfolioImages String[]
   /// Display position (matches the order of projects).
-  sortOrder       Int              @default(0)
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  productsUsed ProjectProduct[]
+  productsUsed                  ProjectProduct[]
+  /// Homepage feature slots that reference this project.
+  projectBannerFeatures         ProjectBannerFeature[]
+  projectDarkBackgroundFeatures ProjectDarkBackgroundFeature[]
 
   @@map("project")
 }
@@ -378,20 +387,20 @@ model Project {
 /// FK convention: references the parent's `id` (not `slug`), per the schema-wide
 /// convention noted above the catalog models. `slug` is a route handle only.
 model ProductImage {
-  id        String   @id
+  id        String  @id
   /// Product.id — the image belongs to this product (id-based FK; `slug` is
   /// the route handle, not the referential key).
   productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   /// Publicly served image URL/path.
   url       String
   /// Alt text for accessibility / SEO.
   alt       String?
   /// Zero-based display order inside the product's image list.
-  sortOrder Int      @default(0)
+  sortOrder Int     @default(0)
   /// Whether this image is the primary/hero image for the product.
-  isPrimary Boolean  @default(false)
+  isPrimary Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -441,4 +450,147 @@ model SlugHistory {
   @@unique([modelType, oldSlug])
   @@index([entityId])
   @@map("slug_history")
+}
+
+// ---------------------------------------------------------------------------
+// Homepage feature slots (myPlan.md — Part B).
+//
+// Every homepage banner/section is a singleton "feature" row that either
+// *references* a catalog entity for its content (`reference` mode) or
+// overrides the displayed text/image while the CTA keeps pointing at the
+// referenced entity's canonical route (`override` mode). HomeCollectionBanner
+// is the exception: standalone content with no FK and no mode toggle.
+//
+// Conventions: singleton rows use a stable derived `id` (AGENTS.md) so the
+// seed can upsert idempotently and admin actions can address the row
+// directly; FKs reference the parent's `id`, never its `slug`.
+// ---------------------------------------------------------------------------
+
+/// How a homepage feature derives its displayed content:
+///   reference — kicker/title/paragraphs/image come from the linked entity,
+///   override  — the nullable override columns on the feature row win.
+/// The CTA destination is ALWAYS the linked entity's canonical route
+/// (`/flagship/<slug>`, `/projects/<slug>`) — override mode only changes
+/// what is displayed, never where the button goes.
+enum FeatureMode {
+  reference
+  override
+}
+
+/// Homepage "Flagship One" banner slot — components/home/flagshipOne.tsx.
+model FlagshipOneFeature {
+  /// Singleton slot key ("flagship-one").
+  id         String      @id
+  enabled    Boolean     @default(true)
+  mode       FeatureMode @default(reference)
+  /// Flagship.id — id-based FK convention (slug is the route handle only).
+  flagshipId String
+
+  /// Override-mode content — all NULL while `mode = reference`.
+  /// Localized { en, fa } — override kicker.
+  kicker     Json?
+  /// Localized { en, fa } — override title.
+  title      Json?
+  /// Localized[] — override paragraphs.
+  paragraphs Json?
+  /// Override image URL/path (reference mode reads Flagship.image).
+  image      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  flagship Flagship @relation(fields: [flagshipId], references: [id], onDelete: Cascade)
+
+  @@index([flagshipId])
+  @@map("flagship_one_feature")
+}
+
+/// Homepage "Project Banner" slot — components/home/projectBanner.tsx
+/// (the H Istra banner).
+model ProjectBannerFeature {
+  /// Singleton slot key ("project-banner").
+  id        String      @id
+  enabled   Boolean     @default(true)
+  mode      FeatureMode @default(reference)
+  /// Project.id — id-based FK convention (slug is the route handle only).
+  projectId String
+
+  /// Override-mode content — all NULL while `mode = reference`.
+  /// Localized { en, fa } — override kicker.
+  kicker    Json?
+  /// Localized { en, fa } — override title.
+  title     Json?
+  /// Override image URL/path (reference mode reads Project.image).
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("project_banner_feature")
+}
+
+/// Homepage "Project with dark background" slot —
+/// components/home/projectWithDarkBackground.tsx (the Vocla 2026 banner).
+model ProjectDarkBackgroundFeature {
+  /// Singleton slot key ("project-dark-background").
+  id        String      @id
+  enabled   Boolean     @default(true)
+  mode      FeatureMode @default(reference)
+  /// Project.id — id-based FK convention (slug is the route handle only).
+  projectId String
+
+  /// Override-mode content — all NULL while `mode = reference`.
+  /// Localized { en, fa } — override title.
+  title      Json?
+  /// Localized[] — override paragraphs.
+  paragraphs Json?
+  /// Override image URL/path (reference mode reads Project.image).
+  image      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("project_dark_background_feature")
+}
+
+/// Homepage "Home Collection" banner — components/home/HomeCollectionBanner.tsx.
+/// Standalone content: no entity FK and no mode toggle — the slot owns its
+/// content outright.
+model HomeCollectionFeature {
+  /// Singleton slot key ("home-collection").
+  id        String   @id
+  enabled   Boolean  @default(true)
+  image     String
+  /// Localized { en, fa }
+  title     Json
+  /// Localized { en, fa } — description paragraph under the title.
+  text      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("home_collection_feature")
+}
+
+/// Homepage "Catalogue" section — components/home/CatalogueSection.tsx.
+/// Title + PDF href come from the referenced CatalogueItem; the section's
+/// photo lives here because CatalogueItem has no image column (only a cover
+/// color) — it moved from lib/data/homepage.ts `catalogue.image`.
+model CatalogueFeature {
+  /// Singleton slot key ("catalogue").
+  id              String   @id
+  enabled         Boolean  @default(true)
+  /// CatalogueItem.id — id-based FK convention.
+  catalogueItemId String
+  /// Section photo URL/path (moved from lib/data/homepage.ts).
+  image           String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  catalogueItem CatalogueItem @relation(fields: [catalogueItemId], references: [id], onDelete: Cascade)
+
+  @@index([catalogueItemId])
+  @@map("catalogue_feature")
 }
