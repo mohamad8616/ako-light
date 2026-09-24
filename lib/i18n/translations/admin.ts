@@ -18,6 +18,10 @@ export const adminEn = {
   "admin.section.materials.description": "Review finish and material inventory.",
   "admin.section.fabrics.description": "Track textile and fabric references.",
   "admin.section.catalogue.description": "Manage catalogue entries and downloadable assets.",
+  "admin.section.flagships.description":
+    "Manage flagship stores and their detail pages.",
+  "admin.section.projects.description":
+    "Curate projects and the products used in them.",
   "admin.stat.products": "Products",
   "admin.stat.designers": "Designers",
   "admin.stat.collections": "Collections",
@@ -212,7 +216,54 @@ export const adminEn = {
   "admin.crud.slugWarning": "Changing the slug can affect existing links.",
   "admin.crud.deleteCascadeCount": "This will also remove {count} related items.",
 
-  "admin.error.unknown": "Something went wrong.",} as const;
+  "admin.error.unknown": "Something went wrong.",
+  // Flagships & projects (dedicated-route sections)
+  "admin.flagship.new": "New flagship",
+  "admin.flagship.edit": "Edit flagship",
+  "admin.flagship.card.identity": "Identity",
+  "admin.flagship.card.detail": "Detail page",
+  "admin.flagship.card.detailHint":
+    "The optional detail block rendered on the public flagship page.",
+  "admin.flagship.field.city": "City",
+  "admin.flagship.field.hasDetail": "Detail page",
+  "admin.flagship.field.hasDetailHint": "Publish a detail page for this store.",
+  "admin.flagship.field.heading": "Heading",
+  "admin.flagship.field.heroImage": "Hero image",
+  "admin.flagship.field.detailName": "Store name (detail block)",
+  "admin.flagship.field.addressLines": "Address lines",
+  "admin.flagship.field.addressLinesHint":
+    "Each line is either a plain string or a localized pair.",
+  "admin.flagship.field.hours": "Opening hours",
+  "admin.flagship.field.appointmentNote": "Appointment note",
+  "admin.flagship.field.phone": "Phone",
+  "admin.flagship.field.email": "Email",
+  "admin.flagship.field.videoThumbnail": "Video thumbnail",
+  "admin.flagship.field.videoUrl": "Video URL",
+  "admin.flagship.field.gallery": "Gallery",
+  "admin.flagship.detail.present": "Published",
+  "admin.flagship.detail.absent": "None",
+  "admin.flagship.deleteWarning":
+    "The flagship's detail page content is removed with it.",
+
+  "admin.project.new": "New project",
+  "admin.project.edit": "Edit project",
+  "admin.project.card.identity": "Identity",
+  "admin.project.card.content": "Story",
+  "admin.project.card.media": "Media",
+  "admin.project.card.products": "Products used",
+  "admin.project.field.i18nKey": "i18n key",
+  "admin.project.field.location": "Location",
+  "admin.project.field.paragraph": "Intro paragraph",
+  "admin.project.field.moreDescription": "More description",
+  "admin.project.field.credits": "Credits",
+  "admin.project.field.creditsHint":
+    "Each entry is either a plain string or a localized pair.",
+  "admin.project.field.portfolioImages": "Portfolio images",
+  "admin.project.field.productsUsed": "Products used",
+  "admin.project.field.productsUsedHint":
+    "Ordered list — reorder with the arrows, remove with ×.",
+  "admin.project.deleteWarning":
+    "The project's product links are removed with it.",} as const;
 
 export const adminFa = {
   "admin.nav.dashboard": "داشبورد",
@@ -234,6 +285,10 @@ export const adminFa = {
   "admin.section.materials.description": "بازبینی موجودی مواد و رنگ‌بندی‌ها.",
   "admin.section.fabrics.description": "پیگیری مرجع پارچه‌ها و بافت‌ها.",
   "admin.section.catalogue.description": "مدیریت ورودی‌های کاتالوگ و فایل‌های قابل‌دانلود.",
+  "admin.section.flagships.description":
+    "مدیریت شوروم‌ها و صفحه‌های جزئیات آن‌ها.",
+  "admin.section.projects.description":
+    "گردآوری پروژه‌ها و محصولات استفاده‌شده در آن‌ها.",
   "admin.stat.products": "محصولات",
   "admin.stat.designers": "طراحان",
   "admin.stat.collections": "مجموعه‌ها",
@@ -430,4 +485,51 @@ export const adminFa = {
   "admin.crud.deleteCascadeCount": "با این کار {count} مورد مرتبط هم حذف می‌شود.",
 
   "admin.error.unknown": "مشکلی پیش آمد.",
+  // فلگ‌شپ‌ها و پروژه‌ها (بخش‌های دارای مسیر اختصاصی)
+  "admin.flagship.new": "فلگ‌شپ جدید",
+  "admin.flagship.edit": "ویرایش فلگ‌شپ",
+  "admin.flagship.card.identity": "هویت",
+  "admin.flagship.card.detail": "صفحه جزئیات",
+  "admin.flagship.card.detailHint":
+    "بلوک اختیاری جزئیات که در صفحه عمومی فلگ‌شپ نمایش داده می‌شود.",
+  "admin.flagship.field.city": "شهر",
+  "admin.flagship.field.hasDetail": "صفحه جزئیات",
+  "admin.flagship.field.hasDetailHint": "انتشار صفحه جزئیات برای این شوروم.",
+  "admin.flagship.field.heading": "سرآیند",
+  "admin.flagship.field.heroImage": "تصویر اصلی",
+  "admin.flagship.field.detailName": "نام فروشگاه (بلوک جزئیات)",
+  "admin.flagship.field.addressLines": "خطوط آدرس",
+  "admin.flagship.field.addressLinesHint":
+    "هر خط می‌تواند متن ساده یا جفت محلی‌سازی‌شده باشد.",
+  "admin.flagship.field.hours": "ساعات کاری",
+  "admin.flagship.field.appointmentNote": "یادداشت نوبت‌دهی",
+  "admin.flagship.field.phone": "تلفن",
+  "admin.flagship.field.email": "ایمیل",
+  "admin.flagship.field.videoThumbnail": "تصویر بندانگشتی ویدیو",
+  "admin.flagship.field.videoUrl": "نشانی ویدیو",
+  "admin.flagship.field.gallery": "گالری",
+  "admin.flagship.detail.present": "منتشرشده",
+  "admin.flagship.detail.absent": "ندارد",
+  "admin.flagship.deleteWarning":
+    "محتوای صفحه جزئیات این فلگ‌شپ نیز حذف می‌شود.",
+
+  "admin.project.new": "پروژه جدید",
+  "admin.project.edit": "ویرایش پروژه",
+  "admin.project.card.identity": "هویت",
+  "admin.project.card.content": "روایت",
+  "admin.project.card.media": "رسانه",
+  "admin.project.card.products": "محصولات استفاده‌شده",
+  "admin.project.field.i18nKey": "کلید i18n",
+  "admin.project.field.location": "موقعیت",
+  "admin.project.field.paragraph": "پاراگراف معرفی",
+  "admin.project.field.moreDescription": "توضیحات بیشتر",
+  "admin.project.field.credits": "اعتبارها",
+  "admin.project.field.creditsHint":
+    "هر مورد می‌تواند متن ساده یا جفت محلی‌سازی‌شده باشد.",
+  "admin.project.field.portfolioImages": "تصاویر نمونه‌کار",
+  "admin.project.field.productsUsed": "محصولات استفاده‌شده",
+  "admin.project.field.productsUsedHint":
+    "فهرست مرتب — با فلش‌ها جابه‌جا و با × حذف کنید.",
+  "admin.project.deleteWarning":
+    "پیوندهای محصولات این پروژه نیز حذف می‌شوند.",
 } as const;

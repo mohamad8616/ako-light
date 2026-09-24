@@ -45,42 +45,41 @@ export default function VideoSection() {
       {/* One width system: the section's own fluid gutters. No nested
           container — the video uses the full fluid width on large screens. */}
       <div ref={sectionRef} className="relative">
-          <div className="bg-background relative aspect-video w-full overflow-hidden">
-            {/* Placeholder shown until the video is actually playing */}
-            <AnimatePresence>
-              {!isPlaying && (
-                <motion.div
-                  initial={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8, ease: EASE }}
-                  className="bg-background absolute inset-0 z-10 flex items-center justify-center"
-                >
-                  <span className="text-background-secondary text-sm font-light tracking-[0.4em] uppercase md:text-base">
-                    {t("video.brand")}
-                  </span>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Video only gets a source once it's scrolled into view, so a
-                large file is never fetched before it's needed. */}
-            {shouldLoad && (
-              <video
-                ref={videoRef}
-                muted
-                loop
-                playsInline
-                preload="none"
-                onPlaying={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                className="h-full w-full object-cover"
+        <div className="bg-background relative aspect-video w-full overflow-hidden">
+          {/* Placeholder shown until the video is actually playing */}
+          <AnimatePresence>
+            {!isPlaying && (
+              <motion.div
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8, ease: EASE }}
+                className="bg-background absolute inset-0 z-10 flex items-center justify-center"
               >
-                <source src="/videos/afterhenge.mp4" type="video/mp4" />
-              </video>
+                <span className="text-background-secondary text-sm font-light tracking-[0.4em] uppercase md:text-base">
+                  {t("video.brand")}
+                </span>
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
+
+          {/* Video only gets a source once it's scrolled into view, so a
+                large file is never fetched before it's needed. */}
+          {shouldLoad && (
+            <video
+              ref={videoRef}
+              muted
+              loop
+              playsInline
+              preload="none"
+              onPlaying={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              className="h-full w-full object-cover"
+            >
+              <source src="/videos/afterhenge.mp4" type="video/mp4" />
+            </video>
+          )}
+        </div>
       </div>
     </HomepageSection>
   );
 }
-

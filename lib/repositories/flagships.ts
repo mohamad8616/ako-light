@@ -94,6 +94,60 @@ export type FlagshipWriteInput = {
   sortOrder: number;
 };
 
+export type FlagshipAdminRow = {
+  id: string;
+  slug: string;
+  name: Localized;
+  city: Localized;
+  image: string;
+  /** True when the flagship has a detail-page block (`detail` jsonb not NULL). */
+  hasDetail: boolean;
+  sortOrder: number;
+};
+
+/**
+ * Every flagship as the admin table needs it — plain, serializable DTOs (no
+ * Decimal/Date crosses the client boundary) in curated `sortOrder` order.
+ */
+export const getFlagshipAdminRows = cache(
+  async (): Promise<FlagshipAdminRow[]> => {
+    const rows = await prisma.flagship.findMany({
+      orderBy: { sortOrder: "asc" },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: asLocalized(row.name),
+      city: asLocalized(row.city),
+      image: row.image,
+      hasDetail: row.detail != null,
+      sortOrder: row.sortOrder,
+    }));
+  },
+);
+
+/**
+ * One flagship as the admin form edits it. `detail` stays `null` for rows
+ * without a detail page — the form's toggle distinguishes "absent" from "empty
+ * block", which is exactly what the schema's `.nullable()` accepts.
+ */
+export const getFlagshipAdminDetail = cache(
+  async (id: string): Promise<FlagshipWriteInput | null> => {
+    const row = await prisma.flagship.findUnique({ where: { id } });
+    if (!row) return null;
+
+    return {
+      slug: row.slug,
+      name: asLocalized(row.name),
+      city: asLocalized(row.city),
+      image: row.image,
+      detail: mapFlagshipDetail(row.detail),
+      sortOrder: row.sortOrder,
+    };
+  },
+);
+
 export const createFlagship = async (
   input: FlagshipWriteInput,
   db: Prisma.TransactionClient = prisma,

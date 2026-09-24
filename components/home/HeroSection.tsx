@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { useEffect, useRef, useState } from "react";
 import HeroSectionText from "../ui/HeroSectionText";
 
 export default function HeroSection() {
@@ -14,7 +14,11 @@ export default function HeroSection() {
       <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/10 to-black/35" />
 
       {/* Hero copy — bottom-left aligned, tight leading between the two lines */}
-      <HeroSectionText firstLine={t("hero.collection")} secondLine={t("hero.ritualGravity")} btn={t("hero.readMore")} />
+      <HeroSectionText
+        firstLine={t("hero.collection")}
+        secondLine={t("hero.ritualGravity")}
+        btn={t("hero.readMore")}
+      />
     </section>
   );
 }
@@ -61,4 +65,3 @@ function Video() {
     </video>
   );
 }
-

@@ -117,6 +117,78 @@ export type ProjectWriteInput = {
   productIds: string[];
 };
 
+export type ProjectAdminRow = {
+  id: string;
+  slug: string;
+  name: Localized;
+  location: string;
+  year: string;
+  image: string;
+  sortOrder: number;
+  /** Linked Product rows via the project_product join table. */
+  productCount: number;
+};
+
+/**
+ * Every project as the admin table needs it, in curated `sortOrder` order,
+ * with the join-table product count the table's last column shows.
+ */
+export const getProjectAdminRows = cache(
+  async (): Promise<ProjectAdminRow[]> => {
+    const rows = await prisma.project.findMany({
+      orderBy: { sortOrder: "asc" },
+      include: { _count: { select: { productsUsed: true } } },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      name: asLocalized(row.name),
+      location: row.location,
+      year: row.year,
+      image: row.image,
+      sortOrder: row.sortOrder,
+      productCount: row._count.productsUsed,
+    }));
+  },
+);
+
+/**
+ * One project as the admin form edits it: every column plus the ORDERED
+ * `productIds` read off the join table, which is the list the form's
+ * ProductsUsedField writes back on save.
+ */
+export const getProjectAdminDetail = cache(
+  async (id: string): Promise<ProjectWriteInput | null> => {
+    const row = await prisma.project.findUnique({
+      where: { id },
+      include: {
+        productsUsed: {
+          orderBy: { order: "asc" },
+          select: { productId: true },
+        },
+      },
+    });
+    if (!row) return null;
+
+    return {
+      slug: row.slug,
+      i18nKey: row.i18nKey,
+      name: asLocalized(row.name),
+      location: row.location,
+      year: row.year,
+      image: row.image,
+      description: asLocalized(row.description),
+      paragraph: asLocalized(row.paragraph),
+      moreDescription: asLocalizedList(row.moreDescription),
+      credits: asMixedLocalizedList(row.credits),
+      portfolioImages: row.portfolioImages,
+      sortOrder: row.sortOrder,
+      productIds: row.productsUsed.map((link) => link.productId),
+    };
+  },
+);
+
 export const createProject = async (
   input: ProjectWriteInput,
   db: Prisma.TransactionClient = prisma,

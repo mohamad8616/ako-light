@@ -52,5 +52,21 @@ next-env.d.ts
 # continue agent
 /.continue
 
+# local scratch / generated files
+_admin-check.ts
+_db-check.ts
+_session.ts
+_admin_keys.mjs
+_edit-a.mjs
+_edit-b1.mjs
+_edit-b2.mjs
+_k-en.txt
+_k-fa.txt
+build-out.txt
+build-out2.txt
+tsc-current.txt
+server.log
+
+# local notes / generated artifacts
 data-model.md
 /generated/prisma

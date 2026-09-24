@@ -69,8 +69,9 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
  *     admin-account management is a later step, but the gated nav item and
  *     its placeholder route exist now (see app/[locale]/(admin)/admin/admins).
  *
- * `dir`/`side` come from the (admin) layout, which derives them from the URL
- * locale — RTL puts the sidebar on the right, LTR (/en) on the left.
+ * `dir`/`side` come from the (admin) layout, which takes both from the one
+ * ADMIN_SHELL_DIR constant — the shell is RTL for every locale, so the
+ * sidebar always sits on the right.
  *
  * The demo shadcn groups that don't fit this project (Quick Create / Inbox,
  * Documents, Settings / Get Help / Search) are intentionally not rendered;

@@ -1,15 +1,15 @@
 "use client";
 
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { homepageSections } from "@/lib/data/homepage";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import SectionSubTitle from "@/utility/SectionSubTitle";
 import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import HomepageSection, { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
-import Image from "next/image";
 
-export default function HIstraBanner() {
+export default function ProjectBanner() {
   const { t } = useLanguage();
   const { istra } = homepageSections;
 
@@ -39,7 +39,7 @@ export default function HIstraBanner() {
             src={istra.image}
             alt={t("istra.title")}
             fill
-            className="object-cover transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+            className="object-cover transition-transform duration-3000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
           />
         </motion.div>
 
