@@ -314,8 +314,11 @@ export const adminEn = {
     "The catalogue download section.",
 
   // The remaining codes of the shared action contract (lib/admin/result.ts).
+  // `tooLong` is produced by the `.max()` caps in lib/admin/schemas/common.ts:
+  // oversize input maps to this code instead of the bare zod default message.
   "admin.error.invalid": "Invalid value.",
   "admin.error.required": "This field is required.",
+  "admin.error.tooLong": "This value is too long.",
   "admin.error.slugTaken": "This handle is already in use.",
   "admin.error.notFound": "The item was not found.",
   "admin.error.relationViolation": "A linked item is missing.",
@@ -636,8 +639,10 @@ export const adminFa = {
   "admin.homepage.slot.catalogue.description": "بخش دانلود کاتالوگ.",
 
   // کدهای باقی‌ماندهٔ قرارداد مشترک اکشن‌ها (lib/admin/result.ts)
+  // کد «tooLong» از سقف‌های `.max()` در lib/admin/schemas/common.ts می‌آید.
   "admin.error.invalid": "مقدار نامعتبر است.",
   "admin.error.required": "این فیلد الزامی است.",
+  "admin.error.tooLong": "این مقدار بیش از حد طولانی است.",
   "admin.error.slugTaken": "این شناسه قبلاً استفاده شده است.",
   "admin.error.notFound": "موردی یافت نشد.",
   "admin.error.relationViolation": "یک مورد مرتبط یافت نشد.",

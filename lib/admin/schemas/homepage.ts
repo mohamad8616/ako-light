@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { imageRefSchema, localizedSchema, nonEmptySchema } from "./common";
+import {
+  idSchema,
+  imageRefSchema,
+  localizedSchema,
+  TEXT_MAX,
+} from "./common";
 
 /**
  * Homepage slot schemas (myPlan.md Part D).
@@ -24,7 +29,7 @@ import { imageRefSchema, localizedSchema, nonEmptySchema } from "./common";
 
 /** An override pair the admin can also clear: both filled, or both empty. */
 export const clearableLocalizedSchema = z
-  .object({ en: z.string(), fa: z.string() })
+  .object({ en: z.string().max(TEXT_MAX), fa: z.string().max(TEXT_MAX) })
   // A half-translated pair is a mistake, not a partial override: each empty
   // half carries its own issue so the field shows the translated "required".
   .refine((value) => !(value.en === "" && value.fa !== ""), { path: ["en"] })
@@ -55,7 +60,7 @@ export const flagshipOneFeatureFormSchema = z.object({
   enabled: enabledSchema,
   mode: featureModeSchema,
   /** Flagship.id — the CTA always targets this flagship's canonical route. */
-  flagshipId: nonEmptySchema,
+  flagshipId: idSchema,
   kicker: clearableLocalizedSchema,
   title: clearableLocalizedSchema,
   paragraphs: clearableLocalizedListSchema,
@@ -67,7 +72,7 @@ export const projectBannerFeatureFormSchema = z.object({
   enabled: enabledSchema,
   mode: featureModeSchema,
   /** Project.id */
-  projectId: nonEmptySchema,
+  projectId: idSchema,
   kicker: clearableLocalizedSchema,
   title: clearableLocalizedSchema,
   image: clearableImageRefSchema,
@@ -78,7 +83,7 @@ export const projectDarkBackgroundFeatureFormSchema = z.object({
   enabled: enabledSchema,
   mode: featureModeSchema,
   /** Project.id */
-  projectId: nonEmptySchema,
+  projectId: idSchema,
   title: clearableLocalizedSchema,
   paragraphs: clearableLocalizedListSchema,
   image: clearableImageRefSchema,
@@ -105,7 +110,7 @@ export const homeCollectionFeatureFormSchema = z.object({
 export const catalogueFeatureFormSchema = z.object({
   enabled: enabledSchema,
   /** CatalogueItem.id */
-  catalogueItemId: nonEmptySchema,
+  catalogueItemId: idSchema,
   image: imageRefSchema,
 });
 

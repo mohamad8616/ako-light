@@ -1,9 +1,11 @@
 import { z } from "zod";
 import {
+  ID_MAX,
+  idSchema,
   imageRefSchema,
   linkSchema,
   localizedSchema,
-  nonEmptySchema,
+  nameSchema,
   slugSchema,
   sortOrderSchema,
 } from "./common";
@@ -16,9 +18,12 @@ import {
  */
 export const productImageSchema = z.object({
   /** Present only for rows that already exist for this product. */
-  id: z.string().min(1).optional(),
+  id: z.string().min(1).max(ID_MAX).optional(),
+  /** Bounded by `imageRefSchema` (URL_MAX) — an unbounded url is stored and
+   * rendered by every product page. */
   url: imageRefSchema,
-  alt: z.string().nullable(),
+  /** Alt text: a sentence or two, never an essay. */
+  alt: nameSchema.nullable(),
   isPrimary: z.boolean(),
 });
 
@@ -38,14 +43,17 @@ export const productFormSchema = z.object({
     z.object({
       name: localizedSchema,
       slug: slugSchema,
-      category: nonEmptySchema,
+      /** The related product's category slug. */
+      category: slugSchema,
       image: imageRefSchema,
     }),
   ),
   sortOrder: sortOrderSchema,
-  categoryId: nonEmptySchema,
+  /** ProductCategory.id */
+  categoryId: idSchema,
   /** Nullable: "no designer" is a real state (the FK is SetNull). */
-  designerId: nonEmptySchema.nullable(),
+  designerId: idSchema.nullable(),
+  /** Self-referencing rows: the url/alt pair mirrors `related` entries. */
   images: z.array(productImageSchema),
 });
 

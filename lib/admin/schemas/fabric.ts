@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   hexColorSchema,
-  nonEmptySchema,
+  nameSchema,
   slugSchema,
   sortOrderSchema,
 } from "./common";
@@ -14,9 +14,9 @@ import {
  */
 export const fabricFormSchema = z.object({
   id: slugSchema,
-  name: nonEmptySchema,
-  code: nonEmptySchema,
-  category: nonEmptySchema,
+  name: nameSchema,
+  code: nameSchema,
+  category: nameSchema,
   /** Swatch colour from the static data, e.g. "#726A50". */
   swatchColor: hexColorSchema,
   sortOrder: sortOrderSchema,

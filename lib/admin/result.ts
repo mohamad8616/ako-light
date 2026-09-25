@@ -13,6 +13,8 @@ import type { z } from "zod";
 export type AdminErrorCode =
   | "invalid"
   | "required"
+  /** A `.max()` string cap was exceeded (lib/admin/schemas/common.ts). */
+  | "tooLong"
   | "slugTaken"
   | "notFound"
   | "relationViolation"
@@ -46,9 +48,9 @@ export function actionFail(
  * in the action.
  */
 export function errorCodeForType(type: unknown): AdminErrorCode {
-  return type === "invalid_type" || type === "too_small"
-    ? "required"
-    : "invalid";
+  if (type === "invalid_type" || type === "too_small") return "required";
+  if (type === "too_big") return "tooLong";
+  return "invalid";
 }
 
 /**
@@ -56,25 +58,43 @@ export function errorCodeForType(type: unknown): AdminErrorCode {
  *
  * Schemas deliberately carry NO per-field prose: the zod issue `code` decides
  * the dictionary key, so a rule change never needs a translation change.
- * (`required` for missing/wrong-typed values, `invalid` for everything else.)
+ * (`required` for missing/wrong-typed values, `tooLong` for a `.max()` cap —
+ * semantically its own message rather than the blanket `invalid` — and
+ * `invalid` for everything else.)
  */
 export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
   const issues: AdminFieldIssue[] = [];
   for (const issue of error.issues) {
     // Empty-string rules are expressed as `.min(1)`, so zod reports them as
     // too_small with a string origin — semantically "required", not "invalid".
-    // Wrong-typed/missing values are invalid_type. Everything else is invalid.
-    const isRequired =
+    // Wrong-typed/missing values are invalid_type. A max-length breach is
+    // too_big and reads as "too long" in both dictionaries. Everything else
+    // (format refines, regexes, unions) is invalid.
+    const code: AdminErrorCode =
       issue.code === "invalid_type" ||
       (issue.code === "too_small" &&
         "origin" in issue &&
-        issue.origin === "string");
-    const code: AdminErrorCode = isRequired ? "required" : "invalid";
+        issue.origin === "string")
+        ? "required"
+        : issue.code === "too_big"
+          ? "tooLong"
+          : "invalid";
+    // Severity order when several issues land on ONE field path: the message
+    // must describe the strongest problem. "required" beats "tooLong" beats
+    // "invalid" (see the collapse test in tests/unit/admin/result.test.ts).
+    const severity: Record<AdminErrorCode, number> = {
+      required: 2,
+      tooLong: 1,
+      invalid: 0,
+      slugTaken: 0,
+      notFound: 0,
+      relationViolation: 0,
+      unknown: 0,
+    };
     const field = issue.path.join(".");
     const existing = issues.find((candidate) => candidate.field === field);
     if (existing) {
-      if (existing.code === "invalid" && code === "required")
-        existing.code = "required";
+      if (severity[code] > severity[existing.code]) existing.code = code;
     } else {
       issues.push({ field, code });
     }

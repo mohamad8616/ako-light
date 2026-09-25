@@ -1,10 +1,12 @@
 import { z } from "zod";
 import {
+  emailSchema,
   imageRefSchema,
   linkSchema,
   localizedSchema,
   mixedLocalizedSchema,
-  nonEmptySchema,
+  nameSchema,
+  phoneSchema,
   slugSchema,
   sortOrderSchema,
 } from "./common";
@@ -21,10 +23,10 @@ export const flagshipDetailSchema = z.object({
   info: z.object({
     name: localizedSchema,
     addressLines: z.array(mixedLocalizedSchema),
-    hours: z.array(z.object({ label: localizedSchema, value: nonEmptySchema })),
+    hours: z.array(z.object({ label: localizedSchema, value: nameSchema })),
     appointmentNote: localizedSchema,
-    phone: nonEmptySchema,
-    email: nonEmptySchema,
+    phone: phoneSchema,
+    email: emailSchema,
   }),
   video: z.object({ thumbnail: imageRefSchema, url: linkSchema }),
   gallery: z.array(imageRefSchema),

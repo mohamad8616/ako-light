@@ -104,7 +104,6 @@ export const getProduct = cache(
 
     if (!row) return null;
     if (row.category.slug !== categoryOrSlug) return null;
-    console.log(row, mapProductRow(row));
     return mapProductRow(row);
   },
 );

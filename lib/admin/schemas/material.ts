@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   imageRefSchema,
   localizedSchema,
-  nonEmptySchema,
+  nameSchema,
   slugSchema,
   sortOrderSchema,
 } from "./common";
@@ -28,7 +28,7 @@ export const materialFormSchema = z.object({
   slug: slugSchema,
   name: localizedSchema,
   /** Free-form display group; the public page groups by it. */
-  category: nonEmptySchema,
+  category: nameSchema,
   type: z.enum(MATERIAL_TYPE_VALUES),
   image: imageRefSchema,
   description: localizedSchema,

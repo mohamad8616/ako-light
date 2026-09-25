@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   hexColorSchema,
   linkSchema,
-  nonEmptySchema,
+  nameSchema,
   slugSchema,
   sortOrderSchema,
 } from "./common";
@@ -15,7 +15,7 @@ import {
  */
 export const catalogueFormSchema = z.object({
   id: slugSchema,
-  title: nonEmptySchema,
+  title: nameSchema,
   href: linkSchema,
   coverColor: hexColorSchema,
   coverTextColor: hexColorSchema.nullable(),

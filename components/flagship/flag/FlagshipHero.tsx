@@ -13,7 +13,6 @@ export default function FlagshipHero({
 }) {
   const { lang } = useLanguage();
   const name = pick(flagship.name, lang);
-  console.log(flagship.image);
   return (
     <section className="relative flex h-screen w-full items-end overflow-hidden">
       <Image

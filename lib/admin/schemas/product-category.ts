@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
+  i18nKeySchema,
   localizedSchema,
-  nonEmptySchema,
   slugSchema,
   sortOrderSchema,
 } from "./common";
@@ -10,7 +10,7 @@ import {
 export const productCategoryFormSchema = z.object({
   slug: slugSchema,
   /** Translation-key prefix, e.g. "products.coffeeTables". */
-  i18nKey: nonEmptySchema,
+  i18nKey: i18nKeySchema,
   name: localizedSchema,
   sortOrder: sortOrderSchema,
 });

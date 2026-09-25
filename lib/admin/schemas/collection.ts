@@ -4,6 +4,7 @@ import {
   localizedSchema,
   slugSchema,
   sortOrderSchema,
+  yearSchema,
 } from "./common";
 
 /**
@@ -16,7 +17,7 @@ import {
 export const collectionFormSchema = z.object({
   slug: slugSchema,
   name: localizedSchema,
-  year: z.string().min(1),
+  year: yearSchema,
   image: imageRefSchema,
   description: z.object({
     p1: localizedSchema,
