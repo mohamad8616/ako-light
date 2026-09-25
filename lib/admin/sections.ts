@@ -37,6 +37,9 @@ export interface AdminNavItem {
 /** Catalog sections — visible to every admin-level role. */
 export const ADMIN_CATALOG_NAV: readonly AdminNavItem[] = [
   { href: ADMIN_DASHBOARD_HREF, labelKey: "admin.nav.dashboard" },
+  // Site configuration rather than a catalog table, but every admin-level role
+  // edits the homepage banners, so it sits with the dashboard at the top.
+  { href: "/admin/homepage", labelKey: "admin.nav.homepage" },
   { href: "/admin/products", labelKey: "admin.nav.products" },
   { href: "/admin/categories", labelKey: "admin.nav.categories" },
   { href: "/admin/designers", labelKey: "admin.nav.designers" },

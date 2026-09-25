@@ -10,6 +10,7 @@ export const adminEn = {
   "admin.nav.projects": "Projects",
   "admin.nav.fabrics": "Fabrics",
   "admin.nav.catalogue": "Catalogue",
+  "admin.nav.homepage": "Homepage",
   "admin.nav.admins": "Admins",
   "admin.section.products.description": "Manage the catalog product list and inventory.",
   "admin.section.categories.description": "Organize the catalog by product category.",
@@ -18,6 +19,8 @@ export const adminEn = {
   "admin.section.materials.description": "Review finish and material inventory.",
   "admin.section.fabrics.description": "Track textile and fabric references.",
   "admin.section.catalogue.description": "Manage catalogue entries and downloadable assets.",
+  "admin.section.homepage.description":
+    "Configure the homepage banners and the content they display.",
   "admin.section.flagships.description":
     "Manage flagship stores and their detail pages.",
   "admin.section.projects.description":
@@ -263,7 +266,60 @@ export const adminEn = {
   "admin.project.field.productsUsedHint":
     "Ordered list — reorder with the arrows, remove with ×.",
   "admin.project.deleteWarning":
-    "The project's product links are removed with it.",} as const;
+    "The project's product links are removed with it.",
+
+  // Homepage feature slots (app/[locale]/(admin)/admin/homepage)
+  "admin.homepage.edit": "Configure",
+  "admin.homepage.card.content": "Content",
+  "admin.homepage.card.override": "Override content",
+  "admin.homepage.card.overrideHint":
+    "Leave a field empty to keep the linked entity's value. Values are kept when the banner returns to reference mode.",
+  "admin.homepage.field.enabled": "Enabled",
+  "admin.homepage.field.enabledHint": "Render this banner on the homepage.",
+  "admin.homepage.field.mode": "Content mode",
+  "admin.homepage.field.modeHint":
+    "Reference shows the linked entity's own copy and image; override uses the fields below.",
+  "admin.homepage.mode.reference": "Reference",
+  "admin.homepage.mode.override": "Override",
+  "admin.homepage.field.flagship": "Flagship",
+  "admin.homepage.field.project": "Project",
+  "admin.homepage.field.catalogueItem": "Catalogue item",
+  "admin.homepage.field.catalogueItemHint":
+    "The section's title and download link come from this item.",
+  "admin.homepage.field.ctaHint":
+    "The call to action always links to this entity's public page.",
+  "admin.homepage.field.kicker": "Kicker",
+  "admin.homepage.field.title": "Title",
+  "admin.homepage.field.paragraphs": "Paragraphs",
+  "admin.homepage.field.text": "Text",
+  "admin.homepage.field.image": "Image",
+  "admin.homepage.status.enabled": "Live",
+  "admin.homepage.status.disabled": "Hidden",
+  "admin.homepage.status.notConfigured": "Not configured",
+  "admin.homepage.updatedAt": "Last saved",
+  "admin.homepage.slot.flagship-one": "Flagship banner",
+  "admin.homepage.slot.flagship-one.description":
+    "The large flagship banner near the top of the homepage.",
+  "admin.homepage.slot.project-banner": "Project banner",
+  "admin.homepage.slot.project-banner.description":
+    "The featured project banner.",
+  "admin.homepage.slot.project-dark-background": "Project (dark background)",
+  "admin.homepage.slot.project-dark-background.description":
+    "The full-width dark project section.",
+  "admin.homepage.slot.home-collection": "Home Collection banner",
+  "admin.homepage.slot.home-collection.description":
+    "Standalone banner linking to the collections index.",
+  "admin.homepage.slot.catalogue": "Catalogue section",
+  "admin.homepage.slot.catalogue.description":
+    "The catalogue download section.",
+
+  // The remaining codes of the shared action contract (lib/admin/result.ts).
+  "admin.error.invalid": "Invalid value.",
+  "admin.error.required": "This field is required.",
+  "admin.error.slugTaken": "This handle is already in use.",
+  "admin.error.notFound": "The item was not found.",
+  "admin.error.relationViolation": "A linked item is missing.",
+} as const;
 
 export const adminFa = {
   "admin.nav.dashboard": "داشبورد",
@@ -277,6 +333,7 @@ export const adminFa = {
   "admin.nav.projects": "پروژه‌ها",
   "admin.nav.fabrics": "پارچه‌ها",
   "admin.nav.catalogue": "کاتالوگ",
+  "admin.nav.homepage": "صفحه اصلی",
   "admin.nav.admins": "مدیران",
   "admin.section.products.description": "مدیریت لیست محصولات و موجودی کاتالوگ.",
   "admin.section.categories.description": "سازمان‌دهی کاتالوگ بر اساس دسته‌بندی محصولات.",
@@ -285,6 +342,8 @@ export const adminFa = {
   "admin.section.materials.description": "بازبینی موجودی مواد و رنگ‌بندی‌ها.",
   "admin.section.fabrics.description": "پیگیری مرجع پارچه‌ها و بافت‌ها.",
   "admin.section.catalogue.description": "مدیریت ورودی‌های کاتالوگ و فایل‌های قابل‌دانلود.",
+  "admin.section.homepage.description":
+    "تنظیم بنرهای صفحه اصلی و محتوایی که نمایش می‌دهند.",
   "admin.section.flagships.description":
     "مدیریت شوروم‌ها و صفحه‌های جزئیات آن‌ها.",
   "admin.section.projects.description":
@@ -532,4 +591,54 @@ export const adminFa = {
     "فهرست مرتب — با فلش‌ها جابه‌جا و با × حذف کنید.",
   "admin.project.deleteWarning":
     "پیوندهای محصولات این پروژه نیز حذف می‌شوند.",
+
+  // جایگاه‌های بنر صفحه اصلی (app/[locale]/(admin)/admin/homepage)
+  "admin.homepage.edit": "تنظیم",
+  "admin.homepage.card.content": "محتوا",
+  "admin.homepage.card.override": "بازنویسی محتوا",
+  "admin.homepage.card.overrideHint":
+    "هر فیلد را خالی بگذارید تا مقدار موجودیت مرتبط نمایش داده شود. این مقادیر هنگام بازگشت به حالت ارجاع حفظ می‌شوند.",
+  "admin.homepage.field.enabled": "فعال",
+  "admin.homepage.field.enabledHint": "نمایش این بنر در صفحه اصلی.",
+  "admin.homepage.field.mode": "حالت محتوا",
+  "admin.homepage.field.modeHint":
+    "حالت ارجاع متن و تصویر موجودیت مرتبط را نشان می‌دهد؛ حالت بازنویسی از فیلدهای زیر استفاده می‌کند.",
+  "admin.homepage.mode.reference": "ارجاع",
+  "admin.homepage.mode.override": "بازنویسی",
+  "admin.homepage.field.flagship": "فروشگاه شاخص",
+  "admin.homepage.field.project": "پروژه",
+  "admin.homepage.field.catalogueItem": "ورودی کاتالوگ",
+  "admin.homepage.field.catalogueItemHint":
+    "عنوان و پیوند دانلود این بخش از همین ورودی خوانده می‌شود.",
+  "admin.homepage.field.ctaHint":
+    "دکمهٔ فراخوان همیشه به صفحهٔ عمومی این موجودیت پیوند می‌خورد.",
+  "admin.homepage.field.kicker": "پیش‌عنوان",
+  "admin.homepage.field.title": "عنوان",
+  "admin.homepage.field.paragraphs": "پاراگراف‌ها",
+  "admin.homepage.field.text": "متن",
+  "admin.homepage.field.image": "تصویر",
+  "admin.homepage.status.enabled": "فعال",
+  "admin.homepage.status.disabled": "پنهان",
+  "admin.homepage.status.notConfigured": "تنظیم‌نشده",
+  "admin.homepage.updatedAt": "آخرین ذخیره",
+  "admin.homepage.slot.flagship-one": "بنر فروشگاه شاخص",
+  "admin.homepage.slot.flagship-one.description":
+    "بنر بزرگ فروشگاه شاخص در بالای صفحه اصلی.",
+  "admin.homepage.slot.project-banner": "بنر پروژه",
+  "admin.homepage.slot.project-banner.description": "بنر پروژهٔ شاخص.",
+  "admin.homepage.slot.project-dark-background": "پروژه (پس‌زمینهٔ تیره)",
+  "admin.homepage.slot.project-dark-background.description":
+    "بخش تیره و تمام‌عرض پروژه.",
+  "admin.homepage.slot.home-collection": "بنر مجموعهٔ خانه",
+  "admin.homepage.slot.home-collection.description":
+    "بنر مستقل با پیوند به فهرست مجموعه‌ها.",
+  "admin.homepage.slot.catalogue": "بخش کاتالوگ",
+  "admin.homepage.slot.catalogue.description": "بخش دانلود کاتالوگ.",
+
+  // کدهای باقی‌ماندهٔ قرارداد مشترک اکشن‌ها (lib/admin/result.ts)
+  "admin.error.invalid": "مقدار نامعتبر است.",
+  "admin.error.required": "این فیلد الزامی است.",
+  "admin.error.slugTaken": "این شناسه قبلاً استفاده شده است.",
+  "admin.error.notFound": "موردی یافت نشد.",
+  "admin.error.relationViolation": "یک مورد مرتبط یافت نشد.",
 } as const;

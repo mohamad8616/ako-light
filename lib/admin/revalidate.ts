@@ -2,6 +2,7 @@ import { refresh, revalidatePath } from "next/cache";
 
 /** Every admin catalog section, as the sidebar registry spells them. */
 export type AdminSection =
+  | "homepage"
   | "products"
   | "categories"
   | "designers"
@@ -19,6 +20,9 @@ export type AdminSection =
  * render through the products / materials routes).
  */
 const PUBLIC_ROUTES: Record<AdminSection, readonly string[]> = {
+  // The homepage feature slots are singleton configuration rows, not list rows:
+  // the only public route file that renders them is the site's home page.
+  homepage: ["/[locale]/(site)"],
   products: [
     "/[locale]/(site)/products",
     "/[locale]/(site)/products/[product]",

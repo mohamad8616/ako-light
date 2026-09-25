@@ -16,6 +16,7 @@ import {
   Building2,
   FolderKanban,
   LayoutDashboard,
+  LayoutTemplate,
   Package,
   Palette,
   Shield,
@@ -46,6 +47,7 @@ import {
  */
 const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   [ADMIN_DASHBOARD_HREF]: LayoutDashboard,
+  "/admin/homepage": LayoutTemplate,
   "/admin/products": Package,
   "/admin/categories": FolderKanban,
   "/admin/designers": Users,
