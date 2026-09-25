@@ -27,7 +27,6 @@ import { zodIssuesToFieldIssues } from "@/lib/admin/result";
  * One character past the cap a field is supposed to enforce — asserting the
  * boundary explicitly (the cap itself must still be accepted).
  */
-const overCap = (max: number) => "a".repeat(max + 1);
 
 function mapFailure(schema: typeof productFormSchema | typeof projectFormSchema | typeof productImageSchema, input: unknown) {
   const parsed = schema.safeParse(input);

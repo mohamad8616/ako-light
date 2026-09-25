@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { errorCodeForType, type AdminErrorCode } from "@/lib/admin/result";
+import { errorCodeForType} from "@/lib/admin/result";
 import { cn } from "@/lib/utils";
 import { useWatch, useFormContext } from "react-hook-form";
 import * as React from "react";
