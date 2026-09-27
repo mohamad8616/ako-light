@@ -185,7 +185,14 @@ model Product {
   /// Localized { en, fa }
   name          Json
   hoverImage    String
-  price         Decimal  @db.Decimal(12, 2)
+  /// Shown to en-locale visitors, informational only (the charged amount is
+  /// priceToman — see below).
+  priceEur     Decimal  @db.Decimal(12, 2)
+  /// Price in Toman, admin-entered independently of priceEur. Shown to
+  /// fa-locale visitors and the ONLY value ever charged via ZarinPal (×10 to
+  /// Rial at the API boundary). priceToman <= 0 means "not available for
+  /// purchase" — the buy button is disabled, same as existsInStore: false.
+  priceToman   Decimal  @default(0) @db.Decimal(14, 0)
   /// Product.store.existsInStore in the source data.
   existsInStore Boolean  @default(false)
   /// Product.store.quantity in the source data.
@@ -463,20 +470,24 @@ model SlugHistory {
 }
 
 // ---------------------------------------------------------------------------
-// Checkout orders (myPlan.md — Part A).
+// Checkout orders (myPlan.md — Part A, Part D).
 //
-// Product.price and cart prices are currently authored/displayed in EUR, so
-// totalAmount and unitPriceAtPurchase use EUR and currency defaults to "EUR".
-// Prices are Decimal(12,2) and OrderItem.unitPriceAtPurchase is an immutable
-// snapshot; order history never reads a later Product.price.
+// Every stored amount in this model pair is TOMAN. That is the only unit ever
+// charged: OrderItem.unitPriceAtPurchase snapshots Product.priceToman and never
+// Product.priceEur (EUR exists purely to display a price to en-locale visitors).
+// The Toman -> Rial conversion required by the ZarinPal API happens at the
+// gateway boundary in lib/payments/zarinpal.ts (`toRial`) and is NOT stored.
+// Prices are Decimal and OrderItem.unitPriceAtPurchase is an immutable snapshot;
+// order history never reads a later Product row.
 // ---------------------------------------------------------------------------
 
 model Order {
   id                 String      @id @default(uuid())
   userId             String
   status             OrderStatus @default(pending)
-  totalAmount        Decimal     @db.Decimal(12, 2)
-  currency           String      @default("EUR")
+  totalAmount        Decimal     @db.Decimal(14, 0)
+  /// Always "TOMAN" — the unit of totalAmount/OrderItem rows.
+  currency           String      @default("TOMAN")
   zarinpalAuthority  String?
   zarinpalRefId      String?
   recipientName      String
@@ -501,7 +512,10 @@ model OrderItem {
   /// history; name/image/price remain available from this snapshot.
   productId          String?
   quantity           Int
-  unitPriceAtPurchase Decimal  @db.Decimal(12, 2)
+  /// Snapshot of Product.priceToman — the unit is TOMAN, never EUR. This is the
+  /// real transaction record: never ambiguous, never derived from priceEur, and
+  /// never re-read from the Product row later.
+  unitPriceAtPurchase Decimal  @db.Decimal(14, 0)
   name               Json
   image              String
   order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)

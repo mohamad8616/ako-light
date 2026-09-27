@@ -76,7 +76,11 @@ export async function createPendingOrder(
           affectedItems.push(productId);
           continue;
         }
-        if (!product.existsInStore || product.quantity < quantity) {
+        if (
+          !product.existsInStore ||
+          product.quantity < quantity ||
+          product.priceToman.toNumber() <= 0
+        ) {
           affectedItems.push(product.slug);
         }
       }
@@ -91,15 +95,20 @@ export async function createPendingOrder(
           id: crypto.randomUUID(),
           productId: product.id,
           quantity,
-          unitPriceAtPurchase: product.price,
+          // Immutable transaction snapshot: the unit is Toman (priceToman),
+          // never EUR. This is what the customer is actually charged, x10 to
+          // Rial only at the ZarinPal API boundary.
+          unitPriceAtPurchase: product.priceToman,
           name: asJsonInput(product.name),
           image: product.productImages[0]?.url ?? product.heroImage,
         };
       });
 
+      // Order total in Toman. Every unit is Product.priceToman (never priceEur),
+      // so the charge is identical no matter which locale started the checkout.
       const totalAmount = products.reduce(
         (total, product) =>
-          total + product.price.toNumber() * itemById.get(product.id)!,
+          total + product.priceToman.toNumber() * itemById.get(product.id)!,
         0,
       );
 
@@ -109,7 +118,7 @@ export async function createPendingOrder(
           userId: session.user.id,
           status: "pending",
           totalAmount,
-          currency: "EUR",
+          currency: "TOMAN",
           recipientName: parsed.data.recipientName,
           phone: parsed.data.phone,
           addressLine: parsed.data.addressLine,
@@ -137,7 +146,8 @@ export async function createPendingOrder(
       appBaseUrl,
     ).toString();
     const result = await requestZarinpalPayment({
-      amount: createdOrder.totalAmount,
+      // Toman in, Rial out: `request` applies the fixed x10 at the API boundary.
+      amountToman: createdOrder.totalAmount,
       description: `Order ${createdOrder.orderId}`,
       callbackUrl,
     });

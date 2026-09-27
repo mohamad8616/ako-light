@@ -18,7 +18,14 @@ export interface Product {
   slug: string;
   images: string[];
   hoverImage: string;
-  price: number;
+  /** EUR price — shown to en-locale visitors, informational only. */
+  priceEur: number;
+  /**
+   * Toman price — shown to fa-locale visitors and the only value charged at
+   * checkout (x10 to Rial at the ZarinPal boundary). priceToman <= 0 means
+   * "not available for purchase" (buy button disabled, like !existsInStore).
+   */
+  priceToman: number;
   store: {
     existsInStore: boolean;
     quantity: number;

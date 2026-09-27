@@ -293,7 +293,8 @@ async function seedProducts(): Promise<void> {
         // replaced by the relational ProductImage table, seeded separately
         // below by seedProductImages() from the same source arrays.
         hoverImage: product.hoverImage,
-        price: product.price,
+        priceEur: product.priceEur,
+        priceToman: product.priceToman,
         existsInStore: product.store.existsInStore,
         quantity: product.store.quantity,
         heroImage: product.heroImage,

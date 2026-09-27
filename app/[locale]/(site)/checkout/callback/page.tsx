@@ -1,6 +1,7 @@
 import PaymentCallbackState from "@/components/checkout/PaymentCallbackState";
 import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/prisma";
+import { formatRial, tomanToRial } from "@/lib/i18n/price";
 import { isLocale } from "@/lib/i18n/routing";
 import { verify } from "@/lib/payments/zarinpal";
 import { headers } from "next/headers";
@@ -84,7 +85,9 @@ export default async function CheckoutCallbackPage({
   try {
     const result = await verify({
       authority,
-      amount: Number(order.totalAmount.toString()),
+      // Order.totalAmount is stored in Toman; verify converts x10 to Rial to
+      // match the amount sent when the payment request was created.
+      amountToman: Number(order.totalAmount.toString()),
     });
 
     await prisma.order.update({
@@ -110,6 +113,12 @@ export default async function CheckoutCallbackPage({
               <div className="mt-6 rounded border border-stone-200 bg-white p-4 text-sm text-stone-700">
                 Order ID:{" "}
                 <span className="font-mono break-all">{order.id}</span>
+                <div className="mt-2">
+                  Amount paid:{" "}
+                  <span className="font-medium text-stone-950">
+                    {formatOrderAmount(order.totalAmount, order.currency, locale)}
+                  </span>
+                </div>
                 <div className="mt-2">
                   Reference ID:{" "}
                   <span className="font-mono break-all">{result.refId}</span>
@@ -150,4 +159,30 @@ export default async function CheckoutCallbackPage({
       </main>
     );
   }
+}
+
+/**
+ * Renders an order's stored total for the confirmation page.
+ *
+ * Orders snapshot their amounts in Toman (see OrderItem.unitPriceAtPurchase)
+ * and the amount actually charged is Toman x10 Rial, so a Persian visitor sees
+ * the Rial figure they were really charged.
+ *
+ * The stored Toman total is the source of truth. No EUR figure is snapshotted
+ * on the order, and inventing one here would mean applying an exchange rate
+ * that the payment layer deliberately does not use — so the English rendering
+ * shows the stored total in the order's own recorded unit instead.
+ */
+function formatOrderAmount(
+  totalAmount: unknown,
+  currency: string,
+  locale: string,
+): string {
+  const total = Number(String(totalAmount));
+
+  if (locale === "fa") {
+    return formatRial(tomanToRial(total));
+  }
+
+  return `${new Intl.NumberFormat("en-US").format(total)} ${currency}`;
 }

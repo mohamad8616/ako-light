@@ -23,6 +23,12 @@ interface ProductCategoryCardProps {
   images: string[];
   index: number;
   parentSlug?: string;
+  /**
+   * Pre-formatted price string for the active language (EUR for `en`, Rial for
+   * `fa`). Omitted for category cards, which cover many products and therefore
+   * have no single price — the parent computes it via `formatProductPrice`.
+   */
+  priceLabel?: string;
 }
 
 export default function ProductCategoryCard({
@@ -31,6 +37,7 @@ export default function ProductCategoryCard({
   images,
   index,
   parentSlug,
+  priceLabel,
 }: ProductCategoryCardProps) {
   const href = parentSlug
     ? `/products/${parentSlug}/${slug}`
@@ -73,6 +80,12 @@ export default function ProductCategoryCard({
           </span>
           <UnderLineEffect />
         </div>
+
+        {priceLabel ? (
+          <p className="text-background-secondary/70 mt-2 text-sm tracking-tight">
+            {priceLabel}
+          </p>
+        ) : null}
       </Link>
     </motion.div>
   );

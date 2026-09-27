@@ -15,10 +15,15 @@ export type ZarinPalVerificationResult = {
 
 // ZarinPal's official payment API documentation states the payment amount is
 // expressed in Iranian Rial (IRR), with a default currency of IRR and a minimum
-// amount of 10,000 IRR. This project currently stores cart totals in EUR, so we
-// convert the amount at the gateway boundary rather than mutating the stored
-// order currency model.
-export const ZARINPAL_DEFAULT_RIAL_RATE = 1_050_000;
+// amount of 10,000 IRR.
+//
+// This project stores and charges every amount in Toman (Product.priceToman,
+// Order.totalAmount, OrderItem.unitPriceAtPurchase). EUR is a display-only price
+// for en-locale visitors and is NEVER charged, so there is no EUR conversion —
+// and no exchange rate — anywhere in this module. The only conversion here is
+// the fixed Toman-to-Rial unit fact, applied at the gateway boundary so the
+// stored order model stays in Toman.
+export const toRial = (toman: number) => toman * 10;
 
 export function buildZarinPalBaseUrl(
   mode: string = process.env.ZARINPAL_MODE ?? "sandbox",
@@ -26,13 +31,6 @@ export function buildZarinPalBaseUrl(
   return mode === "production"
     ? "https://payment.zarinpal.com"
     : "https://sandbox.zarinpal.com";
-}
-
-export function toZarinPalAmount(
-  amount: number,
-  rate: number = ZARINPAL_DEFAULT_RIAL_RATE,
-) {
-  return Math.round(Number(amount) * rate);
 }
 
 export function isPaymentRequestSuccess(code: number) {
@@ -73,15 +71,25 @@ async function postJson<T>(url: string, body: Record<string, unknown>) {
   return payload;
 }
 
+/**
+ * Creates a ZarinPal payment request.
+ *
+ * `amountToman` is the order total in Toman — always derived from
+ * Product.priceToman (never priceEur), whichever locale started the checkout.
+ * It is converted x10 to Rial here, at the API call boundary.
+ */
 export async function request({
-  amount,
+  amountToman,
   description,
   callbackUrl,
   currency = "IRR",
 }: {
-  amount: number;
+  /** Order total in Toman. The only unit ever charged. */
+  amountToman: number;
   description: string;
   callbackUrl: string;
+  /** Defaults to IRR. The stored amount is Toman, so `toRial` is always
+   * applied — do not pass "IRT", which would double-convert. */
   currency?: "IRR" | "IRT";
 }): Promise<ZarinPalRequestResult> {
   const merchantId = getMerchantId();
@@ -91,7 +99,7 @@ export async function request({
     data?: { code?: number; message?: string; authority?: string };
   }>(`${baseUrl}/pg/v4/payment/request.json`, {
     merchant_id: merchantId,
-    amount: toZarinPalAmount(amount),
+    amount: toRial(amountToman),
     callback_url: callbackUrl,
     description,
     currency,
@@ -113,13 +121,21 @@ export async function request({
   };
 }
 
+/**
+ * Verifies a ZarinPal payment against the order's stored total.
+ *
+ * `amountToman` is the order total in Toman (Order.totalAmount); it is
+ * converted x10 to Rial here, matching the amount sent in `request`.
+ */
 export async function verify({
   authority,
-  amount,
+  amountToman,
   currency = "IRR",
 }: {
   authority: string;
-  amount: number;
+  /** Order total in Toman. The only unit ever charged. */
+  amountToman: number;
+  /** Defaults to IRR — always Rial, per `toRial`. See `request`. */
   currency?: "IRR" | "IRT";
 }): Promise<ZarinPalVerificationResult> {
   const merchantId = getMerchantId();
@@ -129,7 +145,7 @@ export async function verify({
     data?: { code?: number; message?: string; ref_id?: string };
   }>(`${baseUrl}/pg/v4/payment/verify.json`, {
     merchant_id: merchantId,
-    amount: toZarinPalAmount(amount),
+    amount: toRial(amountToman),
     authority,
     currency,
   });

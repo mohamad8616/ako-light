@@ -48,7 +48,8 @@ export type ProductRow = Prisma.ProductGetPayload<{
  *   which is exactly what the source data stored.
  * - `categoryLabel` has no column of its own — the source data duplicated the
  *   parent category's localized name there, so it is derived from the relation.
- * - `price` is a Postgres `Decimal`; `Product.price` in the app is a number.
+ * - `priceEur` / `priceToman` are Postgres `Decimal` columns; the app-level
+ *   `Product` exposes both as numbers (EUR is display-only, Toman is charged).
  * - `images` is derived from the product's ProductImage rows in `sortOrder`
  *   order (the flat `images` column was removed in Pass 11B; the DB rows are
  *   pre-ordered by the shared `include`).
@@ -60,7 +61,8 @@ export function mapProductRow(row: ProductRow): Product {
     slug: row.slug,
     images: row.productImages.map((img) => img.url),
     hoverImage: row.hoverImage,
-    price: row.price.toNumber(),
+    priceEur: row.priceEur.toNumber(),
+    priceToman: row.priceToman.toNumber(),
     store: { existsInStore: row.existsInStore, quantity: row.quantity },
     category: row.category.slug,
     categoryLabel: row.category ? asLocalized(row.category.name) : undefined,
@@ -182,7 +184,8 @@ export type ProductAdminRow = {
   categoryName: Localized;
   designerId?: string | null;
   designerName?: Localized | null;
-  price: number;
+  priceEur: number;
+  priceToman: number;
   existsInStore: boolean;
   quantity: number;
   sortOrder: number;
@@ -195,7 +198,8 @@ export type ProductAdminDetail = {
   name: Localized;
   hoverImage: string;
   heroImage: string;
-  price: number;
+  priceEur: number;
+  priceToman: number;
   existsInStore: boolean;
   quantity: number;
   description: Localized;
@@ -218,7 +222,8 @@ export type ProductWriteInput = {
   name: Localized;
   hoverImage: string;
   heroImage: string;
-  price: number;
+  priceEur: number;
+  priceToman: number;
   existsInStore: boolean;
   quantity: number;
   description: Localized;
@@ -286,7 +291,8 @@ export const getProductAdminRows = cache(
       categoryName: asLocalized(row.category.name),
       designerId: row.designerId,
       designerName: row.designer ? asLocalized(row.designer.name) : null,
-      price: row.price.toNumber(),
+      priceEur: row.priceEur.toNumber(),
+      priceToman: row.priceToman.toNumber(),
       existsInStore: row.existsInStore,
       quantity: row.quantity,
       sortOrder: row.sortOrder,
@@ -314,7 +320,8 @@ export const getProductAdminDetail = cache(
       name: asLocalized(row.name),
       hoverImage: row.hoverImage,
       heroImage: row.heroImage,
-      price: row.price.toNumber(),
+      priceEur: row.priceEur.toNumber(),
+      priceToman: row.priceToman.toNumber(),
       existsInStore: row.existsInStore,
       quantity: row.quantity,
       description: asLocalized(row.description),
@@ -348,7 +355,8 @@ export const createProduct = async (
         slug: input.slug,
         name: asJsonInput(input.name),
         hoverImage: input.hoverImage,
-        price: input.price,
+        priceEur: input.priceEur,
+        priceToman: input.priceToman,
         existsInStore: input.existsInStore,
         quantity: input.quantity,
         heroImage: input.heroImage,
@@ -395,7 +403,8 @@ export const updateProduct = async (
         slug: input.slug,
         name: asJsonInput(input.name),
         hoverImage: input.hoverImage,
-        price: input.price,
+        priceEur: input.priceEur,
+        priceToman: input.priceToman,
         existsInStore: input.existsInStore,
         quantity: input.quantity,
         heroImage: input.heroImage,

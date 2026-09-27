@@ -8,8 +8,10 @@ export interface CartItem {
   slug?: string;
   name: string;
   image: string;
-  price: number;
-  currency: string;
+  /** EUR price — informational display for en-locale visitors. */
+  priceEur: number;
+  /** Toman price — the value actually charged at checkout (ZarinPal). */
+  priceToman: number;
   variantLabel?: string;
   quantity: number;
 }
@@ -67,7 +69,7 @@ export const useCart = create<CartState>()(
 
 export function useCartTotal() {
   return useCart((state) =>
-    state.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    state.items.reduce((sum, item) => sum + item.priceToman * item.quantity, 0)
   );
 }
 

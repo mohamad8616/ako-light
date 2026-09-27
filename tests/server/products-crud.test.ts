@@ -23,7 +23,8 @@ const makeProductInput = (overrides: Partial<ProductWriteInput> = {}): ProductWr
   name: { en: "Test Product", fa: "محصول تست" },
   hoverImage: "/test-hover.jpg",
   heroImage: "/test-hero.jpg",
-  price: 99.99,
+  priceEur: 99.99,
+  priceToman: 4_500_000,
   existsInStore: true,
   quantity: 10,
   description: { en: "Description", fa: "توضیحات" },
@@ -57,7 +58,8 @@ describeDb("products repository — write", () => {
         expect(row!.heroImage).toBe(input.heroImage);
         // Postgres Decimal — the raw row carries a Decimal, the mapped Product
         // carries a number (mapProductRow calls .toNumber()).
-        expect(row!.price.toNumber()).toBe(input.price);
+        expect(row!.priceEur.toNumber()).toBe(input.priceEur);
+        expect(row!.priceToman.toNumber()).toBe(input.priceToman);
         expect(row!.existsInStore).toBe(input.existsInStore);
         expect(row!.quantity).toBe(input.quantity);
         expect(row!.description).toEqual(input.description);
@@ -158,7 +160,8 @@ describeDb("products repository — write", () => {
         const updatedInput = makeProductInput({
           slug: `updated-${randomUUID()}`,
           name: { en: "Updated Product", fa: "محصول بروزرسانی" },
-          price: 199.99,
+          priceEur: 199.99,
+          priceToman: 9_100_000,
           quantity: 5,
         });
         await updateProduct(createdId!, updatedInput, tx);
@@ -166,7 +169,8 @@ describeDb("products repository — write", () => {
         const row = await tx.product.findUnique({ where: { id: createdId! } });
         expect(row!.slug).toBe(updatedInput.slug);
         expect(row!.name).toEqual(updatedInput.name);
-        expect(row!.price.toNumber()).toBe(updatedInput.price);
+        expect(row!.priceEur.toNumber()).toBe(updatedInput.priceEur);
+        expect(row!.priceToman.toNumber()).toBe(updatedInput.priceToman);
         expect(row!.quantity).toBe(updatedInput.quantity);
         // Fields not in the update should remain from original create
         expect(row!.hoverImage).toBe(input.hoverImage);

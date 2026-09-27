@@ -6,6 +6,7 @@ import { useCart } from "@/lib/cart/store";
 import type { Product } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { productDescription, productName } from "@/lib/i18n/localized";
+import { formatProductPrice } from "@/lib/i18n/price";
 import { useLenis } from "@/lib/lenisStore";
 import { EASE } from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
@@ -86,9 +87,9 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
   }, [activeImage]);
 
   function handleAddToCart() {
-    // Guard against out-of-stock products — the button is disabled when
-    // unavailable, so this only fires if the guard is bypassed.
-    if (!product.store.existsInStore) return;
+    // Guard against unavailable products — the button is disabled when
+    // out of stock or unpriced, so this only fires if the guard is bypassed.
+    if (!purchasable) return;
     // Clamp to the available stock; quantity selection is currently fixed at 1.
     const quantity = Math.min(1, Math.max(1, product.store.quantity));
     addItem(
@@ -97,13 +98,18 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
         slug: product.slug,
         name: productName(t, product.slug),
         image: product.images[0],
-        price: product.price,
-        currency: "EUR",
+        priceEur: product.priceEur,
+        priceToman: product.priceToman,
       },
       quantity,
     );
     onOpenChange(false);
   }
+
+  // Not purchasable when it is out of stock OR has no Toman price yet. The
+  // Toman price is the value ZarinPal actually charges, so priceToman <= 0
+  // disables buying (same treatment as existsInStore: false).
+  const purchasable = product.store.existsInStore && product.priceToman > 0;
 
   // Hide the ProductModal Dialog while the Lightbox is open so the Lightbox
   // (a z-200 portal on document.body) sits on top without focus-trap,
@@ -219,21 +225,21 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
                 {productName(t, product.slug)}
               </h2>
               <p className={`${fontClass} mt-2 text-lg text-stone-950`}>
-                {formatPrice(product.price)}
+                {formatProductPrice(product, lang)}
               </p>
 
               <div className="mt-6 flex items-center gap-3">
 
                 <button
                   onClick={handleAddToCart}
-                  disabled={!product.store.existsInStore}
+                  disabled={!purchasable}
                   className={`${fontClass} flex-1 cursor-pointer bg-stone-950 py-3 text-sm font-medium tracking-tight text-white uppercase transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60`}
                 >
                   {t("product.addToCart")}
                 </button>
               </div>
 
-              {!product.store.existsInStore && (
+              {!purchasable && (
                 <p
                   className={`${fontClass} mt-2 text-sm font-medium text-red-600`}
                 >
@@ -259,9 +265,4 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
       )}
     </>
   );
-}
-
-function formatPrice(amount: number, currency = "EUR") {
-  const symbol = currency === "EUR" ? "€" : currency;
-  return `${symbol}${amount.toFixed(2).replace(".", ",")}`;
 }

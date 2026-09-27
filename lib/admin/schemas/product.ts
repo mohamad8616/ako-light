@@ -32,7 +32,10 @@ export const productFormSchema = z.object({
   name: localizedSchema,
   hoverImage: imageRefSchema,
   heroImage: imageRefSchema,
-  price: z.number().min(0),
+  /// EUR price — informational display for en-locale visitors.
+  priceEur: z.number().positive(),
+  /// Toman price — the value actually charged at checkout (ZarinPal).
+  priceToman: z.number().positive(),
   existsInStore: z.boolean(),
   quantity: z.number().int().min(0),
   description: localizedSchema,

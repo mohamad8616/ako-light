@@ -33,7 +33,7 @@ PART C — public display
 4. Everywhere a product price is currently displayed (product detail
    page, ProductsGrid cards, cart, order confirmation), show priceEur
    when the current locale is "en" and priceToman (formatted with the
-   Persian "تومان" unit, thousands-separated per existing Persian number
+   Persian "ریال" unit, thousands-separated per existing Persian number
    formatting conventions already used elsewhere in the app) when the
    locale is "fa" — do not show both at once.
 

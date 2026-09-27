@@ -10,6 +10,7 @@ import {
   productKey,
   productName,
 } from "@/lib/i18n/localized";
+import { formatProductPrice } from "@/lib/i18n/price";
 import { cn } from "@/lib/utils";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
@@ -57,6 +58,16 @@ export default function ProductInfoSection({ product }: { product: Product }) {
           </nav>
 
           <Paragraph>{productDescription(t, product.slug)}</Paragraph>
+
+          {/* One currency only: EUR for English, Rial for Persian. */}
+          <p
+            className={cn(
+              "text-lg text-stone-950",
+              lang === "fa" ? "font-noora" : "font-din",
+            )}
+          >
+            {formatProductPrice(product, lang)}
+          </p>
 
           {product.moreInfo && (
             <div className="mt-10">

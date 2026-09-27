@@ -37,7 +37,8 @@ const PRODUCT_KEYS = [
   "images",
   "moreInfo",
   "name",
-  "price",
+  "priceEur",
+  "priceToman",
   "related",
   "slug",
   "store",
@@ -65,7 +66,8 @@ describeDb("products repository", () => {
     expectLocalized(product!.description, "Product.description");
     // Json columns must come back parsed, not as raw strings.
     expect(typeof product!.name, "Product.name").toBe("object");
-    expect(product!.price, "Product.price").toBeTypeOf("number");
+    expect(product!.priceEur, "Product.priceEur").toBeTypeOf("number");
+    expect(product!.priceToman, "Product.priceToman").toBeTypeOf("number");
     expect(Array.isArray(product!.images), "Product.images").toBe(true);
     expect(product!.store).toEqual({
       existsInStore: expect.any(Boolean),

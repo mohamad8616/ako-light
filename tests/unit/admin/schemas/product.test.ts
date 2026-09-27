@@ -7,7 +7,8 @@ describe("productFormSchema", () => {
     name: { en: "Test Product", fa: "محصول تست" },
     hoverImage: "/images/hover.jpg",
     heroImage: "/images/hero.jpg",
-    price: 99.99,
+    priceEur: 99.99,
+    priceToman: 4_500_000,
     existsInStore: true,
     quantity: 10,
     description: { en: "Description", fa: "توضیحات" },
@@ -60,15 +61,28 @@ describe("productFormSchema", () => {
     }
   });
 
-  it("rejects missing price", () => {
+  it("rejects missing priceEur", () => {
     const input = { ...validInput };
-    delete (input as Record<string, unknown>).price;
+    delete (input as Record<string, unknown>).priceEur;
     const result = productFormSchema.safeParse(input);
     expect(result.success).toBe(false);
   });
 
-  it("rejects negative price", () => {
-    const input = { ...validInput, price: -1 };
+  it("rejects missing priceToman", () => {
+    const input = { ...validInput };
+    delete (input as Record<string, unknown>).priceToman;
+    const result = productFormSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a non-positive priceEur", () => {
+    const input = { ...validInput, priceEur: -1 };
+    const result = productFormSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a zero priceToman (not available for purchase)", () => {
+    const input = { ...validInput, priceToman: 0 };
     const result = productFormSchema.safeParse(input);
     expect(result.success).toBe(false);
   });

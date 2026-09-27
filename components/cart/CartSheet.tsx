@@ -9,6 +9,7 @@ import {
 import { useCart, useCartTotal, type CartItem } from "@/lib/cart/store";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { productKey } from "@/lib/i18n/localized";
+import { formatProductPrice } from "@/lib/i18n/price";
 import type { Product } from "@/lib/data/productCategories";
 import { resolveCartProducts } from "@/lib/actions/cart";
 import Image from "next/image";
@@ -131,11 +132,7 @@ export default function CartSheet({ open, onOpenChange }: Props) {
                       )}
                     </div>
                     <p className="text-sm text-stone-950">
-                      {formatPrice(
-                        item.price * item.quantity,
-                        item.currency,
-                        lang,
-                      )}
+                      {formatProductPrice(item, lang, item.quantity)}
                     </p>
                   </div>
                   <div className="flex w-fit items-center border border-stone-300">
@@ -175,7 +172,16 @@ export default function CartSheet({ open, onOpenChange }: Props) {
                 {t("cart.total")}
               </span>
               <span className="text-sm text-stone-950">
-                {formatPrice(total, items[0]?.currency ?? "EUR", lang)}
+                {formatProductPrice(
+                  {
+                    priceEur: items.reduce(
+                      (sum, item) => sum + item.priceEur * item.quantity,
+                      0,
+                    ),
+                    priceToman: total,
+                  },
+                  lang,
+                )}
               </span>
             </div>
 
@@ -248,33 +254,4 @@ function itemDisplayName(
     if (resolvedName !== key) return resolvedName;
   }
   return item.name;
-}
-
-/**
- * Placeholder EUR -> IRR rate used when displaying prices in Persian.
- * TODO: replace with a live rate source or a business-managed value.
- */
-const EUR_TO_IRR_RATE = 1_050_000;
-
-/**
- * Formats a price for the active language:
- *  - Persian (`fa`): converts EUR amounts to Iranian Rial and formats with
- *    `fa-IR` — Persian digits, thousands separators, "ریال" suffix, and no
- *    fraction digits (Rial has none). Non-EUR currencies pass through
- *    unconverted.
- *  - English (LTR): keeps the original currency in the European `de-DE`
- *    style ("12,50 €") — matching the original hardcoded formatting.
- */
-function formatPrice(amount: number, currency: string, lang: string) {
-  if (lang === "fa") {
-    const rialAmount = currency === "EUR" ? amount * EUR_TO_IRR_RATE : amount;
-    return new Intl.NumberFormat("fa-IR", {
-      style: "currency",
-      currency: "IRR",
-    }).format(rialAmount);
-  }
-  return new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency,
-  }).format(amount);
 }

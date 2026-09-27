@@ -6,10 +6,11 @@ import {
 } from "@/lib/actions/checkout";
 import { useCart, useCartHydrated, useCartTotal } from "@/lib/cart/store";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { formatProductPrice } from "@/lib/i18n/price";
 import { useState } from "react";
 
 export default function CheckoutForm() {
-  const { dir } = useLanguage();
+  const { dir, lang } = useLanguage();
   const items = useCart((state) => state.items);
   const hydrated = useCartHydrated();
   const total = useCartTotal();
@@ -133,16 +134,23 @@ export default function CheckoutForm() {
               <span>
                 {item.name} × {item.quantity}
               </span>
-              <span>
-                {(item.price * item.quantity).toFixed(2)} {item.currency}
-              </span>
+              <span>{formatProductPrice(item, lang, item.quantity)}</span>
             </div>
           ))}
         </div>
         <div className="mt-6 flex justify-between border-t border-stone-200 pt-4 text-sm font-medium text-stone-950">
           <span>Total</span>
           <span>
-            {total.toFixed(2)} {items[0]?.currency ?? "EUR"}
+            {formatProductPrice(
+              {
+                priceEur: items.reduce(
+                  (sum, item) => sum + item.priceEur * item.quantity,
+                  0,
+                ),
+                priceToman: total,
+              },
+              lang,
+            )}
           </span>
         </div>
       </aside>

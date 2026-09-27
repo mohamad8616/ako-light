@@ -52,10 +52,16 @@ export function ProductsTable({ rows }: { rows: ProductAdminRow[] }) {
       access: (row) => (row.designerName ? pick(row.designerName, lang) : null),
     }),
     numberColumn({
-      id: "price",
-      label: t("admin.product.field.price"),
+      id: "priceEur",
+      label: t("admin.product.field.priceEur"),
       lang,
-      access: (row) => row.price,
+      access: (row) => row.priceEur,
+    }),
+    numberColumn({
+      id: "priceToman",
+      label: t("admin.product.field.priceToman"),
+      lang,
+      access: (row) => row.priceToman,
     }),
     {
       id: "stock",

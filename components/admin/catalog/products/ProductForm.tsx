@@ -72,7 +72,8 @@ export function ProductForm({
           name: { en: "", fa: "" },
           hoverImage: "",
           heroImage: "",
-          price: 0,
+          priceEur: 0,
+          priceToman: 0,
           existsInStore: false,
           quantity: 0,
           description: { en: "", fa: "" },
@@ -169,11 +170,18 @@ export function ProductForm({
         <FormCard title={t("admin.product.card.pricing")}>
           <div className="grid gap-5 sm:grid-cols-2">
             <NumberField
-              name="price"
-              label={t("admin.product.field.price")}
+              name="priceEur"
+              label={t("admin.product.field.priceEur")}
               required
               min={0}
               step={0.01}
+            />
+            <NumberField
+              name="priceToman"
+              label={t("admin.product.field.priceToman")}
+              required
+              min={0}
+              step={1}
             />
             <NumberField
               name="quantity"

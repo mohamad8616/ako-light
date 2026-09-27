@@ -157,7 +157,10 @@ export const adminEn = {
   "admin.product.field.sortOrder": "Sort order",
   "admin.product.field.category": "Category",
   "admin.product.field.designer": "Designer",
-  "admin.product.field.price": "Price",
+  "admin.product.field.priceEur":
+    "Price (EUR) — shown to English visitors",
+  "admin.product.field.priceToman":
+    "Price (Toman) — shown to Persian visitors and charged at checkout",
   "admin.product.field.quantity": "Quantity",
   "admin.product.field.existsInStore": "Available in store",
   "admin.product.field.hoverImage": "Hover image",
@@ -515,7 +518,10 @@ export const adminFa = {
   "admin.product.field.sortOrder": "ترتیب نمایش",
   "admin.product.field.category": "دسته‌بندی",
   "admin.product.field.designer": "طراح",
-  "admin.product.field.price": "قیمت",
+  "admin.product.field.priceEur":
+    "قیمت (یورو) — نمایش به بازدیدکنندگان انگلیسی‌زبان",
+  "admin.product.field.priceToman":
+    "قیمت (تومان) — نمایش به بازدیدکنندگان فارسی‌زبان و مبلغ پرداخت در تسویه",
   "admin.product.field.quantity": "تعداد",
   "admin.product.field.existsInStore": "در فروشگاه موجود است",
   "admin.product.field.hoverImage": "تصویر hover",

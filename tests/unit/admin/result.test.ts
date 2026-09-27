@@ -17,7 +17,8 @@ const validProduct = {
   name: { en: "Test Product", fa: "محصول تست" },
   hoverImage: "/hover.jpg",
   heroImage: "/hero.jpg",
-  price: 10,
+  priceEur: 10,
+  priceToman: 500_000,
   existsInStore: true,
   quantity: 1,
   description: { en: "Description", fa: "توضیحات" },
@@ -79,7 +80,8 @@ describe("zodIssuesToFieldIssues", () => {
     expect(issues).toHaveLength(Object.keys(validProduct).length);
     expect(issues.every((issue) => issue.code === "required")).toBe(true);
     expect(issues.map((issue) => issue.field)).toContain("slug");
-    expect(issues.map((issue) => issue.field)).toContain("price");
+    expect(issues.map((issue) => issue.field)).toContain("priceEur");
+    expect(issues.map((issue) => issue.field)).toContain("priceToman");
   });
 
   it("addresses nested fields with a dotted form path", () => {
@@ -95,14 +97,15 @@ describe("zodIssuesToFieldIssues", () => {
   });
 
   it("keeps a failed range check on a number as invalid, not required", () => {
-    // price: -1 is too_small with a NUMBER origin — the value exists, it is
-    // just out of range, so it maps to "invalid".
-    const issues = mapFailure({ ...validProduct, price: -1 });
-    expect(issues).toEqual([{ field: "price", code: "invalid" }]);
+    // priceToman: 0 is too_small with a NUMBER origin — the value exists, it is
+    // just out of range (a product needs a positive Toman price), so it maps to
+    // "invalid".
+    const issues = mapFailure({ ...validProduct, priceToman: 0 });
+    expect(issues).toEqual([{ field: "priceToman", code: "invalid" }]);
   });
 
   it("treats a wrong-typed value as required", () => {
-    const issues = mapFailure({ ...validProduct, price: "10" });
-    expect(issues).toEqual([{ field: "price", code: "required" }]);
+    const issues = mapFailure({ ...validProduct, priceToman: "10" });
+    expect(issues).toEqual([{ field: "priceToman", code: "required" }]);
   });
 });

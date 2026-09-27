@@ -1,8 +1,9 @@
-﻿﻿"use client";
+﻿"use client";
 
 import type { Product, ProductCategory } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { pick } from "@/lib/i18n/localized";
+import { formatProductPrice } from "@/lib/i18n/price";
 import HomepageSection from "@/utility/HomepageSection";
 import ProductCategoryCard from "./ProductCategoryCard";
 
@@ -24,12 +25,16 @@ export default function ProductsGrid({
         name: pick(product.name, lang),
         slug: product.slug,
         images: [product.images[0], product.hoverImage].filter(Boolean),
+        // One currency only, per the active locale (EUR for en, Rial for fa).
+        priceLabel: formatProductPrice(product, lang),
       }))
     : (categories ?? []).map((category) => ({
         key: category.slug,
         name: pick(category.name, lang),
         slug: category.slug,
         images: category.products[0]?.images ?? [],
+        // Category cards span many products — no single price to show.
+        priceLabel: undefined,
       }));
 
   if (items.length === 0) {
@@ -53,6 +58,7 @@ export default function ProductsGrid({
             name={item.name}
             slug={item.slug}
             images={item.images}
+            priceLabel={item.priceLabel}
           />
         ))}
       </div>

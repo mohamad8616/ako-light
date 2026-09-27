@@ -24,7 +24,11 @@ export default function BuyBtn({ product }: { product: Product }) {
     else unlock();
   }, [modalOpen, lock, unlock, cartOpen]);
 
-  const outOfStock = !product.store.existsInStore;
+  // Not purchasable when it is out of stock OR has no Toman price yet. The
+  // Toman price is what ZarinPal charges, so priceToman <= 0 means "not
+  // available for purchase" — this blocks a real 0-Toman order before an
+  // admin has backfilled the Persian price.
+  const outOfStock = !product.store.existsInStore || product.priceToman <= 0;
 
   return (
     <>
