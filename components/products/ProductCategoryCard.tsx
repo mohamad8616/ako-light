@@ -24,7 +24,7 @@ interface ProductCategoryCardProps {
   index: number;
   parentSlug?: string;
   /**
-   * Pre-formatted price string for the active language (EUR for `en`, Rial for
+   * Pre-formatted price string for the active language (EUR for `en`, Toman for
    * `fa`). Omitted for category cards, which cover many products and therefore
    * have no single price — the parent computes it via `formatProductPrice`.
    */

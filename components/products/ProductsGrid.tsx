@@ -25,7 +25,7 @@ export default function ProductsGrid({
         name: pick(product.name, lang),
         slug: product.slug,
         images: [product.images[0], product.hoverImage].filter(Boolean),
-        // One currency only, per the active locale (EUR for en, Rial for fa).
+        // One currency only, per the active locale (EUR for en, Toman for fa).
         priceLabel: formatProductPrice(product, lang),
       }))
     : (categories ?? []).map((category) => ({
