@@ -66,6 +66,7 @@ build-out.txt
 build-out2.txt
 tsc-current.txt
 server.log
+myPlan.md
 
 # local notes / generated artifacts
 data-model.md
