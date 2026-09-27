@@ -1,7 +1,7 @@
 import PaymentCallbackState from "@/components/checkout/PaymentCallbackState";
 import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/prisma";
-import { formatRial, tomanToRial } from "@/lib/i18n/price";
+import { formatToman } from "@/lib/i18n/price";
 import { isLocale } from "@/lib/i18n/routing";
 import { verify } from "@/lib/payments/zarinpal";
 import { headers } from "next/headers";
@@ -164,14 +164,9 @@ export default async function CheckoutCallbackPage({
 /**
  * Renders an order's stored total for the confirmation page.
  *
- * Orders snapshot their amounts in Toman (see OrderItem.unitPriceAtPurchase)
- * and the amount actually charged is Toman x10 Rial, so a Persian visitor sees
- * the Rial figure they were really charged.
- *
- * The stored Toman total is the source of truth. No EUR figure is snapshotted
- * on the order, and inventing one here would mean applying an exchange rate
- * that the payment layer deliberately does not use — so the English rendering
- * shows the stored total in the order's own recorded unit instead.
+ * Orders snapshot their amounts in Toman (see OrderItem.unitPriceAtPurchase).
+ * The confirmation page shows the same Toman figure the customer saw throughout
+ * checkout — not the Rial amount that was sent to ZarinPal.
  */
 function formatOrderAmount(
   totalAmount: unknown,
@@ -181,7 +176,7 @@ function formatOrderAmount(
   const total = Number(String(totalAmount));
 
   if (locale === "fa") {
-    return formatRial(tomanToRial(total));
+    return formatToman(total);
   }
 
   return `${new Intl.NumberFormat("en-US").format(total)} ${currency}`;

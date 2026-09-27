@@ -1,6 +1,6 @@
 "use client"
 
-import { NavUser } from "@/components/nav-user"
+import { NavUser } from "@/components/admin/nav-user"
 import {
   ADMIN_CATALOG_NAV,
   ADMIN_OWNER_NAV,

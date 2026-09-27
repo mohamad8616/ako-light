@@ -71,33 +71,15 @@ export const adminEn = {
   // Site header
   "admin.header.title": "Dashboard",
 
-  // Overview tabs
-  "admin.tab.products": "Products",
-  "admin.tab.pastPerformance": "Past Performance",
-  "admin.tab.keyPersonnel": "Key Personnel",
-  "admin.tab.focusDocuments": "Focus Documents",
-
   // Data table
-  "admin.table.viewSelector": "View",
-  "admin.table.selectView": "Select a view",
   "admin.table.columns": "Columns",
-  "admin.table.addSection": "Add Section",
-  "admin.table.dragToReorder": "Drag to reorder",
-  "admin.table.selectAll": "Select all",
-  "admin.table.selectRow": "Select row",
-  "admin.table.openMenu": "Open menu",
   "admin.table.edit": "Edit",
-  "admin.table.duplicate": "Duplicate",
-  "admin.table.favorite": "Favorite",
   "admin.table.delete": "Delete",
   "admin.table.col.name": "Product",
   "admin.table.col.category": "Category",
-  "admin.table.col.status": "Status",
   "admin.table.col.designer": "Designer",
-  "admin.table.assignDesigner": "Assign designer",
   "admin.table.saving": "Saving",
   "admin.table.saved": "Saved",
-  "admin.table.saveError": "Error",
   "admin.table.rowsSelected": "row(s) selected.",
   "admin.table.of": "of",
   "admin.table.rowsPerPage": "Rows per page",
@@ -108,41 +90,15 @@ export const adminEn = {
   "admin.table.goToNextPage": "Go to next page",
   "admin.table.goToLastPage": "Go to last page",
 
-  // Statuses
-  "admin.status.published": "Published",
-  "admin.status.draft": "Draft",
-  "admin.status.pending": "Pending review",
-
-  // Product drawer
-  "admin.drawer.views": "Product views for the last 6 months",
-  "admin.drawer.trend": "Trending up by 5.2% this month",
-  "admin.drawer.trend.note":
-    "View counts are sample data for now. They will be replaced with real analytics once the tracking service is connected.",
-  "admin.drawer.field.name": "Product name",
-  "admin.drawer.field.category": "Category",
-  "admin.drawer.field.status": "Status",
-  "admin.drawer.field.designer": "Designer",
-  "admin.drawer.submit": "Save",
-  "admin.drawer.done": "Done",
-
-  // Chart (visitors)
-  "admin.chart.title": "Visitors",
-  "admin.chart.description.long": "Total visitors for the last 3 months",
+  // Chart (orders)
+  "admin.chart.title": "Orders",
+  "admin.chart.description.long": "Orders placed over the last 3 months",
   "admin.chart.description.short": "Last 3 months",
+  "admin.chart.empty": "No orders in this period yet.",
   "admin.chart.select.aria": "Select a range",
   "admin.chart.range.90d": "Last 3 months",
   "admin.chart.range.30d": "Last 30 days",
   "admin.chart.range.7d": "Last 7 days",
-  "admin.chart.desktop": "Desktop",
-  "admin.chart.mobile": "Mobile",
-
-  // Month names (drawer chart)
-  "admin.month.january": "January",
-  "admin.month.february": "February",
-  "admin.month.march": "March",
-  "admin.month.april": "April",
-  "admin.month.may": "May",
-  "admin.month.june": "June",
   // Catalog entity forms and CRUD
   "admin.product.new": "New product",
   "admin.product.edit": "Edit product",
@@ -431,33 +387,15 @@ export const adminFa = {
   // هدر صفحه
   "admin.header.title": "داشبورد",
 
-  // تب‌های نمای کلی
-  "admin.tab.products": "محصولات",
-  "admin.tab.pastPerformance": "عملکرد گذشته",
-  "admin.tab.keyPersonnel": "پرسنل کلیدی",
-  "admin.tab.focusDocuments": "اسناد",
-
   // جدول داده
-  "admin.table.viewSelector": "نما",
-  "admin.table.selectView": "انتخاب نما",
   "admin.table.columns": "ستون‌ها",
-  "admin.table.addSection": "بخش جدید",
-  "admin.table.dragToReorder": "برای جابه‌جایی بکشید",
-  "admin.table.selectAll": "انتخاب همه",
-  "admin.table.selectRow": "انتخاب ردیف",
-  "admin.table.openMenu": "باز کردن منو",
   "admin.table.edit": "ویرایش",
-  "admin.table.duplicate": "ایجاد نسخه کپی",
-  "admin.table.favorite": "افزودن به علاقه‌مندی",
   "admin.table.delete": "حذف",
   "admin.table.col.name": "محصول",
   "admin.table.col.category": "دسته‌بندی",
-  "admin.table.col.status": "وضعیت",
   "admin.table.col.designer": "طراح",
-  "admin.table.assignDesigner": "انتخاب طراح",
   "admin.table.saving": "در حال ذخیره",
   "admin.table.saved": "ذخیره شد",
-  "admin.table.saveError": "خطا",
   "admin.table.rowsSelected": "ردیف انتخاب شده است.",
   "admin.table.of": "از",
   "admin.table.rowsPerPage": "ردیف در صفحه",
@@ -468,41 +406,15 @@ export const adminFa = {
   "admin.table.goToNextPage": "رفتن به صفحه بعد",
   "admin.table.goToLastPage": "رفتن به صفحه آخر",
 
-  // وضعیت‌ها
-  "admin.status.published": "منتشر شده",
-  "admin.status.draft": "پیش‌نویس",
-  "admin.status.pending": "در انتظار تأیید",
-
-  // کشوی محصول
-  "admin.drawer.views": "بازدید محصول در ۶ ماه گذشته",
-  "admin.drawer.trend": "این ماه ۵٫۲٪ رشد داشته است",
-  "admin.drawer.trend.note":
-    "تعداد بازدیدها فعلاً داده نمونه است و با اتصال سرویس آماری با داده‌های واقعی جایگزین می‌شود.",
-  "admin.drawer.field.name": "نام محصول",
-  "admin.drawer.field.category": "دسته‌بندی",
-  "admin.drawer.field.status": "وضعیت",
-  "admin.drawer.field.designer": "طراح",
-  "admin.drawer.submit": "ذخیره",
-  "admin.drawer.done": "انجام شد",
-
-  // نمودار (بازدیدکنندگان)
-  "admin.chart.title": "بازدیدکنندگان",
-  "admin.chart.description.long": "مجموع بازدید در ۳ ماه گذشته",
+  // نمودار (سفارش‌ها)
+  "admin.chart.title": "سفارش‌ها",
+  "admin.chart.description.long": "سفارش‌های ثبت‌شده در ۳ ماه گذشته",
   "admin.chart.description.short": "۳ ماه گذشته",
+  "admin.chart.empty": "در این بازه هنوز سفارشی ثبت نشده است.",
   "admin.chart.select.aria": "انتخاب بازه زمانی",
   "admin.chart.range.90d": "۳ ماه گذشته",
   "admin.chart.range.30d": "۳۰ روز گذشته",
   "admin.chart.range.7d": "۷ روز گذشته",
-  "admin.chart.desktop": "دسکتاپ",
-  "admin.chart.mobile": "موبایل",
-
-  // نام ماه‌ها (نمودار کشو)
-  "admin.month.january": "ژانویه",
-  "admin.month.february": "فوریه",
-  "admin.month.march": "مارس",
-  "admin.month.april": "آوریل",
-  "admin.month.may": "مه",
-  "admin.month.june": "ژوئن",
 
   // فرم‌ها و عملیات کاتالوگ
   "admin.product.new": "محصول جدید",

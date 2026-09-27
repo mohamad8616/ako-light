@@ -1,6 +1,7 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import { SiteHeader } from "@/components/site-header";
+import { AppSidebar } from "@/components/admin/app-sidebar";
+import { SiteHeader } from "@/components/admin/site-header";
 import { DirectionProvider } from "@/components/ui/direction";
+import { Toaster } from "@/components/ui/sonner";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { requireAdminAccess } from "@/lib/admin/access";
 import { ADMIN_SHELL_DIR } from "@/lib/admin/sections";
@@ -29,6 +30,12 @@ import { notFound } from "next/navigation";
  * primitives: dialog/select/menu render into document.body, outside the
  * shell's dir wrapper, so on /en/admin they would otherwise inherit the
  * document's ltr (see components/ui/direction.tsx).
+ *
+ * The sonner <Toaster /> lives here because every admin CRUD screen reports
+ * through useCrudSubmit's toast.success()/toast.error() — without a mounted
+ * Toaster those calls were silent. It portals to document.body, so its
+ * position inside this tree only decides WHO owns it (the admin shell), not
+ * where it paints.
  */
 export default async function AdminLayout({
   children,
@@ -59,6 +66,7 @@ export default async function AdminLayout({
           <SiteHeader />
           {children}
         </SidebarInset>
+        <Toaster position="top-center" closeButton />
       </SidebarProvider>
     </DirectionProvider>
   );

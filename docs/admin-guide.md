@@ -121,7 +121,7 @@ owner-only access and a dedicated placeholder for the Admins page.
 | ------------------------------------------- | -------------------------------------------- |
 | Section registry (hrefs + translation keys) | `lib/admin/sections.ts`                      |
 | Admin shell layout                          | `app/[locale]/(admin)/admin/layout.tsx`      |
-| Sidebar / shell chrome                      | `components/app-sidebar.tsx`                 |
+| Sidebar / shell chrome                      | `components/admin/app-sidebar.tsx`           |
 | Shell direction source                      | `lib/admin/sections.ts`                      |
 | Placeholder route (owner-only)              | `app/[locale]/(admin)/admin/admins/page.tsx` |
 | Admin translations (en/fa)                  | `lib/i18n/translations/admin.ts`             |

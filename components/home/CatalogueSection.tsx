@@ -8,8 +8,8 @@ import SectionTitle from "@/utility/SectionTitle";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import HomepageSection, { EASE } from "../../utility/HomepageSection";
-import PlusTextBtn from "../ui/PlusTextBtn";
 import AnimatedDownloadCircle from "../ui/AnimateDownloadCircle";
+import PlusTextBtn from "../ui/PlusTextBtn";
 
 interface CatalogueSectionProps {
   /**
@@ -42,7 +42,7 @@ export default function CatalogueSection({ data }: CatalogueSectionProps) {
       </div>
 
       {/* Text column */}
-      <div className="flex flex-col justify-start lg:col-span-6 space-y-2" >
+      <div className="flex flex-col justify-start space-y-6 xl:col-span-8">
         {/* FOR LARGE SCREEN */}
         <div className="hidden lg:block">
           <SectionSubTitle>{t("catalogue.kicker")}</SectionSubTitle>
@@ -51,11 +51,13 @@ export default function CatalogueSection({ data }: CatalogueSectionProps) {
           </div>
         </div>
 
-        <Paragraph>{t("catalogue.description")}</Paragraph>
+        <Paragraph className="xl:max-w-none">
+          {t("catalogue.description")}
+        </Paragraph>
       </div>
 
       {/* Image column — small, portrait, matches the reference photo's proportions */}
-      <div className="lg:col-span-6 lg:flex lg:justify-end">
+      <div className="lg:col-span-6 lg:flex lg:justify-end xl:col-span-4">
         <div className="w-full lg:max-w-95">
           <motion.div
             initial={{ opacity: 0, scale: 0.97 }}
@@ -89,12 +91,13 @@ export default function CatalogueSection({ data }: CatalogueSectionProps) {
           text={ctaText}
           textColor="text-background font-medium"
           href={data.downloadHref}
-          aria-label={t("catalogue.downloadAria").replace("{title}", data.title)}
+          aria-label={t("catalogue.downloadAria").replace(
+            "{title}",
+            data.title,
+          )}
           className="z-999"
         />
       </motion.div>
     </HomepageSection>
   );
 }
-
-

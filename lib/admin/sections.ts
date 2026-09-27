@@ -4,11 +4,12 @@ import { stripLocalePrefix } from "@/lib/i18n/routing";
  * Admin navigation registry — the single source of truth for the admin
  * section list.
  *
- * Both consumers read from here so they can never drift:
- *   - the sidebar (components/admin/AdminSidebar.tsx) renders these as its
- *     menu items, pairing each `href` with an icon locally;
- *   - the topbar (components/admin/AdminTopbar.tsx) resolves the *current*
- *     section from `usePathname()` to label its breadcrumb.
+ * Consumers read from here so they can never drift:
+ *   - the sidebar (components/admin/app-sidebar.tsx) renders these as its
+ *     menu items, pairing each `href` with an icon locally, and uses
+ *     isAdminNavItemActive() to highlight the current section;
+ *   - getAdminNavItem() resolves the *current* section from `usePathname()`
+ *     for breadcrumb-style labels.
  *
  * Instructions:
  *   - Keep this a pure data module: no React, no icon components, no
