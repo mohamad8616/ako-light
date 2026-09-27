@@ -122,7 +122,10 @@ export async function createPendingOrder(
         data: orderItems.map((item) => ({ ...item, orderId: order.id })),
       });
 
-      return { orderId: order.id, totalAmount: Number(order.totalAmount.toString()) };
+      return {
+        orderId: order.id,
+        totalAmount: Number(order.totalAmount.toString()),
+      };
     });
 
     const appBaseUrl =

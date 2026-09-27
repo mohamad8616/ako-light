@@ -1,8 +1,8 @@
 import PaymentCallbackState from "@/components/checkout/PaymentCallbackState";
-import { prisma } from "@/lib/db/prisma";
 import { auth } from "@/lib/auth/auth";
-import { verify } from "@/lib/payments/zarinpal";
+import { prisma } from "@/lib/db/prisma";
 import { isLocale } from "@/lib/i18n/routing";
+import { verify } from "@/lib/payments/zarinpal";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
@@ -11,21 +11,28 @@ export default async function CheckoutCallbackPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ orderId?: string | string[]; Authority?: string | string[]; Status?: string | string[] }>;
+  searchParams: Promise<{
+    orderId?: string | string[];
+    Authority?: string | string[];
+    Status?: string | string[];
+  }>;
 }) {
   const [{ locale }, query] = await Promise.all([params, searchParams]);
   if (!isLocale(locale)) notFound();
 
   const session = await auth.api.getSession({ headers: await headers() });
   const orderId = typeof query.orderId === "string" ? query.orderId : undefined;
-  const authority = typeof query.Authority === "string" ? query.Authority : undefined;
+  const authority =
+    typeof query.Authority === "string" ? query.Authority : undefined;
   const status = typeof query.Status === "string" ? query.Status : undefined;
 
   if (!orderId) {
     return (
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
         <h1 className="text-3xl font-medium">Payment failed</h1>
-        <p className="mt-4 text-stone-600">The payment callback did not include an order reference.</p>
+        <p className="mt-4 text-stone-600">
+          The payment callback did not include an order reference.
+        </p>
       </main>
     );
   }
@@ -46,7 +53,9 @@ export default async function CheckoutCallbackPage({
     return (
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
         <h1 className="text-3xl font-medium">Unable to verify order</h1>
-        <p className="mt-4 text-stone-600">The referenced payment order could not be loaded for this session.</p>
+        <p className="mt-4 text-stone-600">
+          The referenced payment order could not be loaded for this session.
+        </p>
       </main>
     );
   }
@@ -64,7 +73,10 @@ export default async function CheckoutCallbackPage({
     return (
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
         <h1 className="text-3xl font-medium">Payment was not completed</h1>
-        <p className="mt-4 text-stone-600">The payment gateway returned a failed or cancelled result. You can retry the checkout.</p>
+        <p className="mt-4 text-stone-600">
+          The payment gateway returned a failed or cancelled result. You can
+          retry the checkout.
+        </p>
       </main>
     );
   }
@@ -96,14 +108,22 @@ export default async function CheckoutCallbackPage({
                 Your order has been paid successfully.
               </p>
               <div className="mt-6 rounded border border-stone-200 bg-white p-4 text-sm text-stone-700">
-                Order ID: <span className="font-mono break-all">{order.id}</span>
-                <div className="mt-2">Reference ID: <span className="font-mono break-all">{result.refId}</span></div>
+                Order ID:{" "}
+                <span className="font-mono break-all">{order.id}</span>
+                <div className="mt-2">
+                  Reference ID:{" "}
+                  <span className="font-mono break-all">{result.refId}</span>
+                </div>
               </div>
             </>
           ) : (
             <>
-              <h1 className="text-3xl font-medium">Payment verification failed</h1>
-              <p className="mt-4 text-stone-600">The payment was not verified by ZarinPal. Please retry checkout.</p>
+              <h1 className="text-3xl font-medium">
+                Payment verification failed
+              </h1>
+              <p className="mt-4 text-stone-600">
+                The payment was not verified by ZarinPal. Please retry checkout.
+              </p>
             </>
           )}
         </main>
@@ -123,7 +143,9 @@ export default async function CheckoutCallbackPage({
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
         <h1 className="text-3xl font-medium">Payment verification failed</h1>
         <p className="mt-4 text-stone-600">
-          {error instanceof Error ? error.message : "We could not verify the payment with ZarinPal."}
+          {error instanceof Error
+            ? error.message
+            : "We could not verify the payment with ZarinPal."}
         </p>
       </main>
     );

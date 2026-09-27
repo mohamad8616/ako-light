@@ -78,8 +78,11 @@ export default defineConfig({
           name: "server",
           environment: "node",
           include: ["tests/server/**/*.test.ts"],
-          hookTimeout: 30_000,
-          testTimeout: 30_000,
+          // Action-tier tests do 2-3 sequential real DB writes each — more
+          // round-trips than a typical repository test, hence more exposed to
+          // connection-pressure delays against the remote dev DB.
+          hookTimeout: 60_000,
+          testTimeout: 60_000,
         },
       },
     ],

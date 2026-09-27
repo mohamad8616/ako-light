@@ -9,7 +9,9 @@ import {
 
 describe("zarinpal payment helpers", () => {
   it("uses the sandbox base URL in sandbox mode", () => {
-    expect(buildZarinPalBaseUrl("sandbox")).toBe("https://sandbox.zarinpal.com");
+    expect(buildZarinPalBaseUrl("sandbox")).toBe(
+      "https://sandbox.zarinpal.com",
+    );
   });
 
   it("converts EUR amounts to the Rial unit ZarinPal expects", () => {
