@@ -1,74 +1,65 @@
-Build the checkout and payment flow for ako-light-cline: cart stays
-client-side as it is today; a real Order is only created in the database
-at checkout time, paid for via ZarinPal (sandbox mode first).
+Replace the hardcoded EUR→Rial conversion with two independent,
+admin-entered prices per product: priceEur (shown to en-locale visitors,
+informational only) and priceToman (shown to fa-locale visitors, and the
+ONLY value ever actually charged via ZarinPal, converted ×10 to Rial at
+the API call boundary — that ×10 is a fixed Toman-to-Rial fact, not a
+market rate, safe to hardcode).
 
 PART A — schema
 
-1. Add to prisma/schema.prisma:
-   - Order: id, userId (FK to User.id), status (enum: pending, paid,
-     failed, cancelled — Prisma enum), totalAmount (Decimal, same unit as
-     Product.price — confirm and document which unit that is), currency
-     (String, default matching that unit), zarinpalAuthority (String?,
-     nullable until the payment request succeeds), zarinpalRefId (String?,
-     nullable until verified), shipping address fields (recipientName,
-     phone, addressLine, city, postalCode — plain fields on Order for
-     this pass, not a separate reusable Address model, to keep scope
-     tight), createdAt/updatedAt.
-   - OrderItem: id, orderId (FK), productId (FK to Product.id),
-     quantity Int, unitPriceAtPurchase (Decimal — snapshot the price at
-     order time, never read live Product.price for a past order), plus
-     enough denormalized product info (name Json, image) to display order
-     history even if the product is later deleted or renamed.
-   Generate one migration.
+1. In prisma/schema.prisma, replace Product.price (Decimal) with:
+   priceEur Decimal, priceToman Decimal @default(0). Generate a migration
+   that renames the existing price data into priceEur (preserving current
+   EUR values) and adds priceToman defaulting to 0.
+2. Because priceToman will be 0 for every existing product until an admin
+   fills it in, treat priceToman <= 0 as "not available for purchase" —
+   same disabled-button treatment as existsInStore: false (both checks
+   should combine: a product needs existsInStore true AND priceToman > 0
+   to show an enabled buy button). This prevents anyone from accidentally
+   completing a real order at a 0 Toman price before admins finish
+   backfilling.
 
-PART B — checkout page + order creation
+PART B — admin form
 
-2. A checkout page (app/[locale]/(site)/checkout/page.tsx or similar) —
-   requires an authenticated session (redirect to /sign-in with a
-   callback if not signed in, same pattern as elsewhere). Reads the
-   current client-side cart, presents an address form, and on submit:
-   - Creates the Order + OrderItems in a single transaction, status
-     "pending", snapshotting current price/name/image per item.
-   - Validates each item's existsInStore/quantity server-side before
-     creating the order (don't trust client-side cart state for stock —
-     reject or adjust quantity if a product went out of stock since it
-     was added to the cart, and tell the customer clearly which item(s)
-     were affected).
+3. Update the product zod schema and admin form to show two separate
+   price inputs (priceEur, priceToman), both required, each validated as
+   a positive number. Label them clearly (e.g. "Price (EUR) — shown to
+   English visitors" / "Price (Toman) — shown to Persian visitors and
+   charged at checkout") so it's obvious in the UI these aren't the same
+   value converted, they're independently set.
 
-PART C — ZarinPal integration
+PART C — public display
 
-3. Create lib/payments/zarinpal.ts with a request() and verify()
-   function, calling ZarinPal's v4 JSON API. Before writing this, verify
-   the exact currency unit expected against real ZarinPal documentation
-   (not just my summary above) — if there's any doubt, use sandbox mode
-   and log the request/response clearly during testing so a wrong-unit
-   bug is obvious immediately rather than silently 10x/0.1x wrong.
-   Env vars: ZARINPAL_MERCHANT_ID, ZARINPAL_MODE (sandbox|production),
-   documented in .env.example.
-4. After creating the pending Order, call request() with the order's
-   totalAmount, a description, and a callback URL
-   (/checkout/callback?orderId=...), store the returned Authority on the
-   Order, and redirect the customer to ZarinPal's hosted payment page.
-5. Build the callback route (app/[locale]/(site)/checkout/callback/page.tsx
-   or a route handler) that receives Authority + Status from ZarinPal,
-   calls verify() with the matching amount, and updates the Order's
-   status to "paid" (storing zarinpalRefId) or "failed" accordingly.
-   Never trust the client-side Status param alone — always call verify()
-   server-side before marking anything paid.
-6. On successful payment: clear the client-side cart, show an order
-   confirmation page with the ref_id. On failure: show a clear error and
-   let the customer retry (don't leave a dangling "pending" order forever
-   — either allow retry against the same Order or mark it "failed" and
-   let them start a new checkout).
+4. Everywhere a product price is currently displayed (product detail
+   page, ProductsGrid cards, cart, order confirmation), show priceEur
+   when the current locale is "en" and priceToman (formatted with the
+   Persian "تومان" unit, thousands-separated per existing Persian number
+   formatting conventions already used elsewhere in the app) when the
+   locale is "fa" — do not show both at once.
 
-PART D — verification
+PART D — checkout/payment
 
-7. Run npx tsc --noEmit, pnpm run build, pnpm test. Manually confirm a
-   full sandbox round-trip: add items to cart, checkout, get redirected
-   to ZarinPal's sandbox payment page, complete a test payment, land back
-   on a confirmation page with a real ref_id, and confirm the Order row
-   in the database shows status "paid" with the correct total.
+5. Remove ZARINPAL_DEFAULT_RIAL_RATE and toZarinPalAmount's EUR-based
+   conversion entirely from lib/payments/zarinpal.ts. Replace with a
+   direct, clearly-commented Toman→Rial conversion:
+     const toRial = (toman: number) => toman * 10;
+   Order creation and the ZarinPal request must always use
+   product.priceToman (never priceEur) for the actual charge amount,
+   regardless of which locale the checkout was initiated from.
+6. OrderItem.unitPriceAtPurchase should snapshot priceToman specifically
+   (rename the field or add a comment clarifying the unit is Toman) —
+   this is the real transaction record and must never be ambiguous about
+   currency/unit.
 
-Report back: which currency unit you confirmed ZarinPal expects and how
-you verified it, and paste the actual sandbox round-trip result (order
-id, ref_id, final status) rather than just "it worked."
+PART E — verification
+
+7. Update tests/unit/payments/zarinpal.test.ts to remove the old
+   rate-based conversion tests and add cases for the fixed ×10 Toman→Rial
+   conversion instead.
+8. Run npx tsc --noEmit, pnpm run build, pnpm test. Manually confirm: an
+   English-locale product page shows the EUR price, a Persian-locale page
+   shows the Toman price, and a full sandbox checkout charges exactly
+   priceToman × 10 in Rial regardless of which locale you started from.
+9. Report which existing products (if any) still have priceToman: 0
+   after the migration, so those can be manually priced before this goes
+   live — a plain list of product slugs is enough.
