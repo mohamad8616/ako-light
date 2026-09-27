@@ -6,7 +6,6 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { createCheckout } from "@/lib/cart/checkout";
 import { useCart, useCartTotal, type CartItem } from "@/lib/cart/store";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { productKey } from "@/lib/i18n/localized";
@@ -14,6 +13,7 @@ import type { Product } from "@/lib/data/productCategories";
 import { resolveCartProducts } from "@/lib/actions/cart";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { getLocalizedPath } from "@/lib/i18n/routing";
 
 interface Props {
   open: boolean;
@@ -68,24 +68,7 @@ export default function CartSheet({ open, onOpenChange }: Props) {
   }, [open, items]);
 
   const [notes, setNotes] = useState("");
-  const [checkingOut, setCheckingOut] = useState(false);
-  const [checkoutError, setCheckoutError] = useState<string | null>(null);
-
-  async function handleCheckout() {
-    setCheckingOut(true);
-    setCheckoutError(null);
-    try {
-      const { url } = await createCheckout(items);
-      window.location.href = url;
-    } catch (err) {
-      // The technical error stays in the console for developers; the user
-      // always sees the localized message.
-      console.error("Checkout failed:", err);
-      setCheckoutError(t("cart.error"));
-    } finally {
-      setCheckingOut(false);
-    }
-  }
+  const checkoutPath = getLocalizedPath("/checkout", lang);
 
   return (
     <Sheet
@@ -100,7 +83,7 @@ export default function CartSheet({ open, onOpenChange }: Props) {
     >
       <SheetContent
         side={side}
-        
+
         className={`z-999 ${fontClass} flex flex-col border-0 bg-white p-6 text-stone-950 outline-0`}
         motionProps={{
           initial: { x: slideX },
@@ -211,17 +194,12 @@ export default function CartSheet({ open, onOpenChange }: Props) {
               {t("cart.shippingNote")}
             </p>
 
-            {checkoutError && (
-              <p className="text-xs text-red-600">{checkoutError}</p>
-            )}
-
-            <button
-              onClick={handleCheckout}
-              disabled={checkingOut}
-              className="w-full cursor-pointer bg-stone-950 py-3 text-sm font-medium tracking-tight text-white uppercase transition-colors hover:bg-stone-800 disabled:cursor-not-allowed disabled:opacity-60"
+            <a
+              href={checkoutPath}
+              className="block w-full bg-stone-950 py-3 text-center text-sm font-medium tracking-tight text-white uppercase transition-colors hover:bg-stone-800"
             >
-              {checkingOut ? t("cart.redirecting") : t("cart.checkout")}
-            </button>
+              {t("cart.checkout")}
+            </a>
           </div>
         )}
       </SheetContent>

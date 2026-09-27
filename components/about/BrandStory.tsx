@@ -6,22 +6,33 @@ import SectionImage from "@/utility/SectionImage";
 import SectionTitle from "@/utility/SectionTitle";
 import { aboutImages } from "@/lib/data/about";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { pick } from "@/lib/i18n/localized";
+import type { AboutBrandStoryContent } from "@/lib/repositories/about-page";
 import Image from "next/image";
 
-export default function BrandStory() {
-  const { t } = useLanguage();
+// Server-fetched brand-story copy (myPlan.md Part C): the page resolves the
+// AboutPageSection "brandStorySection" row and passes it down — the title,
+// intro grid, block paragraphs and image alt texts all come from the database
+// instead of t("about.brandStory.*"). The images themselves stay in
+// lib/data/about.ts (not translation content).
+interface BrandStoryProps {
+  content: AboutBrandStoryContent;
+}
+
+export default function BrandStory({ content }: BrandStoryProps) {
+  const { lang } = useLanguage();
   return (
     <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
       <div className="border-background/10 space-y-20 border-t">
         {/* Title */}
         <div className="overflow-hidden lg:w-2/6">
-          <SectionTitle className="font-medium">{t("about.brandStory.title")}</SectionTitle>
+          <SectionTitle className="font-medium">{pick(content.title, lang)}</SectionTitle>
         </div>
 
         {/* Three-column paragraph grid */}
         <div className="mt-12 grid grid-cols-1 gap-8 md:mt-16 lg:grid-cols-3 md:gap-10">
-          {["1", "2", "3", "4"].map((n) => (
-            <Paragraph key={n}>{t(`about.brandStory.intro${n}`)}</Paragraph>
+          {content.paragraphs.map((paragraph, index) => (
+            <Paragraph key={index}>{pick(paragraph, lang)}</Paragraph>
           ))}
         </div>
 
@@ -30,15 +41,15 @@ export default function BrandStory() {
           <SectionImage className="flex-4 md:mt-20">
             <Image
               src={aboutImages.brandStoryBlock1}
-              alt={t("about.brandStory.block1Alt")}
+              alt={pick(content.block1Alt, lang)}
               fill
               className="object-cover"
             />
           </SectionImage>
           <div className="flex-2 space-y-5 lg:px-14 text-xs">
-            {["1", "2"].map((n) => (
-              <Paragraph key={n} className={n === "1" ? "text-xs" : undefined}>
-                {t(`about.brandStory.block1.p${n}`)}
+            {content.block1Paragraphs.map((paragraph, index) => (
+              <Paragraph key={index} className={index === 0 ? "text-xs" : undefined}>
+                {pick(paragraph, lang)}
               </Paragraph>
             ))}
           </div>
@@ -49,12 +60,12 @@ export default function BrandStory() {
           <SectionImage>
             <Image
               src={aboutImages.brandStoryBlock2}
-              alt={t("about.brandStory.block2Alt")}
+              alt={pick(content.block2Alt, lang)}
               fill
               className="object-cover"
             />
           </SectionImage>
-          <Paragraph>{t("about.brandStory.block2.p1")}</Paragraph>
+          <Paragraph>{pick(content.block2Paragraph, lang)}</Paragraph>
         </div>
       </div>
     </HomepageSection>

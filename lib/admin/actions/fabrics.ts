@@ -12,6 +12,7 @@
  * SlugHistory coverage for fabrics (it is not part of CatalogModelType), which
  * is why no recordSlugChange TODO appears here.
  */
+import type { Prisma } from "@/generated/prisma/client";
 import { requireAdminAccess } from "@/lib/admin/access";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
@@ -33,6 +34,7 @@ import {
 
 export async function createFabricAction(
   input: FabricFormValues,
+  db?: Prisma.TransactionClient,
 ): Promise<ActionResult<string>> {
   await requireAdminAccess();
 
@@ -42,7 +44,7 @@ export async function createFabricAction(
   }
 
   try {
-    const id = await createFabricItem(parsed.data);
+    const id = await createFabricItem(parsed.data, db);
     revalidateCatalog("fabrics", { id });
     return actionOk(id);
   } catch (error) {
@@ -53,6 +55,7 @@ export async function createFabricAction(
 export async function updateFabricAction(
   id: string,
   input: FabricFormValues,
+  db?: Prisma.TransactionClient,
 ): Promise<ActionResult<undefined>> {
   await requireAdminAccess();
 
@@ -62,7 +65,7 @@ export async function updateFabricAction(
   }
 
   try {
-    await updateFabricItem(id, parsed.data);
+    await updateFabricItem(id, parsed.data, db);
     revalidateCatalog("fabrics", { id });
     return actionOk(undefined);
   } catch (error) {
@@ -72,11 +75,12 @@ export async function updateFabricAction(
 
 export async function destroyFabricAction(
   id: string,
+  db?: Prisma.TransactionClient,
 ): Promise<ActionResult<undefined>> {
   await requireAdminAccess();
 
   try {
-    await deleteFabricItem(id);
+    await deleteFabricItem(id, db);
     revalidateCatalog("fabrics");
     return actionOk(undefined);
   } catch (error) {

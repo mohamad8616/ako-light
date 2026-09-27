@@ -44,6 +44,8 @@ const repoMocks = vi.hoisted(() => ({
   updateProjectDarkBackgroundFeature: vi.fn(),
   updateHomeCollectionFeature: vi.fn(),
   updateCatalogueFeature: vi.fn(),
+  updateAboutPageSection: vi.fn(),
+  updateS34PageSection: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/auth", () => ({
@@ -111,6 +113,12 @@ vi.mock("@/lib/repositories/homepage-features", () => ({
   updateHomeCollectionFeature: repoMocks.updateHomeCollectionFeature,
   updateCatalogueFeature: repoMocks.updateCatalogueFeature,
 }));
+vi.mock("@/lib/repositories/about-page", () => ({
+  updateAboutPageSection: repoMocks.updateAboutPageSection,
+}));
+vi.mock("@/lib/repositories/s34-page", () => ({
+  updateS34PageSection: repoMocks.updateS34PageSection,
+}));
 
 import {
   createProductAction,
@@ -164,6 +172,8 @@ import {
   updateProjectBannerFeatureAction,
   updateProjectDarkBackgroundFeatureAction,
 } from "@/lib/admin/actions/homepage";
+import { updateAboutPageSectionAction } from "@/lib/admin/actions/about";
+import { updateS34PageSectionAction } from "@/lib/admin/actions/s34";
 
 const PAIR = { en: "Test", fa: "تست" };
 
@@ -304,6 +314,16 @@ const catalogueFeatureInput = {
   image: "/images/catalogue.jpg",
 };
 
+const aboutSectionInput = {
+  firstLine: PAIR,
+  secondLine: PAIR,
+};
+
+const s34SectionInput = {
+  kicker: PAIR,
+  paragraphs: [PAIR],
+};
+
 describe("admin actions called directly as plain user", () => {
   const DENIED_URL = "/sign-in?denied=1";
 
@@ -414,6 +434,18 @@ describe("admin actions called directly as plain user", () => {
     await expectDenied(updateProjectDarkBackgroundFeatureAction(projectDarkInput as never), repoMocks.updateProjectDarkBackgroundFeature);
     await expectDenied(updateHomeCollectionFeatureAction(homeCollectionInput as never), repoMocks.updateHomeCollectionFeature);
     await expectDenied(updateCatalogueFeatureAction(catalogueFeatureInput as never), repoMocks.updateCatalogueFeature);
+    expectNothingTouched();
+  });
+
+  it("page section updates reject a user session", async () => {
+    await expectDenied(
+      updateAboutPageSectionAction("heroSection", aboutSectionInput),
+      repoMocks.updateAboutPageSection,
+    );
+    await expectDenied(
+      updateS34PageSectionAction("conceptSection", s34SectionInput),
+      repoMocks.updateS34PageSection,
+    );
     expectNothingTouched();
   });
 

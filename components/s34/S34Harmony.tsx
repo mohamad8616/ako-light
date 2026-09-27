@@ -1,17 +1,27 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { pick } from "@/lib/i18n/localized";
+import type { S34KickerSectionContent } from "@/lib/repositories/s34-page";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import { motion } from "framer-motion";
 import { EASE } from "../../utility/HomepageSection";
 
-export default function S34Harmony() {
-  const { t } = useLanguage();
+// Server-fetched harmony copy (myPlan.md Part C): the page resolves the
+// S34PageSection "harmonySection" row and passes it down — the kicker heading
+// and both paragraphs come from the database instead of t("s34.harmony.*").
+interface S34HarmonyProps {
+  content: S34KickerSectionContent;
+}
 
-  const kicker = t("s34.harmony.kicker");
-  const p1 = t("s34.harmony.p1");
-  const p2 = t("s34.harmony.p2");
+export default function S34Harmony({ content }: S34HarmonyProps) {
+  const { lang } = useLanguage();
+
+  const kicker = pick(content.kicker, lang);
+  const paragraphs = content.paragraphs.map((paragraph) =>
+    pick(paragraph, lang),
+  );
 
   return (
     <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
@@ -31,8 +41,9 @@ export default function S34Harmony() {
 
         {/* Three-column paragraphs */}
         <div className="mt-12 grid grid-cols-1 gap-8 md:mt-16 md:grid-cols-3 md:gap-10">
-          <Paragraph>{p1}</Paragraph>
-          <Paragraph>{p2}</Paragraph>
+          {paragraphs.map((paragraph, index) => (
+            <Paragraph key={index}>{paragraph}</Paragraph>
+          ))}
         </div>
       </div>
     </HomepageSection>

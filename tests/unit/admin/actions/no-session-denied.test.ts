@@ -2,8 +2,9 @@
  * Step 2 — IDOR / direct server-action access with NO session at all.
  *
  * Simulates a raw unauthenticated POST to a server action's endpoint: the
- * SAME 32 admin action entry points as Step 1 (9 entities x
- * create/update/delete + 5 homepage singleton updates), called directly with
+ * SAME 34 admin action entry points as Step 1 (9 entities x
+ * create/update/delete + 5 homepage singleton updates + 2 page-section
+ * updates), called directly with
  * `auth.api.getSession()` resolving to null. Proves each call is rejected by
  * the real `requireAdminAccess()` via redirect("/sign-in?denied=1") and that
  * no repository write and no revalidation is touched.
@@ -53,6 +54,8 @@ const repoMocks = vi.hoisted(() => ({
   updateProjectDarkBackgroundFeature: vi.fn(),
   updateHomeCollectionFeature: vi.fn(),
   updateCatalogueFeature: vi.fn(),
+  updateAboutPageSection: vi.fn(),
+  updateS34PageSection: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/auth", () => ({
@@ -120,6 +123,12 @@ vi.mock("@/lib/repositories/homepage-features", () => ({
   updateHomeCollectionFeature: repoMocks.updateHomeCollectionFeature,
   updateCatalogueFeature: repoMocks.updateCatalogueFeature,
 }));
+vi.mock("@/lib/repositories/about-page", () => ({
+  updateAboutPageSection: repoMocks.updateAboutPageSection,
+}));
+vi.mock("@/lib/repositories/s34-page", () => ({
+  updateS34PageSection: repoMocks.updateS34PageSection,
+}));
 
 import {
   createProductAction,
@@ -173,6 +182,8 @@ import {
   updateProjectBannerFeatureAction,
   updateProjectDarkBackgroundFeatureAction,
 } from "@/lib/admin/actions/homepage";
+import { updateAboutPageSectionAction } from "@/lib/admin/actions/about";
+import { updateS34PageSectionAction } from "@/lib/admin/actions/s34";
 
 const PAIR = { en: "Test", fa: "تست" };
 
@@ -313,6 +324,16 @@ const catalogueFeatureInput = {
   image: "/images/catalogue.jpg",
 };
 
+const aboutSectionInput = {
+  firstLine: PAIR,
+  secondLine: PAIR,
+};
+
+const s34SectionInput = {
+  kicker: PAIR,
+  paragraphs: [PAIR],
+};
+
 describe("admin actions called directly with no session", () => {
   const DENIED_URL = "/sign-in?denied=1";
 
@@ -423,6 +444,18 @@ describe("admin actions called directly with no session", () => {
     await expectDenied(updateProjectDarkBackgroundFeatureAction(projectDarkInput as never), repoMocks.updateProjectDarkBackgroundFeature);
     await expectDenied(updateHomeCollectionFeatureAction(homeCollectionInput as never), repoMocks.updateHomeCollectionFeature);
     await expectDenied(updateCatalogueFeatureAction(catalogueFeatureInput as never), repoMocks.updateCatalogueFeature);
+    expectNothingTouched();
+  });
+
+  it("page section updates reject with no session", async () => {
+    await expectDenied(
+      updateAboutPageSectionAction("heroSection", aboutSectionInput),
+      repoMocks.updateAboutPageSection,
+    );
+    await expectDenied(
+      updateS34PageSectionAction("conceptSection", s34SectionInput),
+      repoMocks.updateS34PageSection,
+    );
     expectNothingTouched();
   });
 

@@ -5,6 +5,7 @@ import S34Hero from "@/components/s34/S34Hero";
 import Secuence from "@/components/s34/Secuence";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import { getS34GalleryImages } from "@/lib/data/s34";
+import { getS34PageContent } from "@/lib/repositories/s34-page";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
@@ -46,6 +47,11 @@ export default async function S34Page({
   const lang = resolveLocale(locale);
   const t = translations[lang];
 
+  // myPlan.md Part C — section copy now comes from S34PageSection rows
+  // (seeded from the former translation keys, admin-editable); `t` above is
+  // kept for the SEO/JSON-LD metadata only, which is page chrome.
+  const content = await getS34PageContent();
+
   const jsonLdData = [
     webPageJsonLd(
       t["page.s34.title"],
@@ -60,16 +66,16 @@ export default async function S34Page({
     <>
       <JsonLdRenderer data={jsonLdData} />
       <main className="bg-background-secondary w-full space-y-48">
-        <S34Hero />
-        <S34Concept />
-        <Secuence />
+        <S34Hero content={content.hero} />
+        <S34Concept content={content.concept} />
+        <Secuence content={content.gallery} />
         <ImageGalleryCarousel
           multiWidth={true}
           mobileColumn={true}
           images={images}
           circle={true}
         />
-        <S34Harmony />
+        <S34Harmony content={content.harmony} />
         <ProjectsSections />
       </main>
     </>

@@ -10,6 +10,7 @@
  * failures into the structured `ActionResult` contract. All persistence goes
  * through lib/repositories/products.ts — no Prisma calls here.
  */
+import type { Prisma } from "@/generated/prisma/client";
 import { requireAdminAccess } from "@/lib/admin/access";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
@@ -38,6 +39,7 @@ import {
 /** Creates a product (images included) and returns its new id. */
 export async function createProductAction(
   input: ProductFormValues,
+  db?: Prisma.TransactionClient,
 ): Promise<ActionResult<string>> {
   await requireAdminAccess();
 
@@ -47,7 +49,7 @@ export async function createProductAction(
   }
 
   try {
-    const id = await createProduct(parsed.data);
+    const id = await createProduct(parsed.data, db);
     revalidateCatalog("products", { id });
     return actionOk(id);
   } catch (error) {
@@ -58,6 +60,7 @@ export async function createProductAction(
 export async function updateProductAction(
   id: string,
   input: ProductFormValues,
+  db?: Prisma.TransactionClient,
 ): Promise<ActionResult<undefined>> {
   await requireAdminAccess();
 
@@ -67,7 +70,7 @@ export async function updateProductAction(
   }
 
   try {
-    await updateProduct(id, parsed.data);
+    await updateProduct(id, parsed.data, db);
     revalidateCatalog("products", { id });
     return actionOk(undefined);
   } catch (error) {
@@ -77,11 +80,12 @@ export async function updateProductAction(
 
 export async function destroyProductAction(
   id: string,
+  db?: Prisma.TransactionClient,
 ): Promise<ActionResult<undefined>> {
   await requireAdminAccess();
 
   try {
-    await deleteProduct(id);
+    await deleteProduct(id, db);
     revalidateCatalog("products");
     return actionOk(undefined);
   } catch (error) {

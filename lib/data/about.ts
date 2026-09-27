@@ -1,6 +1,7 @@
-﻿// About-page image assets. All /about copy lives in lib/i18n/translations.ts
-// under the "about.*" keys and is resolved via useLanguage().t in the
-// components/about components.
+﻿// About-page image assets. The page's *textual* copy moved to the
+// `AboutPageSection` table (see lib/repositories/about-page.ts, seeded from
+// lib/i18n/translations/about.ts); only image URLs live here, because they are
+// not translation content (myPlan.md Part C).
 
 export const aboutImages = {
   brandStoryBlock1: "https://www.henge07.com/app/uploads/2025/07/Henge_0730.jpg",

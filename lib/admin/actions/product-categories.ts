@@ -8,6 +8,7 @@
  * `ActionResult`. Deleting a category cascades to its products — the delete
  * dialog surfaces `ProductCategoryAdminRow.productCount` before confirming.
  */
+import type { Prisma } from "@/generated/prisma/client";
 import { requireAdminAccess } from "@/lib/admin/access";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
@@ -34,6 +35,7 @@ import {
 
 export async function createProductCategoryAction(
   input: ProductCategoryFormValues,
+  db?: Prisma.TransactionClient,
 ): Promise<ActionResult<string>> {
   await requireAdminAccess();
 
@@ -43,7 +45,7 @@ export async function createProductCategoryAction(
   }
 
   try {
-    const id = await createProductCategory(parsed.data);
+    const id = await createProductCategory(parsed.data, db);
     revalidateCatalog("categories", { id });
     return actionOk(id);
   } catch (error) {
@@ -54,6 +56,7 @@ export async function createProductCategoryAction(
 export async function updateProductCategoryAction(
   id: string,
   input: ProductCategoryFormValues,
+  db?: Prisma.TransactionClient,
 ): Promise<ActionResult<undefined>> {
   await requireAdminAccess();
 
@@ -63,7 +66,7 @@ export async function updateProductCategoryAction(
   }
 
   try {
-    await updateProductCategory(id, parsed.data);
+    await updateProductCategory(id, parsed.data, db);
     revalidateCatalog("categories", { id });
     return actionOk(undefined);
   } catch (error) {
@@ -73,11 +76,12 @@ export async function updateProductCategoryAction(
 
 export async function destroyProductCategoryAction(
   id: string,
+  db?: Prisma.TransactionClient,
 ): Promise<ActionResult<undefined>> {
   await requireAdminAccess();
 
   try {
-    await deleteProductCategory(id);
+    await deleteProductCategory(id, db);
     revalidateCatalog("categories");
     return actionOk(undefined);
   } catch (error) {

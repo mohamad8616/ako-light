@@ -36,6 +36,18 @@ export default defineConfig({
   },
   test: {
     reporters: [new AIReporter()],
+    // DB-tier serialization (fabric_item 11-vs-10 drift + product-categories
+    // count race): the `server` and `integration` projects share one dev
+    // database, and Vitest schedules projects/files concurrently by default.
+    // Even with every write rolled back, a count-assertion in one project can
+    // interleave with an open (not-yet-rolled-back) transaction in the other
+    // and observe its uncommitted rows. `fileParallelism: false` +
+    // `maxWorkers: 1` forces test FILES to run strictly one-at-a-time across
+    // ALL projects, so no two DB-touching files ever overlap. Slower, but
+    // this exact flake has "looked fixed" three times on parallelism.
+    pool: "forks",
+    fileParallelism: false,
+    maxWorkers: 1,
     projects: [
       {
         test: {

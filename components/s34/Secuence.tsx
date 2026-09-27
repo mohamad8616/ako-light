@@ -1,6 +1,8 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { pick } from "@/lib/i18n/localized";
+import type { S34KickerSectionContent } from "@/lib/repositories/s34-page";
 import HomepageSection from "@/utility/HomepageSection";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionTitle from "@/utility/SectionTitle";
@@ -10,12 +12,21 @@ import MiddleScreenVideo from "../ui/MiddleFullscreenVideo";
 const GALLERY_IMAGE =
   "https://www.henge07.com/app/uploads/2024/06/Henge_SR24_41_C-3.jpg";
 
-export default function Secuence() {
-  const { t } = useLanguage();
+// Server-fetched gallery copy (myPlan.md Part C): the page resolves the
+// S34PageSection "gallerySection" row and passes it down — the kicker heading
+// and both paragraphs come from the database instead of t("s34.gallery.*").
+// The lead photo and the video below are hardcoded (not translation content).
+interface SecuenceProps {
+  content: S34KickerSectionContent;
+}
 
-  const kicker = t("s34.gallery.kicker");
-  const p1 = t("s34.gallery.p1");
-  const p2 = t("s34.gallery.p2");
+export default function Secuence({ content }: SecuenceProps) {
+  const { lang } = useLanguage();
+
+  const kicker = pick(content.kicker, lang);
+  const [p1, p2] = content.paragraphs.map((paragraph) =>
+    pick(paragraph, lang),
+  );
 
   return (
     <>

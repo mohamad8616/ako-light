@@ -22,6 +22,14 @@ import { productCategories } from "@/lib/data/productCategories";
 import { projects } from "@/lib/data/projects";
 import { loc } from "@/lib/i18n/localized";
 import { homeEn, homeFa } from "@/lib/i18n/translations/home";
+import {
+  DEFAULT_ABOUT_PAGE_CONTENT,
+  type AboutSectionKey,
+} from "@/lib/repositories/about-page";
+import {
+  DEFAULT_S34_PAGE_CONTENT,
+  type S34SectionKey,
+} from "@/lib/repositories/s34-page";
 import { prisma } from "@/lib/db/prisma";
 
 /** A source record that could not be mapped 1:1 onto the schema. */
@@ -549,6 +557,60 @@ async function seedHomepageFeatures(): Promise<void> {
   });
 }
 
+/**
+ * /about page sections (myPlan.md Part C).
+ *
+ * Content is built from the SAME dictionary-derived defaults the repository
+ * falls back to (lib/repositories/about-page.ts), so an unseeded database and
+ * a freshly seeded one render byte-identical copy — nothing regresses the
+ * moment this ships. `update` is intentionally empty: these rows are admin
+ * content, not a mirror of lib/data/*, so re-running the seed creates missing
+ * rows without clobbering edits made in the dashboard (same rule as the
+ * homepage feature slots above).
+ *
+ * sortOrder mirrors the render order of app/[locale]/(site)/about/page.tsx.
+ */
+async function seedAboutPageSections(): Promise<void> {
+  const rows: [AboutSectionKey, number, object][] = [
+    ["heroSection", 0, DEFAULT_ABOUT_PAGE_CONTENT.hero],
+    ["subtitleSection", 1, DEFAULT_ABOUT_PAGE_CONTENT.subtitle],
+    ["brandStorySection", 2, DEFAULT_ABOUT_PAGE_CONTENT.brandStory],
+    ["eleganceSection", 3, DEFAULT_ABOUT_PAGE_CONTENT.elegance],
+  ];
+
+  for (const [sectionKey, sortOrder, content] of rows) {
+    await prisma.aboutPageSection.upsert({
+      where: { sectionKey },
+      create: { sectionKey, sortOrder, content: asJson(content) },
+      update: {},
+    });
+  }
+}
+
+/**
+ * /s34 page sections (myPlan.md Part C) — same rules as
+ * {@link seedAboutPageSections}: dictionary-derived defaults, empty `update`,
+ * sortOrder mirrors app/[locale]/(site)/s34/page.tsx render order. Gallery
+ * photos are NOT seeded here — they stay in lib/data/s34.ts (not translation
+ * content).
+ */
+async function seedS34PageSections(): Promise<void> {
+  const rows: [S34SectionKey, number, object][] = [
+    ["heroSection", 0, DEFAULT_S34_PAGE_CONTENT.hero],
+    ["conceptSection", 1, DEFAULT_S34_PAGE_CONTENT.concept],
+    ["gallerySection", 2, DEFAULT_S34_PAGE_CONTENT.gallery],
+    ["harmonySection", 3, DEFAULT_S34_PAGE_CONTENT.harmony],
+  ];
+
+  for (const [sectionKey, sortOrder, content] of rows) {
+    await prisma.s34PageSection.upsert({
+      where: { sectionKey },
+      create: { sectionKey, sortOrder, content: asJson(content) },
+      update: {},
+    });
+  }
+}
+
 async function main(): Promise<void> {
   const startedAt = Date.now();
   const allProducts = productCategories.flatMap((c) => c.products);
@@ -583,6 +645,9 @@ async function main(): Promise<void> {
   await seedProjects();
   // Depends on flagship / project / catalogue_item rows (FKs).
   await seedHomepageFeatures();
+  // myPlan.md Part C — page content sections (no FKs; dictionary-derived).
+  await seedAboutPageSections();
+  await seedS34PageSections();
 
   const counts: [string, () => Promise<number>][] = [
     ["product_category", () => prisma.productCategory.count()],
@@ -601,6 +666,8 @@ async function main(): Promise<void> {
     ["project_dark_bg_feature", () => prisma.projectDarkBackgroundFeature.count()],
     ["home_collection_feature", () => prisma.homeCollectionFeature.count()],
     ["catalogue_feature", () => prisma.catalogueFeature.count()],
+    ["about_page_section", () => prisma.aboutPageSection.count()],
+    ["s34_page_section", () => prisma.s34PageSection.count()],
   ];
 
   console.log("\n=== Catalog seed summary ===");

@@ -40,6 +40,10 @@ export const ADMIN_CATALOG_NAV: readonly AdminNavItem[] = [
   // Site configuration rather than a catalog table, but every admin-level role
   // edits the homepage banners, so it sits with the dashboard at the top.
   { href: "/admin/homepage", labelKey: "admin.nav.homepage" },
+  // The About and S34 pages own prose section rows rather than catalog entities
+  // (myPlan.md Part D), so they are configuration sections like the homepage.
+  { href: "/admin/about", labelKey: "admin.nav.about" },
+  { href: "/admin/s34", labelKey: "admin.nav.s34" },
   { href: "/admin/products", labelKey: "admin.nav.products" },
   { href: "/admin/categories", labelKey: "admin.nav.categories" },
   { href: "/admin/designers", labelKey: "admin.nav.designers" },

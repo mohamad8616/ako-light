@@ -3,6 +3,8 @@ import { refresh, revalidatePath } from "next/cache";
 /** Every admin catalog section, as the sidebar registry spells them. */
 export type AdminSection =
   | "homepage"
+  | "about"
+  | "s34"
   | "products"
   | "categories"
   | "designers"
@@ -23,6 +25,9 @@ const PUBLIC_ROUTES: Record<AdminSection, readonly string[]> = {
   // The homepage feature slots are singleton configuration rows, not list rows:
   // the only public route file that renders them is the site's home page.
   homepage: ["/[locale]/(site)"],
+  // Same shape of singleton page-content rows, one route file per page.
+  about: ["/[locale]/(site)/about"],
+  s34: ["/[locale]/(site)/s34"],
   products: [
     "/[locale]/(site)/products",
     "/[locale]/(site)/products/[product]",

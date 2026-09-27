@@ -11,6 +11,8 @@ export const adminEn = {
   "admin.nav.fabrics": "Fabrics",
   "admin.nav.catalogue": "Catalogue",
   "admin.nav.homepage": "Homepage",
+  "admin.nav.about": "About page",
+  "admin.nav.s34": "S34 page",
   "admin.nav.admins": "Admins",
   "admin.section.products.description": "Manage the catalog product list and inventory.",
   "admin.section.categories.description": "Organize the catalog by product category.",
@@ -21,6 +23,10 @@ export const adminEn = {
   "admin.section.catalogue.description": "Manage catalogue entries and downloadable assets.",
   "admin.section.homepage.description":
     "Configure the homepage banners and the content they display.",
+  "admin.section.about.description":
+    "Edit the About page section content.",
+  "admin.section.s34.description":
+    "Edit the S34 page section content.",
   "admin.section.flagships.description":
     "Manage flagship stores and their detail pages.",
   "admin.section.projects.description":
@@ -313,6 +319,31 @@ export const adminEn = {
   "admin.homepage.slot.catalogue.description":
     "The catalogue download section.",
 
+  // Page-content sections (app/[locale]/(admin)/admin/about + .../s34) — the
+  // prose sections of the About and S34 pages (myPlan.md Part D). Card titles
+  // are addressed by section key so a form reads its own row's label.
+  "admin.page.about.section.heroSection": "Hero",
+  "admin.page.about.section.subtitleSection": "Subtitle",
+  "admin.page.about.section.brandStorySection": "Brand story",
+  "admin.page.about.section.eleganceSection": "Elegance",
+  "admin.page.s34.section.heroSection": "Hero",
+  "admin.page.s34.section.conceptSection": "Concept",
+  "admin.page.s34.section.gallerySection": "Gallery",
+  "admin.page.s34.section.harmonySection": "Harmony",
+  "admin.page.field.firstLine": "First line",
+  "admin.page.field.secondLine": "Second line",
+  "admin.page.field.subtitle": "Subtitle",
+  "admin.page.field.title": "Title",
+  "admin.page.field.kicker": "Kicker",
+  "admin.page.field.paragraph": "Paragraph",
+  "admin.page.field.paragraphs": "Paragraphs",
+  "admin.page.field.paragraphsHint":
+    "Ordered list — reorder with the arrows, remove with ×. Every row needs both languages.",
+  "admin.page.field.block1Alt": "Block 1 image alt text",
+  "admin.page.field.block1Paragraphs": "Block 1 paragraphs",
+  "admin.page.field.block2Alt": "Block 2 image alt text",
+  "admin.page.field.block2Paragraph": "Block 2 paragraph",
+
   // The remaining codes of the shared action contract (lib/admin/result.ts).
   // `tooLong` is produced by the `.max()` caps in lib/admin/schemas/common.ts:
   // oversize input maps to this code instead of the bare zod default message.
@@ -337,6 +368,8 @@ export const adminFa = {
   "admin.nav.fabrics": "پارچه‌ها",
   "admin.nav.catalogue": "کاتالوگ",
   "admin.nav.homepage": "صفحه اصلی",
+  "admin.nav.about": "صفحه درباره ما",
+  "admin.nav.s34": "صفحه اس ۳۴",
   "admin.nav.admins": "مدیران",
   "admin.section.products.description": "مدیریت لیست محصولات و موجودی کاتالوگ.",
   "admin.section.categories.description": "سازمان‌دهی کاتالوگ بر اساس دسته‌بندی محصولات.",
@@ -347,6 +380,10 @@ export const adminFa = {
   "admin.section.catalogue.description": "مدیریت ورودی‌های کاتالوگ و فایل‌های قابل‌دانلود.",
   "admin.section.homepage.description":
     "تنظیم بنرهای صفحه اصلی و محتوایی که نمایش می‌دهند.",
+  "admin.section.about.description":
+    "ویرایش محتوای بخش‌های صفحه درباره ما.",
+  "admin.section.s34.description":
+    "ویرایش محتوای بخش‌های صفحه اس ۳۴.",
   "admin.section.flagships.description":
     "مدیریت شوروم‌ها و صفحه‌های جزئیات آن‌ها.",
   "admin.section.projects.description":
@@ -637,6 +674,30 @@ export const adminFa = {
     "بنر مستقل با پیوند به فهرست مجموعه‌ها.",
   "admin.homepage.slot.catalogue": "بخش کاتالوگ",
   "admin.homepage.slot.catalogue.description": "بخش دانلود کاتالوگ.",
+
+  // بخش‌های محتوایی صفحه‌ها (admin/about و admin/s34) — بخش‌های متنی صفحه‌های
+  // درباره ما و اس ۳۴ (myPlan.md بخش D). عنوان هر کارت با کلید بخش خوانده می‌شود.
+  "admin.page.about.section.heroSection": "بخش هیرو",
+  "admin.page.about.section.subtitleSection": "زیرعنوان",
+  "admin.page.about.section.brandStorySection": "داستان برند",
+  "admin.page.about.section.eleganceSection": "شکوه و ظرافت",
+  "admin.page.s34.section.heroSection": "بخش هیرو",
+  "admin.page.s34.section.conceptSection": "مفهوم",
+  "admin.page.s34.section.gallerySection": "گالری",
+  "admin.page.s34.section.harmonySection": "هماهنگی",
+  "admin.page.field.firstLine": "خط اول",
+  "admin.page.field.secondLine": "خط دوم",
+  "admin.page.field.subtitle": "زیرعنوان",
+  "admin.page.field.title": "عنوان",
+  "admin.page.field.kicker": "پیش‌عنوان",
+  "admin.page.field.paragraph": "پاراگراف",
+  "admin.page.field.paragraphs": "پاراگراف‌ها",
+  "admin.page.field.paragraphsHint":
+    "فهرست مرتب — با فلش‌ها جابه‌جا و با × حذف کنید. هر ردیف به هر دو زبان نیاز دارد.",
+  "admin.page.field.block1Alt": "متن جانشین تصویر بلوک ۱",
+  "admin.page.field.block1Paragraphs": "پاراگراف‌های بلوک ۱",
+  "admin.page.field.block2Alt": "متن جانشین تصویر بلوک ۲",
+  "admin.page.field.block2Paragraph": "پاراگراف بلوک ۲",
 
   // کدهای باقی‌ماندهٔ قرارداد مشترک اکشن‌ها (lib/admin/result.ts)
   // کد «tooLong» از سقف‌های `.max()` در lib/admin/schemas/common.ts می‌آید.

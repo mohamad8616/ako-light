@@ -15,6 +15,8 @@ import {
   Boxes,
   Building2,
   FolderKanban,
+  Info,
+  Landmark,
   LayoutDashboard,
   LayoutTemplate,
   Package,
@@ -48,6 +50,8 @@ import {
 const NAV_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   [ADMIN_DASHBOARD_HREF]: LayoutDashboard,
   "/admin/homepage": LayoutTemplate,
+  "/admin/about": Info,
+  "/admin/s34": Landmark,
   "/admin/products": Package,
   "/admin/categories": FolderKanban,
   "/admin/designers": Users,
