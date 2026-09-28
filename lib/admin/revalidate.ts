@@ -13,7 +13,8 @@ export type AdminSection =
   | "flagships"
   | "projects"
   | "fabrics"
-  | "catalogue";
+  | "catalogue"
+  | "orders";
 
 /**
  * The public route-file pattern each section feeds, so a dashboard edit also
@@ -63,6 +64,10 @@ const PUBLIC_ROUTES: Record<AdminSection, readonly string[]> = {
     "/[locale]/(site)/materials/[material]",
   ],
   catalogue: ["/[locale]/(site)/catalogue"],
+  // Orders are admin-only records with no public route of their own — the
+  // customer-facing surfaces are the checkout callback and account pages, which
+  // do not read fulfillment status.
+  orders: [],
 };
 
 /**

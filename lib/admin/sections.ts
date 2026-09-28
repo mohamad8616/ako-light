@@ -45,6 +45,11 @@ export const ADMIN_CATALOG_NAV: readonly AdminNavItem[] = [
   // (myPlan.md Part D), so they are configuration sections like the homepage.
   { href: "/admin/about", labelKey: "admin.nav.about" },
   { href: "/admin/s34", labelKey: "admin.nav.s34" },
+  // Orders are a commercial section rather than catalog content, but they sit
+  // with the rest of the operational tables: every admin-level role views them
+  // and moves their fulfillment status (payment status is never editable here —
+  // it changes only through ZarinPal's verify() callback).
+  { href: "/admin/orders", labelKey: "admin.nav.orders" },
   { href: "/admin/products", labelKey: "admin.nav.products" },
   { href: "/admin/categories", labelKey: "admin.nav.categories" },
   { href: "/admin/designers", labelKey: "admin.nav.designers" },

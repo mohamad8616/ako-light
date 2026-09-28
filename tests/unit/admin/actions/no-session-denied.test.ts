@@ -56,6 +56,7 @@ const repoMocks = vi.hoisted(() => ({
   updateCatalogueFeature: vi.fn(),
   updateAboutPageSection: vi.fn(),
   updateS34PageSection: vi.fn(),
+  updateOrderFulfillmentStatus: vi.fn(),
 }));
 
 vi.mock("@/lib/auth/auth", () => ({
@@ -129,6 +130,9 @@ vi.mock("@/lib/repositories/about-page", () => ({
 vi.mock("@/lib/repositories/s34-page", () => ({
   updateS34PageSection: repoMocks.updateS34PageSection,
 }));
+vi.mock("@/lib/repositories/orders", () => ({
+  updateOrderFulfillmentStatus: repoMocks.updateOrderFulfillmentStatus,
+}));
 
 import {
   createProductAction,
@@ -184,6 +188,7 @@ import {
 } from "@/lib/admin/actions/homepage";
 import { updateAboutPageSectionAction } from "@/lib/admin/actions/about";
 import { updateS34PageSectionAction } from "@/lib/admin/actions/s34";
+import { updateOrderFulfillmentAction } from "@/lib/admin/actions/orders";
 
 const PAIR = { en: "Test", fa: "تست" };
 
@@ -456,6 +461,17 @@ describe("admin actions called directly with no session", () => {
     await expectDenied(
       updateS34PageSectionAction("conceptSection", s34SectionInput),
       repoMocks.updateS34PageSection,
+    );
+    expectNothingTouched();
+  });
+
+  it("order fulfillment update rejects with no session", async () => {
+    await expectDenied(
+      updateOrderFulfillmentAction({
+        id: "some-order",
+        fulfillmentStatus: "shipped",
+      }),
+      repoMocks.updateOrderFulfillmentStatus,
     );
     expectNothingTouched();
   });

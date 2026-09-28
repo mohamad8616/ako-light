@@ -36,6 +36,7 @@ import {
   UserGroupIcon,
   UserShield01Icon,
   CollectionsBookmarkIcon,
+  ShoppingBag01Icon,
 } from "@hugeicons/core-free-icons"
 import { usePathname } from "next/navigation"
 import * as React from "react"
@@ -49,6 +50,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   "/admin": <HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={2} />,
   "/admin/homepage": <HugeiconsIcon icon={Layout01Icon} strokeWidth={2} />,
   "/admin/products": <HugeiconsIcon icon={Package01Icon} strokeWidth={2} />,
+  "/admin/orders": <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={2} />,
   "/admin/categories": <HugeiconsIcon icon={Folder01Icon} strokeWidth={2} />,
   "/admin/designers": <HugeiconsIcon icon={UserGroupIcon} strokeWidth={2} />,
   "/admin/collections": (
