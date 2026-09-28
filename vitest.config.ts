@@ -22,6 +22,11 @@ import AIReporter from "vitest-ai-reporter";
  *                      `cache()` wrapping can only be exercised (and its
  *                      request-scope de-duping proven) against the server
  *                      build — see `tests/helpers/db.ts#withRequestCache`.
+ *   - `auth`         — authentication tier (Pass 11.5): boots the real Next.js
+ *                      app in-process and drives `app/api/auth/[...all]` over
+ *                      HTTP against the real dev database, so route handlers,
+ *                      cookies and the better-auth plugins are all exercised
+ *                      end-to-end rather than through `auth.api.*`.
  */
 const root = fileURLToPath(new URL("./", import.meta.url));
 const reactServerBuild = fileURLToPath(
@@ -60,6 +65,15 @@ export default defineConfig({
         test: {
           name: "integration",
           environment: "node",
+          // `tests/integration/auth/**` is owned by the `auth` project below
+          // (it boots the real Next app — a much heavier harness). Without
+          // this exclusion the glob would also collect those files, so every
+          // auth test would run TWICE: once under `integration` and once under
+          // `auth`. The second run boots a second in-process Next dev server
+          // against the same `.next/dev` directory, and the first server's
+          // teardown leaves the route manifests in a partial state — which is
+          // exactly what turned the whole `/api/auth/*` surface into 404s.
+          exclude: ["tests/integration/auth/**"],
           include: ["tests/integration/**/*.test.ts"],
           // These tiers talk to the remote dev database; hook + test defaults
           // (10s / 5s) are too tight for a cold connection to Neon.
@@ -83,6 +97,23 @@ export default defineConfig({
           // connection-pressure delays against the remote dev DB.
           hookTimeout: 60_000,
           testTimeout: 60_000,
+        },
+      },
+      {
+        test: {
+          name: "auth",
+          environment: "node",
+          include: ["tests/integration/auth/**/*.test.ts"],
+          // Hard-blocks the SMS gateway: the tier runs real auth endpoints, so
+          // lib/auth/sms.ts would otherwise `fetch` api.sms.ir for every OTP
+          // (Next re-loads .env during prepare(), so unsetting the key alone is
+          // not enough). The guard intercepts sms.ir and replies locally.
+          setupFiles: ["tests/helpers/auth-sms-guard.ts"],
+          // The first request after `next({ dev: true }).prepare()` compiles
+          // the route on demand and can take tens of seconds on a cold cache;
+          // the real DB round-trips of this tier add to it.
+          hookTimeout: 180_000,
+          testTimeout: 120_000,
         },
       },
     ],
