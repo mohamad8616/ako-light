@@ -1,7 +1,7 @@
 # Testing Strategy — Home Form
 
-Status: **Pass 10.5 — server/data-access tests (integration tier live since
-Pass 9.5).**
+Status: **Pass 11.5B — authorization boundary tests (Pass 11.5 complete:
+11.5A auth flows + 11.5B USER/ADMIN/OWNER authorization boundaries).**
 
 ## Framework
 
@@ -145,6 +145,46 @@ repository from Step 4, `server` project):
   one wrapper delegates to another, as `getProjectById` → `getProject`), and
   `products.test.ts` additionally proves a *fresh* scope re-executes.
 
+**Pass 11.5B — authorization boundary tests** (the counterpart to 11.5A: 11.5A
+proves the auth *flows* work, 11.5B proves the USER/ADMIN/OWNER *boundaries*
+are enforced server-side).
+
+- **Admin actions — denial (Steps 1–2)** —
+  `tests/unit/admin/actions/user-role-denied.test.ts` and
+  `no-session-denied.test.ts`: every one of the real admin action entry points
+  (34 of them) is called directly with a plain-`user` session and with no
+  session. Each must reject via `requireAdminAccess()` →
+  `redirect("/sign-in?denied=1")`, with no repository write, no
+  `toActionResult`, and no revalidation. Hermetic (auth, `next/*`, repositories
+  and `result-server` mocked). This is the "hiding the button is not
+  authorization" case.
+- **Admin actions — positive controls** —
+  `tests/unit/admin/actions/admin-and-owner-control.test.ts`: an `admin` and an
+  `owner` session must BOTH pass the gate across the representative action
+  families (products, designers, projects, orders, homepage, about), reach the
+  repository, and revalidate. Without this, a regression that over-tightened
+  the gate to owner-only would leave the entire denial suite green.
+- **Owner boundary** — `tests/unit/admin/access-owner-boundary.test.ts` (Step 3)
+  proves `requireOwnerAccess()`: an `admin` is bounced to `/admin` (not
+  sign-in — they ARE authenticated), a `user`/no-session is sent to
+  `/sign-in?denied=1`, and an `owner` passes; plus the permission matrix
+  (`impersonate-admins` is owner-only). `admin-and-owner-control.test.ts`
+  additionally pins §5's hardest case: an admin calling the owner-gated helper
+  **directly** is denied.
+- **Owner boundary over real HTTP** —
+  `tests/integration/auth/owner-boundary.test.ts` (`auth` project): the full
+  anon(401)/USER(403)/ADMIN(403-owner-only)/OWNER(200) matrix against the real
+  `POST /api/auth/admin/impersonate-user` endpoint, plus a regression that the
+  same request sent by an admin (403) and by an owner (200) differs. Complements
+  11.5A's `roles.test.ts`, which covers the admin-list endpoint and the
+  admin-impersonates-admin case.
+- **Route protection (§4)** — `tests/unit/proxy.test.ts` covers the edge gate
+  (`proxy()` role redirects); `tests/unit/admin/route-backstop.test.ts` covers
+  the React-tree backstop the `(admin)` layout renders through
+  (`requireAdminAccess` + `getAdminRole`): anon/USER/unknown-role → denied,
+  admin/owner → allowed. Both halves of the same boundary must be tested
+  separately, because removing one leaves the other's suite green.
+
 **Pass 11C — catalog FK conversion + slug-rename redirects** (Step 7 admin-CRUD
 prep; the scope change Pass 11B proposed and deferred):
 
@@ -196,7 +236,8 @@ prep; the scope change Pass 11B proposed and deferred):
 Pass 8.5    Testing foundation + core utilities        ✅ complete
 Pass 9.5    Database/schema/integration tests          ✅ complete
 Pass 10.5   Server/data-access tests                   ✅ complete
-Pass 11.5   Authentication + authorization tests
+Pass 11.5   Authentication + authorization tests          ✅ complete
+            (11.5A auth flows; 11.5B authorization boundary)
 Pass 12.5   Admin CRUD/integration tests
 Pass 13.5   Media management tests
 Pass 14.5   Commerce/user workflow tests
