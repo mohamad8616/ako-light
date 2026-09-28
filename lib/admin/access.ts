@@ -27,6 +27,28 @@ export async function getAdminRole(): Promise<AppRole | undefined> {
 }
 
 /**
+ * The signed-in user's id + role, or null when not signed in.
+ *
+ * Needed by the owner-only user-management actions, which must be able to tell
+ * "the caller is targeting themselves" apart from "the caller is targeting
+ * another account" — a check no role comparison can express. Only admin-level
+ * identities are returned (same filter as `getAdminRole`), so a plain `user`
+ * always resolves to null here.
+ */
+export async function getAdminIdentity(): Promise<{
+  id: string;
+  role: AppRole;
+} | null> {
+  const session = await auth.api.getSession({ headers: await headers() });
+  const role = session?.user?.role;
+  const id = session?.user?.id;
+  if (typeof id !== "string" || !ADMIN_ROLES.includes(role as AppRole)) {
+    return null;
+  }
+  return { id, role: role as AppRole };
+}
+
+/**
  * Gate for every admin route: the visitor must be signed in with an
  * admin-level role (`admin` or `owner` — see ADMIN_ROLES). Anything else
  * (anonymous or plain `user`) lands on the sign-in page with an

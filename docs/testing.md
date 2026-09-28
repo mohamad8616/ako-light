@@ -185,6 +185,22 @@ are enforced server-side).
   admin/owner → allowed. Both halves of the same boundary must be tested
   separately, because removing one leaves the other's suite green.
 
+**Pass 12.5A — owner-only user management (`/admin/admins`).**
+
+- **`tests/unit/admin/actions/admins-management.test.ts`** (hermetic) — the
+  authorization + role-safety boundary of the two owner-gated actions
+  (`setUserRoleAction`, `setUserBannedAction`): an ADMIN is bounced to `/admin`
+  and a USER/anonymous caller to `/sign-in?denied=1`, with **no repository write
+  and no revalidation** in every denial case; an OWNER promotes user→admin and
+  demotes admin→user and can ban/unban; an OWNER targeting their **own** id is
+  rejected (self-demotion prevention) with no write; and validation rejects a
+  forged `owner` grant, empty/over-long ids and a non-boolean ban flag.
+- **`tests/server/admin-users.test.ts`** (`server` project, real DB) — the
+  repository beneath those actions: `setUserRole` promote/demote round-trips,
+  `setUserBanned` clears the ban metadata when lifting a ban, and
+  `getAdminUserRows` returns the plain serializable DTO with an unknown stored
+  role normalized to `user`. Uses a throwaway user row deleted in `afterAll`.
+
 **Pass 11C — catalog FK conversion + slug-rename redirects** (Step 7 admin-CRUD
 prep; the scope change Pass 11B proposed and deferred):
 
@@ -239,6 +255,7 @@ Pass 10.5   Server/data-access tests                   ✅ complete
 Pass 11.5   Authentication + authorization tests          ✅ complete
             (11.5A auth flows; 11.5B authorization boundary)
 Pass 12.5   Admin CRUD/integration tests
+            (12.5A owner-only user management — /admin/admins)
 Pass 13.5   Media management tests
 Pass 14.5   Commerce/user workflow tests
 Pass 15.5   E2E + regression tests

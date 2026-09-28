@@ -14,7 +14,8 @@ export type AdminSection =
   | "projects"
   | "fabrics"
   | "catalogue"
-  | "orders";
+  | "orders"
+  | "admins";
 
 /**
  * The public route-file pattern each section feeds, so a dashboard edit also
@@ -68,6 +69,9 @@ const PUBLIC_ROUTES: Record<AdminSection, readonly string[]> = {
   // customer-facing surfaces are the checkout callback and account pages, which
   // do not read fulfillment status.
   orders: [],
+  // Owner-only user management has no public surface at all: a role change
+  // affects the account's next session, never a page any visitor renders.
+  admins: [],
 };
 
 /**

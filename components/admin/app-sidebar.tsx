@@ -69,9 +69,10 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
  * registry (lib/admin/sections.ts):
  *
  *   - Catalog group: visible to every admin-level role (admin + owner).
- *   - Admins group: visible only to the `owner` role; the real
- *     admin-account management is a later step, but the gated nav item and
- *     its placeholder route exist now (see app/[locale]/(admin)/admin/admins).
+ *   - Admins group: visible only to the `owner` role. Hiding the link is a
+ *     convenience, not the authorization — the `/admin/admins` page re-runs
+ *     `requireOwnerAccess()` and its server actions re-run it again, so a
+ *     non-owner who navigates directly (or POSTs directly) is still rejected.
  *
  * `dir`/`side` come from the (admin) layout, which takes both from the one
  * ADMIN_SHELL_DIR constant — the shell is RTL for every locale, so the
