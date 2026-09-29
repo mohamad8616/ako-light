@@ -12,6 +12,7 @@
  */
 import type { Prisma } from "@/generated/prisma/client";
 import { requireAdminAccess } from "@/lib/admin/access";
+import { deleteBlobUrls, removedUrls } from "@/lib/admin/blob";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
   actionFail,
@@ -27,6 +28,7 @@ import {
 import {
   createProduct,
   deleteProduct,
+  getProductAdminDetail,
   updateProduct,
 } from "@/lib/repositories/products";
 import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
@@ -39,6 +41,27 @@ import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
  * write can never leave an orphaned history row. An unchanged slug records
  * nothing.
  */
+
+/**
+ * Every image URL a product row references: the two hero columns plus the
+ * `product_images` rows and the denormalized `related` snapshots.
+ *
+ * Used to garbage-collect replaced uploads — see the cleanup note on
+ * {@link updateProductAction}.
+ */
+function productImageUrls(values: {
+  hoverImage: string;
+  heroImage: string;
+  images: { url: string }[];
+  related: { image: string }[];
+}): string[] {
+  return [
+    values.hoverImage,
+    values.heroImage,
+    ...values.images.map((image) => image.url),
+    ...values.related.map((entry) => entry.image),
+  ];
+}
 
 /** Creates a product (images included) and returns its new id. */
 export async function createProductAction(
@@ -74,6 +97,12 @@ export async function updateProductAction(
   }
 
   try {
+    // Read the URLs BEFORE the write: an upload the admin replaced is still
+    // referenced by the row at this point, and once the update lands the old
+    // URL is gone from the database with no way to recover it.
+    const previous = await getProductAdminDetail(id);
+    const beforeUrls = previous ? productImageUrls(previous) : [];
+
     await updateWithSlugHistory(
       "product",
       id,
@@ -81,6 +110,13 @@ export async function updateProductAction(
       (tx) => updateProduct(id, parsed.data, tx),
       { db },
     );
+
+    // AFTER the successful save only — deleting first would leave the row
+    // pointing at a file that no longer exists if the update then failed.
+    await deleteBlobUrls(
+      removedUrls(beforeUrls, productImageUrls(parsed.data)),
+    );
+
     revalidateCatalog("products", { id });
     return actionOk(undefined);
   } catch (error) {
@@ -95,7 +131,15 @@ export async function destroyProductAction(
   await requireAdminAccess();
 
   try {
+    // Same ordering as the update: capture the URLs, drop the row, then drop
+    // the files it owned. A failed delete leaves the blobs referenced rather
+    // than deleting files the database still points at.
+    const previous = await getProductAdminDetail(id);
+    const beforeUrls = previous ? productImageUrls(previous) : [];
+
     await deleteProduct(id, db);
+
+    await deleteBlobUrls(beforeUrls);
     revalidateCatalog("products");
     return actionOk(undefined);
   } catch (error) {

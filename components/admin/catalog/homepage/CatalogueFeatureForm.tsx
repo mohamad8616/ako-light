@@ -11,10 +11,8 @@
  */
 import { FormCard } from "@/components/admin/catalog/fields/form";
 import { SelectField } from "@/components/admin/catalog/fields/SelectField";
-import {
-  SwitchField,
-  TextField,
-} from "@/components/admin/catalog/fields/ScalarFields";
+import { SwitchField } from "@/components/admin/catalog/fields/ScalarFields";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { HomepageFormActions } from "@/components/admin/catalog/homepage/HomepageFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import {
@@ -78,12 +76,11 @@ export function CatalogueFeatureForm({
                 label: row.title,
               }))}
             />
-            <TextField
+            <ImageUpload
               name="image"
               label={t("admin.homepage.field.image")}
               required
-              placeholder="https://..."
-              mono
+              folder="homepage"
             />
           </div>
         </FormCard>

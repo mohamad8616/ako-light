@@ -15,6 +15,7 @@
  * that field off its linked entity again.
  */
 import { requireAdminAccess } from "@/lib/admin/access";
+import { deleteBlobUrls, removedUrls } from "@/lib/admin/blob";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
   actionFail,
@@ -37,6 +38,11 @@ import {
 } from "@/lib/admin/schemas/homepage";
 import type { Localized } from "@/lib/i18n/localized";
 import {
+  getCatalogueFeatureAdminDetail,
+  getFlagshipOneFeatureAdminDetail,
+  getHomeCollectionFeatureAdminDetail,
+  getProjectBannerFeatureAdminDetail,
+  getProjectDarkBackgroundFeatureAdminDetail,
   updateCatalogueFeature,
   updateFlagshipOneFeature,
   updateHomeCollectionFeature,
@@ -76,6 +82,14 @@ export async function updateFlagshipOneFeatureAction(
   }
 
   try {
+    // Read before writing, delete after: an upload the admin replaced is only
+    // garbage-collected once the new URL is safely persisted. Clearing the
+    // override ("" -> NULL) drops the old file too, which is correct — the row
+    // no longer references it.
+    const previous = await getFlagshipOneFeatureAdminDetail();
+    const beforeUrls = previous?.image ? [previous.image] : [];
+    const image = emptyToNull(parsed.data.image);
+
     await updateFlagshipOneFeature({
       enabled: parsed.data.enabled,
       mode: parsed.data.mode,
@@ -83,8 +97,10 @@ export async function updateFlagshipOneFeatureAction(
       kicker: clearedToNull(parsed.data.kicker),
       title: clearedToNull(parsed.data.title),
       paragraphs: listToNull(parsed.data.paragraphs),
-      image: emptyToNull(parsed.data.image),
+      image,
     });
+
+    await deleteBlobUrls(removedUrls(beforeUrls, [image]));
     revalidateCatalog("homepage");
     return actionOk(undefined);
   } catch (error) {
@@ -103,14 +119,20 @@ export async function updateProjectBannerFeatureAction(
   }
 
   try {
+    const previous = await getProjectBannerFeatureAdminDetail();
+    const beforeUrls = previous?.image ? [previous.image] : [];
+    const image = emptyToNull(parsed.data.image);
+
     await updateProjectBannerFeature({
       enabled: parsed.data.enabled,
       mode: parsed.data.mode,
       projectId: parsed.data.projectId,
       kicker: clearedToNull(parsed.data.kicker),
       title: clearedToNull(parsed.data.title),
-      image: emptyToNull(parsed.data.image),
+      image,
     });
+
+    await deleteBlobUrls(removedUrls(beforeUrls, [image]));
     revalidateCatalog("homepage");
     return actionOk(undefined);
   } catch (error) {
@@ -129,14 +151,20 @@ export async function updateProjectDarkBackgroundFeatureAction(
   }
 
   try {
+    const previous = await getProjectDarkBackgroundFeatureAdminDetail();
+    const beforeUrls = previous?.image ? [previous.image] : [];
+    const image = emptyToNull(parsed.data.image);
+
     await updateProjectDarkBackgroundFeature({
       enabled: parsed.data.enabled,
       mode: parsed.data.mode,
       projectId: parsed.data.projectId,
       title: clearedToNull(parsed.data.title),
       paragraphs: listToNull(parsed.data.paragraphs),
-      image: emptyToNull(parsed.data.image),
+      image,
     });
+
+    await deleteBlobUrls(removedUrls(beforeUrls, [image]));
     revalidateCatalog("homepage");
     return actionOk(undefined);
   } catch (error) {
@@ -155,12 +183,19 @@ export async function updateHomeCollectionFeatureAction(
   }
 
   try {
+    const previous = await getHomeCollectionFeatureAdminDetail();
+    const beforeUrls = previous?.image ? [previous.image] : [];
+
     await updateHomeCollectionFeature({
       enabled: parsed.data.enabled,
       image: parsed.data.image,
       title: parsed.data.title,
       text: parsed.data.text,
     });
+
+    await deleteBlobUrls(
+      removedUrls(beforeUrls, [parsed.data.image]),
+    );
     revalidateCatalog("homepage");
     return actionOk(undefined);
   } catch (error) {
@@ -179,11 +214,18 @@ export async function updateCatalogueFeatureAction(
   }
 
   try {
+    const previous = await getCatalogueFeatureAdminDetail();
+    const beforeUrls = previous?.image ? [previous.image] : [];
+
     await updateCatalogueFeature({
       enabled: parsed.data.enabled,
       catalogueItemId: parsed.data.catalogueItemId,
       image: parsed.data.image,
     });
+
+    await deleteBlobUrls(
+      removedUrls(beforeUrls, [parsed.data.image]),
+    );
     revalidateCatalog("homepage");
     return actionOk(undefined);
   } catch (error) {

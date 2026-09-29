@@ -9,6 +9,7 @@
  * enum inside the repository ("stone-composite" <-> stone_composite).
  */
 import { requireAdminAccess } from "@/lib/admin/access";
+import { deleteBlobUrls, removedUrls } from "@/lib/admin/blob";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
   actionFail,
@@ -24,6 +25,7 @@ import {
 import {
   createMaterial,
   deleteMaterial,
+  getMaterialImageUrls,
   updateMaterial,
 } from "@/lib/repositories/materials";
 import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
@@ -66,9 +68,15 @@ export async function updateMaterialAction(
   }
 
   try {
+    // Read before writing, delete after: an upload the admin replaced is only
+    // garbage-collected once the new URL is safely persisted.
+    const beforeUrls = await getMaterialImageUrls(id);
+
     await updateWithSlugHistory("material", id, parsed.data.slug, (tx) =>
       updateMaterial(id, parsed.data, tx),
     );
+
+    await deleteBlobUrls(removedUrls(beforeUrls, [parsed.data.image]));
     revalidateCatalog("materials", { id });
     return actionOk(undefined);
   } catch (error) {
@@ -82,7 +90,11 @@ export async function destroyMaterialAction(
   await requireAdminAccess();
 
   try {
+    const beforeUrls = await getMaterialImageUrls(id);
+
     await deleteMaterial(id);
+
+    await deleteBlobUrls(beforeUrls);
     revalidateCatalog("materials");
     return actionOk(undefined);
   } catch (error) {

@@ -10,7 +10,7 @@
  */
 import { FormCard } from "@/components/admin/catalog/fields/form";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
-import { TextField } from "@/components/admin/catalog/fields/ScalarFields";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import {
   HomepageFormActions,
   HomepageOverrideCard,
@@ -87,12 +87,11 @@ export function ProjectBannerFeatureForm({
             label={t("admin.homepage.field.title")}
             optional
           />
-          <TextField
+          <ImageUpload
             name="image"
             label={t("admin.homepage.field.image")}
             optional
-            placeholder="https://..."
-            mono
+            folder="homepage"
           />
         </HomepageOverrideCard>
       </FormProvider>

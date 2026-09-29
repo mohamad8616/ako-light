@@ -15,9 +15,14 @@ export type AdminErrorCode =
   | "required"
   /** A `.max()` string cap was exceeded (lib/admin/schemas/common.ts). */
   | "tooLong"
+  /** An uploaded file exceeded the byte cap (lib/admin/actions/upload.ts). */
+  | "tooLarge"
+  /** An uploaded file is not a real image of a supported type. */
+  | "notImage"
   | "slugTaken"
   | "notFound"
   | "relationViolation"
+  | "selfTarget"
   | "unknown";
 
 /** One failing form field, addressed by its form path ("slug", "name.en", …). */
@@ -82,13 +87,18 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
     // Severity order when several issues land on ONE field path: the message
     // must describe the strongest problem. "required" beats "tooLong" beats
     // "invalid" (see the collapse test in tests/unit/admin/result.test.ts).
+    // The upload-specific codes are produced by upload.ts, never by a zod
+    // issue, so they only have to exist here to satisfy the union.
     const severity: Record<AdminErrorCode, number> = {
       required: 2,
       tooLong: 1,
       invalid: 0,
+      tooLarge: 0,
+      notImage: 0,
       slugTaken: 0,
       notFound: 0,
       relationViolation: 0,
+      selfTarget: 0,
       unknown: 0,
     };
     const field = issue.path.join(".");

@@ -36,6 +36,8 @@ const repoMocks = vi.hoisted(() => ({
   createProduct: vi.fn(),
   updateProduct: vi.fn(),
   deleteProduct: vi.fn(),
+  // Read the action performs to garbage-collect replaced Vercel Blob uploads.
+  getProductAdminDetail: vi.fn(),
   createDesigner: vi.fn(),
   updateDesigner: vi.fn(),
   deleteDesigner: vi.fn(),
@@ -44,6 +46,7 @@ const repoMocks = vi.hoisted(() => ({
   deleteProject: vi.fn(),
   updateOrderFulfillmentStatus: vi.fn(),
   updateHomeCollectionFeature: vi.fn(),
+  getHomeCollectionFeatureAdminDetail: vi.fn(),
   updateAboutPageSection: vi.fn(),
 }));
 
@@ -63,6 +66,7 @@ vi.mock("@/lib/repositories/products", () => ({
   createProduct: repoMocks.createProduct,
   updateProduct: repoMocks.updateProduct,
   deleteProduct: repoMocks.deleteProduct,
+  getProductAdminDetail: repoMocks.getProductAdminDetail,
 }));
 vi.mock("@/lib/repositories/designers", () => ({
   createDesigner: repoMocks.createDesigner,
@@ -79,6 +83,8 @@ vi.mock("@/lib/repositories/orders", () => ({
 }));
 vi.mock("@/lib/repositories/homepage-features", () => ({
   updateHomeCollectionFeature: repoMocks.updateHomeCollectionFeature,
+  getHomeCollectionFeatureAdminDetail:
+    repoMocks.getHomeCollectionFeatureAdminDetail,
 }));
 vi.mock("@/lib/repositories/about-page", () => ({
   updateAboutPageSection: repoMocks.updateAboutPageSection,
@@ -165,6 +171,9 @@ describe("admin authorization — positive controls (ADMIN and OWNER pass)", () 
       throw error;
     }) as never);
     for (const fn of Object.values(repoMocks)) fn.mockResolvedValue(undefined);
+    // No previous row -> nothing to garbage-collect.
+    repoMocks.getProductAdminDetail.mockResolvedValue(null);
+    repoMocks.getHomeCollectionFeatureAdminDetail.mockResolvedValue(null);
     repoMocks.createProduct.mockResolvedValue("new-id");
     repoMocks.createDesigner.mockResolvedValue("new-id");
     repoMocks.createProject.mockResolvedValue("new-id");

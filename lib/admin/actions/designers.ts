@@ -9,6 +9,7 @@
  * (SetNull) — no products are removed.
  */
 import { requireAdminAccess } from "@/lib/admin/access";
+import { deleteBlobUrls, removedUrls } from "@/lib/admin/blob";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
   actionFail,
@@ -24,6 +25,7 @@ import {
 import {
   createDesigner,
   deleteDesigner,
+  getDesignerImageUrls,
   updateDesigner,
 } from "@/lib/repositories/designers";
 import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
@@ -67,9 +69,15 @@ export async function updateDesignerAction(
   }
 
   try {
+    // Read before writing, delete after: an upload the admin replaced is only
+    // garbage-collected once the new URL is safely persisted.
+    const beforeUrls = await getDesignerImageUrls(id);
+
     await updateWithSlugHistory("designer", id, parsed.data.slug, (tx) =>
       updateDesigner(id, parsed.data, tx),
     );
+
+    await deleteBlobUrls(removedUrls(beforeUrls, [parsed.data.image]));
     revalidateCatalog("designers", { id });
     return actionOk(undefined);
   } catch (error) {
@@ -83,7 +91,11 @@ export async function destroyDesignerAction(
   await requireAdminAccess();
 
   try {
+    const beforeUrls = await getDesignerImageUrls(id);
+
     await deleteDesigner(id);
+
+    await deleteBlobUrls(beforeUrls);
     revalidateCatalog("designers");
     return actionOk(undefined);
   } catch (error) {

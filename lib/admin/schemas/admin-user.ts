@@ -7,10 +7,9 @@ import { idSchema } from "./common";
  * Scope is deliberately narrow — the schema exposes ONLY the two columns the
  * owner may change on another account:
  *
- *   - `role`   → promote a customer to `admin`, or demote an `admin` back to
- *                `user`. The three canonical values are spelled out here (and
- *                stay 1:1 with `ROLES` in lib/auth/permissions.ts) so a forged
- *                payload cannot invent a role the app does not know.
+ *   - `role`   → promote a customer to `admin`, demote an `admin` to `user`,
+ *                or promote an existing `admin` to `owner`. The action checks
+ *                the current stored role before allowing each transition.
  *   - `banned` → the existing ban flag better-auth's admin plugin already
  *                enforces at session creation (see lib/auth/auth.ts).
  *
@@ -18,26 +17,30 @@ import { idSchema } from "./common";
  * writable through this module: no schema field means a forged POST cannot
  * smuggle a value past the action.
  *
- * `owner` is intentionally ABSENT from the assignable set. Only `user` and
- * `admin` are ever assignable through the UI/actions — the owner role is not
- * granted from this screen, and an owner can never target themselves (the
- * action enforces that separately, because a schema cannot see the caller).
+ * The schema accepts all known roles, while the action enforces allowed
+ * transitions against the target's stored role. An owner can never target
+ * themselves (the action enforces that separately, because a schema cannot
+ * see the caller).
  *
  * Kept free of server-only imports (no prisma, no next/headers) so the client
  * table may import the enum + value type directly, exactly like
  * lib/admin/schemas/order.ts.
  */
 
-/** The roles an owner may ASSIGN through this screen (never `owner`). */
-export const assignableRoleSchema = z.enum(["user", "admin"]);
+/** Roles the owner action may assign after validating the current role. */
+export const assignableRoleSchema = z.enum(["user", "admin", "owner"]);
 
 export type AssignableRole = z.infer<typeof assignableRoleSchema>;
 
 /**
  * The assignable roles as an ordered array, for the UI's select options.
- * `owner` is deliberately absent — the owner role is not granted here.
+ * Transition eligibility is checked by the action against the stored role.
  */
-export const ASSIGNABLE_ROLES: readonly AssignableRole[] = ["admin", "user"];
+export const ASSIGNABLE_ROLES: readonly AssignableRole[] = [
+  "admin",
+  "user",
+  "owner",
+];
 
 /** Every role value the `User.role` column may hold (mirrors `ROLES`). */
 export const appRoleSchema = z.enum(["user", "admin", "owner"]);

@@ -27,6 +27,7 @@ const toActionResultMock = vi.hoisted(() => vi.fn());
 
 const repoMocks = vi.hoisted(() => ({
   getAdminUserRows: vi.fn(),
+  getUserRole: vi.fn(),
   setUserRole: vi.fn(),
   setUserBanned: vi.fn(),
 }));
@@ -45,6 +46,7 @@ vi.mock("@/lib/admin/result-server", () => ({
 }));
 vi.mock("@/lib/repositories/admin-users", () => ({
   getAdminUserRows: repoMocks.getAdminUserRows,
+  getUserRole: repoMocks.getUserRole,
   setUserRole: repoMocks.setUserRole,
   setUserBanned: repoMocks.setUserBanned,
 }));
@@ -75,6 +77,8 @@ describe("owner-only user-management actions", () => {
       throw error;
     }) as never);
     for (const fn of Object.values(repoMocks)) fn.mockResolvedValue(undefined);
+    repoMocks.getUserRole.mockResolvedValue({ role: "user" });
+    repoMocks.setUserRole.mockResolvedValue(true);
   });
 
   function expectNothingWritten() {
@@ -87,23 +91,6 @@ describe("owner-only user-management actions", () => {
   /* --------------------------------------------------------------------- */
   /* §4 / §5 — non-owner is denied, and NOTHING is written                  */
   /* --------------------------------------------------------------------- */
-
-  it("an ADMIN cannot promote a user (bounced to /admin, no write)", async () => {
-    mockGetSession.mockResolvedValue({ user: ADMIN });
-    await expect(
-      setUserRoleAction({ userId: TARGET, role: "admin" }),
-    ).rejects.toThrow("NEXT_REDIRECT:/admin");
-    expect(redirectMock).toHaveBeenCalledWith("/admin");
-    expectNothingWritten();
-  });
-
-  it("an ADMIN cannot demote a user (no write)", async () => {
-    mockGetSession.mockResolvedValue({ user: ADMIN });
-    await expect(
-      setUserRoleAction({ userId: TARGET, role: "user" }),
-    ).rejects.toThrow("NEXT_REDIRECT:/admin");
-    expectNothingWritten();
-  });
 
   it("a plain USER cannot promote or demote (sent to sign-in)", async () => {
     mockGetSession.mockResolvedValue({ user: USER });
@@ -136,16 +123,26 @@ describe("owner-only user-management actions", () => {
     await expect(
       setUserRoleAction({ userId: TARGET, role: "admin" }),
     ).resolves.toEqual({ ok: true, data: undefined });
-    expect(repoMocks.setUserRole).toHaveBeenCalledWith(TARGET, "admin");
+    expect(repoMocks.setUserRole).toHaveBeenCalledWith(TARGET, "user", "admin");
     expect(revalidatePathMock).toHaveBeenCalled();
   });
 
   it("an OWNER demotes an admin to user", async () => {
     mockGetSession.mockResolvedValue({ user: OWNER });
+    repoMocks.getUserRole.mockResolvedValue({ role: "admin" });
     await expect(
       setUserRoleAction({ userId: TARGET, role: "user" }),
     ).resolves.toEqual({ ok: true, data: undefined });
-    expect(repoMocks.setUserRole).toHaveBeenCalledWith(TARGET, "user");
+    expect(repoMocks.setUserRole).toHaveBeenCalledWith(TARGET, "admin", "user");
+  });
+
+  it("an OWNER promotes an admin to owner", async () => {
+    mockGetSession.mockResolvedValue({ user: OWNER });
+    repoMocks.getUserRole.mockResolvedValue({ role: "admin" });
+    await expect(
+      setUserRoleAction({ userId: TARGET, role: "owner" }),
+    ).resolves.toEqual({ ok: true, data: undefined });
+    expect(repoMocks.setUserRole).toHaveBeenCalledWith(TARGET, "admin", "owner");
   });
 
   it("an OWNER can ban and unban another user", async () => {
@@ -166,7 +163,11 @@ describe("owner-only user-management actions", () => {
       userId: OWNER.id,
       role: "user",
     });
-    expect(result.ok).toBe(false);
+    expect(result).toMatchObject({
+      ok: false,
+      formError: "selfTarget",
+      issues: [{ field: "userId", code: "selfTarget" }],
+    });
     expect(repoMocks.setUserRole.mock.calls).toHaveLength(0);
     expect(revalidatePathMock).not.toHaveBeenCalled();
   });
@@ -185,14 +186,17 @@ describe("owner-only user-management actions", () => {
   /* §6 — validation: invalid ids and role values are rejected before write */
   /* --------------------------------------------------------------------- */
 
-  it("rejects a role value that is not user/admin (e.g. a forged owner grant)", async () => {
+  it("rejects user -> owner and owner -> user transitions", async () => {
     mockGetSession.mockResolvedValue({ user: OWNER });
-    const result = await setUserRoleAction({
+    const directOwnerGrant = await setUserRoleAction({
       userId: TARGET,
-      // A forged POST trying to mint a second owner through this screen.
-      role: "owner" as never,
+      role: "owner",
     });
-    expect(result.ok).toBe(false);
+    expect(directOwnerGrant.ok).toBe(false);
+
+    repoMocks.getUserRole.mockResolvedValue({ role: "owner" });
+    const ownerDemotion = await setUserRoleAction({ userId: TARGET, role: "user" });
+    expect(ownerDemotion.ok).toBe(false);
     expectNothingWritten();
   });
 

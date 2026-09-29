@@ -112,6 +112,23 @@ export const getMaterialAdminRows = cache(
   },
 );
 
+/**
+ * Just the image URLs the material row currently references.
+ *
+ * Read by the update/delete actions so they can garbage-collect Vercel Blob
+ * files that an edit replaced or that the row owned when it was deleted.
+ * Deliberately narrow — the cleanup pass needs URLs, not a whole DTO.
+ */
+export const getMaterialImageUrls = cache(
+  async (id: string): Promise<string[]> => {
+    const row = await prisma.material.findUnique({
+      where: { id },
+      select: { image: true },
+    });
+    return row ? [row.image] : [];
+  },
+);
+
 export const createMaterial = async (
   input: MaterialWriteInput,
   db: Prisma.TransactionClient = prisma,

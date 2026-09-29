@@ -11,10 +11,8 @@
  */
 import { FormCard } from "@/components/admin/catalog/fields/form";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
-import {
-  SwitchField,
-  TextField,
-} from "@/components/admin/catalog/fields/ScalarFields";
+import { SwitchField } from "@/components/admin/catalog/fields/ScalarFields";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { HomepageFormActions } from "@/components/admin/catalog/homepage/HomepageFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { updateHomeCollectionFeatureAction } from "@/lib/admin/actions/homepage";
@@ -76,12 +74,11 @@ export function HomeCollectionFeatureForm({
               textarea
               rows={4}
             />
-            <TextField
+            <ImageUpload
               name="image"
               label={t("admin.homepage.field.image")}
               required
-              placeholder="https://..."
-              mono
+              folder="homepage"
             />
           </div>
         </FormCard>

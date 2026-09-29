@@ -15,6 +15,7 @@ const repoMocks = vi.hoisted(() => ({
   createProduct: vi.fn(),
   updateProduct: vi.fn(),
   deleteProduct: vi.fn(),
+  getProductAdminDetail: vi.fn(),
   createProductCategory: vi.fn(),
   updateProductCategory: vi.fn(),
   deleteProductCategory: vi.fn(),
@@ -64,6 +65,8 @@ vi.mock("@/lib/repositories/products", () => ({
   createProduct: repoMocks.createProduct,
   updateProduct: repoMocks.updateProduct,
   deleteProduct: repoMocks.deleteProduct,
+  // Read the delete action performs to garbage-collect Vercel Blob uploads.
+  getProductAdminDetail: repoMocks.getProductAdminDetail,
 }));
 vi.mock("@/lib/repositories/product-categories", () => ({
   createProductCategory: repoMocks.createProductCategory,
@@ -340,6 +343,8 @@ describe("admin actions called directly as plain user", () => {
     }) as never);
     mockGetSession.mockResolvedValue({ user: { role: "user" } });
     for (const fn of Object.values(repoMocks)) fn.mockResolvedValue(undefined);
+    // No previous row -> nothing to garbage-collect.
+    repoMocks.getProductAdminDetail.mockResolvedValue(null);
     repoMocks.createProduct.mockResolvedValue("new-id");
     repoMocks.createProductCategory.mockResolvedValue("new-id");
     repoMocks.createDesigner.mockResolvedValue("new-id");

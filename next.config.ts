@@ -15,6 +15,15 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 1080, 1920],
     remotePatterns: [
       {
+        // Admin uploads (lib/admin/actions/upload.ts) land on Vercel Blob, so
+        // the public pages render `*.public.blob.vercel-storage.com` URLs. In
+        // production the optimizer REJECTS a host that is not listed here
+        // (dev is `unoptimized`, so the gap would only show up after deploy).
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+        pathname: "/**",
+      },
+      {
         protocol: "https",
         hostname: "www.henge07.com",
       },

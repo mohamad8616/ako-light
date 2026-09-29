@@ -6,6 +6,14 @@ import { DataTable } from "@/components/admin/data-table/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -16,7 +24,6 @@ import {
   setUserBannedAction,
   setUserRoleAction,
 } from "@/lib/admin/actions/admins";
-import { ASSIGNABLE_ROLES } from "@/lib/admin/schemas/admin-user";
 import { ADMIN_SHELL_DIR } from "@/lib/admin/sections";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import type { AdminUserRow } from "@/lib/repositories/admin-users";
@@ -54,6 +61,11 @@ export function AdminsTable({
 }) {
   const { t, lang } = useLanguage();
   const { run, pending } = useCrudSubmit();
+  const [search, setSearch] = React.useState("");
+  const [pendingRole, setPendingRole] = React.useState<{
+    row: AdminUserRow;
+    role: "user" | "admin" | "owner";
+  } | null>(null);
 
   const roleLabels: Record<string, string> = {
     user: t("admin.admins.role.user"),
@@ -61,15 +73,32 @@ export function AdminsTable({
     owner: t("admin.admins.role.owner"),
   };
 
-  const changeRole = (row: AdminUserRow, nextRole: "user" | "admin") =>
-    run(() => setUserRoleAction({ userId: row.id, role: nextRole }), {
-      successMessage: t("admin.admins.role.updated"),
-    });
+  const changeRole = async () => {
+    if (!pendingRole) return;
+    const result = await run(
+      () =>
+        setUserRoleAction({
+          userId: pendingRole.row.id,
+          role: pendingRole.role,
+        }),
+      { successMessage: t("admin.admins.role.updated") },
+    );
+    if (result?.ok) setPendingRole(null);
+  };
 
   const toggleBan = (row: AdminUserRow) =>
     run(() => setUserBannedAction({ userId: row.id, banned: !row.banned }), {
       successMessage: t("admin.admins.status.updated"),
     });
+
+  const visibleRows = rows.filter((row) => {
+    const query = search.trim().toLocaleLowerCase();
+    if (!query) return true;
+    return [row.email, row.phoneNumber ?? "", row.name]
+      .join(" ")
+      .toLocaleLowerCase()
+      .includes(query);
+  });
 
   const columns: ColumnDef<AdminUserRow, unknown>[] = [
     {
@@ -98,8 +127,8 @@ export function AdminsTable({
         const row = ctx.row.original;
         const isSelf = row.id === currentUserId;
 
-        // The owner role is never assignable here, and the caller may not
-        // change their own role → both render a static badge.
+        // Owner accounts are immutable here; the action also protects the
+        // caller's own account even if a forged request bypasses this UI.
         if (row.role === "owner" || isSelf) {
           return (
             <div className="flex flex-col gap-1">
@@ -118,19 +147,30 @@ export function AdminsTable({
         return (
           <Select
             items={Object.fromEntries(
-              ASSIGNABLE_ROLES.map((value) => [value, roleLabels[value]]),
+              (row.role === "user"
+                ? ["user", "admin"]
+                : ["admin", "user", "owner"]
+              ).map((value) => [value, roleLabels[value]]),
             )}
             value={row.role}
             disabled={pending}
             onValueChange={(value) =>
-              changeRole(row, value as "user" | "admin")
+              value &&
+              value !== row.role &&
+              setPendingRole({
+                row,
+                role: value as "user" | "admin" | "owner",
+              })
             }
           >
             <SelectTrigger className="w-32" aria-label={t("admin.admins.col.role")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent dir={ADMIN_SHELL_DIR}>
-              {ASSIGNABLE_ROLES.map((value) => (
+              {(row.role === "user"
+                ? ["user", "admin"]
+                : ["admin", "user", "owner"]
+              ).map((value) => (
                 <SelectItem key={value} value={value}>
                   {roleLabels[value]}
                 </SelectItem>
@@ -206,5 +246,60 @@ export function AdminsTable({
     },
   ];
 
-  return <DataTable columns={columns} data={rows} />;
+  const pendingRoleLabel = pendingRole ? roleLabels[pendingRole.role] : "";
+  const pendingUserName = pendingRole?.row.name ?? "";
+
+  return (
+    <>
+      <div className="space-y-3">
+        <label className="text-muted-foreground block text-xs font-medium" htmlFor="admin-user-search">
+          {t("admin.admins.search.label")}
+        </label>
+        <Input
+          id="admin-user-search"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder={t("admin.admins.search.placeholder")}
+          className="max-w-md"
+        />
+      </div>
+      <DataTable columns={columns} data={visibleRows} />
+      <Dialog
+        open={pendingRole !== null}
+        onOpenChange={(open) => !open && !pending && setPendingRole(null)}
+      >
+        <DialogContent dir={ADMIN_SHELL_DIR} className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("admin.admins.confirm.title")}</DialogTitle>
+            <DialogDescription>
+              {t("admin.admins.confirm.description")}
+              <span className="text-foreground block pt-2 font-medium">
+                {pendingUserName} · {pendingRoleLabel}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center justify-end gap-2 px-6 pb-6">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={pending}
+              onClick={() => setPendingRole(null)}
+            >
+              {t("admin.crud.cancel")}
+            </Button>
+            <Button
+              type="button"
+              variant={pendingRole?.role === "user" ? "destructive" : "default"}
+              size="sm"
+              disabled={pending}
+              onClick={() => void changeRole()}
+            >
+              {t("admin.admins.confirm.submit")}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }

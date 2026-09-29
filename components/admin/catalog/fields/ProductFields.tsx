@@ -7,6 +7,7 @@ import {
   swapAt,
   useList,
 } from "@/components/admin/catalog/fields/form";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { Localized } from "@/lib/i18n/localized";
@@ -191,31 +192,15 @@ export function ProductImagesField({
                 : undefined
             }
           >
-            <div className="flex gap-3">
-              <div className="border-border bg-muted size-16 shrink-0 overflow-hidden rounded-md border">
-                {row?.url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={row.url}
-                    alt=""
-                    className="size-16 object-cover"
-                    loading="lazy"
-                  />
-                ) : null}
-              </div>
-              <div className="min-w-0 flex-1 space-y-2">
-                <Input
-                  dir="ltr"
-                  placeholder="https://…"
-                  value={row?.url ?? ""}
-                  onChange={(event) =>
-                    setValues(
-                      values.map((v, i) =>
-                        i === index ? { ...v, url: event.target.value } : v,
-                      ),
-                    )
-                  }
-                />
+            <div className="space-y-2">
+              {/* Upload-aware URL field: still writes a plain URL string into
+                  `images.<index>.url`, so the schema shape is untouched. */}
+              <ImageUpload
+                bare
+                name={`${name}.${index}.url`}
+                folder="products"
+              />
+              <div className="space-y-2">
                 <Input
                   dir="ltr"
                   placeholder={t("admin.crud.alt")}

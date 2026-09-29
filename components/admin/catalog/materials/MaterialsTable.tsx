@@ -7,6 +7,7 @@ import {
   textColumn,
 } from "@/components/admin/catalog/columns";
 import { DialogFormShell } from "@/components/admin/catalog/fields/DialogFormShell";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
 import {
   NumberField,
@@ -222,12 +223,11 @@ function MaterialDialog({
           options={typeOptions}
         />
       </div>
-      <TextField
+      <ImageUpload
         name="image"
         label={t("admin.designer.field.image")}
         required
-        placeholder="https://..."
-        mono
+        folder="materials"
       />
       <LocalizedField
         name="description"

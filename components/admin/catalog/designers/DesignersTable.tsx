@@ -6,6 +6,7 @@ import {
   slugColumn,
   textColumn,
 } from "@/components/admin/catalog/columns";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import {
   LocalizedField,
   LocalizedListField,
@@ -240,12 +241,11 @@ function DesignerDialog({
               source="name.en"
               required
             />
-            <TextField
+            <ImageUpload
               name="image"
               label={t("admin.designer.field.image")}
               required
-              placeholder="https://..."
-              mono
+              folder="designers"
             />
             <TextField
               name="website"

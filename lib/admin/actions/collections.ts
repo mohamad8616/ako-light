@@ -8,6 +8,7 @@
  * `ActionResult`. `description` is written as one {p1,p2,p3} jsonb value.
  */
 import { requireAdminAccess } from "@/lib/admin/access";
+import { deleteBlobUrls, removedUrls } from "@/lib/admin/blob";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
   actionFail,
@@ -23,6 +24,7 @@ import {
 import {
   createCollection,
   deleteCollection,
+  getCollectionAdminDetail,
   updateCollection,
 } from "@/lib/repositories/collections";
 import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
@@ -65,9 +67,16 @@ export async function updateCollectionAction(
   }
 
   try {
+    // Read before writing, delete after: an upload the admin replaced is only
+    // garbage-collected once the new URL is safely persisted.
+    const previous = await getCollectionAdminDetail(id);
+    const beforeUrls = previous ? [previous.image] : [];
+
     await updateWithSlugHistory("collection", id, parsed.data.slug, (tx) =>
       updateCollection(id, parsed.data, tx),
     );
+
+    await deleteBlobUrls(removedUrls(beforeUrls, [parsed.data.image]));
     revalidateCatalog("collections", { id });
     return actionOk(undefined);
   } catch (error) {
@@ -81,7 +90,12 @@ export async function destroyCollectionAction(
   await requireAdminAccess();
 
   try {
+    const previous = await getCollectionAdminDetail(id);
+    const beforeUrls = previous ? [previous.image] : [];
+
     await deleteCollection(id);
+
+    await deleteBlobUrls(beforeUrls);
     revalidateCatalog("collections");
     return actionOk(undefined);
   } catch (error) {

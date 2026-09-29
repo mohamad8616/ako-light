@@ -6,8 +6,8 @@
  * the layer beneath them actually persists what the action hands it, against
  * the real database:
  *
- *   - `setUserRole` writes the `role` column (promote user→admin, demote
- *     admin→user);
+ *   - `setUserRole` writes the `role` column only when the expected current
+ *     role still matches (user→admin, admin→user/owner);
  *   - `setUserBanned` flips `banned` and, when lifting a ban, clears
  *     `banReason`/`banExpires`;
  *   - `getAdminUserRows` returns the plain, serializable DTO and normalizes an
@@ -64,7 +64,7 @@ describeDb("admin-users repository", () => {
 
   it("setUserRole promotes a user to admin", async () => {
     const id = await makeUser("user");
-    await setUserRole(id, "admin");
+    await expect(setUserRole(id, "user", "admin")).resolves.toBe(true);
 
     const row = await prisma.user.findUnique({ where: { id } });
     expect(row?.role).toBe("admin");
@@ -72,10 +72,19 @@ describeDb("admin-users repository", () => {
 
   it("setUserRole demotes an admin back to user", async () => {
     const id = await makeUser("admin");
-    await setUserRole(id, "user");
+    await expect(setUserRole(id, "admin", "user")).resolves.toBe(true);
 
     const row = await prisma.user.findUnique({ where: { id } });
     expect(row?.role).toBe("user");
+  });
+
+  it("setUserRole promotes an admin to owner and rejects a stale role", async () => {
+    const id = await makeUser("admin");
+    await expect(setUserRole(id, "admin", "owner")).resolves.toBe(true);
+    await expect(setUserRole(id, "admin", "user")).resolves.toBe(false);
+
+    const row = await prisma.user.findUnique({ where: { id } });
+    expect(row?.role).toBe("owner");
   });
 
   it("setUserBanned sets the ban flag and clearing it wipes the ban metadata", async () => {

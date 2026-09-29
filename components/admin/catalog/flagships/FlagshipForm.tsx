@@ -1,12 +1,12 @@
 "use client";
 
 import { DeleteDialog } from "@/components/admin/catalog/DeleteDialog";
+import { ImageListField, ImageUpload } from "@/components/admin/ImageUpload";
 import { FormCard } from "@/components/admin/catalog/fields/form";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
 import {
   LocalizedLabeledRowsField,
   MixedListField,
-  StringListField,
 } from "@/components/admin/catalog/fields/ListFields";
 import {
   NumberField,
@@ -45,7 +45,7 @@ import * as React from "react";
  * (summary-only store) and a complete skeleton, so the schema never sees a
  * half-filled block. The sub-form's list fields reuse the kit's established
  * pattern for nested rows (MixedListField for addressLines, the shared
- * LabeledRows field for hours, StringListField for the gallery).
+ * LabeledRows field for hours, ImageListField for the gallery).
  */
 export function FlagshipForm({
   detail,
@@ -115,12 +115,11 @@ export function FlagshipForm({
               label={t("admin.flagship.field.city")}
               required
             />
-            <TextField
+            <ImageUpload
               name="image"
               label={t("admin.designer.field.image")}
               required
-              placeholder="https://..."
-              mono
+              folder="flagships"
             />
             <NumberField
               name="sortOrder"
@@ -167,12 +166,11 @@ export function FlagshipForm({
                   textarea
                   rows={4}
                 />
-                <TextField
+                <ImageUpload
                   name="detail.heroImage"
                   label={t("admin.flagship.field.heroImage")}
                   required
-                  placeholder="https://..."
-                  mono
+                  folder="flagships"
                 />
 
                 <div className="grid gap-5 lg:grid-cols-2">
@@ -211,12 +209,11 @@ export function FlagshipForm({
                 />
 
                 <div className="grid gap-5 lg:grid-cols-2">
-                  <TextField
+                  <ImageUpload
                     name="detail.video.thumbnail"
                     label={t("admin.flagship.field.videoThumbnail")}
                     required
-                    placeholder="https://..."
-                    mono
+                    folder="flagships"
                   />
                   <TextField
                     name="detail.video.url"
@@ -226,10 +223,10 @@ export function FlagshipForm({
                     mono
                   />
                 </div>
-                <StringListField
+                <ImageListField
                   name="detail.gallery"
                   label={t("admin.flagship.field.gallery")}
-                  placeholder="https://..."
+                  folder="flagships"
                 />
 
               </div>

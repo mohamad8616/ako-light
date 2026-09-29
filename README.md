@@ -227,6 +227,12 @@ SMSIR_VERIFY_TEMPLATE_ID="your-verify-template-id" # "123456" for sandbox
 # ZarinPal (payment)
 ZARINPAL_MERCHANT_ID="your-merchant-id"
 ZARINPAL_MODE="sandbox"   # or "production"
+
+# Vercel Blob (admin image uploads)
+# Provisioned automatically once Blob storage is connected to the Vercel
+# project — confirm it exists for Production/Preview/Development before
+# relying on uploads.
+BLOB_READ_WRITE_TOKEN="your-blob-read-write-token"
 ```
 
 ---

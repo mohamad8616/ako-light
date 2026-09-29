@@ -86,20 +86,33 @@ export const getAdminUserRows = cache(async (): Promise<AdminUserRow[]> => {
 });
 
 /**
- * Sets a user's role. The caller (a server action) has already verified the
- * request is owner-authorized AND that the target is not the caller.
+ * Reads the target's current role before the action validates a transition.
+ */
+export async function getUserRole(userId: string): Promise<{ role: string } | null> {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+}
+
+/**
+ * Sets a user's role only if it still matches the role the action inspected.
+ * The conditional write prevents a stale form from overwriting a concurrent
+ * role change.
  *
- * `targetRole` is limited to `user`/`admin` by the schema; this function only
- * ever writes what it is handed, so the owner role can never be granted here.
+ * The caller has already verified owner access, self-target protection, and
+ * that the requested transition is permitted.
  */
 export async function setUserRole(
   userId: string,
-  targetRole: "user" | "admin",
-): Promise<void> {
-  await prisma.user.update({
-    where: { id: userId },
+  expectedRole: string,
+  targetRole: AppRole,
+): Promise<boolean> {
+  const result = await prisma.user.updateMany({
+    where: { id: userId, role: expectedRole },
     data: { role: targetRole },
   });
+  return result.count === 1;
 }
 
 /**

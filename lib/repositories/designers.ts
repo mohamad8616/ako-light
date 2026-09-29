@@ -96,6 +96,23 @@ export const getDesignerAdminRows = cache(
   },
 );
 
+/**
+ * Just the image URLs the designer row currently references.
+ *
+ * Read by the update/delete actions so they can garbage-collect Vercel Blob
+ * files that an edit replaced or that the row owned when it was deleted.
+ * Deliberately narrow — the cleanup pass needs URLs, not a whole DTO.
+ */
+export const getDesignerImageUrls = cache(
+  async (id: string): Promise<string[]> => {
+    const row = await prisma.designer.findUnique({
+      where: { id },
+      select: { image: true },
+    });
+    return row ? [row.image] : [];
+  },
+);
+
 export const createDesigner = async (
   input: DesignerWriteInput,
   db: Prisma.TransactionClient = prisma,

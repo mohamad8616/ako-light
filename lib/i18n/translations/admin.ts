@@ -232,6 +232,14 @@ export const adminEn = {
   "admin.crud.slugWarning": "Changing the slug can affect existing links.",
   "admin.crud.deleteCascadeCount": "This will also remove {count} related items.",
 
+  // Image upload (components/admin/ImageUpload.tsx + actions/upload.ts)
+  "admin.upload.pick": "Upload image",
+  "admin.upload.remove": "Remove",
+  "admin.upload.uploading": "Uploading…",
+  "admin.upload.done": "Image uploaded",
+  "admin.upload.empty": "No image",
+  "admin.upload.hint": "JPEG, PNG, WebP or AVIF · up to 5 MB",
+
   "admin.error.unknown": "Something went wrong.",
   // Flagships & projects (dedicated-route sections)
   "admin.flagship.new": "New flagship",
@@ -357,9 +365,13 @@ export const adminEn = {
   "admin.error.invalid": "Invalid value.",
   "admin.error.required": "This field is required.",
   "admin.error.tooLong": "This value is too long.",
+  // Upload-specific codes (lib/admin/actions/upload.ts).
+  "admin.error.tooLarge": "This file is too large (max 5 MB).",
+  "admin.error.notImage": "The file is not a supported image.",
   "admin.error.slugTaken": "This handle is already in use.",
   "admin.error.notFound": "The item was not found.",
   "admin.error.relationViolation": "A linked item is missing.",
+  "admin.error.selfTarget": "You cannot change your own role or status.",
 
   // Owner-only user management (app/[locale]/(admin)/admin/admins)
   "admin.section.admins.description":
@@ -370,6 +382,8 @@ export const adminEn = {
   "admin.admins.col.status": "Status",
   "admin.admins.col.joined": "Joined",
   "admin.admins.col.actions": "Actions",
+  "admin.admins.search.label": "Find a user by email or phone",
+  "admin.admins.search.placeholder": "Search email or phone",
   "admin.admins.status.banned": "Banned",
   "admin.admins.status.active": "Active",
   "admin.admins.status.unverified": "Unverified",
@@ -385,6 +399,10 @@ export const adminEn = {
   "admin.admins.action.setActive": "Unban",
   "admin.admins.self.hint": "You cannot change your own role or status.",
   "admin.admins.role.updated": "Role updated",
+  "admin.admins.confirm.title": "Confirm role change",
+  "admin.admins.confirm.description":
+    "This will immediately change this account's access to the admin dashboard.",
+  "admin.admins.confirm.submit": "Confirm change",
   "admin.admins.status.updated": "Status updated",
   "admin.admins.empty": "No users yet.",
   "admin.admins.ban.warning":
@@ -625,6 +643,14 @@ export const adminFa = {
   "admin.crud.slugWarning": "تغییر اسلاگ می‌تواند روی لینک‌های موجود تأثیر بگذارد.",
   "admin.crud.deleteCascadeCount": "با این کار {count} مورد مرتبط هم حذف می‌شود.",
 
+  // آپلود تصویر (components/admin/ImageUpload.tsx و actions/upload.ts)
+  "admin.upload.pick": "آپلود تصویر",
+  "admin.upload.remove": "حذف",
+  "admin.upload.uploading": "در حال آپلود…",
+  "admin.upload.done": "تصویر آپلود شد",
+  "admin.upload.empty": "بدون تصویر",
+  "admin.upload.hint": "JPEG، PNG، WebP یا AVIF · حداکثر ۵ مگابایت",
+
   "admin.error.unknown": "مشکلی پیش آمد.",
   // فلگ‌شپ‌ها و پروژه‌ها (بخش‌های دارای مسیر اختصاصی)
   "admin.flagship.new": "فلگ‌شپ جدید",
@@ -746,9 +772,13 @@ export const adminFa = {
   "admin.error.invalid": "مقدار نامعتبر است.",
   "admin.error.required": "این فیلد الزامی است.",
   "admin.error.tooLong": "این مقدار بیش از حد طولانی است.",
+  // کدهای مخصوص آپلود (lib/admin/actions/upload.ts)
+  "admin.error.tooLarge": "این فایل بسیار بزرگ است (حداکثر ۵ مگابایت).",
+  "admin.error.notImage": "این فایل یک تصویر پشتیبانی‌شده نیست.",
   "admin.error.slugTaken": "این شناسه قبلاً استفاده شده است.",
   "admin.error.notFound": "موردی یافت نشد.",
   "admin.error.relationViolation": "یک مورد مرتبط یافت نشد.",
+  "admin.error.selfTarget": "نمی‌توانید نقش یا وضعیت حساب خودتان را تغییر دهید.",
 
   // مدیریت کاربران مخصوص مالک (app/[locale]/(admin)/admin/admins)
   "admin.section.admins.description":
@@ -759,6 +789,8 @@ export const adminFa = {
   "admin.admins.col.status": "وضعیت",
   "admin.admins.col.joined": "تاریخ عضویت",
   "admin.admins.col.actions": "عملیات",
+  "admin.admins.search.label": "یافتن کاربر با ایمیل یا تلفن",
+  "admin.admins.search.placeholder": "جستجوی ایمیل یا تلفن",
   "admin.admins.status.banned": "مسدود",
   "admin.admins.status.active": "فعال",
   "admin.admins.status.unverified": "تأییدنشده",
@@ -774,6 +806,10 @@ export const adminFa = {
   "admin.admins.action.setActive": "رفع مسدودی",
   "admin.admins.self.hint": "شما نمی‌توانید نقش یا وضعیت خودتان را تغییر دهید.",
   "admin.admins.role.updated": "نقش به‌روزرسانی شد",
+  "admin.admins.confirm.title": "تأیید تغییر نقش",
+  "admin.admins.confirm.description":
+    "دسترسی این حساب به داشبورد مدیریت بلافاصله تغییر می‌کند.",
+  "admin.admins.confirm.submit": "تأیید تغییر",
   "admin.admins.status.updated": "وضعیت به‌روزرسانی شد",
   "admin.admins.empty": "هنوز کاربری وجود ندارد.",
   "admin.admins.ban.warning":

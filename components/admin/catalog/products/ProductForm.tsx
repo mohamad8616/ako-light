@@ -1,6 +1,7 @@
 "use client";
 
 import { DeleteDialog } from "@/components/admin/catalog/DeleteDialog";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { FormCard } from "@/components/admin/catalog/fields/form";
 import { LocalizedLabeledRowsField } from "@/components/admin/catalog/fields/ListFields";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
@@ -11,7 +12,6 @@ import {
 import {
   NumberField,
   SwitchField,
-  TextField,
 } from "@/components/admin/catalog/fields/ScalarFields";
 import { SelectField } from "@/components/admin/catalog/fields/SelectField";
 import { SlugField } from "@/components/admin/catalog/fields/SlugField";
@@ -197,19 +197,17 @@ export function ProductForm({
 
         <FormCard title={t("admin.product.card.media")}>
           <div className="grid gap-5 sm:grid-cols-2">
-            <TextField
+            <ImageUpload
               name="hoverImage"
               label={t("admin.product.field.hoverImage")}
               required
-              placeholder="https://…"
-              mono
+              folder="products"
             />
-            <TextField
+            <ImageUpload
               name="heroImage"
               label={t("admin.product.field.heroImage")}
               required
-              placeholder="https://…"
-              mono
+              folder="products"
             />
           </div>
           <ProductImagesField

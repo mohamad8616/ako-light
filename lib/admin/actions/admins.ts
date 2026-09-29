@@ -41,6 +41,7 @@ import {
   type SetUserRoleFormValues,
 } from "@/lib/admin/schemas/admin-user";
 import {
+  getUserRole,
   setUserBanned,
   setUserRole,
 } from "@/lib/repositories/admin-users";
@@ -52,11 +53,11 @@ import {
  * from; the message is a dictionary key like every other admin error.
  */
 function selfTargetFailure(): ActionResult<never> {
-  return actionFail("invalid", [{ field: "userId", code: "invalid" }]);
+  return actionFail("selfTarget", [{ field: "userId", code: "selfTarget" }]);
 }
 
 /**
- * Promotes a `user` to `admin`, or demotes an `admin` to `user`.
+ * Allows user -> admin, admin -> user, and admin -> owner transitions.
  *
  * Owner-only. The caller may never target themselves: an owner demoting their
  * own account would strip the only role that can manage roles at all.
@@ -79,7 +80,21 @@ export async function setUserRoleAction(
   }
 
   try {
-    await setUserRole(parsed.data.userId, parsed.data.role);
+    const target = await getUserRole(parsed.data.userId);
+    if (!target) return actionFail("notFound");
+
+    const allowedTransition =
+      (target.role === "user" && parsed.data.role === "admin") ||
+      (target.role === "admin" &&
+        (parsed.data.role === "user" || parsed.data.role === "owner"));
+    if (!allowedTransition) return actionFail("invalid");
+
+    const updated = await setUserRole(
+      parsed.data.userId,
+      target.role,
+      parsed.data.role,
+    );
+    if (!updated) return actionFail("invalid");
     revalidateCatalog("admins", { id: parsed.data.userId });
     return actionOk(undefined);
   } catch (error) {

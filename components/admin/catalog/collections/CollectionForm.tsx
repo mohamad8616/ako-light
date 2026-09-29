@@ -1,6 +1,7 @@
 "use client";
 
 import { DeleteDialog } from "@/components/admin/catalog/DeleteDialog";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { FormCard } from "@/components/admin/catalog/fields/form";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
 import {
@@ -108,12 +109,11 @@ export function CollectionForm({
               dir="ltr"
               placeholder="2026"
             />
-            <TextField
+            <ImageUpload
               name="image"
               label={t("admin.designer.field.image")}
               required
-              placeholder="https://..."
-              mono
+              folder="collections"
             />
             <NumberField
               name="sortOrder"

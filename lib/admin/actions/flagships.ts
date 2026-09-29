@@ -9,6 +9,7 @@
  * the form's detail toggle off writes SQL NULL (no detail page).
  */
 import { requireAdminAccess } from "@/lib/admin/access";
+import { deleteBlobUrls, removedUrls } from "@/lib/admin/blob";
 import {
   actionFail,
   actionOk,
@@ -24,6 +25,7 @@ import {
 import {
   createFlagship,
   deleteFlagship,
+  getFlagshipAdminDetail,
   updateFlagship,
 } from "@/lib/repositories/flagships";
 import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
@@ -34,6 +36,26 @@ import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
  * and the update share one transaction, so a failed update never leaves an
  * orphaned history row. An unchanged slug records nothing.
  */
+
+/**
+ * Every image URL a flagship row references: the card image plus, when the
+ * store has a detail block, its hero, video thumbnail and gallery.
+ *
+ * Used to garbage-collect replaced uploads — see the cleanup note on
+ * {@link updateFlagshipAction}.
+ */
+function flagshipImageUrls(values: {
+  image: string;
+  detail: { heroImage: string; video: { thumbnail: string }; gallery: string[] } | null;
+}): string[] {
+  const detail = values.detail;
+  return [
+    values.image,
+    ...(detail
+      ? [detail.heroImage, detail.video.thumbnail, ...detail.gallery]
+      : []),
+  ];
+}
 
 export async function createFlagshipAction(
   input: FlagshipFormValues,
@@ -66,8 +88,19 @@ export async function updateFlagshipAction(
   }
 
   try {
+    // Read before writing, delete after: an upload the admin replaced is only
+    // garbage-collected once the new URL is safely persisted. Switching the
+    // detail block off (detail -> null) drops its images too, which is exactly
+    // "the row no longer references them".
+    const previous = await getFlagshipAdminDetail(id);
+    const beforeUrls = previous ? flagshipImageUrls(previous) : [];
+
     await updateWithSlugHistory("flagship", id, parsed.data.slug, (tx) =>
       updateFlagship(id, parsed.data, tx),
+    );
+
+    await deleteBlobUrls(
+      removedUrls(beforeUrls, flagshipImageUrls(parsed.data)),
     );
     revalidateCatalog("flagships", { id });
     return actionOk(undefined);
@@ -82,7 +115,12 @@ export async function destroyFlagshipAction(
   await requireAdminAccess();
 
   try {
+    const previous = await getFlagshipAdminDetail(id);
+    const beforeUrls = previous ? flagshipImageUrls(previous) : [];
+
     await deleteFlagship(id);
+
+    await deleteBlobUrls(beforeUrls);
     revalidateCatalog("flagships");
     return actionOk(undefined);
   } catch (error) {
