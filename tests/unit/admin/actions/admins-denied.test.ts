@@ -48,9 +48,9 @@ describe("owner-only user-management actions reject admin sessions", () => {
   it.each(["user", "admin", "owner"] as const)(
     "rejects an admin trying to assign %s",
     async (role) => {
-      await expect(
-        setUserRoleAction({ userId: TARGET, role }),
-      ).rejects.toThrow("NEXT_REDIRECT:/admin");
+      await expect(setUserRoleAction({ userId: TARGET, role })).rejects.toThrow(
+        "NEXT_REDIRECT:/admin",
+      );
       expect(redirectMock).toHaveBeenCalledWith("/admin");
       expect(repoMocks.getUserRole).not.toHaveBeenCalled();
       expect(repoMocks.setUserRole).not.toHaveBeenCalled();
@@ -58,13 +58,16 @@ describe("owner-only user-management actions reject admin sessions", () => {
     },
   );
 
-  it.each([true, false])("rejects an admin trying to set banned=%s", async (banned) => {
-    await expect(
-      setUserBannedAction({ userId: TARGET, banned }),
-    ).rejects.toThrow("NEXT_REDIRECT:/admin");
-    expect(redirectMock).toHaveBeenCalledWith("/admin");
-    expect(repoMocks.getUserRole).not.toHaveBeenCalled();
-    expect(repoMocks.setUserRole).not.toHaveBeenCalled();
-    expect(repoMocks.setUserBanned).not.toHaveBeenCalled();
-  });
+  it.each([true, false])(
+    "rejects an admin trying to set banned=%s",
+    async (banned) => {
+      await expect(
+        setUserBannedAction({ userId: TARGET, banned }),
+      ).rejects.toThrow("NEXT_REDIRECT:/admin");
+      expect(redirectMock).toHaveBeenCalledWith("/admin");
+      expect(repoMocks.getUserRole).not.toHaveBeenCalled();
+      expect(repoMocks.setUserRole).not.toHaveBeenCalled();
+      expect(repoMocks.setUserBanned).not.toHaveBeenCalled();
+    },
+  );
 });

@@ -76,3 +76,9 @@ myPlan.md
 data-model.md
 /generated/prisma
 /.lint-tmp/
+
+# local run logs and one-off reports (dev server, test runs, agent scratch)
+*.log
+*-log.txt
+vitest-results.json
+/scripts/tmp-*

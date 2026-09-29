@@ -15,19 +15,23 @@ export const adminEn = {
   "admin.nav.s34": "S34 page",
   "admin.nav.admins": "Admins",
   "admin.nav.orders": "Orders",
-  "admin.section.products.description": "Manage the catalog product list and inventory.",
-  "admin.section.categories.description": "Organize the catalog by product category.",
-  "admin.section.designers.description": "Maintain designer profiles and attribution.",
-  "admin.section.collections.description": "Curate seasonal and capsule collections.",
-  "admin.section.materials.description": "Review finish and material inventory.",
+  "admin.section.products.description":
+    "Manage the catalog product list and inventory.",
+  "admin.section.categories.description":
+    "Organize the catalog by product category.",
+  "admin.section.designers.description":
+    "Maintain designer profiles and attribution.",
+  "admin.section.collections.description":
+    "Curate seasonal and capsule collections.",
+  "admin.section.materials.description":
+    "Review finish and material inventory.",
   "admin.section.fabrics.description": "Track textile and fabric references.",
-  "admin.section.catalogue.description": "Manage catalogue entries and downloadable assets.",
+  "admin.section.catalogue.description":
+    "Manage catalogue entries and downloadable assets.",
   "admin.section.homepage.description":
     "Configure the homepage banners and the content they display.",
-  "admin.section.about.description":
-    "Edit the About page section content.",
-  "admin.section.s34.description":
-    "Edit the S34 page section content.",
+  "admin.section.about.description": "Edit the About page section content.",
+  "admin.section.s34.description": "Edit the S34 page section content.",
   "admin.section.orders.description":
     "View and manage customer orders and fulfillment.",
   "admin.section.flagships.description":
@@ -160,8 +164,7 @@ export const adminEn = {
   "admin.product.field.sortOrder": "Sort order",
   "admin.product.field.category": "Category",
   "admin.product.field.designer": "Designer",
-  "admin.product.field.priceEur":
-    "Price (EUR) — shown to English visitors",
+  "admin.product.field.priceEur": "Price (EUR) — shown to English visitors",
   "admin.product.field.priceToman":
     "Price (Toman) — shown to Persian visitors and charged at checkout",
   "admin.product.field.quantity": "Quantity",
@@ -230,7 +233,8 @@ export const adminEn = {
   "admin.crud.slugHint": "Use lowercase letters and dashes.",
   "admin.crud.slugRegenerate": "Regenerate slug",
   "admin.crud.slugWarning": "Changing the slug can affect existing links.",
-  "admin.crud.deleteCascadeCount": "This will also remove {count} related items.",
+  "admin.crud.deleteCascadeCount":
+    "This will also remove {count} related items.",
 
   // Image upload (components/admin/ImageUpload.tsx + actions/upload.ts)
   "admin.upload.pick": "Upload image",
@@ -427,18 +431,19 @@ export const adminFa = {
   "admin.nav.admins": "مدیران",
   "admin.nav.orders": "سفارش‌ها",
   "admin.section.products.description": "مدیریت لیست محصولات و موجودی کاتالوگ.",
-  "admin.section.categories.description": "سازمان‌دهی کاتالوگ بر اساس دسته‌بندی محصولات.",
+  "admin.section.categories.description":
+    "سازمان‌دهی کاتالوگ بر اساس دسته‌بندی محصولات.",
   "admin.section.designers.description": "نگهداری پروفایل طراحان و ارجاع‌ها.",
-  "admin.section.collections.description": "هم‌زمان‌سازی مجموعه‌های فصلی و کپسولی.",
+  "admin.section.collections.description":
+    "هم‌زمان‌سازی مجموعه‌های فصلی و کپسولی.",
   "admin.section.materials.description": "بازبینی موجودی مواد و رنگ‌بندی‌ها.",
   "admin.section.fabrics.description": "پیگیری مرجع پارچه‌ها و بافت‌ها.",
-  "admin.section.catalogue.description": "مدیریت ورودی‌های کاتالوگ و فایل‌های قابل‌دانلود.",
+  "admin.section.catalogue.description":
+    "مدیریت ورودی‌های کاتالوگ و فایل‌های قابل‌دانلود.",
   "admin.section.homepage.description":
     "تنظیم بنرهای صفحه اصلی و محتوایی که نمایش می‌دهند.",
-  "admin.section.about.description":
-    "ویرایش محتوای بخش‌های صفحه درباره ما.",
-  "admin.section.s34.description":
-    "ویرایش محتوای بخش‌های صفحه اس ۳۴.",
+  "admin.section.about.description": "ویرایش محتوای بخش‌های صفحه درباره ما.",
+  "admin.section.s34.description": "ویرایش محتوای بخش‌های صفحه اس ۳۴.",
   "admin.section.orders.description":
     "مشاهده و مدیریت سفارش‌های مشتریان و تکمیل سفارش.",
   "admin.section.flagships.description":
@@ -640,8 +645,10 @@ export const adminFa = {
   "admin.crud.asLocalized": "محلی‌سازی‌شده",
   "admin.crud.slugHint": "از حروف کوچک و خط تیره استفاده کنید.",
   "admin.crud.slugRegenerate": "تولید مجدد اسلاگ",
-  "admin.crud.slugWarning": "تغییر اسلاگ می‌تواند روی لینک‌های موجود تأثیر بگذارد.",
-  "admin.crud.deleteCascadeCount": "با این کار {count} مورد مرتبط هم حذف می‌شود.",
+  "admin.crud.slugWarning":
+    "تغییر اسلاگ می‌تواند روی لینک‌های موجود تأثیر بگذارد.",
+  "admin.crud.deleteCascadeCount":
+    "با این کار {count} مورد مرتبط هم حذف می‌شود.",
 
   // آپلود تصویر (components/admin/ImageUpload.tsx و actions/upload.ts)
   "admin.upload.pick": "آپلود تصویر",
@@ -697,8 +704,7 @@ export const adminFa = {
   "admin.project.field.productsUsed": "محصولات استفاده‌شده",
   "admin.project.field.productsUsedHint":
     "فهرست مرتب — با فلش‌ها جابه‌جا و با × حذف کنید.",
-  "admin.project.deleteWarning":
-    "پیوندهای محصولات این پروژه نیز حذف می‌شوند.",
+  "admin.project.deleteWarning": "پیوندهای محصولات این پروژه نیز حذف می‌شوند.",
 
   // جایگاه‌های بنر صفحه اصلی (app/[locale]/(admin)/admin/homepage)
   "admin.homepage.edit": "تنظیم",
@@ -778,7 +784,8 @@ export const adminFa = {
   "admin.error.slugTaken": "این شناسه قبلاً استفاده شده است.",
   "admin.error.notFound": "موردی یافت نشد.",
   "admin.error.relationViolation": "یک مورد مرتبط یافت نشد.",
-  "admin.error.selfTarget": "نمی‌توانید نقش یا وضعیت حساب خودتان را تغییر دهید.",
+  "admin.error.selfTarget":
+    "نمی‌توانید نقش یا وضعیت حساب خودتان را تغییر دهید.",
 
   // مدیریت کاربران مخصوص مالک (app/[locale]/(admin)/admin/admins)
   "admin.section.admins.description":

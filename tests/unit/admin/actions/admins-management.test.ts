@@ -142,7 +142,11 @@ describe("owner-only user-management actions", () => {
     await expect(
       setUserRoleAction({ userId: TARGET, role: "owner" }),
     ).resolves.toEqual({ ok: true, data: undefined });
-    expect(repoMocks.setUserRole).toHaveBeenCalledWith(TARGET, "admin", "owner");
+    expect(repoMocks.setUserRole).toHaveBeenCalledWith(
+      TARGET,
+      "admin",
+      "owner",
+    );
   });
 
   it("an OWNER can ban and unban another user", async () => {
@@ -195,7 +199,10 @@ describe("owner-only user-management actions", () => {
     expect(directOwnerGrant.ok).toBe(false);
 
     repoMocks.getUserRole.mockResolvedValue({ role: "owner" });
-    const ownerDemotion = await setUserRoleAction({ userId: TARGET, role: "user" });
+    const ownerDemotion = await setUserRoleAction({
+      userId: TARGET,
+      role: "user",
+    });
     expect(ownerDemotion.ok).toBe(false);
     expectNothingWritten();
   });

@@ -22,11 +22,7 @@
  * (see `OWNER_SELF_*` reasons), so the last owner can never accidentally
  * downgrade or lock themselves out.
  */
-import {
-  getAdminIdentity,
-  requireOwnerAccess,
-} from "@/lib/admin/access";
-import { revalidateCatalog } from "@/lib/admin/revalidate";
+import { getAdminIdentity, requireOwnerAccess } from "@/lib/admin/access";
 import {
   actionFail,
   actionOk,
@@ -34,6 +30,7 @@ import {
   type ActionResult,
 } from "@/lib/admin/result";
 import { toActionResult } from "@/lib/admin/result-server";
+import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
   setUserBannedFormSchema,
   setUserRoleFormSchema,

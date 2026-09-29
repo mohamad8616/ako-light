@@ -16,8 +16,8 @@
  * enforces with `requireOwnerAccess()`; the repository then performs the plain
  * column write.
  */
-import { prisma } from "@/lib/db/prisma";
 import { ROLES, type AppRole } from "@/lib/auth/permissions";
+import { prisma } from "@/lib/db/prisma";
 import { cache } from "react";
 
 /**
@@ -88,7 +88,9 @@ export const getAdminUserRows = cache(async (): Promise<AdminUserRow[]> => {
 /**
  * Reads the target's current role before the action validates a transition.
  */
-export async function getUserRole(userId: string): Promise<{ role: string } | null> {
+export async function getUserRole(
+  userId: string,
+): Promise<{ role: string } | null> {
   return prisma.user.findUnique({
     where: { id: userId },
     select: { role: true },

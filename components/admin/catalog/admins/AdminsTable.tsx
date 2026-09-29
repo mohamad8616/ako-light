@@ -163,7 +163,10 @@ export function AdminsTable({
               })
             }
           >
-            <SelectTrigger className="w-32" aria-label={t("admin.admins.col.role")}>
+            <SelectTrigger
+              className="w-32"
+              aria-label={t("admin.admins.col.role")}
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent dir={ADMIN_SHELL_DIR}>
@@ -201,7 +204,9 @@ export function AdminsTable({
         const row = ctx.row.original;
         if (row.banned) {
           return (
-            <Badge variant="destructive">{t("admin.admins.status.banned")}</Badge>
+            <Badge variant="destructive">
+              {t("admin.admins.status.banned")}
+            </Badge>
           );
         }
         if (!row.emailVerified) {
@@ -211,7 +216,9 @@ export function AdminsTable({
             </Badge>
           );
         }
-        return <Badge variant="secondary">{t("admin.admins.status.active")}</Badge>;
+        return (
+          <Badge variant="secondary">{t("admin.admins.status.active")}</Badge>
+        );
       },
     },
     updatedColumn<AdminUserRow>({
@@ -252,7 +259,10 @@ export function AdminsTable({
   return (
     <>
       <div className="space-y-3">
-        <label className="text-muted-foreground block text-xs font-medium" htmlFor="admin-user-search">
+        <label
+          className="text-muted-foreground block text-xs font-medium"
+          htmlFor="admin-user-search"
+        >
           {t("admin.admins.search.label")}
         </label>
         <Input
