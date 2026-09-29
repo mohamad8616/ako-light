@@ -26,11 +26,14 @@ import {
   deleteMaterial,
   updateMaterial,
 } from "@/lib/repositories/materials";
+import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
 
-// TODO(slug-history): record the previous slug via recordSlugChange() before a
-// rename lands (the redemption pass). Deferred on purpose: SlugHistory is
-// @@unique([modelType, oldSlug]), so an A→B→A→B rename chain would throw until
-// duplicate handling exists. The form warns that public URLs change instead.
+/**
+ * Renaming a material records the old slug in `slug_history` so inbound links
+ * to the previous URL 308-redirect to the current one. The history write and
+ * the update share one transaction, so a failed update never leaves an
+ * orphaned history row. An unchanged slug records nothing.
+ */
 
 export async function createMaterialAction(
   input: MaterialFormValues,
@@ -63,7 +66,9 @@ export async function updateMaterialAction(
   }
 
   try {
-    await updateMaterial(id, parsed.data);
+    await updateWithSlugHistory("material", id, parsed.data.slug, (tx) =>
+      updateMaterial(id, parsed.data, tx),
+    );
     revalidateCatalog("materials", { id });
     return actionOk(undefined);
   } catch (error) {

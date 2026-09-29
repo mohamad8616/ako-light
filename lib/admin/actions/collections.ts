@@ -25,11 +25,14 @@ import {
   deleteCollection,
   updateCollection,
 } from "@/lib/repositories/collections";
+import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
 
-// TODO(slug-history): record the previous slug via recordSlugChange() before a
-// rename lands (the redemption pass). Deferred on purpose: SlugHistory is
-// @@unique([modelType, oldSlug]), so an A→B→A→B rename chain would throw until
-// duplicate handling exists. The form warns that public URLs change instead.
+/**
+ * Renaming a collection records the old slug in `slug_history` so inbound
+ * links to the previous URL 308-redirect to the current one. The history write
+ * and the update share one transaction, so a failed update never leaves an
+ * orphaned history row. An unchanged slug records nothing.
+ */
 
 export async function createCollectionAction(
   input: CollectionFormValues,
@@ -62,7 +65,9 @@ export async function updateCollectionAction(
   }
 
   try {
-    await updateCollection(id, parsed.data);
+    await updateWithSlugHistory("collection", id, parsed.data.slug, (tx) =>
+      updateCollection(id, parsed.data, tx),
+    );
     revalidateCatalog("collections", { id });
     return actionOk(undefined);
   } catch (error) {

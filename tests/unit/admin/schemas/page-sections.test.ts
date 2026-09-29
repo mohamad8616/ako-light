@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   aboutSectionSchemas,
-  aboutBrandStorySectionSchema,
   aboutEleganceSectionSchema,
   aboutHeroSectionSchema,
-  aboutSubtitleSectionSchema,
 } from "@/lib/admin/schemas/about";
 import {
   s34SectionSchemas,

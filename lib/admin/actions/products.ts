@@ -29,12 +29,16 @@ import {
   deleteProduct,
   updateProduct,
 } from "@/lib/repositories/products";
+import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
 
-// TODO(slug-history): record the previous slug via recordSlugChange() before a
-// rename lands (the redemption pass). Deferred on purpose: SlugHistory is
-// @@unique([modelType, oldSlug]), so an A→B→A→B rename chain would throw until
-// duplicate handling exists. For now a rename simply takes effect — the form
-// warns that public URLs change, and no redirect history is recorded.
+/**
+ * Renaming a product records the old slug in `slug_history` so inbound links
+ * to the previous URL 308-redirect to the current one. `updateProduct` already
+ * opens its own transaction over the images/related rows; passing the shared
+ * `tx` here keeps the history write atomic with that whole update, so a failed
+ * write can never leave an orphaned history row. An unchanged slug records
+ * nothing.
+ */
 
 /** Creates a product (images included) and returns its new id. */
 export async function createProductAction(
@@ -70,7 +74,13 @@ export async function updateProductAction(
   }
 
   try {
-    await updateProduct(id, parsed.data, db);
+    await updateWithSlugHistory(
+      "product",
+      id,
+      parsed.data.slug,
+      (tx) => updateProduct(id, parsed.data, tx),
+      { db },
+    );
     revalidateCatalog("products", { id });
     return actionOk(undefined);
   } catch (error) {

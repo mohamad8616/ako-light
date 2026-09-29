@@ -22,7 +22,9 @@ import * as React from "react";
  *   - typing a slug by hand switches the field to manual immediately, so
  *     later name edits never clobber it;
  *   - changing an EXISTING slug warns (never blocks) that public URLs change.
- *     No SlugHistory redemption exists yet — the action modules carry the TODO.
+ *     SlugHistory redemption is wired: every catalog update action records the
+ *     retired slug via updateWithSlugHistory, and the public routes redirect it
+ *     through redirectIfSlugRenamed.
  */
 export function SlugField({
   name,

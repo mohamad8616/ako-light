@@ -222,6 +222,13 @@ prep; the scope change Pass 11B proposed and deferred):
   `getCatalogRedirectPath()` resolve a renamed product and a renamed category
   segment purely through ids, never self-redirect on the current URL, and
   refuse to redirect under a category the product does not belong to.
+  Pass 12.5B extends the file to the **`updateWithSlugHistory()`** helper (the
+  single path every catalog update action now uses): a rename records the old
+  slug and moves the entity; an unchanged slug records nothing; a chained
+  rename keeps every historical slug resolvable; a rename onto a taken slug
+  fails without leaving a history row; slug uniqueness is still enforced; and
+  re-retiring a previously used slug does not throw the
+  `@@unique([modelType, oldSlug])` violation (A→B→A→B is a supported chain).
 
 ## What is intentionally NOT tested yet
 
@@ -255,7 +262,8 @@ Pass 10.5   Server/data-access tests                   ✅ complete
 Pass 11.5   Authentication + authorization tests          ✅ complete
             (11.5A auth flows; 11.5B authorization boundary)
 Pass 12.5   Admin CRUD/integration tests
-            (12.5A owner-only user management — /admin/admins)
+            (12.5A owner-only user management — /admin/admins;
+             12.5B slug-history integration into the update actions)
 Pass 13.5   Media management tests
 Pass 14.5   Commerce/user workflow tests
 Pass 15.5   E2E + regression tests

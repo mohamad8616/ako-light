@@ -27,11 +27,14 @@ import {
   deleteProductCategory,
   updateProductCategory,
 } from "@/lib/repositories/product-categories";
+import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
 
-// TODO(slug-history): record the previous slug via recordSlugChange() before a
-// rename lands (the redemption pass). Deferred on purpose: SlugHistory is
-// @@unique([modelType, oldSlug]), so an A→B→A→B rename chain would throw until
-// duplicate handling exists. The form warns that public URLs change instead.
+/**
+ * Renaming a category records the old slug in `slug_history` so inbound links
+ * to the previous URL 308-redirect to the current one. The history write and
+ * the update share one transaction; a failed update leaves no orphaned history
+ * row, and an unchanged slug records nothing.
+ */
 
 export async function createProductCategoryAction(
   input: ProductCategoryFormValues,
@@ -66,7 +69,15 @@ export async function updateProductCategoryAction(
   }
 
   try {
-    await updateProductCategory(id, parsed.data, db);
+    await updateWithSlugHistory(
+      "productCategory",
+      id,
+      parsed.data.slug,
+      (tx) => updateProductCategory(id, parsed.data, tx),
+      // Join the caller's transaction when there is one, so a nested call stays
+      // atomic with its parent instead of opening a second connection.
+      { db },
+    );
     revalidateCatalog("categories", { id });
     return actionOk(undefined);
   } catch (error) {

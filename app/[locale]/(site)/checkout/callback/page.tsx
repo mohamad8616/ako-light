@@ -82,6 +82,12 @@ export default async function CheckoutCallbackPage({
     );
   }
 
+  // Only the network + DB work is guarded. React does not render synchronously
+  // with `return <JSX>`, so rendering must happen OUTSIDE the try/catch —
+  // otherwise a rendering error would never be caught here anyway.
+  let refId: string | null = null;
+  let verifyErrorMessage: string | null = null;
+
   try {
     const result = await verify({
       authority,
@@ -90,54 +96,17 @@ export default async function CheckoutCallbackPage({
       amountToman: Number(order.totalAmount.toString()),
     });
 
+    refId = result.refId ?? null;
+
     await prisma.order.update({
       where: { id: order.id },
       data: {
-        status: result.refId ? "paid" : "failed",
+        status: refId ? "paid" : "failed",
         zarinpalAuthority: authority,
-        zarinpalRefId: result.refId ?? null,
+        zarinpalRefId: refId,
         updatedAt: new Date(),
       },
     });
-
-    return (
-      <>
-        <PaymentCallbackState success={Boolean(result.refId)} />
-        <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
-          {result.refId ? (
-            <>
-              <h1 className="text-3xl font-medium">Payment received</h1>
-              <p className="mt-4 text-stone-600">
-                Your order has been paid successfully.
-              </p>
-              <div className="mt-6 rounded border border-stone-200 bg-white p-4 text-sm text-stone-700">
-                Order ID:{" "}
-                <span className="font-mono break-all">{order.id}</span>
-                <div className="mt-2">
-                  Amount paid:{" "}
-                  <span className="font-medium text-stone-950">
-                    {formatOrderAmount(order.totalAmount, order.currency, locale)}
-                  </span>
-                </div>
-                <div className="mt-2">
-                  Reference ID:{" "}
-                  <span className="font-mono break-all">{result.refId}</span>
-                </div>
-              </div>
-            </>
-          ) : (
-            <>
-              <h1 className="text-3xl font-medium">
-                Payment verification failed
-              </h1>
-              <p className="mt-4 text-stone-600">
-                The payment was not verified by ZarinPal. Please retry checkout.
-              </p>
-            </>
-          )}
-        </main>
-      </>
-    );
   } catch (error) {
     await prisma.order.update({
       where: { id: order.id },
@@ -148,17 +117,56 @@ export default async function CheckoutCallbackPage({
       },
     });
 
+    verifyErrorMessage =
+      error instanceof Error
+        ? error.message
+        : "We could not verify the payment with ZarinPal.";
+  }
+
+  if (verifyErrorMessage) {
     return (
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
         <h1 className="text-3xl font-medium">Payment verification failed</h1>
-        <p className="mt-4 text-stone-600">
-          {error instanceof Error
-            ? error.message
-            : "We could not verify the payment with ZarinPal."}
-        </p>
+        <p className="mt-4 text-stone-600">{verifyErrorMessage}</p>
       </main>
     );
   }
+
+  return (
+    <>
+      <PaymentCallbackState success={Boolean(refId)} />
+      <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
+        {refId ? (
+          <>
+            <h1 className="text-3xl font-medium">Payment received</h1>
+            <p className="mt-4 text-stone-600">
+              Your order has been paid successfully.
+            </p>
+            <div className="mt-6 rounded border border-stone-200 bg-white p-4 text-sm text-stone-700">
+              Order ID: <span className="font-mono break-all">{order.id}</span>
+              <div className="mt-2">
+                Amount paid:{" "}
+                <span className="font-medium text-stone-950">
+                  {formatOrderAmount(order.totalAmount, order.currency, locale)}
+                </span>
+              </div>
+              <div className="mt-2">
+                Reference ID:{" "}
+                <span className="font-mono break-all">{refId}</span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <h1 className="text-3xl font-medium">Payment verification failed</h1>
+            <p className="mt-4 text-stone-600">
+              The payment was not verified by ZarinPal. Please retry checkout.
+            </p>
+          </>
+        )}
+      </main>
+    </>
+  );
 }
 
 /**

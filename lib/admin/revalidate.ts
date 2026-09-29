@@ -85,8 +85,9 @@ const PUBLIC_ROUTES: Record<AdminSection, readonly string[]> = {
  * re-renders the page the action ran on so the table reflects the change
  * immediately.
  *
- * SlugHistory recording stays out of this module on purpose: the dashboard's
- * slug rename is a TODO for the redemption pass (see the action modules).
+ * SlugHistory recording lives in the action modules, not here: each catalog
+ * update action wraps its repository write in `updateWithSlugHistory`, which is
+ * what records a retired slug and keeps the entity update atomic with it.
  */
 export function revalidateCatalog(
   section: AdminSection,
