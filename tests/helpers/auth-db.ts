@@ -24,7 +24,9 @@
  */
 import "dotenv/config";
 import { randomUUID } from "node:crypto";
+import fs from "node:fs/promises";
 import http from "node:http";
+import path from "node:path";
 import { Pool, type PoolClient } from "pg";
 import { expect } from "vitest";
 
@@ -79,6 +81,21 @@ type AuthServer = {
 let server: AuthServer | null = null;
 
 /**
+ * Set once `stopAuthServer()` begins, and never cleared.
+ *
+ * Several helpers (`hitCallback`, `getPage`, …) call `startAuthServer()` lazily
+ * rather than receiving the origin, which means a call that lands AFTER
+ * `afterAll` has torn the server down would silently boot a SECOND server that
+ * nothing ever closes. That orphan is what keeps port 3000 bound and makes the
+ * next test file die with `EADDRINUSE` — and, because Next's dev lockfile is
+ * still held by it, also kills that file's worker via `process.exit(1)`.
+ *
+ * So a post-teardown boot is a bug in the caller, and it must fail loudly here
+ * rather than leak a listener.
+ */
+let tornDown = false;
+
+/**
  * Resolves once the in-flight server teardown has finished releasing Next's
  * dev lockfile.
  *
@@ -116,6 +133,16 @@ let serverTeardown: Promise<void> = Promise.resolve();
 export async function startAuthServer(): Promise<AuthServer> {
   if (server) return server;
 
+  // A boot after teardown would create an uncloseable orphan (see `tornDown`).
+  if (tornDown) {
+    throw new Error(
+      "startAuthServer() was called after stopAuthServer() had already torn " +
+        "the server down. Booting again here would leak a listener on the " +
+        "shared port and break every later test file. Capture the origin in " +
+        "`beforeAll` instead of calling this lazily inside a test or helper.",
+    );
+  }
+
   // Wait until any previously-started server in this worker has fully released
   // Next's dev lock (see the note on `serverTeardown` below). Without this,
   // the second test FILE in the same forked worker boots while the first
@@ -125,6 +152,13 @@ export async function startAuthServer(): Promise<AuthServer> {
   await serverTeardown;
 
   const { origin, port } = resolveAuthOrigin();
+
+  // Next's dev server refuses to boot while another live server holds
+  // `<distDir>/lock`, and calls `process.exit(1)` when it cannot acquire it
+  // within a second. If the lock's recorded owner is gone (a run killed
+  // mid-flight, an interrupted debug session) the file is pure debris and would
+  // otherwise poison every later run with an opaque worker death.
+  await clearStaleDevLock(port);
 
   // Defence-in-depth against contacting the real SMS gateway. The primary
   // guard is tests/helpers/auth-sms-guard.ts (a `setupFiles` hook for the
@@ -153,12 +187,33 @@ export async function startAuthServer(): Promise<AuthServer> {
   });
 
   await new Promise<void>((resolve, reject) => {
-    httpServer.once("error", reject);
+    // A stale listener on this port is almost always a dev server leaked by an
+    // earlier run (the harness binds the SAME port every file, because the
+    // origin is pinned to BETTER_AUTH_URL for better-auth's Origin check). If
+    // one is still there, `listen` fails with EADDRINUSE and the failure used
+    // to surface as an opaque `beforeAll` error that skipped every test in the
+    // file. Translate it into something actionable instead.
+    const onError = (error: NodeJS.ErrnoException) => {
+      if (error.code === "EADDRINUSE") {
+        reject(
+          new Error(
+            `The auth test server cannot bind ${origin} — something is already ` +
+              `listening on port ${port}. This is normally a Next dev server ` +
+              `leaked by an earlier run (the tier pins this port so better-auth's ` +
+              `Origin check passes). Stop it, or delete the stale lock at ` +
+              `<repo>/.next/dev/lock, then re-run.`,
+          ),
+        );
+        return;
+      }
+      reject(error);
+    };
+    httpServer.once("error", onError);
     // Bind explicitly on 127.0.0.1 even when the trusted origin says
     // `localhost`: both resolve to the same loopback interface, and binding to
     // the literal address avoids the IPv6/IPv4 `localhost` ambiguity.
     httpServer.listen(port, "127.0.0.1", () => {
-      httpServer.off("error", reject);
+      httpServer.off("error", onError);
       resolve();
     });
   });
@@ -173,17 +228,112 @@ export async function startAuthServer(): Promise<AuthServer> {
       return url.toString();
     },
     close: async () => {
-      await new Promise<void>((resolve) => httpServer.close(() => resolve()));
+      // `httpServer.close()` resolves only once EVERY connection has ended —
+      // including idle keep-alive sockets, which undici's pool keeps open for
+      // reuse. It therefore does NOT return promptly, and if it never returns
+      // then `app.close()` below is never reached either: the whole server
+      // outlives the test run and keeps the port bound, so the NEXT test file
+      // dies with EADDRINUSE.
+      //
+      // So destroy the sockets FIRST. `closeAllConnections()` (Node 18.2+) ends
+      // both active and idle connections; `close()` is then just "stop
+      // accepting", which resolves immediately. The timeout is a last-resort
+      // guard so a wedged socket can never block teardown indefinitely.
+      httpServer.closeAllConnections?.();
+
+      await new Promise<void>((resolve) => {
+        const done = () => resolve();
+        httpServer.close(done);
+        setTimeout(done, 5_000).unref?.();
+      });
       await app.close();
       server = null;
-      // Hold the barrier briefly so the native dev-lockfile unlock (triggered
-      // by the hot-reloader closing) lands before the next file boots. See the
-      // note on `serverTeardown`.
+      // Hold the barrier so (a) the native dev-lockfile unlock triggered by the
+      // hot-reloader closing lands, and (b) the OS actually releases the bound
+      // socket, before the next file boots. See the note on `serverTeardown`.
       serverTeardown = new Promise<void>((resolve) => setTimeout(resolve, 1500));
     },
   };
 
+  await warmAuthRoute(server);
+
   return server;
+}
+
+/**
+ * Waits until the Better Auth catch-all route is actually compiled.
+ *
+ * `next({ dev: true })` compiles routes on demand, and the FIRST request to a
+ * cold route can be answered with **404** rather than being compiled and
+ * served. With a warm `.next/dev` this never shows, which is why it went
+ * unnoticed: every existing test passed because an earlier test file had
+ * already warmed the route. On a clean cache the first `registerUser()` of the
+ * run fails with a 404 body that has nothing to do with what is under test.
+ *
+ * Warming here makes the whole tier independent of cache state.
+ */
+async function warmAuthRoute(active: AuthServer): Promise<void> {
+  // Generous bound: a cold Turbopack compile of the route can take tens of
+  // seconds, and each attempt is cheap once it is warm.
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    const response = await fetch(active.url("/ok"));
+    if (response.status !== 404) return;
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+}
+
+/**
+ * Removes Next's dev lockfile when its recorded owner is no longer running.
+ *
+ * Next 16 writes `<distDir>/lock` holding `{ pid, port, ... }` and treats a
+ * present lock as "another dev server owns this project". It only inspects the
+ * FILE, not whether the process is alive, so a lock left behind by a killed run
+ * blocks every subsequent run.
+ *
+ * The liveness probe is deliberately conservative: it uses
+ * `process.kill(pid, 0)` and only deletes the lock when that reports the PID is
+ * gone. Any other outcome (alive, or an unexpected error such as EPERM meaning
+ * "exists but not ours") leaves the file alone, so a genuinely running dev
+ * server is never disturbed.
+ */
+async function clearStaleDevLock(port: number): Promise<void> {
+  const lockPath = path.join(process.cwd(), ".next", "dev", "lock");
+
+  let raw: string;
+  try {
+    raw = await fs.readFile(lockPath, "utf8");
+  } catch {
+    return; // No lock — nothing to do.
+  }
+
+  let pid: number | undefined;
+  try {
+    pid = (JSON.parse(raw) as { pid?: number }).pid;
+  } catch {
+    // Unreadable content: treat as debris only if it is not a live process's.
+    pid = undefined;
+  }
+
+  const alive =
+    typeof pid === "number" &&
+    (() => {
+      try {
+        process.kill(pid, 0);
+        return true;
+      } catch (error) {
+        // ESRCH = no such process (safe to clear). EPERM = exists, not ours.
+        return (error as NodeJS.ErrnoException).code !== "ESRCH";
+      }
+    })();
+
+  if (alive) return;
+
+  await fs.rm(lockPath, { force: true });
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[auth-harness] removed a stale Next dev lock (port ${port}, ` +
+      `recorded pid ${pid ?? "unknown"} is not running).`,
+  );
 }
 
 /**
@@ -212,8 +362,50 @@ function resolveAuthOrigin(): { origin: string; port: number } {
   return { origin: url.origin, port };
 }
 
+/**
+ * Fetches an app page, retrying while the dev server answers 404 for a route it
+ * has not compiled yet.
+ *
+ * `next({ dev: true })` compiles routes on demand and can answer the FIRST
+ * request to a cold route with 404 instead of compiling and serving it. That is
+ * an artefact of the dev server, not of the route: the production build serves
+ * the same path with 200. A page-fetching test must not read it as a routing
+ * failure, so it retries.
+ *
+ * Redirects and any other status are returned immediately — only 404 is
+ * treated as "still compiling", because that is the only status the dev server
+ * emits for this.
+ */
+export async function fetchPageWhenWarm(
+  origin: string,
+  path: string,
+  jar: CookieJar,
+  // The dev server answers 404 IMMEDIATELY while it compiles in the background,
+  // so the budget has to outlast the compile rather than a single request. A
+  // first compile of a heavy route has been measured at ~60s, so the default
+  // budget is ~3 minutes of retries.
+  { attempts = 180, delayMs = 1000 }: { attempts?: number; delayMs?: number } = {},
+): Promise<Response> {
+  let last: Response | undefined;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    const response = await fetch(new URL(path, origin), {
+      headers: { cookie: jar.header() ?? "" },
+      redirect: "manual",
+    });
+    if (response.status !== 404) return response;
+    last = response;
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+  }
+
+  return last as Response;
+}
+
 /** Tears the HTTP server down. Call from `afterAll`. */
 export async function stopAuthServer(): Promise<void> {
+  // Latch BEFORE awaiting, so a helper that races the teardown cannot slip a
+  // `startAuthServer()` in between `close()` and this flag being set.
+  tornDown = true;
   await server?.close();
   // The barrier set inside `close()` must be awaited here too, so a caller that
   // immediately re-starts (or the next test file) cannot race the lock release.

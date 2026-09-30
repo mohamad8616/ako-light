@@ -8,7 +8,9 @@
  *
  * API: POST https://api.sms.ir/v1/send/verify
  *
- * Mobile number format (confirmed from sms.ir docs / example requests):
+ * Mobile number format (confirmed from sms.ir docs / example requests) — the
+ * rule itself lives in lib/sms/normalize-mobile.ts, shared with the order
+ * receipt's bulk sender so the two cannot drift:
  *   - Digits only, no "+" prefix, no leading "0".
  *   - Iranian mobiles arrive as "09xxxxxxxxx" from the user; we strip the
  *     leading "0" so the payload becomes "9xxxxxxxxx" (10 digits).
@@ -24,6 +26,8 @@
  *     testable without a real phone. This logging is NOT done when a
  *     production key is detected.
  */
+
+import { normalizeIranianMobile } from "@/lib/sms/normalize-mobile";
 
 /** Env var sms.ir's API key is read from. */
 const SMSIR_API_KEY_ENV = "SMSIR_API_KEY";
@@ -61,28 +65,6 @@ function isSandboxKey(): boolean {
   return templateId === SMSIR_SANDBOX_DEFAULT_TEMPLATE_ID;
 }
 
-/**
- * Normalize an Iranian mobile number to sms.ir's expected format.
- *
- * Expected output: 10-digit string, digits only, no leading "0", no "+",
- * no country-code prefix. Examples:
- *   "0919xxxx904" → "919xxxx904"
- *   "+98919xxxx904" → "919xxxx904"
- *   "919xxxx904" → "919xxxx904"
- */
-function normalizeMobile(phoneNumber: string): string {
-  const digits = phoneNumber.replace(/[^0-9]/g, "");
-  // Iranian mobiles are 11 digits with a leading 0 (09xxxxxxxxx).
-  if (digits.startsWith("0") && digits.length === 11) {
-    return digits.slice(1); // drop the leading 0 → 10 digits
-  }
-  // Already 10 digits, no leading zero → pass through.
-  if (digits.length === 10) {
-    return digits;
-  }
-  // Fallback: return whatever digits we have and let sms.ir reject if needed.
-  return digits;
-}
 /**
  * Deliver a phone-number OTP code by SMS via sms.ir's Verify API.
  */
@@ -133,7 +115,7 @@ export async function sendOtpSms(
   }
 
   // --- Real sms.ir Verify API call ----------------------------------------
-  const mobile = normalizeMobile(phoneNumber);
+  const mobile = normalizeIranianMobile(phoneNumber);
   const templateId = Number(
     process.env[SMSIR_VERIFY_TEMPLATE_ID_ENV]?.trim() ??
       SMSIR_SANDBOX_DEFAULT_TEMPLATE_ID,

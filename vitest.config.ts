@@ -104,11 +104,18 @@ export default defineConfig({
           name: "auth",
           environment: "node",
           include: ["tests/integration/auth/**/*.test.ts"],
-          // Hard-blocks the SMS gateway: the tier runs real auth endpoints, so
-          // lib/auth/sms.ts would otherwise `fetch` api.sms.ir for every OTP
-          // (Next re-loads .env during prepare(), so unsetting the key alone is
-          // not enough). The guard intercepts sms.ir and replies locally.
-          setupFiles: ["tests/helpers/auth-sms-guard.ts"],
+          // Hard-blocks the two external gateways this tier drives for real:
+          //   - the SMS gateway (lib/auth/sms.ts for OTP, and
+          //     lib/notifications/sms.ts for order receipts). Next re-loads
+          //     .env during prepare(), so unsetting the key alone is not enough.
+          //   - ZarinPal, so the checkout callback route can be exercised
+          //     end-to-end without a sandbox credential or moving real money.
+          // Both guards chain to the previously installed `fetch`, so they
+          // compose instead of clobbering one another.
+          setupFiles: [
+            "tests/helpers/auth-sms-guard.ts",
+            "tests/helpers/zarinpal-guard.ts",
+          ],
           // The first request after `next({ dev: true }).prepare()` compiles
           // the route on demand and can take tens of seconds on a cold cache;
           // the real DB round-trips of this tier add to it.

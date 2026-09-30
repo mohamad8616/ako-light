@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/prisma";
 import { formatToman } from "@/lib/i18n/price";
 import { isLocale } from "@/lib/i18n/routing";
+import { sendOrderReceipt } from "@/lib/notifications/order-receipt";
+import { authorizeOrderAccess } from "@/lib/orders/access-token";
 import { verify } from "@/lib/payments/zarinpal";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -16,6 +18,7 @@ export default async function CheckoutCallbackPage({
     orderId?: string | string[];
     Authority?: string | string[];
     Status?: string | string[];
+    token?: string | string[];
   }>;
 }) {
   const [{ locale }, query] = await Promise.all([params, searchParams]);
@@ -26,6 +29,11 @@ export default async function CheckoutCallbackPage({
   const authority =
     typeof query.Authority === "string" ? query.Authority : undefined;
   const status = typeof query.Status === "string" ? query.Status : undefined;
+  // A signed, single-order access token — the "opened from an SMS/email,
+  // possibly signed out, possibly a different device" path. Never a session
+  // substitute: it is only consulted for this page and only ever authorises
+  // the one order it names.
+  const token = typeof query.token === "string" ? query.token : undefined;
 
   if (!orderId) {
     return (
@@ -50,7 +58,18 @@ export default async function CheckoutCallbackPage({
     },
   });
 
-  if (!order || !session || order.userId !== session.user.id) {
+  // Two accepted paths, decided in one place (see lib/orders/access-token.ts):
+  //   1. the signed-in owner of the order — the in-app path, unchanged;
+  //   2. a valid signed token scoped to THIS order — no session required.
+  // Everything else is refused. The token cannot name another order, is not a
+  // session, and is never checked on any write/admin surface.
+  const access = authorizeOrderAccess({
+    order,
+    session: session ? { userId: session.user.id } : null,
+    token,
+  });
+
+  if (!order || !access) {
     return (
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
         <h1 className="text-3xl font-medium">Unable to verify order</h1>
@@ -88,6 +107,12 @@ export default async function CheckoutCallbackPage({
   let refId: string | null = null;
   let verifyErrorMessage: string | null = null;
 
+  // Captured BEFORE the update so the receipt fires only on the real
+  // pending/failed → paid transition. This page re-runs verification on every
+  // visit, so without the guard a customer refreshing (or reopening the link
+  // from their receipt) would be sent a second copy each time.
+  const alreadyPaid = order.status === "paid";
+
   try {
     const result = await verify({
       authority,
@@ -107,6 +132,14 @@ export default async function CheckoutCallbackPage({
         updatedAt: new Date(),
       },
     });
+
+    // The receipt is sent only now that the payment is durably recorded, and
+    // only on the first transition to paid. `sendOrderReceipt` never throws, so
+    // a notification failure cannot turn a successful payment into an error
+    // page for the customer.
+    if (refId && !alreadyPaid) {
+      await sendOrderReceipt(order.id);
+    }
   } catch (error) {
     await prisma.order.update({
       where: { id: order.id },

@@ -27,6 +27,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   cleanupFixture,
   closeDb,
+  fetchPageWhenWarm,
   hasDatabaseUrl,
   registerUser,
   setUserFlags,
@@ -56,13 +57,16 @@ async function signInAsRole(
   return { user, jar };
 }
 
-/** Fetches an app page with the given session, without following redirects. */
+/**
+ * Fetches an app page with the given session, without following redirects.
+ *
+ * Uses the harness's warm-retry helper: on a cold dev cache the first request
+ * to a page route comes back 404 while Turbopack compiles it, which is not a
+ * routing failure (the production build serves the same path with 200).
+ */
 async function getPage(path: string, jar: CookieJar): Promise<Response> {
   const { origin } = await startAuthServer();
-  return fetch(new URL(path, origin), {
-    headers: { cookie: jar.header() ?? "" },
-    redirect: "manual",
-  });
+  return fetchPageWhenWarm(origin, path, jar);
 }
 
 describeAuth("owner-only user management — real HTTP surface", () => {
@@ -98,7 +102,9 @@ describeAuth("owner-only user management — real HTTP surface", () => {
         "the owner's own row must show the self-protection note",
       ).toContain("You cannot change your own role or status.");
     },
-    180_000,
+    // Generous: a cold Turbopack compile of the admin shell has been measured
+    // at ~70s, on top of the warm-retry budget.
+    300_000,
   );
 
   it(
@@ -119,7 +125,9 @@ describeAuth("owner-only user management — real HTTP surface", () => {
       const html = await response.text();
       expect(html).not.toContain("You cannot change your own role or status.");
     },
-    180_000,
+    // Generous: a cold Turbopack compile of the admin shell has been measured
+    // at ~70s, on top of the warm-retry budget.
+    300_000,
   );
 
   it(
@@ -143,6 +151,8 @@ describeAuth("owner-only user management — real HTTP surface", () => {
       const html = await response.text();
       expect(html).not.toContain("You cannot change your own role or status.");
     },
-    180_000,
+    // Generous: a cold Turbopack compile of the admin shell has been measured
+    // at ~70s, on top of the warm-retry budget.
+    300_000,
   );
 });
