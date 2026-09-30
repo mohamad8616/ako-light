@@ -1,5 +1,7 @@
+import CartResetOnPaidOrder from "@/components/cart/CartResetOnPaidOrder";
 import SmoothScroll from "@/components/smoothScroll";
 import { PageLoadInitializer } from "@/components/ui/PageLoadInitializer";
+import { readCartResetSignal } from "@/lib/cart/reset-signal";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import { getLocalizedPath, isLocale, type Locale } from "@/lib/i18n/routing";
 import { translations } from "@/lib/i18n/translations";
@@ -160,6 +162,12 @@ export default async function LocaleLayout({
     org,
   );
 
+  // Set server-side by the checkout callback only after a payment is durably
+  // recorded as paid. Passed down so the cart can be emptied on whichever page
+  // the customer next loads — not merely on the callback page. See
+  // lib/cart/reset-signal.ts.
+  const cartResetOrderId = await readCartResetSignal();
+
   return (
     <html
       lang={initialLang}
@@ -186,6 +194,9 @@ export default async function LocaleLayout({
         />
         <SmoothScroll>
           <LanguageProvider locale={initialLang}>
+            {/* Clears the persisted cart when a payment for this order has
+                succeeded. Renders nothing. */}
+            <CartResetOnPaidOrder paidOrderId={cartResetOrderId} />
             {children}
           </LanguageProvider>
         </SmoothScroll>

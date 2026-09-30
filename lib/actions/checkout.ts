@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db/prisma";
 import { request as requestZarinpalPayment } from "@/lib/payments/zarinpal";
+import { claimProductStock } from "@/lib/repositories/orders";
 import { headers } from "next/headers";
 import { z } from "zod";
 import { auth } from "../auth/auth";
@@ -31,6 +32,20 @@ export type CheckoutActionResult =
  * Creates an order from the browser cart. The browser supplies only product
  * ids and quantities; prices, names, images, availability and the total all
  * come from the live database inside the transaction.
+ *
+ * STOCK IS CLAIMED HERE, NOT AT PAYMENT. Each line is decremented with a
+ * guarded `updateMany` inside the same transaction that creates the order, so
+ * the check and the decrement are atomic: two concurrent checkouts for the
+ * last unit cannot both pass (the loser matches 0 rows and is reported as
+ * unavailable). Claiming at order creation — rather than after ZarinPal
+ * confirms — is what stops two customers paying for the same unit.
+ *
+ * The trade-off is that an order which is never paid holds its stock until
+ * something releases it. `releaseOrderStock()` in lib/repositories/orders.ts is
+ * the release path; wiring it to the failure and stale-pending cases is the
+ * remaining work (see the note on that function). Anything that fails
+ * validation before the commit rolls the whole transaction back, so
+ * already-claimed lines are restored automatically.
  */
 export async function createPendingOrder(
   input: CheckoutInput,
@@ -65,31 +80,32 @@ export async function createPendingOrder(
         where: { id: { in: [...itemById.keys()] } },
         include: { productImages: { orderBy: { sortOrder: "asc" }, take: 1 } },
       });
-      const productsById = new Map(
-        products.map((product) => [product.id, product]),
+
+      // Claim every line's stock as part of THIS transaction. The claim is
+      // atomic per product (see claimProductStock): the availability rule is in
+      // the UPDATE's WHERE clause, so two concurrent checkouts for the last
+      // unit cannot both succeed. A read-then-write check would not hold — both
+      // transactions would read the same pre-decrement quantity and both pass.
+      const { claimedIds, unavailable } = await claimProductStock(
+        [...itemById].map(([productId, quantity]) => ({ productId, quantity })),
+        tx,
       );
-      const affectedItems: string[] = [];
 
-      for (const [productId, quantity] of itemById) {
-        const product = productsById.get(productId);
-        if (!product) {
-          affectedItems.push(productId);
-          continue;
-        }
-        if (
-          !product.existsInStore ||
-          product.quantity < quantity ||
-          product.priceToman.toNumber() <= 0
-        ) {
-          affectedItems.push(product.slug);
-        }
+      // One unavailable line fails the whole order. Throwing here rolls the
+      // transaction back, so stock already claimed above is restored — the
+      // order and its stock movement commit together or not at all.
+      if (unavailable.length > 0) {
+        throw new StockValidationError(unavailable);
       }
 
-      if (affectedItems.length > 0) {
-        throw new StockValidationError(affectedItems);
-      }
+      // Only claimed products are ordered. Filtering rather than mapping the
+      // full `products` list keeps the order lines and the stock movement in
+      // lockstep: a product can never be charged for without its reservation.
+      const claimed = products.filter((product) =>
+        claimedIds.includes(product.id),
+      );
 
-      const orderItems = products.map((product) => {
+      const orderItems = claimed.map((product) => {
         const quantity = itemById.get(product.id)!;
         return {
           id: crypto.randomUUID(),
@@ -106,7 +122,7 @@ export async function createPendingOrder(
 
       // Order total in Toman. Every unit is Product.priceToman (never priceEur),
       // so the charge is identical no matter which locale started the checkout.
-      const totalAmount = products.reduce(
+      const totalAmount = claimed.reduce(
         (total, product) =>
           total + product.priceToman.toNumber() * itemById.get(product.id)!,
         0,

@@ -716,3 +716,76 @@ model S34PageSection {
 
   @@map("s34_page_section")
 }
+
+// ---------------------------------------------------------------------------
+// Media (Pass 13.5 — myPlan.md).
+//
+// Central METADATA registry for uploaded assets. This is the foundation the
+// rest of the app will eventually reference, replacing scattered image URL
+// strings on individual catalog models. Nothing is migrated in this pass: the
+// catalog models keep their URL columns and this table is additive.
+//
+// Two rules this model exists to enforce:
+//   1. BINARY FILES ARE NOT STORED HERE. Postgres holds metadata only; the
+//      bytes live in the storage provider (Vercel Blob today, see
+//      lib/media/*). `url` is the resolved public URL, `storageKey` is the
+//      provider-side identifier used to delete/replace the object.
+//   2. THE STORAGE KEY IS THE TRUTH, NOT THE URL. Several providers can serve
+//      one object from more than one URL, so cleanup/deletion always resolves
+//      through `storageKey` and URL matching is best-effort fallback only.
+//
+// Conventions (see AGENTS.md + the media/repository sections):
+//   - `id` is a uuid surrogate (`@default(uuid())`, like Order/OrderItem):
+//     media rows are created by an action at runtime, not seeded from a stable
+//     source key, so there is no derived id to inherit.
+//   - `filename` is the ORIGINAL client filename, kept for display/download;
+//     it is never used to build a path (see lib/media validation).
+//   - `width`/`height`/`duration` are nullable because the current upload path
+//     does not decode the file. A later hardening pass (video, probe-on-upload)
+//     may backfill them; nothing may assume they are present.
+//   - `storageKey @unique` is what makes deletion-by-key reliable and prevents
+//     two rows from owning the same object; the database, not application
+//     logic, is the last line of defence against an orphaned duplicate.
+//   - `alt`/`title` are optional human metadata (accessibility + admin search);
+//     they are NOT `Json` because media is not localized here — the entity that
+//     *references* media owns any localized copy.
+// ---------------------------------------------------------------------------
+
+/// Kind of asset a Media row describes. Kept as an enum so a future non-image
+/// type (video already, documents later) can be added with one migration, and
+/// so queries can filter by kind without string matching.
+enum MediaType {
+  image
+  video
+}
+
+model Media {
+  id          String    @id @default(uuid())
+  /// Original client filename (display/download only — never a path segment).
+  filename    String
+  /// Provider-side object identifier (the key used by upload/delete). Unique so
+  /// two rows can never own one object; this is the deletion handle.
+  storageKey  String    @unique
+  /// Resolved public URL served to the browser. Stored (not derived) because
+  /// the provider is the single source of truth for the URL shape.
+  url         String
+  mimeType    String
+  /// Size in bytes.
+  size        Int
+  /// Nullable: the current upload path does not decode the file. Backfilled by
+  /// the later media-hardening pass (video/dimension probing).
+  width       Int?
+  height      Int?
+  /// Duration in SECONDS (nullable, video only) — reserved for the later
+  /// large-video pass; images leave it null.
+  duration    Int?  /// Accessibility alt text / admin-facing label. Optional.
+  alt         String?
+  title       String?
+  mediaType   MediaType @default(image)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([mediaType])
+  @@index([createdAt])
+  @@map("media")
+}

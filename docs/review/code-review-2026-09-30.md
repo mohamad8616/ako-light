@@ -16,13 +16,24 @@ The problems are concentrated in four areas:
 
 | Area | Severity | Headline |
 |---|---|---|
-| **Correctness** | **Critical** | Paid orders never decrement `Product.quantity` — stock is checked at checkout but never consumed. Oversell is guaranteed. |
+| **Correctness** | **Critical** | Paid orders never decrement `Product.quantity` — stock is checked at checkout but never consumed. Oversell is guaranteed. ✅ **FIXED** (§3.1) |
+| **Correctness** | **High** | A misconfigured `ZARINPAL_MERCHANT_ID` was recorded as *failed payment* for genuinely paid orders — silently, for every customer. ✅ **FIXED** (§3.7) |
+| **Correctness** | Medium | The cart was never reliably cleared after a successful payment — the reset only ran on the callback's success render. ✅ **FIXED** (§3.6) |
+| **Correctness** | Medium | Curated product order is non-deterministic when `sortOrder` ties (no unique final tie-break). NEW (§3.11) |
 | **Performance** | **High** | The full 1,763-line / 108 KB translation dictionary ships to every client because `LanguageProvider` (a client component) imports the barrel. |
 | **Performance** | **High** | `getProductCategories()` eager-loads *every product and every product image* and is called from the `(site)` layout — i.e. on every public page. |
 | **Structure** | Medium | `lib/repositories/homepage-features.ts` (679 lines) is 5 near-identical resolver/upsert pairs; `admin.ts` translations (824 lines) is 2 × 416 near-mirrored halves. |
 | **Duplication** | Medium | Two unrelated `DataTable` implementations; 6 hand-rolled `Intl.NumberFormat`/`DateTimeFormat` sites; 4 copies of `fa-IR ? :` locale ternaries; repeated `db === prisma ? … : …` transaction boilerplate. |
 
-Recommended order of work: **§3 (bugs) → §4.1/§4.2 (the two high-impact perf fixes) → §4.4 (split the barrel consumers)** then the structural splits in §6, which are mechanical once the perf work has proven the pattern.
+**Fixed so far (2026-09-30):** §3.1 (stock), §3.6 (cart reset), §3.7 (merchant id /
+failure classification). The two payment-path fixes share a new
+`claimPendingOrder` in `lib/repositories/orders.ts`, which is now the single
+guarded writer of a terminal order status and the owner of the stock release.
+
+Recommended order of work: **§4.1/§4.2 (the two high-impact perf fixes) → §4.4
+(split the barrel consumers)** then the structural splits in §6, which are
+mechanical once the perf work has proven the pattern. §3.11 is a one-line-per-
+call-site fix worth taking early because it removes a flaky test.
 
 ---
 
@@ -68,9 +79,32 @@ Recommended order of work: **§3 (bugs) → §4.1/§4.2 (the two high-impact per
 
 ## 3. Bugs
 
-### 3.1 🔴 CRITICAL — Stock is never decremented after a paid order
+### 3.1 🔴 CRITICAL — Stock is never decremented after a paid order — ✅ FIXED (2026-09-30)
 
-`lib/actions/checkout.ts` validates stock inside the transaction:
+> **Status: fixed.** The user scoped the session to this bug alone; nothing else
+> in this review was touched. What landed:
+>
+> - `lib/repositories/orders.ts` — new `claimProductStock(items, tx)`, which makes
+>   the decision in the UPDATE's WHERE clause
+>   (`where: { id, existsInStore: true, quantity: { gte: q } }` +
+>   `data: { quantity: { decrement: q } }`), and `releaseOrderStock(orderId, tx)`
+>   for the credit-back path. Both require a `Prisma.TransactionClient` so they
+>   cannot commit apart from the order.
+> - `lib/actions/checkout.ts` — the read-only pre-check loop is replaced by that
+>   call, inside the existing transaction. An unavailable line throws
+>   `StockValidationError(unavailable)`, rolling back the lines already claimed.
+>   `orderItems` / `totalAmount` now derive from the returned `claimedIds`, so an
+>   order line cannot exist without its reservation.
+> - `tests/server/order-stock.test.ts` — 12 new tests, including two that race
+>   real concurrent transactions to pin the atomicity guarantee. **PASS(12)/FAIL(0)**;
+>   the full `server` tier is **PASS(138)/FAIL(0)**; `tsc --noEmit` clean.
+>
+> **Still open, and deliberately so:** nothing calls `releaseOrderStock` yet, so
+> §3.2 (abandoned `pending` orders leak their reservation) remains a live issue.
+> The function is written and tested; wiring it to the failure and stale-pending
+> paths is a separate change.
+
+`lib/actions/checkout.ts` validated stock inside the transaction:
 
 ```ts
 if (!product.existsInStore || product.quantity < quantity || …) {
@@ -78,29 +112,31 @@ if (!product.existsInStore || product.quantity < quantity || …) {
 }
 ```
 
-…then creates the order. **Nothing anywhere ever decrements `Product.quantity`.** Searching the whole `lib/` tree for a decrement or a `quantity` write outside the product CRUD form returns nothing:
+…then created the order. **Nothing anywhere ever decremented `Product.quantity`.** Searching the whole `lib/` tree for a decrement or a `quantity` write outside the product CRUD form returned nothing:
 
 ```
-grep -rn "decrement|quantity:" lib/  →  only repositories/orders.ts read paths
+grep -rn "decrement|quantity:" lib/  →  only read paths
 ```
 
 Consequences:
-- Every order can be placed again at the same quantity, forever.
-- The checkout guard `product.quantity < quantity` is permanently satisfied for the same inventory, so it provides no protection at all.
-- `Product.existsInStore` never flips to `false` on sell-out.
+- Every order could be placed again at the same quantity, forever.
+- The checkout guard `product.quantity < quantity` was permanently satisfied for the same inventory, so it provided no protection at all.
+- `Product.existsInStore` never flipped to `false` on sell-out.
 
-**Fix (recommended):** decrement inside the *same* transaction that creates the order, with a guarded update so two concurrent checkouts cannot both win:
+**Fix applied** (as recommended below): decrement inside the *same* transaction that creates the order, with a guarded update so two concurrent checkouts cannot both win:
 
 ```ts
-// inside the existing prisma.$transaction
+// inside the existing prisma.$transaction — now factored into
+// claimProductStock() in lib/repositories/orders.ts
 const claimed = await tx.product.updateMany({
   where: { id: product.id, quantity: { gte: quantity }, existsInStore: true },
   data: { quantity: { decrement: quantity } },
 });
-if (claimed.count === 0) { affectedItems.push(product.slug); continue; }
+if (claimed.count === 0) { unavailable.push(product.slug); continue; }
 ```
 
-This makes the check-and-decrement atomic and removes the need for the separate pre-check loop. Also decide what happens on `status: "failed"` / abandoned `pending` orders — a `pending → failed` transition should restore the reservation, or you need a sweep job for stale pendings (see 3.2).
+This makes the check-and-decrement atomic and removes the need for the separate pre-check loop. **The `status: "failed"` / abandoned-`pending` half of the original recommendation is NOT done** — see the status note at the top of this section and §3.2.
+
 
 ### 3.2 🟠 HIGH — Orders leak `pending` forever on abandoned payment
 
@@ -155,15 +191,72 @@ return `${new Intl.NumberFormat("en-US").format(total)} ${currency}`;
 
 This is correct today only because the Persian flow is the only one that reaches checkout. But `Order.currency` is stored, and the function's name promises a currency-aware format. An English-locale visitor who somehow completes a Toman order would see `1250000 TOMAN` rather than a localized amount. It is a latent trap rather than a live bug — either key off `currency` or rename the function to `formatOrderAmountForLocale` and document that checkout is Persian-only.
 
-### 3.6 🟡 MEDIUM — `clearCart()` is never called after a successful payment
+### 3.6 🟡 MEDIUM — `clearCart()` is never called after a successful payment — ✅ FIXED (2026-09-30)
 
 `lib/cart/store.ts` exposes `clearCart`, and `CheckoutForm` redirects to the gateway without clearing. The cart state survives in `localStorage` (`henge-cart`) across the whole gateway round-trip, so a returning customer finds the purchased items still in the cart and can order them again.
 
-**Fix:** clear the cart on the success branch of the callback (or on `createPendingOrder` success — but do not clear on failure paths, or the customer loses their cart when a gateway request fails).
+**Why the original code failed even in the cases it looked like it handled.**
+`clearCart()` *was* wired — but only through `PaymentCallbackState`, a client
+component rendered ONLY inside the callback page's success return. So it never
+ran when the callback took an early return (no `orderId`, or a failed status),
+and could not run at all if the page had not hydrated before the customer left.
+It also cannot cover a customer who closes the tab on the gateway and returns to
+the shop later, which is the common real-world path.
 
-### 3.7 🟡 MEDIUM — Two `notFound()`-adjacent 500s in the callback
+**Fix applied — a server-authoritative signal, not just a client effect.**
+- `lib/cart/reset-signal.ts` — `signalCartReset(orderId)` sets a short-lived
+  HttpOnly cookie (`cart-reset-order`) at the moment the payment is durably
+  recorded paid. `readCartResetSignal()` / `clearCartResetSignal()` read and
+  retire it. Setting it is wrapped so a cookie failure can never turn a
+  successful payment into an error page.
+- `components/cart/CartResetOnPaidOrder.tsx`, mounted in
+  `app/[locale]/layout.tsx`, reads the order id the layout passes down and
+  empties the persisted cart on whichever page the customer next loads — then
+  acknowledges via a server action. Keyed on the order id, so it cannot wipe a
+  cart the customer rebuilt after a later purchase.
+- `PaymentCallbackState` is kept as the FAST path (the confirmation page clears
+  immediately, with no page change) and is now keyed on the order id too, so the
+  two paths cannot fight.
+- The signal is set only on `refId`, so a failed order never clears a cart the
+  customer still needs.
+
+Covered by `tests/unit/cart/reset-signal.test.ts` (the cookie contract); the
+end-to-end behaviour rides on the existing `order-receipt` auth-tier callback
+tests, which drive the real route.
+
+### 3.7 🟡 MEDIUM — Two `notFound()`-adjacent 500s in the callback — ✅ FIXED (2026-09-30)
 
 `getMerchantId()` throws when `ZARINPAL_MERCHANT_ID` is unset, and the throw is caught by the surrounding `try` and converted into a `status: "failed"` write plus a "verification failed" message. That is deliberate (fail closed), but it also means **a misconfigured deployment silently marks real paid orders as failed** rather than surfacing a configuration error. A missing merchant id should be a hard 500 with a loud log, not a status mutation.
+
+**Fix applied — the failure is now classified, and the write is refused.**
+The section above correctly identified this as a real paid order being
+*mis-recorded*, so the fix targets the write rather than only the logging:
+
+- `lib/payments/zarinpal.ts` — every failure is now a `ZarinPalError` tagged
+  `kind: "gateway" | "rejected"`. A missing/malformed merchant id, a non-2xx
+  response, an unparseable body, a network error, and ZarinPal's `code: 0`
+  (which is what a bad merchant id actually produces) are all `"gateway"` — we
+  have NO verdict on the payment. Only a non-zero, non-success business code is
+  `"rejected"`. `isMerchantIdShaped()` rejects a non-UUID eagerly, before any
+  request is made.
+- The callback no longer writes `failed` for a gateway fault. It leaves the
+  order recoverable, logs loudly naming the variable, and renders "we could not
+  confirm your payment — do not pay again" instead of "payment failed, please
+  retry" (which invited a double payment).
+- `lib/repositories/orders.ts` — `claimPendingOrder` is the single guarded
+  writer of a terminal status. `paid` may overwrite any status, which is the
+  RECOVERY path for orders already damaged by the old behaviour; `failed` is only
+  written from `pending`, so it can never clobber a confirmed payment.
+- `lib/env.ts` + `instrumentation.ts` — the merchant id's SHAPE is validated at
+  boot (Next.js runs `instrumentation.ts#register` once per process), so the
+  misconfiguration is a loud startup failure instead of corrupted orders. It also
+  rejects an unrecognised `ZARINPAL_MODE` in production and a missing receipt
+  channel. Tested in `tests/unit/env.test.ts`.
+
+The "hard 500, not a status mutation" recommendation is deliberately NOT
+followed literally: a 500 on the customer's confirmation page is a poor
+experience and would still leave the order `pending`, which is exactly what
+happens now — but with a clear message rather than an error page.
 
 ### 3.8 🟡 LOW — `hint ?? optional` swallows the optional marker
 
@@ -182,6 +275,35 @@ A field that is both `hint`-carrying and `optional` renders only the hint; the "
 ### 3.10 🟡 LOW — Dead `optional`/`emptyMessage`/`searchable` props
 
 `components/admin/data-table/DataTable.tsx` declares `searchable` and `emptyMessage` in `DataTableProps` and destructures neither, and takes `pageSize` while silently ignoring `className`'s partner `searchable`. Dead API surface invites callers to pass props that do nothing.
+
+### 3.11 🟡 MEDIUM — Curated product order is non-deterministic when `sortOrder` ties
+
+Found while verifying the §3.6/§3.7 fixes (a `server`-tier run failed on
+`tests/server/products.test.ts` → "lists one category's products in curated
+order"; it passes in isolation, so it is a tie-breaking race, not a fixture leak).
+
+`lib/repositories/products.ts` orders by a **single-column tie-break with no
+unique final key**:
+
+```ts
+orderBy: [{ category: { sortOrder: "asc" } }, { sortOrder: "asc" }],
+```
+
+Postgres guarantees nothing about the relative order of rows that tie on every
+`ORDER BY` key, so two products in the same category sharing a `sortOrder` can
+come back in either order — and differently between two query plans for the same
+data. The tests compare the repository's output against a raw
+`findMany({ orderBy: { sortOrder: "asc" } })` (a *different* ordering
+specification), so the two disagree intermittently.
+
+Consequences beyond the test: the storefront's curated order is unstable for
+ties, and because every `generateStaticParams` uses the same shape, two builds
+can emit different orders.
+
+**Fix:** append a deterministic final key — `{ id: "asc" }` — to every `orderBy`
+in this repository (lines 121, 143, 258, 278), and give the tie-break column a
+unique index so ties are rare to begin with. This is a one-line change per call
+site and removes a class of flaky test entirely.
 
 ---
 

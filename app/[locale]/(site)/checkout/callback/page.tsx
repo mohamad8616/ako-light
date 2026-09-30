@@ -1,11 +1,13 @@
 import PaymentCallbackState from "@/components/checkout/PaymentCallbackState";
 import { auth } from "@/lib/auth/auth";
+import { signalCartReset } from "@/lib/cart/reset-signal";
 import { prisma } from "@/lib/db/prisma";
 import { formatToman } from "@/lib/i18n/price";
 import { isLocale } from "@/lib/i18n/routing";
 import { sendOrderReceipt } from "@/lib/notifications/order-receipt";
 import { authorizeOrderAccess } from "@/lib/orders/access-token";
-import { verify } from "@/lib/payments/zarinpal";
+import { verify, ZarinPalError } from "@/lib/payments/zarinpal";
+import { claimPendingOrder } from "@/lib/repositories/orders";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
@@ -81,13 +83,15 @@ export default async function CheckoutCallbackPage({
   }
 
   if (status !== "OK" || !authority) {
-    await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        status: "failed",
-        zarinpalAuthority: authority ?? order.zarinpalAuthority,
-        updatedAt: new Date(),
-      },
+    // The customer came back from the gateway WITHOUT a success status ("NOK",
+    // or no Authority at all) — ZarinPal is telling us this payment did not
+    // happen. That is a verdict about the payment, so recording it failed is
+    // correct, and the guarded claim releases the stock this order reserved
+    // (see claimPendingOrder). It will not downgrade an order that another
+    // callback has already settled as paid.
+    await claimPendingOrder({
+      orderId: order.id,
+      status: "failed",
     });
 
     return (
@@ -106,6 +110,8 @@ export default async function CheckoutCallbackPage({
   // otherwise a rendering error would never be caught here anyway.
   let refId: string | null = null;
   let verifyErrorMessage: string | null = null;
+  // Set only when we have NO verdict on the payment — see the catch below.
+  let couldNotConfirm = false;
 
   // Captured BEFORE the update so the receipt fires only on the real
   // pending/failed → paid transition. This page re-runs verification on every
@@ -123,15 +129,31 @@ export default async function CheckoutCallbackPage({
 
     refId = result.refId ?? null;
 
-    await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        status: refId ? "paid" : "failed",
-        zarinpalAuthority: authority,
-        zarinpalRefId: refId,
-        updatedAt: new Date(),
-      },
+    // A verified payment is the one transition that must never be lost, so the
+    // order is claimed with a single guarded UPDATE rather than a plain write:
+    //   - `pending` → this callback is the first to settle it;
+    //   - `paid`    → a re-visit re-verifies harmlessly (the receipt guard
+    //                 below stops a duplicate);
+    //   - `failed`  → ZarinPal has now confirmed payment, so a previously
+    //                 mis-recorded failure is CORRECTED to paid. This is what
+    //                 un-does the damage the old catch block caused.
+    // `claimPendingOrder` also releases the stock reservation on a
+    // pending → failed transition (see lib/repositories/orders.ts).
+    await claimPendingOrder({
+      orderId: order.id,
+      status: refId ? "paid" : "failed",
+      zarinpalRefId: refId,
     });
+
+    // The payment is now durably recorded, so record the "empty the cart"
+    // signal server-side. Doing it HERE rather than only through the client
+    // component is what makes the reset survive a callback that renders early,
+    // an un-hydrated page, a closed tab, or a return visit days later — see
+    // lib/cart/reset-signal.ts. It is set only on a real payment, so a failed
+    // order can never clear a cart the customer still needs.
+    if (refId) {
+      await signalCartReset(order.id);
+    }
 
     // The receipt is sent only now that the payment is durably recorded, and
     // only on the first transition to paid. `sendOrderReceipt` never throws, so
@@ -141,19 +163,60 @@ export default async function CheckoutCallbackPage({
       await sendOrderReceipt(order.id);
     }
   } catch (error) {
-    await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        status: "failed",
-        zarinpalAuthority: authority,
-        updatedAt: new Date(),
-      },
-    });
+    // THE BUG THIS BLOCK EXISTS TO PREVENT: this used to unconditionally write
+    // `status: "failed"`. When ZARINPAL_MERCHANT_ID was missing or malformed,
+    // ZarinPal rejected every call with `code: 0`, so a genuinely PAID order
+    // was recorded as failed — for every customer, silently, with the customer
+    // told to retry (and able to pay twice).
+    //
+    // A gateway fault means we have NO VERDICT on this payment. The only safe
+    // actions are: leave the order recoverable, say so plainly, and do NOT
+    // invite a retry. The order stays `pending`, which is honest — and because
+    // ZarinPal has already taken the money in the common case, a later
+    // re-visit of this callback (or reconciliation) can still settle it to
+    // `paid`, which a `failed` status would have made impossible to distinguish
+    // from a genuine decline.
+    if (error instanceof ZarinPalError && error.isGatewayFault) {
+      couldNotConfirm = true;
 
-    verifyErrorMessage =
-      error instanceof Error
-        ? error.message
-        : "We could not verify the payment with ZarinPal.";
+      // Logged loudly, naming the variable family rather than any value, so an
+      // operator can find this in production logs without a database query.
+      console.error(
+        `[checkout] Gateway fault while verifying order ${order.id}: ${error.message} ` +
+          `Order left "${order.status}" so it can still be reconciled to paid.`,
+      );
+    } else {
+      // ZarinPal answered about THIS payment and the answer was no (or an
+      // unexpected non-gateway error). Recording it failed is correct, and the
+      // guarded claim keeps the transition one-way — it will not overwrite an
+      // order that another concurrent callback has already settled as paid.
+      await claimPendingOrder({
+        orderId: order.id,
+        status: "failed",
+      });
+
+      verifyErrorMessage =
+        error instanceof Error
+          ? error.message
+          : "We could not verify the payment with ZarinPal.";
+    }
+  }
+
+  if (couldNotConfirm) {
+    return (
+      <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
+        <h1 className="text-3xl font-medium">We could not confirm your payment</h1>
+        <p className="mt-4 text-stone-600">
+          Your payment may have gone through, but we were unable to confirm it
+          with the payment gateway, so this order is still recorded as awaiting
+          payment. Please do not pay again — contact us with your order number
+          and we will confirm it.
+        </p>
+        <div className="mt-6 rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          Order ID: <span className="font-mono break-all">{order.id}</span>
+        </div>
+      </main>
+    );
   }
 
   if (verifyErrorMessage) {
@@ -167,7 +230,7 @@ export default async function CheckoutCallbackPage({
 
   return (
     <>
-      <PaymentCallbackState success={Boolean(refId)} />
+      <PaymentCallbackState success={Boolean(refId)} orderId={order.id} />
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
         {refId ? (
           <>

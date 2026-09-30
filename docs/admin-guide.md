@@ -105,6 +105,39 @@ owner-only access and a dedicated placeholder for the Admins page.
 
 ### Admins (owner only) — usage instructions pending
 
+## Media storage & metadata
+
+Image uploads use **Vercel Blob** as the storage provider. The Postgres
+database never holds the binary file itself — it holds media **metadata** in the
+`media` table (see below), and the actual bytes live in the Blob store.
+
+Two layers, deliberately separated:
+
+- **Storage provider** — `lib/media/*` isolates Vercel Blob behind a small
+  interface so the app never imports `@vercel/blob` directly outside that
+  module. The provider can later be replaced (e.g. with an Iranian provider)
+  without touching media/business logic.
+- **Metadata** — the `Media` Prisma model (`prisma/schema.prisma`, table
+  `media`) records `filename`, `storageKey`, `url`, `mimeType`, `size`,
+  optional `width`/`height`/`duration`, `alt`, `title` and a `mediaType`
+  enum (`image` | `video`).
+
+Conventions that matter:
+
+- The **binary is never stored in Postgres**. Postgres = metadata; Blob = bytes.
+- The **storage key is the truth, not the URL** — deletion/replacement resolves
+  through `storageKey` (which is `@unique`), so two rows can never own one
+  object.
+- `width`/`height`/`duration` are **nullable**: the current upload path does not
+  decode the file. They are reserved for the later media-hardening pass.
+- The admin image URL fields still store a **plain URL string** — uploads are
+  additive and existing seeded/external URLs keep working.
+
+> **Status (Pass 13.5, in progress):** only the storage/metadata *foundation*
+> exists so far. Large video uploads (direct-to-Blob) and the full
+> `/admin/media` media-library UI are **intentionally deferred to a later
+> subpass**, and the existing 5 MB image upload limit is unchanged.
+
 ## Known current limitations
 
 - The public site chrome (navbar, preloader, footer, newsletter) still wraps
@@ -126,3 +159,7 @@ owner-only access and a dedicated placeholder for the Admins page.
 | Placeholder route (owner-only)              | `app/[locale]/(admin)/admin/admins/page.tsx` |
 | Admin translations (en/fa)                  | `lib/i18n/translations/admin.ts`             |
 | Shared catalog CRUD widgets                 | `components/admin/catalog/**`                |
+| Blob upload action (single write path)      | `lib/admin/actions/upload.ts`                |
+| Blob cleanup helpers                        | `lib/admin/blob.ts`                          |
+| Image validation (pure)                     | `lib/admin/image-sniff.ts`                   |
+| Media metadata model                        | `prisma/schema.prisma` (`Media`, `media`)    |
