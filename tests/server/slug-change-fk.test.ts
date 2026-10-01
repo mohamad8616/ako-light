@@ -12,6 +12,7 @@
 import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
+import { TX_OPTIONS } from "@/tests/helpers/tx";
 import { prisma } from "@/lib/db/prisma";
 import {
   createDesigner,
@@ -188,7 +189,7 @@ describeDb("slug renames preserve id-based FKs (repository writes)", () => {
 
           throw rollback;
         },
-        { maxWait: 20_000, timeout: 20_000 },
+        TX_OPTIONS,
       ),
     ).rejects.toBe(rollback);
 

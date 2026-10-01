@@ -329,7 +329,6 @@ async function clearStaleDevLock(port: number): Promise<void> {
   if (alive) return;
 
   await fs.rm(lockPath, { force: true });
-  // eslint-disable-next-line no-console
   console.warn(
     `[auth-harness] removed a stale Next dev lock (port ${port}, ` +
       `recorded pid ${pid ?? "unknown"} is not running).`,

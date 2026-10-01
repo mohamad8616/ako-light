@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
+import { TX_OPTIONS } from "@/tests/helpers/tx";
 import { prisma } from "@/lib/db/prisma";
 import {
   getCatalogRedirectPath,
@@ -32,7 +33,7 @@ describe.skipIf(!hasDatabaseUrl)("slug history", () => {
         .toBe(`/designers/${newSlug}`);
       expect(await getCatalogRedirectPath("designer", newSlug, undefined, tx)).toBeNull();
       throw rollback;
-    }, { maxWait: 20_000, timeout: 20_000 })).rejects.toBe(rollback);
+    }, TX_OPTIONS)).rejects.toBe(rollback);
     expect(await prisma.designer.findUnique({ where: { id } })).toBeNull();
     expect(await prisma.slugHistory.count({ where: { entityId: id } })).toBe(0);
   });
@@ -124,7 +125,7 @@ describe.skipIf(!hasDatabaseUrl)("slug history", () => {
 
           throw rollback;
         },
-        { maxWait: 20_000, timeout: 20_000 },
+        TX_OPTIONS,
       ),
     ).rejects.toBe(rollback);
 
@@ -204,7 +205,7 @@ describe.skipIf(!hasDatabaseUrl)("slug history", () => {
 
           throw rollback;
         },
-        { maxWait: 20_000, timeout: 20_000 },
+        TX_OPTIONS,
       ),
     ).rejects.toBe(rollback);
 
@@ -254,7 +255,7 @@ describe.skipIf(!hasDatabaseUrl)("slug history", () => {
 
           throw rollback;
         },
-        { maxWait: 20_000, timeout: 20_000 },
+        TX_OPTIONS,
       ),
     ).rejects.toBe(rollback);
   });
@@ -321,7 +322,7 @@ describe.skipIf(!hasDatabaseUrl)("slug history", () => {
 
           throw rollback;
         },
-        { maxWait: 20_000, timeout: 20_000 },
+        TX_OPTIONS,
       ),
     ).rejects.toBe(rollback);
   });
@@ -492,7 +493,7 @@ describe.skipIf(!hasDatabaseUrl)("slug history", () => {
 
           throw rollback;
         },
-        { maxWait: 20_000, timeout: 20_000 },
+        TX_OPTIONS,
       ),
     ).rejects.toBe(rollback);
   });

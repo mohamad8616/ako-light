@@ -78,7 +78,7 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn(), refresh: vi.fn() }));
 
 import { auth } from "@/lib/auth/auth";
 import { prisma } from "@/lib/db/prisma";
-import { translations } from "@/lib/i18n/translations";
+import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import {
   setUserBannedAction,
   setUserRoleAction,
@@ -239,7 +239,10 @@ describe("owner-only user management — live actions against the real DB", () =
 
   it("3b. the self-protection copy exists in BOTH locales (no raw-key toast)", async () => {
     for (const lang of ["en", "fa"] as const) {
-      const dict = translations[lang] as Record<string, string>;
+      // Admin copy lives in the ADMIN dictionary, not the public barrel —
+      // reading it from getAdminDictionary is also what keeps this test
+      // honest about which module owns the strings.
+      const dict = getAdminDictionary(lang);
       const message = dict["admin.error.selfTarget"];
       expect(message, `${lang}: admin.error.selfTarget`).toBeTruthy();
       expect(message, `${lang}: must not leak the raw key`).not.toBe(

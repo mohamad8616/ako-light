@@ -7,6 +7,7 @@
 import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
+import { TX_OPTIONS } from "@/tests/helpers/tx";
 import { prisma } from "@/lib/db/prisma";
 import {
   createProduct,
@@ -71,7 +72,7 @@ describeDb("products repository — write", () => {
         expect(row!.designerId).toBe(input.designerId);
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.product.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -102,7 +103,7 @@ describeDb("products repository — write", () => {
         expect(images[1].sortOrder).toBe(1);
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.product.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -120,7 +121,7 @@ describeDb("products repository — write", () => {
         expect(row!.quantity).toBe(42);
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.product.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -143,7 +144,7 @@ describeDb("products repository — write", () => {
 
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.product.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -180,7 +181,7 @@ describeDb("products repository — write", () => {
 
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.product.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -231,7 +232,7 @@ describeDb("products repository — write", () => {
 
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.product.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -249,7 +250,7 @@ describeDb("products repository — write", () => {
         expect(row).toBeNull();
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.product.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -278,7 +279,7 @@ describeDb("products repository — write", () => {
 
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.product.findUnique({ where: { id: createdId! } })).toBeNull();

@@ -9,6 +9,7 @@
  */
 import "dotenv/config";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { TX_OPTIONS } from "@/tests/helpers/tx";
 
 import { FeatureMode } from "@/generated/prisma/client";
 import type { FlagshipDetail } from "@/lib/data/flagships";
@@ -35,8 +36,6 @@ import {
 import { expectKeys, expectLocalized, hasDatabaseUrl } from "@/tests/helpers/db";
 
 const describeDb = describe.skipIf(!hasDatabaseUrl);
-
-const TX_OPTIONS = { maxWait: 20_000, timeout: 20_000 };
 
 describeDb("homepage-features repository — reads", () => {
   beforeAll(async () => {

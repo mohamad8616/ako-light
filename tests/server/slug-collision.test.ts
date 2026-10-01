@@ -32,6 +32,7 @@
 import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { TX_OPTIONS } from "@/tests/helpers/tx";
 import { prisma } from "@/lib/db/prisma";
 import { hasDatabaseUrl } from "@/tests/helpers/db";
 
@@ -98,7 +99,7 @@ describeDb("slug collision — repository tier (expects P2002)", () => {
         ).rejects.toMatchObject({ code: "P2002" });
 
         throw rollback;
-      }, { maxWait: 20_000, timeout: 20_000 }),
+      }, TX_OPTIONS),
     ).rejects.toBe(rollback);
   });
 
@@ -121,7 +122,7 @@ describeDb("slug collision — repository tier (expects P2002)", () => {
         ).rejects.toMatchObject({ code: "P2002" });
 
         throw rollback;
-      }, { maxWait: 20_000, timeout: 20_000 }),
+      }, TX_OPTIONS),
     ).rejects.toBe(rollback);
   });
 });
@@ -209,7 +210,7 @@ describeDb("slug collision — action tier (expects clean slugTaken, no P2002 le
         expect(JSON.stringify(result)).not.toContain("P2002");
 
         throw rollback;
-      }, { maxWait: 20_000, timeout: 20_000 }),
+      }, TX_OPTIONS),
     ).rejects.toBe(rollback);
 
     // Nothing survived the rollback — the assertion that used to need a
@@ -272,7 +273,7 @@ describeDb("slug collision — action tier (expects clean slugTaken, no P2002 le
         expect(JSON.stringify(result)).not.toContain("P2002");
 
         throw rollback;
-      }, { maxWait: 20_000, timeout: 20_000 }),
+      }, TX_OPTIONS),
     ).rejects.toBe(rollback);
 
     expect(await prisma.product.findUnique({ where: { id: productSlug } })).toBeNull();
@@ -318,7 +319,7 @@ describeDb("slug collision — action tier (expects clean slugTaken, no P2002 le
         expect(JSON.stringify(result)).not.toContain("P2002");
 
         throw rollback;
-      }, { maxWait: 20_000, timeout: 20_000 }),
+      }, TX_OPTIONS),
     ).rejects.toBe(rollback);
 
     expect(await prisma.fabricItem.findUnique({ where: { id } })).toBeNull();

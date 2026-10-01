@@ -14,6 +14,7 @@
 import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
+import { TX_OPTIONS } from "@/tests/helpers/tx";
 import { prisma } from "@/lib/db/prisma";
 import { hasDatabaseUrl } from "@/tests/helpers/db";
 
@@ -74,7 +75,7 @@ describe.skipIf(!hasDatabaseUrl)("catalog foreign keys (id-based)", () => {
 
           throw rollback;
         },
-        { maxWait: 20_000, timeout: 20_000 },
+        TX_OPTIONS,
       ),
     ).rejects.toBe(rollback);
 
@@ -145,7 +146,7 @@ describe.skipIf(!hasDatabaseUrl)("catalog foreign keys (id-based)", () => {
 
           throw rollback;
         },
-        { maxWait: 20_000, timeout: 20_000 },
+        TX_OPTIONS,
       ),
     ).rejects.toBe(rollback);
 

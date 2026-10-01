@@ -21,11 +21,19 @@ import { prisma } from "@/lib/db/prisma";
 import type { Prisma } from "@/generated/prisma/client";
 import { claimPendingOrder, claimProductStock, releaseOrderStock } from "@/lib/repositories/orders";
 import { hasDatabaseUrl } from "@/tests/helpers/db";
+import { TX_OPTIONS } from "@/tests/helpers/tx";
 
 const describeDb = describe.skipIf(!hasDatabaseUrl);
 
 /** A `categoryId` that exists in the seed — the product FK requires one. */
 const SEED_CATEGORY_ID = "lighting";
+
+/**
+ * Sort position for throwaway fixtures. High on purpose: see the comment where
+ * it is used — a fixture that outlives its run must not become a category's
+ * first product.
+ */
+const LEAKED_FIXTURE_SORT_ORDER = 9_999;
 
 /**
  * Creates a throwaway product inside the caller's transaction. `id` and `slug`
@@ -55,7 +63,14 @@ async function makeProduct(
       description: { en: "d", fa: "د" },
       downloads: [],
       related: [],
-      sortOrder: 0,
+      // Deliberately LAST, not first. These fixtures live in a real seeded
+      // category (the FK requires one), and `sortOrder: 0` used to tie with
+      // the category's curated first product — so if a run was ever KILLED
+      // before its `finally` cleanup, the orphan sorted to position 0 and
+      // became the homepage carousel's lead tile (it has no gallery images,
+      // which is how a leaked fixture produced "empty src" / "missing key"
+      // errors on the live site). A high value keeps any orphan out of sight.
+      sortOrder: LEAKED_FIXTURE_SORT_ORDER,
       categoryId: SEED_CATEGORY_ID,
     },
   });
@@ -74,8 +89,10 @@ const ROLLBACK = "intentional test rollback";
  *
  * The `server` project already runs with a 60 s test timeout for the same
  * reason — see vitest.config.ts.
+ *
+ * The options themselves live in `@/tests/helpers/tx` (TX_OPTIONS) so the
+ * budget cannot drift between files.
  */
-const TX_OPTIONS = { maxWait: 30_000, timeout: 30_000 } as const;
 
 describeDb("claimProductStock", () => {
   afterAll(async () => {
@@ -537,7 +554,8 @@ describeDb("claimPendingOrder", () => {
         description: { en: "d", fa: "د" },
         downloads: [],
         related: [],
-        sortOrder: 0,
+        // See the note on `makeProduct` — never sort ahead of real seed rows.
+        sortOrder: LEAKED_FIXTURE_SORT_ORDER,
         categoryId: SEED_CATEGORY_ID,
       },
     });

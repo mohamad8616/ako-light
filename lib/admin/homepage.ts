@@ -1,4 +1,5 @@
-import type { TranslationKey } from "@/lib/i18n/translations";
+import type { AdminTranslationKey } from "@/lib/i18n/admin-translations";
+
 
 /**
  * Homepage slot registry — the admin-side companion to
@@ -41,9 +42,9 @@ export type HomepageSlotKey = (typeof HOMEPAGE_SLOT_KEYS)[number];
 
 export interface HomepageSlotMeta {
   /** Slot name as the hub card and the edit page heading show it. */
-  labelKey: TranslationKey;
+  labelKey: AdminTranslationKey;
   /** One-line explanation of where the banner appears. */
-  descriptionKey: TranslationKey;
+  descriptionKey: AdminTranslationKey;
 }
 
 export const HOMEPAGE_SLOT_META: Record<HomepageSlotKey, HomepageSlotMeta> = {

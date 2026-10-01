@@ -5,7 +5,7 @@ import {
   homepageSlotHref,
   isHomepageSlot,
 } from "@/lib/admin/homepage";
-import { translations } from "@/lib/i18n/translations";
+import { adminTranslations } from "@/lib/i18n/admin-translations";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -37,11 +37,13 @@ describe("homepage slot registry", () => {
   });
 
   it("describes every slot with keys that exist in both dictionaries", () => {
+    // Slot labels/descriptions are admin-only strings — read them from the admin
+    // dictionary, not the public barrel (see lib/i18n/admin-translations.ts).
     for (const [slot, meta] of Object.entries(HOMEPAGE_SLOT_META)) {
-      expect(translations.en, slot).toHaveProperty(meta.labelKey);
-      expect(translations.fa, slot).toHaveProperty(meta.labelKey);
-      expect(translations.en, slot).toHaveProperty(meta.descriptionKey);
-      expect(translations.fa, slot).toHaveProperty(meta.descriptionKey);
+      expect(adminTranslations.en, slot).toHaveProperty(meta.labelKey);
+      expect(adminTranslations.fa, slot).toHaveProperty(meta.labelKey);
+      expect(adminTranslations.en, slot).toHaveProperty(meta.descriptionKey);
+      expect(adminTranslations.fa, slot).toHaveProperty(meta.descriptionKey);
     }
   });
 });

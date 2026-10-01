@@ -5,6 +5,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -31,16 +32,31 @@ interface LanguageProviderProps {
    * language from localStorage or cookies.
    */
   locale: Locale;
+  /**
+   * Extra strings merged ON TOP of the public dictionary for this subtree.
+   *
+   * Admin routes pass the admin dictionary here (`AdminLanguageProvider`), so
+   * the ~43 KB of admin-only strings stay out of the public barrel that every
+   * visitor downloads — see `@/lib/i18n/admin-translations`.
+   *
+   * Pass a module-level object: `useMemo` keys on its identity, so a fresh
+   * object per render would rebuild the merged dictionary every time.
+   */
+  extra?: Record<string, string>;
 }
 
-export function LanguageProvider({ children, locale }: LanguageProviderProps) {
+export function LanguageProvider({
+  children,
+  locale,
+  extra,
+}: LanguageProviderProps) {
   // The URL is the source of truth: `lang` derives directly from the
   // route locale prop. No internal state — when a navigation changes the
   // route locale, the [locale] layout re-renders with the new locale and
   // every consumer follows.
   const lang = locale;
 
-  const dir = lang === "fa" ? "rtl" : "ltr";
+  const dir: "ltr" | "rtl" = lang === "fa" ? "rtl" : "ltr";
 
   // Keep the document in sync at runtime. The server already renders the
   // correct lang/dir from the route; this covers client-side navigations.
@@ -76,16 +92,30 @@ export function LanguageProvider({ children, locale }: LanguageProviderProps) {
     setLang(lang === "en" ? "fa" : "en");
   }, [setLang, lang]);
 
+  // Merged once per (locale, extra) rather than per `t()` call — `t` runs for
+  // every translated string of every render.
+  const dictionary = useMemo(
+    () =>
+      extra
+        ? ({ ...translations[lang], ...extra } as Record<string, string>)
+        : (translations[lang] as Record<string, string>),
+    [lang, extra],
+  );
+
   const t = useCallback(
-    (key: TranslationKey | string) => {
-      const dict = translations[lang] as Record<string, string>;
-      return dict[key] ?? key;
-    },
-    [lang]
+    (key: TranslationKey | string) => dictionary[key] ?? key,
+    [dictionary],
+  );
+
+  // Memoised so consumers do not all re-render whenever this provider's parent
+  // does — it sits above the whole page tree, including the route transition.
+  const value = useMemo(
+    () => ({ lang, dir, setLang, toggleLang, t }),
+    [lang, dir, setLang, toggleLang, t],
   );
 
   return (
-    <LanguageContext.Provider value={{ lang, dir, setLang, toggleLang, t }}>
+    <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
   );

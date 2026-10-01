@@ -1,5 +1,8 @@
+import {
+  getAdminDictionary,
+  type AdminTranslationKey,
+} from "@/lib/i18n/admin-translations";
 import { isLocale, type Locale } from "@/lib/i18n/routing";
-import { translations, type TranslationKey } from "@/lib/i18n/translations";
 import { cn } from "@/lib/utils";
 
 /**
@@ -22,13 +25,13 @@ export function AdminPageHeader({
   className,
 }: {
   locale: string;
-  titleKey: TranslationKey;
-  descriptionKey?: TranslationKey;
+  titleKey: AdminTranslationKey;
+  descriptionKey?: AdminTranslationKey;
   actions?: React.ReactNode;
   className?: string;
 }) {
   const lang: Locale = isLocale(locale) ? locale : "fa";
-  const t = translations[lang];
+  const t = getAdminDictionary(lang);
 
   return (
     <div

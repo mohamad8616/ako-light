@@ -12,7 +12,7 @@ import {
   type HomepageSlotKey,
 } from "@/lib/admin/homepage";
 import { isLocale } from "@/lib/i18n/routing";
-import { translations } from "@/lib/i18n/translations";
+import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import { getCatalogueItemAdminRows } from "@/lib/repositories/catalogue";
 import { getFlagshipAdminRows } from "@/lib/repositories/flagships";
 import {
@@ -47,7 +47,7 @@ export default async function HomepageSlotPage({
   if (!isLocale(locale)) notFound();
   if (!isHomepageSlot(slot)) notFound();
 
-  const t = translations[locale];
+  const t = getAdminDictionary(locale);
   const meta = HOMEPAGE_SLOT_META[slot];
 
   return (

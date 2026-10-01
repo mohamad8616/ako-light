@@ -62,10 +62,9 @@ export const adminEn = {
   "admin.role.admin": "Admin",
   "admin.role.owner": "Owner",
 
-  // Access denied (sign-in page)
-  "admin.access.denied.title": "Access denied",
-  "admin.access.denied.description":
-    "Your account does not have access to the admin panel. Sign in with an account that has the admin or owner role.",
+  // Access denied (sign-in page) moved to auth.ts as auth.access.denied.* —
+  // the sign-in page is public, so keeping these out of admin.ts is what lets
+  // the admin dictionary stay out of the public client bundle.
 
   // Stat cards
   "admin.card.products.hint": "All products registered in the catalog",
@@ -474,10 +473,7 @@ export const adminFa = {
   "admin.role.admin": "مدیر",
   "admin.role.owner": "مالک",
 
-  // دسترسی غیرمجاز (صفحه ورود)
-  "admin.access.denied.title": "دسترسی مجاز نیست",
-  "admin.access.denied.description":
-    "حساب شما اجازهٔ دسترسی به پنل مدیریت را ندارد. با حسابی که نقش مدیر یا مالک دارد وارد شوید.",
+  // دسترسی غیرمجاز به auth.ts منتقل شد (auth.access.denied.*)
 
   // کارت‌های آماری
   "admin.card.products.hint": "همهٔ محصولات ثبت‌شده در کاتالوگ",

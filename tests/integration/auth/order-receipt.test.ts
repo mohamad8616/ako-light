@@ -342,7 +342,9 @@ describeAuth("order receipt — fired by the real payment callback", () => {
     async () => {
       const user = await registerUser();
       createdUsers.push(user);
-      const { jar } = await signInAs(user.email, user.password, {
+      // The sign-in is the point (it sets the session); this test asserts on the
+      // TOKEN, so the cookie jar it also returns is not used.
+      await signInAs(user.email, user.password, {
         ip: uniqueTestIp(),
       });
 
@@ -407,7 +409,9 @@ describeAuth("order receipt — fired by the real payment callback", () => {
     async () => {
       const user = await registerUser();
       createdUsers.push(user);
-      const { jar } = await signInAs(user.email, user.password, {
+      // The sign-in is the point (it sets the session); the callback below is
+      // deliberately hit WITHOUT cookies, so the returned jar is unused.
+      await signInAs(user.email, user.password, {
         ip: uniqueTestIp(),
       });
 

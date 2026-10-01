@@ -18,6 +18,13 @@ const eslintConfig = defineConfig([
     // Tool/local data that must never be traversed by ESLint:
     ".continue/**",
     ".kilo/**",
+    // Local diagnostic shims — `.gitignore` has `/scripts/tmp-*`, so these are
+    // never committed. `scripts/tmp-doh-dns.cjs` patches `dns.lookup` to pin the
+    // Neon pooler hostname when the local resolver stalls; it MUST be CommonJS
+    // because it is loaded through `NODE_OPTIONS=--require=…`, so its
+    // `require()` calls are correct rather than a violation. Linting scratch
+    // tooling only ever produces noise like this.
+    "scripts/tmp-*",
   ]),
   {
     // TanStack Table's `useReactTable()` returns functions that React Compiler

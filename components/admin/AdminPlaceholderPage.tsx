@@ -1,6 +1,9 @@
 import Link from "@/lib/i18n/Link";
+import {
+  getAdminDictionary,
+  type AdminTranslationKey,
+} from "@/lib/i18n/admin-translations";
 import { isLocale } from "@/lib/i18n/routing";
-import { translations, type TranslationKey } from "@/lib/i18n/translations";
 import { notFound } from "next/navigation";
 
 /**
@@ -20,12 +23,12 @@ export default async function AdminPlaceholderPage({
   labelKey,
 }: {
   params: Promise<{ locale: string }>;
-  labelKey: TranslationKey;
+  labelKey: AdminTranslationKey;
 }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const t = translations[locale === "en" ? "en" : "fa"];
+  const t = getAdminDictionary(locale === "en" ? "en" : "fa");
 
   return (
     <div className="space-y-6">

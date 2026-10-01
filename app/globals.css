@@ -287,3 +287,57 @@ html.scroll-locked body {
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* ---------------------------------------------------------------------------
+ * Scroll-reveal + route-curtain primitives.
+ *
+ * These replace the two framer-motion animations that used to sit on the
+ * critical path of EVERY public page: the section fade-up in
+ * utility/HomepageSection.tsx (rendered by ~50 components) and the route-change
+ * curtain in components/ui/PageTransition.tsx. Both are simple one-shot
+ * transitions, so a CSS keyframe plus an IntersectionObserver toggle does the
+ * same job without pulling the animation library into the shell bundle.
+ * ------------------------------------------------------------------------- */
+
+@keyframes reveal-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes curtain-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@layer components {
+  /* Applied once the section scrolls into view (or immediately when the
+     consumer opts into `animateOnLoad`). `forwards` holds the end state. */
+  .reveal-visible {
+    animation: reveal-fade-up 2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+
+  /* Route-change curtain: remounted per navigation so the animation restarts. */
+  .page-curtain {
+    animation: curtain-fade-out 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+}
+
+/* Respect the OS "reduce motion" setting: show the content immediately rather
+   than animating it. framer-motion did not honour this either, but since these
+   animations are now plain CSS the preference can be honoured for free. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal-visible,
+  .page-curtain {
+    animation: none;
+  }
+}

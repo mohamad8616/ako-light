@@ -47,3 +47,20 @@ export interface ProductCategory {
   i18nKey: string;
   products: Product[];
 }
+
+/**
+ * The shape the navigation menu needs — `ProductCategory` minus `products`.
+ *
+ * The nav renders one link per category and reads only `slug` (the route) and
+ * `i18nKey` (the localized label); it never touches `products`. Typing the
+ * nav on this narrower shape is what stops a caller from accidentally passing
+ * the full catalog back into the client payload.
+ *
+ * Lives in this pure-data module (no Prisma, no server imports) so client
+ * components can import it safely.
+ */
+export interface NavCategory {
+  id: string;
+  slug: string;
+  i18nKey: string;
+}

@@ -5,16 +5,26 @@ import FullscreenMenu from "@/components/navbar/fullScreenMenu";
 import Logo from "@/components/ui/Logo";
 import ProductsSheet from "@/components/ui/ProductsSheet";
 import { authClient } from "@/lib/auth/auth-client";
-import type { ProductCategory } from "@/lib/data/product-categories/types";
+import type { NavCategory } from "@/lib/data/product-categories/types";
 import { useHeroVideoStore } from "@/lib/heroVideoStore";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import Link from "@/lib/i18n/Link";
 import { cn } from "@/lib/utils";
-import { motion, useMotionValueEvent, useScroll } from "framer-motion";
 import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import MenuButton from "./MenuBtn";
+
+// NOTE: the fullscreen menu is imported STATICALLY on purpose.
+//
+// It was briefly loaded with `next/dynamic` to defer its chunk until the menu
+// first opens. That was reverted because it bought nothing: this component also
+// renders <ProductsSheet>, which imports components/ui/sheet.tsx, which imports
+// framer-motion at the top level — so the library is in this chunk either way
+// and deferring the menu's own code saves no dependency. All it added was a
+// dynamic chunk boundary in the site shell, i.e. risk without reward. Revisit
+// only together with removing framer-motion from sheet.tsx (see the review's
+// §4.5), at which point the deferral would actually pay off.
 
 // ----- constants -----
 
@@ -57,7 +67,7 @@ type ActiveOverlay = "products" | "menu" | null;
 export default function Navbar({
   categories,
 }: {
-  categories: ProductCategory[];
+  categories: NavCategory[];
 }) {
   const [activeOverlay, setActiveOverlay] = useState<ActiveOverlay>(null);
   const [hidden, setHidden] = useState(false);
@@ -65,7 +75,6 @@ export default function Navbar({
 
   const { t } = useLanguage();
   const router = useRouter();
-  const { scrollY } = useScroll();
   const isVideoPlaying = useHeroVideoStore((s) => s.isPlaying);
   const { data: session, isPending } = authClient.useSession();
 
@@ -89,25 +98,48 @@ export default function Navbar({
     [],
   );
 
-  useMotionValueEvent(scrollY, "change", (latest) => {
-    const prev = scrollY.getPrevious() ?? 0;
-    const isScrollingDown = latest > prev;
+  // Scroll tracking, without framer-motion.
+  //
+  // This used to be `useScroll()` + `useMotionValueEvent()`, which mattered
+  // because the Navbar is rendered by the (site) layout: importing the library
+  // here put it on the critical path of every public page, for what is really
+  // "compare current scrollY with the previous one". A passive window listener
+  // does the same thing; the previous offset lives in a ref because it must
+  // survive between events without re-rendering.
+  const previousScrollRef = useRef(0);
 
-    // Scrolling DOWN past the threshold: hide only. `scrolled` is
-    // deliberately NOT flipped here, so the bar slides away in the style
-    // it already has (the transparent top style) — switching the style
-    // and hiding in the same frame is what read as a black flash.
-    const nextHidden = isScrollingDown && latest > SCROLLED_CLASS_THRESHOLD;
-    setHidden((cur) => (cur === nextHidden ? cur : nextHidden));
+  useEffect(() => {
+    // Start from wherever the page actually is (a restored scroll position or a
+    // back-navigation) so the very first scroll event compares like with like
+    // instead of against 0.
+    previousScrollRef.current = window.scrollY;
 
-    // The scrolled style only ever applies to a *visible* bar — i.e. one
-    // revealed by scrolling up while below the top threshold. While
-    // hidden and scrolling down it stays false (no wasted style churn),
-    // and on the way back up the bar reappears already in the scrolled
-    // style instead of morphing mid-reveal.
-    const nextScrolled = !isScrollingDown && latest >= SCROLLED_CLASS_THRESHOLD;
-    setScrolled((cur) => (cur === nextScrolled ? cur : nextScrolled));
-  });
+    const handleScroll = () => {
+      const latest = window.scrollY;
+      const prev = previousScrollRef.current;
+      previousScrollRef.current = latest;
+
+      const isScrollingDown = latest > prev;
+
+      // Scrolling DOWN past the threshold: hide only. `scrolled` is
+      // deliberately NOT flipped here, so the bar slides away in the style
+      // it already has (the transparent top style) — switching the style
+      // and hiding in the same frame is what read as a black flash.
+      const nextHidden = isScrollingDown && latest > SCROLLED_CLASS_THRESHOLD;
+      setHidden((cur) => (cur === nextHidden ? cur : nextHidden));
+
+      // The scrolled style only ever applies to a *visible* bar — i.e. one
+      // revealed by scrolling up while below the top threshold. While
+      // hidden and scrolling down it stays false (no wasted style churn),
+      // and on the way back up the bar reappears already in the scrolled
+      // style instead of morphing mid-reveal.
+      const nextScrolled = !isScrollingDown && latest >= SCROLLED_CLASS_THRESHOLD;
+      setScrolled((cur) => (cur === nextScrolled ? cur : nextScrolled));
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const headerClass = useMemo(
     () =>
@@ -124,21 +156,23 @@ export default function Navbar({
   const isScrolledStyle = scrolled && !overlayOpen;
 
   // The bar is a normal child of the sliding header (NOT position:fixed):
-  // a fixed child escapes a transformed ancestor whenever framer-motion
-  // resolves the transform to `none` (at rest, y: 0), which desynced the
-  // bar from the slide and made the reveal appear without animation.
-  // As a normal child, the whole bar slides as one unit — in from the
-  // top, out through the top, like a shadcn top sheet. Colors/width snap
-  // instantly (no transition classes); only height animates, which is
-  // what carries the text/nav items up/down between the two styles.
+  // a fixed child escapes a transformed ancestor whenever the transform is
+  // `none` (at rest, y: 0), which desynced the bar from the slide and made
+  // the reveal appear without animation. As a normal child, the whole bar
+  // slides as one unit — in from the top, out through the top, like a
+  // shadcn top sheet. Colors/width snap instantly (no transition classes);
+  // only height animates, which is what carries the text/nav items up/down
+  // between the two styles.
 
   return (
     <>
-      <motion.header
-        initial={{ y: 0 }}
-        animate={{ y: navHidden ? "-100%" : 0 }}
-        transition={{ duration: HEADER_TRANSITION, ease: HEADER_EASE }}
+      <header
         className={headerClass}
+        style={{
+          transform: navHidden ? "translateY(-100%)" : "translateY(0)",
+          transition: `transform ${HEADER_TRANSITION}s cubic-bezier(${HEADER_EASE.join(",")})`,
+          willChange: "transform",
+        }}
       >
         {/* The bar itself. A plain (non-fixed) child of the sliding
             header: entering from above, exiting upward — sheet-style. */}
@@ -216,7 +250,7 @@ export default function Navbar({
             </CollapsibleNavItem>
           </div>
         </div>
-      </motion.header>
+      </header>
 
       <FullscreenMenu open={menuOpen} onClose={closeOverlay} />
     </>

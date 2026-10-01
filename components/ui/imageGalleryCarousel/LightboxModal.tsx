@@ -166,7 +166,8 @@ export default function LightboxModal({ items, startIndex, onClose }: Props) {
           const isActive = i === current;
           return (
             <button
-              key={item.image}
+              // Position + image: two items may share an image.
+              key={`${i}:${item.image}`}
               type="button"
               onClick={() => setCurrent(i)}
               aria-label={t("lightbox.photoCount").replace("{current}", String(i + 1)).replace("{total}", String(count))}
@@ -201,7 +202,9 @@ export default function LightboxModal({ items, startIndex, onClose }: Props) {
         className="relative flex flex-1 items-center justify-center overflow-hidden"
       >
         <Image
-          key={active.image}
+          // Remounts on change so the transition restarts; keyed on the
+          // index too so it stays unique if two items share an image.
+          key={`${current}:${active.image}`}
           src={active.image}
           alt=""
           fill

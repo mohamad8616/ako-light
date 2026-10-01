@@ -4,6 +4,7 @@
 import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
+import { TX_OPTIONS } from "@/tests/helpers/tx";
 import { prisma } from "@/lib/db/prisma";
 import {
   createDesigner,
@@ -47,7 +48,7 @@ describeDb("designers repository — write", () => {
         expect(row!.sortOrder).toBe(input.sortOrder);
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.designer.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -65,7 +66,7 @@ describeDb("designers repository — write", () => {
         expect(row!.website).toBeNull();
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.designer.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -83,7 +84,7 @@ describeDb("designers repository — write", () => {
         expect(row!.bio).toEqual([]);
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.designer.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -116,7 +117,7 @@ describeDb("designers repository — write", () => {
 
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.designer.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -134,7 +135,7 @@ describeDb("designers repository — write", () => {
         expect(row).toBeNull();
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.designer.findUnique({ where: { id: createdId! } })).toBeNull();

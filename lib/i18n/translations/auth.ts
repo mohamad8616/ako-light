@@ -65,6 +65,13 @@ export const authEn = {
   "auth.emailHint": "Enter your email and password",
   "auth.phoneHint":
     "Enter your phone number and a verification code will be sent to you.",
+  // Access denied — rendered by the PUBLIC sign-in page when a signed-in
+  // non-admin is bounced out of /admin. It lives here, not in admin.ts,
+  // because that page is public: keeping it out of the admin module is what
+  // lets the whole admin dictionary stay out of the public client bundle.
+  "auth.access.denied.title": "Access denied",
+  "auth.access.denied.description":
+    "Your account does not have access to the admin panel. Sign in with an account that has the admin or owner role.",
 } as const;
 
 export const authFa = {
@@ -132,4 +139,8 @@ export const authFa = {
   "auth.emailHint": "ایمیل و رمز عبور خود را وارد کنید",
   "auth.phoneHint":
     "شماره تلفن خود را وارد کنید و یک کد تأیید به شما ارسال می‌شود.",
+  // دسترسی غیرمجاز — صفحهٔ ورودِ عمومی این پیام را نشان می‌دهد.
+  "auth.access.denied.title": "دسترسی مجاز نیست",
+  "auth.access.denied.description":
+    "حساب شما اجازهٔ دسترسی به پنل مدیریت را ندارد. با حسابی که نقش مدیر یا مالک دارد وارد شوید.",
 } as const;

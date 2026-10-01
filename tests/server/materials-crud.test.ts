@@ -4,6 +4,7 @@
 import "dotenv/config";
 import { randomUUID } from "node:crypto";
 import { afterAll, describe, expect, it } from "vitest";
+import { TX_OPTIONS } from "@/tests/helpers/tx";
 import { prisma } from "@/lib/db/prisma";
 import {
   createMaterial,
@@ -49,7 +50,7 @@ describeDb("materials repository — write", () => {
         expect(row!.sortOrder).toBe(input.sortOrder);
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.material.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -68,7 +69,7 @@ describeDb("materials repository — write", () => {
           expect(row!.type).toBe(type === "stone-composite" ? "stone_composite" : type);
           throw new Error("intentional test rollback");
         },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
       ).rejects.toThrow("intentional test rollback");
 
       expect(await prisma.material.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -102,7 +103,7 @@ describeDb("materials repository — write", () => {
 
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.material.findUnique({ where: { id: createdId! } })).toBeNull();
@@ -120,7 +121,7 @@ describeDb("materials repository — write", () => {
         expect(row).toBeNull();
         throw new Error("intentional test rollback");
       },
-      { maxWait: 20_000, timeout: 20_000 }),
+      TX_OPTIONS),
     ).rejects.toThrow("intentional test rollback");
 
     expect(await prisma.material.findUnique({ where: { id: createdId! } })).toBeNull();

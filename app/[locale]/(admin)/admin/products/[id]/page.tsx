@@ -2,7 +2,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { BackLink } from "@/components/admin/catalog/BackLink";
 import { ProductForm } from "@/components/admin/catalog/products/ProductForm";
 import { isLocale } from "@/lib/i18n/routing";
-import { translations } from "@/lib/i18n/translations";
+import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import { getDesignerOptions } from "@/lib/repositories/designers";
 import { getProductCategoryOptions } from "@/lib/repositories/product-categories";
 import { getProductAdminDetail } from "@/lib/repositories/products";
@@ -22,7 +22,7 @@ export default async function EditProductPage({
   if (!isLocale(locale)) notFound();
   if (id === "new") notFound();
 
-  const t = translations[locale];
+  const t = getAdminDictionary(locale);
   const [detail, categories, designers] = await Promise.all([
     getProductAdminDetail(id),
     getProductCategoryOptions(),

@@ -56,10 +56,10 @@ import {
   setUserRoleAction,
 } from "@/lib/admin/actions/admins";
 import { ADMIN_OWNER_NAV } from "@/lib/admin/sections";
-import { translations, type TranslationKey } from "@/lib/i18n/translations";
+import { adminTranslations } from "@/lib/i18n/admin-translations";
+import { type TranslationKey } from "@/lib/i18n/translations";
 
 const OWNER = { id: "owner-1", role: "owner" };
-const ADMIN = { id: "admin-1", role: "admin" };
 const USER = { id: "user-1", role: "user" };
 const TARGET = "target-9";
 
@@ -237,15 +237,18 @@ describe("the owners' nav + dictionary wiring", () => {
   });
 
   it("has translations for every admins-screen key in BOTH dictionaries", () => {
-    const keys = Object.keys(translations.en).filter(
+    // The admins screen is admin-only, so its strings live in the admin
+    // dictionary (lib/i18n/admin-translations.ts), which the public barrel
+    // deliberately no longer includes.
+    const keys = Object.keys(adminTranslations.en).filter(
       (key): key is TranslationKey => key.startsWith("admin.admins."),
     );
     // A representative, non-trivial set (the screen renders all of these).
     expect(keys.length).toBeGreaterThan(10);
     for (const key of keys) {
-      expect(translations.en[key], `en:${key}`).toBeTruthy();
-      expect(translations.fa[key], `fa:${key}`).toBeTruthy();
+      expect(adminTranslations.en[key], `en:${key}`).toBeTruthy();
+      expect(adminTranslations.fa[key], `fa:${key}`).toBeTruthy();
     }
-    expect(translations.en["admin.section.admins.description"]).toBeTruthy();
+    expect(adminTranslations.en["admin.section.admins.description"]).toBeTruthy();
   });
 });

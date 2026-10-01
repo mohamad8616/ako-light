@@ -60,7 +60,9 @@ export default function MobileColumn({ items, purpose, href, onOpen }: Props) {
 
           return (
             <motion.div
-              key={item.image}
+              // Position + identifier, never the image alone — two slides may
+              // share an image (or have none), which made the key non-unique.
+              key={`${i}:${item.link ?? item.image ?? item.name ?? ""}`}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}

@@ -3,7 +3,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { HOMEPAGE_SLOT_META, homepageSlotHref } from "@/lib/admin/homepage";
 import { pick } from "@/lib/i18n/localized";
 import { getLocalizedPath, type Locale } from "@/lib/i18n/routing";
-import { translations } from "@/lib/i18n/translations";
+import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import type { HomepageFeatureOverview } from "@/lib/repositories/homepage-features";
 import { cn } from "@/lib/utils";
 import NextLink from "next/link";
@@ -42,7 +42,7 @@ export function HomepageFeaturesGrid({
   /** The route locale — the grid renders the site's strings, not the shell's. */
   locale: Locale;
 }) {
-  const t = translations[locale];
+  const t = getAdminDictionary(locale);
 
   return (
     <ul className="grid gap-4 lg:grid-cols-2">

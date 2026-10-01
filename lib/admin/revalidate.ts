@@ -1,4 +1,5 @@
-import { refresh, revalidatePath } from "next/cache";
+import { NAV_CATEGORIES_TAG } from "@/lib/cache-tags";
+import { refresh, revalidatePath, updateTag } from "next/cache";
 
 /** Every admin catalog section, as the sidebar registry spells them. */
 export type AdminSection =
@@ -15,7 +16,9 @@ export type AdminSection =
   | "fabrics"
   | "catalogue"
   | "orders"
-  | "admins";
+  | "admins"
+  /** The media library (Pass 13.5) — metadata rows, not a catalog table. */
+  | "media";
 
 /**
  * The public route-file pattern each section feeds, so a dashboard edit also
@@ -72,6 +75,11 @@ const PUBLIC_ROUTES: Record<AdminSection, readonly string[]> = {
   // Owner-only user management has no public surface at all: a role change
   // affects the account's next session, never a page any visitor renders.
   admins: [],
+  // The media library has no public route of its own either — it is a store the
+  // catalog will REFERENCE. Until a catalog model points at a Media row, editing
+  // media metadata cannot change what any visitor sees, so there is nothing to
+  // expire. Add the referencing routes here when that migration lands.
+  media: [],
 };
 
 /**
@@ -102,6 +110,20 @@ export function revalidateCatalog(
 
   for (const route of PUBLIC_ROUTES[section]) {
     revalidatePath(route, "page");
+  }
+
+  // The navigation menu is cached across requests (getNavCategories) because
+  // the (site) layout reads it on every public page. `revalidatePath` above
+  // only expires the routes it names, and the nav appears on ALL of them, so
+  // the cache tag is what makes a category rename or reorder show up straight
+  // away instead of waiting out the cache window.
+  if (section === "categories") {
+    // `updateTag`, not `revalidateTag`: this runs inside a Server Action and the
+    // admin must see the new nav immediately. updateTag expires the tag at once
+    // (the next request waits for fresh data) whereas revalidateTag serves stale
+    // content first and refreshes in the background — and its single-argument
+    // form is deprecated in Next 16 anyway.
+    updateTag(NAV_CATEGORIES_TAG);
   }
 
   refresh();

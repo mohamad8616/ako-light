@@ -9,6 +9,7 @@
 .agents/*
 .claude/
 .windsurf/
+.workbuddy-ai/
 !.yarn/patches
 !.yarn/plugins
 !.yarn/releases
@@ -52,9 +53,13 @@ next-env.d.ts
 # kilo agent
 /.kilo
 
+/docs
 
 # continue agent
 /.continue
+
+# workbuddy-ai agent
+/.workbuddy-ai
 
 # local scratch / generated files
 _admin-check.ts

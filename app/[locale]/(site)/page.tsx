@@ -55,12 +55,34 @@ export default async function HomePage() {
     getProjectDarkBackgroundFeature(),
   ]);
 
-  const productCategory = productCategories.map((category) => {
-    return {
-      name: category.i18nKey,
-      image: category.products[0].images[0],
-      link: `/products/${category.slug}`,
-    };
+  // One carousel tile per category, previewed by a product image.
+  //
+  // This used to be `image: category.products[0].images[0]`, which assumed both
+  // that the category has a product AND that the product has at least one
+  // gallery row. Neither holds: a category can be empty, and a product added
+  // without images has `images === []`. Either way the tile received
+  // `image: undefined`, which surfaced as three separate browser complaints —
+  // a duplicate/missing React `key`, an empty `src` (which makes the browser
+  // re-download the whole page), and Next's "missing required src" error.
+  //
+  // So: take the first product that actually HAS an image (falling back to its
+  // hero image) and skip categories that have none. A missing tile reads far
+  // better than a broken one, and `image` is guaranteed to be a non-empty
+  // string for everything that survives.
+  const productCategory = productCategories.flatMap((category) => {
+    const preview = category.products
+      .map((product) => product.images[0] ?? product.heroImage)
+      .find((src) => Boolean(src));
+
+    if (!preview) return [];
+
+    return [
+      {
+        name: category.i18nKey,
+        image: preview,
+        link: `/products/${category.slug}`,
+      },
+    ];
   });
   return (
     <main className="font-noora bg-background-secondary w-full space-y-18 lg:space-y-60">

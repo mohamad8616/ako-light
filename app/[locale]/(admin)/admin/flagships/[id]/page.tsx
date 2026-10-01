@@ -2,7 +2,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { BackLink } from "@/components/admin/catalog/BackLink";
 import { FlagshipForm } from "@/components/admin/catalog/flagships/FlagshipForm";
 import { isLocale } from "@/lib/i18n/routing";
-import { translations } from "@/lib/i18n/translations";
+import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import { getFlagshipAdminDetail } from "@/lib/repositories/flagships";
 import { notFound } from "next/navigation";
 
@@ -20,7 +20,7 @@ export default async function EditFlagshipPage({
   if (!isLocale(locale)) notFound();
   if (id === "new") notFound();
 
-  const t = translations[locale];
+  const t = getAdminDictionary(locale);
   const detail = await getFlagshipAdminDetail(id);
   if (!detail) notFound();
 

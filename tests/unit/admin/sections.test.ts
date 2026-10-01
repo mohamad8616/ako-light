@@ -6,7 +6,7 @@ import {
   getAdminNavItem,
   isAdminNavItemActive,
 } from "@/lib/admin/sections";
-import { translations } from "@/lib/i18n/translations";
+import { adminTranslations } from "@/lib/i18n/admin-translations";
 import { describe, expect, it } from "vitest";
 
 /**
@@ -91,9 +91,12 @@ describe("admin nav registry", () => {
   });
 
   it("references translation keys that exist in both dictionaries", () => {
+    // Nav labels are admin-only strings, so they live in the admin dictionary
+    // (lib/i18n/admin-translations.ts) — the public barrel deliberately excludes
+    // them so they are not shipped to visitors who cannot render them.
     for (const item of ADMIN_NAV_ITEMS) {
-      expect(translations.en, item.labelKey).toHaveProperty(item.labelKey);
-      expect(translations.fa, item.labelKey).toHaveProperty(item.labelKey);
+      expect(adminTranslations.en, item.labelKey).toHaveProperty(item.labelKey);
+      expect(adminTranslations.fa, item.labelKey).toHaveProperty(item.labelKey);
     }
   });
 });

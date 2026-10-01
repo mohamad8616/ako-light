@@ -1,5 +1,4 @@
 import { aboutEn, aboutFa } from "./about";
-import { adminEn, adminFa } from "./admin";
 import { authEn, authFa } from "./auth";
 import { cartEn, cartFa } from "./cart";
 import { collectionsEn, collectionsFa } from "./collections";
@@ -18,6 +17,14 @@ import { searchEn, searchFa } from "./search";
 
 // Combined per-language dictionaries. Key order follows module order below;
 // lookups are by key so order has no runtime effect.
+//
+// `admin.ts` is deliberately ABSENT. These dictionaries are what the client
+// `LanguageProvider` imports, and this barrel is reachable from every public
+// page — including admin's ~43 KB here would ship it to visitors who can never
+// render a single one of those strings. Admin strings live in
+// `@/lib/i18n/admin-translations` instead, imported only by
+// `AdminLanguageProvider`, which only the (admin) layout mounts. Add new
+// ADMIN-ONLY keys there, not here.
 export const en = {
   ...navigationEn,
   ...commonEn,
@@ -34,7 +41,6 @@ export const en = {
   ...searchEn,
   ...projectsEn,
   ...pagesEn,
-  ...adminEn,
   ...authEn,
 } as const;
 
@@ -54,6 +60,5 @@ export const fa = {
   ...searchFa,
   ...projectsFa,
   ...pagesFa,
-  ...adminFa,
   ...authFa,
 } as const;

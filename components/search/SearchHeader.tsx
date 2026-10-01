@@ -8,14 +8,13 @@ import { motion } from "framer-motion";
 import { useRef, useState } from "react";
 import SearchInput, { type SearchInputHandle } from "./SearchInput";
 import SearchResults from "./SearchResults";
-import type { Designer } from "@/lib/data/designers";
-import type { Product } from "@/lib/data/product-categories/types";
+import type { SearchDesigner, SearchProduct } from "@/lib/repositories/search-index";
 
 const SEARCH_DEBOUNCE_MS = 300;
 
 interface SearchHeaderProps {
-  products: Product[];
-  designers: Designer[];
+  products: SearchProduct[];
+  designers: SearchDesigner[];
 }
 
 export default function SearchHeader({

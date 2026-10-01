@@ -54,9 +54,9 @@ export default async function SignInPage({
             role="alert"
             className="border-destructive/30 bg-destructive/10 text-destructive w-full max-w-md rounded-lg border px-4 py-3 text-sm"
           >
-            <p className="font-medium">{t["admin.access.denied.title"]}</p>
+            <p className="font-medium">{t["auth.access.denied.title"]}</p>
             <p className="text-destructive/90 mt-1 leading-relaxed">
-              {t["admin.access.denied.description"]}
+              {t["auth.access.denied.description"]}
             </p>
           </div>
         ) : null}

@@ -2,7 +2,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { BackLink } from "@/components/admin/catalog/BackLink";
 import { FlagshipForm } from "@/components/admin/catalog/flagships/FlagshipForm";
 import { isLocale } from "@/lib/i18n/routing";
-import { translations } from "@/lib/i18n/translations";
+import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import { notFound } from "next/navigation";
 
 /**
@@ -18,7 +18,7 @@ export default async function NewFlagshipPage({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const t = translations[locale];
+  const t = getAdminDictionary(locale);
 
   return (
     <div className="@container/main flex flex-1 flex-col">

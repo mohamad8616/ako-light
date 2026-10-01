@@ -1,10 +1,8 @@
 "use client";
 
-import type { Designer } from "@/lib/data/designers";
-import type { Product } from "@/lib/data/product-categories/types";
+import type { SearchDesigner, SearchProduct } from "@/lib/repositories/search-index";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { pick, productKey, type Localized } from "@/lib/i18n/localized";
-import { translations } from "@/lib/i18n/translations";
 import { cn } from "@/lib/utils";
 import { useDeferredValue, useMemo } from "react";
 import SearchCard from "./SearchCard";
@@ -44,21 +42,16 @@ function localizedText(
   return pick(value, lang);
 }
 
-// Persian product display names live in translations.fa (keyed by productKey).
-// They must be part of the searchable haystack or Persian queries never match.
-const faTranslations = translations.fa as Record<string, string>;
-
-function faProductName(slug: string): string {
-  const key = productKey(slug);
-  const fa = faTranslations[key];
-  return fa && fa !== key ? fa : "";
-}
+// The Persian product name used to be read from the translation dictionary on
+// the client, which pulled the whole dictionary into this bundle. It is now
+// pre-resolved by the server as `product.faName` — see
+// lib/repositories/search-index.ts.
 
 // Designer lookup keyed by normalised EN and FA names. Products reference
 // their designer by a localized name object, so this maps that back to the
 // designer record (including the Persian display name).
 function buildDesignerByKey(
-  designers: Designer[],
+  designers: SearchDesigner[],
 ): Map<string, { slug: string; name: string; nameFa: string }> {
   const map = new Map<string, { slug: string; name: string; nameFa: string }>();
   for (const d of designers) {
@@ -75,20 +68,20 @@ function buildDesignerByKey(
 
 // designer slug -> searchable text of every product they designed (EN + FA).
 function buildProductTextByDesigner(
-  products: Product[],
+  products: SearchProduct[],
   designerByKey: Map<string, { slug: string; name: string; nameFa: string }>,
 ): Map<string, string[]> {
   const map = new Map<string, string[]>();
   for (const p of products) {
     const designer = designerByKey.get(
-      normalise(localizedText(p.designer.name, "en")),
+      normalise(localizedText(p.designerName, "en")),
     );
     if (!designer) continue;
     const texts = map.get(designer.slug) ?? [];
     texts.push(
       localizedText(p.name, "en"),
       localizedText(p.name, "fa"),
-      faProductName(p.slug),
+      p.faName,
     );
     map.set(designer.slug, texts);
   }
@@ -96,12 +89,12 @@ function buildProductTextByDesigner(
 }
 
 function buildIndexedProducts(
-  products: Product[],
+  products: SearchProduct[],
   designerByKey: Map<string, { slug: string; name: string; nameFa: string }>,
 ): IndexedProduct[] {
   return products.map((p) => {
     const designer = designerByKey.get(
-      normalise(localizedText(p.designer.name, "en")),
+      normalise(localizedText(p.designerName, "en")),
     );
     // A product's haystack includes its designer's EN + FA names, so
     // searching for a designer surfaces BOTH the designer card and all of
@@ -110,11 +103,11 @@ function buildIndexedProducts(
       [
         localizedText(p.name, "en"),
         localizedText(p.name, "fa"),
-        faProductName(p.slug),
+        p.faName,
         p.slug,
         p.category,
-        localizedText(p.designer.name, "en"),
-        localizedText(p.designer.name, "fa"),
+        localizedText(p.designerName, "en"),
+        localizedText(p.designerName, "fa"),
         designer?.nameFa ?? "",
       ].join(" "),
     );
@@ -123,7 +116,7 @@ function buildIndexedProducts(
       name: localizedText(p.name, "en"),
       slug: p.slug,
       category: p.category,
-      image: p.images[0] ?? p.heroImage,
+      image: p.image,
       haystack,
       condensed: condense(haystack),
     };
@@ -131,7 +124,7 @@ function buildIndexedProducts(
 }
 
 function buildIndexedDesigners(
-  designers: Designer[],
+  designers: SearchDesigner[],
   productTextByDesigner: Map<string, string[]>,
 ): IndexedDesigner[] {
   return designers.map((d) => {
@@ -204,8 +197,8 @@ const MIN_QUERY_LENGTH = 3;
 interface SearchResultsProps {
   query: string;
   className?: string;
-  products: Product[];
-  designers: Designer[];
+  products: SearchProduct[];
+  designers: SearchDesigner[];
 }
 
 export default function SearchResults({

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { pick } from "@/lib/i18n/localized";
 import { formatToman } from "@/lib/i18n/price";
 import { isLocale, type Locale } from "@/lib/i18n/routing";
-import { translations } from "@/lib/i18n/translations";
+import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import { getOrderAdminDetail } from "@/lib/repositories/orders";
 import { notFound } from "next/navigation";
 
@@ -35,7 +35,7 @@ export default async function OrderDetailPage({
   const detail = await getOrderAdminDetail(id);
   if (!detail) notFound();
 
-  const dict = translations[locale];
+  const dict = getAdminDictionary(locale);
   const lang: Locale = locale;
   const number = new Intl.NumberFormat(lang === "fa" ? "fa-IR" : "en-US");
   const date = new Intl.DateTimeFormat(lang === "fa" ? "fa-IR" : "en-US", {

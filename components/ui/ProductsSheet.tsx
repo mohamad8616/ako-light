@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"; // adjust import path
-import type { ProductCategory } from "@/lib/data/product-categories/types";
+import type { NavCategory } from "@/lib/data/product-categories/types";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import Link from "@/lib/i18n/Link";
 import { useLenis } from "@/lib/lenisStore";
@@ -12,7 +12,7 @@ import UnderLineEffect from "./UnderLineEffect";
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  categories: ProductCategory[];
+  categories: NavCategory[];
 }
 
 // Font-family is inherited from the SheetContent wrapper, which applies

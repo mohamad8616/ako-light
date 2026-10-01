@@ -1,8 +1,7 @@
 import SearchHeader from "@/components/search/SearchHeader";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
-import { getDesigners } from "@/lib/repositories/designers";
-import { getProducts } from "@/lib/repositories/products";
+import { getSearchIndex } from "@/lib/repositories/search-index";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -24,10 +23,12 @@ export async function generateMetadata({
 }
 
 export default async function DesignersPage() {
-  const [products, designers] = await Promise.all([
-    getProducts(),
-    getDesigners(),
-  ]);
+  // The SLIM index, not the catalog: `SearchHeader` is a client component, so
+  // everything passed to it is serialized into the page payload. Handing it
+  // full `Product` records used to ship every description, download link,
+  // related-product list, price and image of every product to the browser for
+  // a page that only ever matches on names. See lib/repositories/search-index.
+  const { products, designers } = await getSearchIndex();
 
   return (
     <main className="bg-background min-h-screen h-auto mt-40 lg:mt-56">

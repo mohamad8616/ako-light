@@ -1,3 +1,4 @@
+import AdminLanguageProvider from "@/components/admin/AdminLanguageProvider";
 import { AppSidebar } from "@/components/admin/app-sidebar";
 import { SiteHeader } from "@/components/admin/site-header";
 import { DirectionProvider } from "@/components/ui/direction";
@@ -51,23 +52,25 @@ export default async function AdminLayout({
   const dir = ADMIN_SHELL_DIR;
 
   return (
-    <DirectionProvider dir={dir}>
-      <SidebarProvider
-        dir={dir}
-        style={
-          {
-            "--sidebar-width": "calc(var(--spacing) * 72)",
-            "--header-height": "calc(var(--spacing) * 12)",
-          } as React.CSSProperties
-        }
-      >
-        <AppSidebar dir={dir} side={dir === "rtl" ? "right" : "left"} variant="inset" />
-        <SidebarInset className="text-background">
-          <SiteHeader />
-          {children}
-        </SidebarInset>
-        <Toaster position="top-center" closeButton />
-      </SidebarProvider>
-    </DirectionProvider>
+    <AdminLanguageProvider>
+      <DirectionProvider dir={dir}>
+        <SidebarProvider
+          dir={dir}
+          style={
+            {
+              "--sidebar-width": "calc(var(--spacing) * 72)",
+              "--header-height": "calc(var(--spacing) * 12)",
+            } as React.CSSProperties
+          }
+        >
+          <AppSidebar dir={dir} side={dir === "rtl" ? "right" : "left"} variant="inset" />
+          <SidebarInset className="text-background">
+            <SiteHeader />
+            {children}
+          </SidebarInset>
+          <Toaster position="top-center" closeButton />
+        </SidebarProvider>
+      </DirectionProvider>
+    </AdminLanguageProvider>
   );
 }

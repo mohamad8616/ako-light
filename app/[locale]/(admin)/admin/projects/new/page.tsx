@@ -2,7 +2,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { BackLink } from "@/components/admin/catalog/BackLink";
 import { ProjectForm } from "@/components/admin/catalog/projects/ProjectForm";
 import { isLocale } from "@/lib/i18n/routing";
-import { translations } from "@/lib/i18n/translations";
+import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import { getProductOptions } from "@/lib/repositories/products";
 import { notFound } from "next/navigation";
 
@@ -19,7 +19,7 @@ export default async function NewProjectPage({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const t = translations[locale];
+  const t = getAdminDictionary(locale);
   const products = await getProductOptions();
 
   return (

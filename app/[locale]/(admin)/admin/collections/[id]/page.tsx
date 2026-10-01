@@ -2,7 +2,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { BackLink } from "@/components/admin/catalog/BackLink";
 import { CollectionForm } from "@/components/admin/catalog/collections/CollectionForm";
 import { isLocale } from "@/lib/i18n/routing";
-import { translations } from "@/lib/i18n/translations";
+import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import { getCollectionAdminDetail } from "@/lib/repositories/collections";
 import { notFound } from "next/navigation";
 
@@ -18,7 +18,7 @@ export default async function EditCollectionPage({
   if (!isLocale(locale)) notFound();
   if (id === "new") notFound();
 
-  const t = translations[locale];
+  const t = getAdminDictionary(locale);
   const detail = await getCollectionAdminDetail(id);
   if (!detail) notFound();
 
