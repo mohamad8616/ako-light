@@ -47,7 +47,21 @@ vi.mock("next/navigation", () => ({
   permanentRedirect: vi.fn(),
   notFound: vi.fn(),
 }));
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn(), refresh: vi.fn() }));
+// `revalidatePath`/`refresh` cover the revalidation calls; `unstable_cache` and
+// `updateTag` are required for the modules under test to LOAD at all —
+// `lib/repositories/product-categories.ts` calls `unstable_cache` at module
+// scope, and `lib/admin/revalidate.ts` reads `updateTag` on a categories
+// mutation (this suite drives `updateProductCategoryAction`). Vitest's mock
+// factory is a namespace proxy, so an absent export throws at import time and
+// fails the whole file. The `unstable_cache` passthrough returns the inner
+// function un-cached, which is correct here: this suite asserts slug history,
+// not memoization.
+vi.mock("next/cache", () => ({
+  revalidatePath: vi.fn(),
+  refresh: vi.fn(),
+  updateTag: vi.fn(),
+  unstable_cache: <T>(fn: T) => fn,
+}));
 
 import { prisma } from "@/lib/db/prisma";
 import { getCatalogRedirectPath } from "@/lib/repositories/slug-history";

@@ -29,6 +29,7 @@ import {
   DashboardSquare01Icon,
   Layout01Icon,
   Folder01Icon,
+  Image01Icon,
   Package01Icon,
   ShirtIcon,
   SparklesIcon,
@@ -61,6 +62,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   "/admin/projects": <HugeiconsIcon icon={SparklesIcon} strokeWidth={2} />,
   "/admin/fabrics": <HugeiconsIcon icon={ShirtIcon} strokeWidth={2} />,
   "/admin/catalogue": <HugeiconsIcon icon={Book01Icon} strokeWidth={2} />,
+  "/admin/media": <HugeiconsIcon icon={Image01Icon} strokeWidth={2} />,
   "/admin/admins": <HugeiconsIcon icon={UserShield01Icon} strokeWidth={2} />,
 }
 

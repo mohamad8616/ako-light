@@ -59,6 +59,11 @@ export const ADMIN_CATALOG_NAV: readonly AdminNavItem[] = [
   { href: "/admin/projects", labelKey: "admin.nav.projects" },
   { href: "/admin/fabrics", labelKey: "admin.nav.fabrics" },
   { href: "/admin/catalogue", labelKey: "admin.nav.catalogue" },
+  // The media library is not a catalog entity: it is the shared store every
+  // other section's image fields will eventually reference (Pass 13.5C). It
+  // sits last in the group for that reason — it belongs to all of them rather
+  // than beside any one of them.
+  { href: "/admin/media", labelKey: "admin.nav.media" },
 ];
 
 /** Owner-only sections (see lib/auth/permissions.ts). */

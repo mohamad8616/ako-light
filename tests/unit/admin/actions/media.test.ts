@@ -256,11 +256,14 @@ describe("media actions — error mapping", () => {
 
   it("maps MediaError codes onto the admin result contract", async () => {
     const cases: [MediaErrorCode, AdminErrorCode][] = [
-      // The four with a dictionary entry of their own.
+      // The five with a dictionary entry of their own.
       ["required", "required"],
       ["tooLarge", "tooLarge"],
       ["notImage", "notImage"],
       ["notFound", "notFound"],
+      // The reference guard gets its OWN message: "not found" would be a lie
+      // about why the delete was refused.
+      ["inUse", "inUse"],
       // The storage codes deliberately collapse to the generic failure: the real
       // cause is only actionable server-side.
       ["storageFailed", "unknown"],

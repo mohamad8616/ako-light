@@ -21,6 +21,11 @@ export type AdminErrorCode =
   | "notImage"
   | "slugTaken"
   | "notFound"
+  /**
+   * The row is still referenced and must not be deleted (media reference guard,
+   * lib/repositories/media-references.ts).
+   */
+  | "inUse"
   | "relationViolation"
   | "selfTarget"
   | "unknown";
@@ -97,6 +102,7 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
       notImage: 0,
       slugTaken: 0,
       notFound: 0,
+      inUse: 0,
       relationViolation: 0,
       selfTarget: 0,
       unknown: 0,

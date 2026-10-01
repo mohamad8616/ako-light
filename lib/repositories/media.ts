@@ -21,6 +21,7 @@ import {
   type Prisma,
 } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { MEDIA_LIBRARY_PAGE_SIZE, type MediaSort } from "@/lib/media/library";
 
 export type { MediaRow };
 
@@ -102,8 +103,11 @@ export const countMedia = cache(async (): Promise<number> => {
  *
  * NOT wrapped in React `cache()`: the options object is a fresh reference on
  * every call, so `cache()` could never dedupe it — it would only add a
- * misleading impression of memoization. Filtering here is intentionally minimal
- * (kind + paging); the media-library search/filter UI is a later subpass.
+ * misleading impression of memoization.
+ *
+ * Minimal by design: this is the simple "newest N, optionally of one kind" read
+ * that the catalog passes need. The media LIBRARY's search / filter / sort /
+ * paging read is {@link listMediaPage} below, which also reports the total.
  */
 export async function listMedia(
   options: ListMediaOptions = {},
@@ -114,6 +118,100 @@ export async function listMedia(
     take: options.limit ?? DEFAULT_MEDIA_PAGE_SIZE,
     skip: options.offset ?? 0,
   });
+}
+
+/** Filter + sort + paging for one media-LIBRARY page. */
+export interface MediaListQuery {
+  /** Case-insensitive match against filename, title or alt text. */
+  search?: string;
+  /** Restrict to one kind; omit for "all". */
+  mediaType?: MediaType;
+  /** Defaults to `newest`. */
+  sort?: MediaSort;
+  /** Page size. Defaults to {@link MEDIA_LIBRARY_PAGE_SIZE}. */
+  limit?: number;
+  /** Rows to skip (offset paging). */
+  offset?: number;
+}
+
+/** One page of the library: the matching rows plus how many matched in total. */
+export interface MediaPage {
+  rows: MediaRow[];
+  total: number;
+}
+
+/**
+ * The `orderBy` each sort name maps to.
+ *
+ * A lookup table rather than a `switch`: the sort names are a closed union, so
+ * the compiler fails the build if one is ever added without an order — which a
+ * `switch` with a `default` would silently swallow.
+ */
+const MEDIA_SORT_ORDER: Record<
+  MediaSort,
+  Prisma.MediaOrderByWithRelationInput
+> = {
+  newest: { createdAt: "desc" },
+  oldest: { createdAt: "asc" },
+  "name-asc": { filename: "asc" },
+  "name-desc": { filename: "desc" },
+  largest: { size: "desc" },
+  smallest: { size: "asc" },
+};
+
+/** The `where` a library query implies: the kind filter plus the free-text search. */
+function mediaListWhere(query: MediaListQuery): Prisma.MediaWhereInput {
+  const where: Prisma.MediaWhereInput = {};
+  if (query.mediaType) where.mediaType = query.mediaType;
+
+  const term = query.search?.trim();
+  if (term) {
+    // `mode: "insensitive"` is Postgres ILIKE. The three fields are the ones an
+    // admin can actually recognise a file by: the original name, the label they
+    // gave it, and its accessibility text.
+    where.OR = [
+      { filename: { contains: term, mode: "insensitive" } },
+      { title: { contains: term, mode: "insensitive" } },
+      { alt: { contains: term, mode: "insensitive" } },
+    ];
+  }
+
+  return where;
+}
+
+/**
+ * One page of the media library.
+ *
+ * Returns the page's rows AND the total that matched, so the pager can render
+ * "page 3 of 7" without a second round trip (or, worse, a client that counts
+ * rows it was never sent).
+ *
+ * Filtering, sorting and paging all happen in Postgres: the grid receives one
+ * page, never the whole table. That is the point of a server-backed library —
+ * a client-side filter would have to ship every row to the browser first.
+ *
+ * NOT wrapped in React `cache()`: the options object is a fresh reference on
+ * every call, so `cache()` could never dedupe it — the same reasoning as
+ * `listMedia` above.
+ */
+export async function listMediaPage(
+  query: MediaListQuery = {},
+): Promise<MediaPage> {
+  const where = mediaListWhere(query);
+
+  // Two reads, issued together: the page itself and its total. They are
+  // independent, so awaiting them sequentially would only add a round trip.
+  const [rows, total] = await Promise.all([
+    prisma.media.findMany({
+      where,
+      orderBy: MEDIA_SORT_ORDER[query.sort ?? "newest"],
+      take: query.limit ?? MEDIA_LIBRARY_PAGE_SIZE,
+      skip: query.offset ?? 0,
+    }),
+    prisma.media.count({ where }),
+  ]);
+
+  return { rows, total };
 }
 
 /**

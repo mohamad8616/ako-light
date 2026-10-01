@@ -52,8 +52,11 @@ export interface MediaUploadResult {
 /**
  * Maps a media-layer failure onto the admin result contract.
  *
- * The four validation/`notFound` codes line up 1:1 with existing
+ * The validation, `notFound` and `inUse` codes line up 1:1 with existing
  * `admin.error.*` dictionary keys, so the client renders them with no new copy.
+ * `inUse` is the reference guard (see lib/media/service.ts `removeMedia`): it
+ * needs its OWN message, because "the item was not found" would be actively
+ * misleading about why a delete was refused.
  *
  * The two storage codes have no dictionary entry of their own, on purpose: the
  * real cause (a missing `BLOB_READ_WRITE_TOKEN`, a provider outage) is only
@@ -67,6 +70,7 @@ function mediaErrorToAdminCode(code: MediaErrorCode): AdminErrorCode {
     case "tooLarge":
     case "notImage":
     case "notFound":
+    case "inUse":
       return code;
     case "storageNotConfigured":
     case "storageFailed":

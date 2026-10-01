@@ -31,10 +31,12 @@ import {
 import {
   createMedia,
   deleteMedia,
+  getMedia,
   updateMediaMetadata,
   type MediaRow,
   type UpdateMediaMetadataInput,
 } from "@/lib/repositories/media";
+import { findMediaReferences } from "@/lib/repositories/media-references";
 
 /**
  * Every way a media operation can fail, as a machine-readable code.
@@ -47,6 +49,8 @@ import {
 export type MediaErrorCode =
   | MediaValidationCode
   | "notFound"
+  /** The object is still pointed at by catalog/order rows — see `removeMedia`. */
+  | "inUse"
   | "storageNotConfigured"
   | "storageFailed";
 
@@ -161,16 +165,46 @@ export async function updateMediaInfo(
 }
 
 /**
- * Deletes a row and its stored object.
+ * Deletes a row and its stored object, but ONLY when nothing points at it.
  *
  * ORDER IS LOAD-BEARING — see the module header. The row goes first; the object
  * is removed afterwards on a best-effort basis, so a storage failure leaves an
  * orphan file rather than a row pointing at nothing.
  *
- * Throws {@link MediaError} `notFound` when the id does not exist (and in that
- * case touches neither the store nor any other row).
+ * THE REFERENCE GUARD COMES FIRST, and it is the reason this function reads the
+ * row instead of letting the delete discover it. Until Pass 13.5C gives the
+ * catalog real foreign keys, a catalog image is a bare URL string with nothing
+ * enforcing it (see lib/repositories/media-references.ts). Deleting the object
+ * behind such a URL would leave the live site rendering a broken image with no
+ * error anywhere, so an unreferenced object is a PRECONDITION of deletion, not
+ * a detail to check afterwards.
+ *
+ * Throws {@link MediaError}:
+ *   - `notFound` when the id does not exist (touching neither system);
+ *   - `inUse` when any known reference exists — in which case NOTHING is
+ *     deleted, not the row and not the object.
+ *
+ * A reference added between the check and the delete is still possible; the
+ * window is small and the alternative (locking every catalog table) is worse.
  */
 export async function removeMedia(id: string): Promise<void> {
+  const row = await getMedia(id);
+  if (!row) {
+    throw new MediaError("notFound", `Media ${id} not found`);
+  }
+
+  const references = await findMediaReferences(row.url);
+  if (references.length > 0) {
+    // Logged with the areas so an operator can find what is holding the asset,
+    // while the caller only receives the stable code.
+    console.warn(
+      `[media] refusing to delete ${id}: referenced by ${references
+        .map((reference) => `${reference.area}×${reference.count}`)
+        .join(", ")}`,
+    );
+    throw new MediaError("inUse", `Media ${id} is in use`);
+  }
+
   let removed: MediaRow;
   try {
     removed = await deleteMedia(id);
@@ -222,9 +256,22 @@ export {
   getMedia,
   getMediaByStorageKey,
   listMedia,
+  listMediaPage,
 } from "@/lib/repositories/media";
 export type {
   ListMediaOptions,
+  MediaListQuery,
+  MediaPage,
   MediaRow,
   UpdateMediaMetadataInput,
 } from "@/lib/repositories/media";
+
+/**
+ * The reference check, re-exported so the delete guard and any caller asking
+ * "is this asset safe to remove?" read from the same place.
+ */
+export {
+  findMediaReferences,
+  UNCHECKABLE_REFERENCE_AREAS,
+} from "@/lib/repositories/media-references";
+export type { MediaReference } from "@/lib/repositories/media-references";

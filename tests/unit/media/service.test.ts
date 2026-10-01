@@ -7,10 +7,12 @@
  * keep a failure from leaving the system inconsistent. Each is pinned here:
  *
  *   upload  → Blob first, then DB. A DB failure deletes the object just stored.
- *   delete  → DB first, then Blob, best-effort. A Blob failure is swallowed.
+ *   delete  → reference check first, then DB, then Blob (best-effort). A Blob
+ *             failure is swallowed; a REFERENCED asset is refused outright.
  *
- * Hermetic: the storage provider and the repository are mocked, so the suite
- * NEVER depends on the live Vercel Blob service or the database.
+ * Hermetic: the storage provider, the repository and the reference check are
+ * mocked, so the suite NEVER depends on the live Vercel Blob service or the
+ * database.
  */
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -30,8 +32,12 @@ const repo = vi.hoisted(() => ({
   getMediaByStorageKey: vi.fn(),
   countMedia: vi.fn(),
   listMedia: vi.fn(),
+  listMediaPage: vi.fn(),
   DEFAULT_MEDIA_PAGE_SIZE: 50,
 }));
+
+/** The reference check the delete guard consults. */
+const references = vi.hoisted(() => ({ findMediaReferences: vi.fn() }));
 
 vi.mock("@/lib/media/storage", () => ({
   getStorageProvider: () => provider,
@@ -39,6 +45,11 @@ vi.mock("@/lib/media/storage", () => ({
 }));
 
 vi.mock("@/lib/repositories/media", () => repo);
+
+vi.mock("@/lib/repositories/media-references", () => ({
+  findMediaReferences: references.findMediaReferences,
+  UNCHECKABLE_REFERENCE_AREAS: [],
+}));
 
 import { Prisma } from "@/generated/prisma/client";
 import { MediaError, removeMedia, updateMediaInfo, uploadMedia } from "@/lib/media/service";
@@ -155,6 +166,13 @@ describe("removeMedia", () => {
     vi.clearAllMocks();
     provider.delete.mockResolvedValue(undefined);
     repo.deleteMedia.mockResolvedValue({ id: "m1", storageKey: STORED_KEY });
+    // The guard reads the row first (it needs the url to check references).
+    repo.getMedia.mockResolvedValue({
+      id: "m1",
+      url: STORED_URL,
+      storageKey: STORED_KEY,
+    });
+    references.findMediaReferences.mockResolvedValue([]);
   });
 
   it("deletes the ROW first and the object second", async () => {
@@ -175,10 +193,39 @@ describe("removeMedia", () => {
     expect(provider.delete).toHaveBeenCalledWith([STORED_KEY]);
   });
 
-  it("reports a missing row as notFound and never touches storage", async () => {
-    repo.deleteMedia.mockRejectedValue(p2025());
+  it("checks references against the row's URL before deleting anything", async () => {
+    await removeMedia("m1");
+
+    expect(references.findMediaReferences).toHaveBeenCalledWith(STORED_URL);
+  });
+
+  it("refuses to delete a REFERENCED asset, touching neither the row nor the object", async () => {
+    references.findMediaReferences.mockResolvedValue([
+      { area: "product.heroImage", count: 2 },
+    ]);
+
+    await expect(removeMedia("m1")).rejects.toMatchObject({ code: "inUse" });
+
+    // The whole point of the guard: nothing is removed, so the live site keeps
+    // working and the admin can go and unlink the asset first.
+    expect(repo.deleteMedia).not.toHaveBeenCalled();
+    expect(provider.delete).not.toHaveBeenCalled();
+  });
+
+  it("reports an unknown id as notFound and never touches storage", async () => {
+    repo.getMedia.mockResolvedValue(null);
 
     await expect(removeMedia("nope")).rejects.toMatchObject({ code: "notFound" });
+    expect(references.findMediaReferences).not.toHaveBeenCalled();
+    expect(repo.deleteMedia).not.toHaveBeenCalled();
+    expect(provider.delete).not.toHaveBeenCalled();
+  });
+
+  it("still reports notFound when the row vanishes between the check and the delete", async () => {
+    // The pre-read succeeded, so the guard ran — but the delete then hit P2025.
+    repo.deleteMedia.mockRejectedValue(p2025());
+
+    await expect(removeMedia("m1")).rejects.toMatchObject({ code: "notFound" });
     expect(provider.delete).not.toHaveBeenCalled();
   });
 

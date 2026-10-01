@@ -52,6 +52,18 @@ vi.mock("next/navigation", () => ({ redirect: redirectMock }));
 vi.mock("next/cache", () => ({
   revalidatePath: revalidatePathMock,
   refresh: refreshMock,
+  // Two more exports are needed for this file to even LOAD, and neither is
+  // about caching:
+  //   - `lib/repositories/product-categories.ts` calls `unstable_cache` at
+  //     MODULE SCOPE, so the export is read the moment that module is imported;
+  //   - `lib/admin/revalidate.ts` reads `updateTag` whenever a categories
+  //     mutation runs (this suite drives `updateProductCategoryAction`).
+  // Vitest's factory result is a namespace proxy, so a missing export throws
+  // at import time and fails the whole FILE rather than one test. The
+  // passthrough returns the inner function un-cached, which is exactly right
+  // here — these tests assert slug behaviour, not memoization.
+  updateTag: vi.fn(),
+  unstable_cache: <T>(fn: T) => fn,
 }));
 
 import {
