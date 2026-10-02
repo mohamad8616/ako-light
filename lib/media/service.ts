@@ -21,13 +21,18 @@
  * SERVER-ONLY. It reaches the Prisma client and the storage credentials.
  */
 import { Prisma } from "@/generated/prisma/client";
+import { IMAGE_EXTENSIONS } from "@/lib/admin/image-sniff";
+import { IMAGE_MAX_BYTES, VIDEO_MAX_BYTES } from "@/lib/media/limits";
 import { getStorageProvider } from "@/lib/media/storage";
 import { StorageNotConfiguredError, type StoredObject } from "@/lib/media/types";
 import {
   buildStorageKey,
-  validateImageUpload,
+  validateMediaUpload,
+  MEDIA_KEY_PREFIX,
+  type MediaKind,
   type MediaValidationCode,
 } from "@/lib/media/validation";
+import { VIDEO_EXTENSIONS } from "@/lib/media/video-sniff";
 import {
   createMedia,
   deleteMedia,
@@ -89,12 +94,14 @@ export interface UploadMediaInput {
  * existing `toActionResult` mapping still applies, e.g. a unique-key clash).
  */
 export async function uploadMedia(input: UploadMediaInput): Promise<MediaRow> {
-  const validated = validateImageUpload(input);
+  // Pass 13.5E: images AND videos. The image rules are unchanged and still run
+  // first, so an AVIF (which shares the MP4 container header) stays an image.
+  const validated = validateMediaUpload(input);
   if (!validated.ok) {
     throw new MediaError(validated.code, `Media upload rejected: ${validated.code}`);
   }
 
-  const { mimeType, extension, size, baseName } = validated.value;
+  const { mimeType, extension, size, baseName, mediaType } = validated.value;
   const key = buildStorageKey({
     folder: input.folder,
     baseName,
@@ -130,6 +137,9 @@ export async function uploadMedia(input: UploadMediaInput): Promise<MediaRow> {
       url: stored.url,
       mimeType,
       size,
+      // The SNIFFED kind, not the declared one — a video is registered as a
+      // video because its bytes said so.
+      mediaType,
       alt: input.alt ?? null,
       title: input.title ?? null,
     });
@@ -142,6 +152,114 @@ export async function uploadMedia(input: UploadMediaInput): Promise<MediaRow> {
     await bestEffortDelete([stored.key]);
     throw error;
   }
+}
+
+/** MIME -> extension, inverted, so a stored pathname can be read back. */
+const IMAGE_MIME_BY_EXTENSION = new Map(
+  Object.entries(IMAGE_EXTENSIONS).map(([mime, extension]) => [extension, mime]),
+);
+const VIDEO_MIME_BY_EXTENSION = new Map(
+  Object.entries(VIDEO_EXTENSIONS).map(([mime, extension]) => [extension, mime]),
+);
+
+/** The lowercase extension of a storage pathname, without the dot. */
+function extensionOfPath(pathname: string): string {
+  const last = pathname.split("/").pop() ?? "";
+  const dot = last.lastIndexOf(".");
+  return dot === -1 ? "" : last.slice(dot + 1).toLowerCase();
+}
+
+/** What the browser reports after a successful DIRECT upload. */
+export interface RegisterUploadedMediaInput {
+  /** Original client filename — display only, never a path segment. */
+  filename: string;
+  /** The public URL the provider returned. */
+  url: string;
+  /** The key ACTUALLY written (`blob.pathname`) — becomes `storageKey`. */
+  pathname: string;
+  /** The client's report of the object's size, in bytes. */
+  size: number;
+  alt?: string | null;
+  title?: string | null;
+}
+
+/**
+ * Registers an object the BROWSER uploaded directly (Pass 13.5E).
+ *
+ * This is the second half of the direct-upload flow: the bytes went straight to
+ * the provider, and this creates the `Media` row that makes the file real.
+ *
+ * WHAT IS AND IS NOT TRUSTED. The client reports the url, pathname and size, so
+ * none of them is treated as authoritative:
+ *
+ *   - the pathname must live under this app's `media/` prefix, so a caller
+ *     cannot register an object outside our namespace;
+ *   - the KIND and the MIME type are re-derived from the pathname's extension,
+ *     never taken from the client's `contentType` claim;
+ *   - the size must be positive and within that kind's ceiling.
+ *
+ * The remaining claim — that an object exists at that URL with those
+ * dimensions — is not re-verified here, because the PROVIDER already enforced
+ * the content types and the byte ceiling when it minted the upload token. The
+ * upload could not have happened outside those constraints.
+ *
+ * A duplicate `pathname` is rejected by the `storageKey` unique constraint, so a
+ * retried registration cannot create two rows for one object.
+ */
+export async function registerUploadedMedia(
+  input: RegisterUploadedMediaInput,
+): Promise<MediaRow> {
+  if (!input.pathname.startsWith(`${MEDIA_KEY_PREFIX}/`)) {
+    throw new MediaError(
+      "unsupportedType",
+      "Pathname is outside the media namespace",
+    );
+  }
+
+  const extension = extensionOfPath(input.pathname);
+  const imageMime = IMAGE_MIME_BY_EXTENSION.get(extension);
+  const videoMime = VIDEO_MIME_BY_EXTENSION.get(extension);
+
+  let mediaType: MediaKind;
+  let mimeType: string;
+  let maximumSizeInBytes: number;
+
+  if (imageMime) {
+    mediaType = "image";
+    mimeType = imageMime;
+    maximumSizeInBytes = IMAGE_MAX_BYTES;
+  } else if (videoMime) {
+    mediaType = "video";
+    mimeType = videoMime;
+    maximumSizeInBytes = VIDEO_MAX_BYTES;
+  } else {
+    throw new MediaError(
+      "unsupportedType",
+      `Unsupported extension ".${extension}"`,
+    );
+  }
+
+  if (
+    !Number.isFinite(input.size) ||
+    input.size <= 0 ||
+    input.size > maximumSizeInBytes
+  ) {
+    throw new MediaError(
+      "tooLarge",
+      `Reported size ${input.size} is outside the ${mediaType} limit`,
+    );
+  }
+
+  return createMedia({
+    filename: input.filename,
+    storageKey: input.pathname,
+    url: input.url,
+    mimeType,
+    size: input.size,
+    mediaType,
+    alt: input.alt ?? null,
+    title: input.title ?? null,
+  });
 }
 
 /**
@@ -193,7 +311,9 @@ export async function removeMedia(id: string): Promise<void> {
     throw new MediaError("notFound", `Media ${id} not found`);
   }
 
-  const references = await findMediaReferences(row.url);
+  // Both keys: the id covers the real foreign keys added in 13.5C/13.5D, the url
+  // covers the legacy URL columns that predate them.
+  const references = await findMediaReferences({ id: row.id, url: row.url });
   if (references.length > 0) {
     // Logged with the areas so an operator can find what is holding the asset,
     // while the caller only receives the stable code.
@@ -274,4 +394,7 @@ export {
   findMediaReferences,
   UNCHECKABLE_REFERENCE_AREAS,
 } from "@/lib/repositories/media-references";
-export type { MediaReference } from "@/lib/repositories/media-references";
+export type {
+  MediaReference,
+  MediaReferenceTarget,
+} from "@/lib/repositories/media-references";

@@ -10,10 +10,19 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { uploadMediaAction } from "@/lib/admin/actions/media";
-import { MAX_UPLOAD_BYTES } from "@/lib/admin/image-sniff";
+import {
+  registerDirectUploadAction,
+  uploadMediaAction,
+} from "@/lib/admin/actions/media";
 import { ADMIN_SHELL_DIR } from "@/lib/admin/sections";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import {
+  DIRECT_UPLOAD_THRESHOLD_BYTES,
+  IMAGE_MAX_BYTES,
+  VIDEO_MAX_BYTES,
+} from "@/lib/media/limits";
+import { uploadDirectToStorage } from "@/lib/media/storage/client";
+import { buildStorageKey } from "@/lib/media/validation";
 import { Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
@@ -36,7 +45,26 @@ import { toast } from "sonner";
  */
 
 /** The types the shared validator accepts; also the file picker's filter. */
-const ACCEPT = "image/jpeg,image/png,image/webp,image/avif";
+const ACCEPT =
+  "image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm";
+
+/** True when the file is (claimed to be) a video. */
+const isVideoFile = (file: File) => file.type.startsWith("video/");
+
+/**
+ * The ceiling for a file, chosen by its claimed kind.
+ *
+ * Only a UX guard: the server re-checks the real byte length, and on the direct
+ * path the PROVIDER enforces the limit on the wire.
+ */
+const maxBytesFor = (file: File) =>
+  isVideoFile(file) ? VIDEO_MAX_BYTES : IMAGE_MAX_BYTES;
+
+/** The lowercase extension of a filename, without the dot. */
+function extensionOf(name: string): string {
+  const dot = name.lastIndexOf(".");
+  return dot === -1 ? "" : name.slice(dot + 1).toLowerCase();
+}
 
 /** Mirrors `TEXT_MAX` in lib/admin/schemas/common.ts, the server's own cap. */
 const METADATA_MAX = 2000;
@@ -57,12 +85,20 @@ export function MediaUploadDialog({
   const [title, setTitle] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
   const [pending, setPending] = React.useState(false);
+  /** 0–100 while the browser is transferring bytes directly to the provider. */
+  const [progress, setProgress] = React.useState<number | null>(null);
+  /** Which step of the large-file flow is running, for honest feedback. */
+  const [phase, setPhase] = React.useState<"idle" | "uploading" | "saving">(
+    "idle",
+  );
 
   const reset = React.useCallback(() => {
     setFile(null);
     setAlt("");
     setTitle("");
     setError(null);
+    setProgress(null);
+    setPhase("idle");
     if (inputRef.current) inputRef.current.value = "";
   }, []);
 
@@ -83,8 +119,9 @@ export function MediaUploadDialog({
 
       // Cheap client-side gate so an obviously oversized file never leaves the
       // browser. This is NOT the security boundary — the server re-checks the
-      // byte length (and sniffs the content type) regardless.
-      if (picked.size > MAX_UPLOAD_BYTES) {
+      // byte length (and sniffs the content type) regardless, and on the direct
+      // path the provider enforces the ceiling on the wire.
+      if (picked.size > maxBytesFor(picked)) {
         setFile(null);
         setError(t("admin.error.tooLarge"));
         if (inputRef.current) inputRef.current.value = "";
@@ -106,7 +143,66 @@ export function MediaUploadDialog({
 
     setPending(true);
     setError(null);
+
+    /**
+     * TWO PATHS, ONE DECISION.
+     *
+     * Small images keep the existing Server Action flow, unchanged. Anything
+     * large — and every video — goes straight from the browser to the provider,
+     * because a Server Action buffers the whole payload in memory on the Next
+     * server, which is exactly the bottleneck this pass exists to remove.
+     *
+     * The switch is a SIZE, not a type: a 5 MB image still travels the old way,
+     * and a video is not worth a second code path just because it is small.
+     */
+    const useDirectUpload =
+      isVideoFile(file) || file.size > DIRECT_UPLOAD_THRESHOLD_BYTES;
+
     try {
+      if (useDirectUpload) {
+        // Step 1 — the browser transfers the bytes itself. Progress comes from
+        // the provider's own callback, so the admin sees a real percentage
+        // rather than an indeterminate spinner.
+        setPhase("uploading");
+        setProgress(0);
+
+        const uploaded = await uploadDirectToStorage({
+          key: buildStorageKey({
+            folder: "library",
+            baseName: file.name,
+            extension: extensionOf(file.name),
+          }),
+          file,
+          onProgress: setProgress,
+        });
+
+        // Step 2 — an authorised action turns the object into a Media row.
+        // Re-authorised independently: the token that allowed the upload came
+        // from a different route, so this one cannot assume it.
+        setPhase("saving");
+        const registered = await registerDirectUploadAction({
+          filename: file.name,
+          url: uploaded.url,
+          pathname: uploaded.pathname,
+          size: uploaded.size,
+        });
+
+        if (registered.ok) {
+          toast.success(t("admin.upload.done"));
+          reset();
+          onOpenChange(false);
+          router.refresh();
+          return;
+        }
+
+        const directCode =
+          registered.issues[0]?.code ?? registered.formError;
+        setError(t(`admin.error.${directCode}`));
+        toast.error(t(`admin.error.${directCode}`));
+        return;
+      }
+
+      // Small-file path: unchanged.
       const payload = new FormData();
       payload.set("file", file);
       payload.set("alt", alt);
@@ -138,6 +234,10 @@ export function MediaUploadDialog({
       toast.error(t("admin.error.unknown"));
     } finally {
       setPending(false);
+      // Progress only ever describes the run that just finished; leaving it set
+      // would show a stale bar next to a fresh file picker.
+      setPhase("idle");
+      setProgress(null);
     }
   };
 
@@ -219,6 +319,41 @@ export function MediaUploadDialog({
               onChange={(event) => setTitle(event.target.value)}
             />
           </div>
+
+          {/*
+            Honest progress for the large-file flow. The admin is told which
+            step is running — a 200 MB transfer followed by a silent pause while
+            the row is written would look like a hang.
+          */}
+          {phase !== "idle" ? (
+            <div className="space-y-1.5" aria-live="polite">
+              <p className="text-muted-foreground text-xs">
+                {phase === "uploading"
+                  ? `${t("admin.media.uploading")}${
+                      progress === null ? "" : ` ${Math.round(progress)}%`
+                    }`
+                  : t("admin.media.uploadSaving")}
+              </p>
+              <div
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={
+                  phase === "saving" ? 100 : Math.round(progress ?? 0)
+                }
+                className="bg-muted h-1.5 w-full overflow-hidden rounded-full"
+              >
+                <div
+                  className="bg-primary h-full rounded-full transition-[width] duration-200"
+                  style={{
+                    width: `${
+                      phase === "saving" ? 100 : Math.round(progress ?? 0)
+                    }%`,
+                  }}
+                />
+              </div>
+            </div>
+          ) : null}
 
           {error ? (
             <p role="alert" className="text-destructive text-xs">

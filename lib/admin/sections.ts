@@ -45,6 +45,10 @@ export const ADMIN_CATALOG_NAV: readonly AdminNavItem[] = [
   // (myPlan.md Part D), so they are configuration sections like the homepage.
   { href: "/admin/about", labelKey: "admin.nav.about" },
   { href: "/admin/s34", labelKey: "admin.nav.s34" },
+  // Global site configuration (Pass 13.5D): brand assets, contact details and
+  // social links. It sits with the other configuration sections rather than
+  // with the catalog tables, because it has no rows of its own.
+  { href: "/admin/settings", labelKey: "admin.nav.settings" },
   // Orders are a commercial section rather than catalog content, but they sit
   // with the rest of the operational tables: every admin-level role views them
   // and moves their fulfillment status (payment status is never editable here —

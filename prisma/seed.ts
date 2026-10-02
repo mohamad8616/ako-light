@@ -650,6 +650,58 @@ async function main(): Promise<void> {
   await seedAboutPageSections();
   await seedS34PageSections();
 
+  // --- Site settings & social links (Pass 13.5D) ---------------------------
+  //
+  // Idempotent by construction: the settings row is a fixed-id singleton, and
+  // each link is matched on its platform key before being written, so running
+  // the seed twice cannot duplicate the footer.
+  //
+  // Brand assets (logo/favicon) are deliberately left NULL: they are Media
+  // relationships and there is no sensible image to invent. The site falls back
+  // to the text wordmark and the built-in favicon, and an admin picks real ones
+  // in /admin/settings.
+  await prisma.siteSettings.upsert({
+    where: { id: "singleton" },
+    create: {
+      id: "singleton",
+      siteName: asJson(loc("Home Form", "هوم فرم")),
+      siteDescription: asJson(
+        loc(
+          "Contemporary lighting and furniture for considered interiors.",
+          "روشنایی و مبلمان معاصر برای فضاهای سنجیده.",
+        ),
+      ),
+      phone: null,
+      email: null,
+      // `DbNull`, not a bare null: the column is nullable jsonb, and Prisma
+      // distinguishes "SQL NULL" from "the JSON value null".
+      address: Prisma.DbNull,
+    },
+    update: {},
+  });
+
+  const seededSocialLinks = [
+    { platform: "instagram", label: "Instagram", url: "https://instagram.com/" },
+    { platform: "telegram", label: "Telegram", url: "https://t.me/" },
+    { platform: "whatsapp", label: "WhatsApp", url: "https://wa.me/" },
+  ];
+
+  for (const [index, link] of seededSocialLinks.entries()) {
+    const existing = await prisma.socialLink.findFirst({
+      where: { platform: link.platform },
+    });
+    if (existing) {
+      await prisma.socialLink.update({
+        where: { id: existing.id },
+        data: { label: link.label, url: link.url, sortOrder: index },
+      });
+    } else {
+      await prisma.socialLink.create({
+        data: { ...link, sortOrder: index, isActive: true },
+      });
+    }
+  }
+
   const counts: [string, () => Promise<number>][] = [
     ["product_category", () => prisma.productCategory.count()],
     ["designer", () => prisma.designer.count()],
@@ -669,6 +721,8 @@ async function main(): Promise<void> {
     ["catalogue_feature", () => prisma.catalogueFeature.count()],
     ["about_page_section", () => prisma.aboutPageSection.count()],
     ["s34_page_section", () => prisma.s34PageSection.count()],
+    ["site_settings", () => prisma.siteSettings.count()],
+    ["social_link", () => prisma.socialLink.count()],
   ];
 
   console.log("\n=== Catalog seed summary ===");

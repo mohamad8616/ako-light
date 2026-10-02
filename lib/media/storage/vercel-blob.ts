@@ -10,8 +10,10 @@
  * here.
  */
 import { del, put } from "@vercel/blob";
+import { handleUpload } from "@vercel/blob/client";
 import {
   StorageNotConfiguredError,
+  type ClientUploadConstraints,
   type StorageProvider,
   type StoredObject,
   type UploadObjectInput,
@@ -72,6 +74,56 @@ export const vercelBlobStorage: StorageProvider = {
     // entry is unknown, so callers treat a throw here as best-effort (see
     // lib/media/service.ts) rather than as a failed operation.
     await del(targets, { token });
+  },
+
+  supportsClientUpload: true,
+
+  /**
+   * Issues a short-lived client token so the BROWSER can write to Blob directly.
+   *
+   * This is the whole point of Pass 13.5E: a 200 MB video must never be
+   * buffered by the Next server, which is what a Server Action upload would do.
+   * `handleUpload` mints a token scoped to ONE pathname, with the content types
+   * and the byte ceiling baked in — so the provider itself enforces the limits
+   * on the wire, and nothing the browser claims afterwards can widen them.
+   *
+   * The read-write token is read here and never leaves this module: the response
+   * carries only the scoped client token.
+   *
+   * `onUploadCompleted` is intentionally a no-op. The Media row is created by an
+   * authorised server action once the browser reports success, because Vercel
+   * only invokes this callback from a PUBLICLY REACHABLE deployment — it never
+   * fires on localhost, so relying on it would mean the feature silently does
+   * nothing in development. Registering in both places would create duplicate
+   * rows; the orphan sweeper (scripts/media-orphans.ts) covers the gap this
+   * leaves.
+   */
+  async authorizeClientUpload({
+    body,
+    request,
+    constraints,
+  }: {
+    body: unknown;
+    request: Request;
+    constraints: ClientUploadConstraints;
+  }): Promise<unknown> {
+    const token = readBlobToken();
+    if (!token) throw new StorageNotConfiguredError();
+
+    return handleUpload({
+      body: body as Parameters<typeof handleUpload>[0]["body"],
+      request,
+      onBeforeGenerateToken: async () => ({
+        allowedContentTypes: [...constraints.allowedContentTypes],
+        maximumSizeInBytes: constraints.maximumSizeInBytes,
+        addRandomSuffix: true,
+        token,
+      }),
+      onUploadCompleted: async () => {
+        // See the note above: registration is client-triggered so that local
+        // development behaves exactly like production.
+      },
+    });
   },
 
   getUrl(): string | null {

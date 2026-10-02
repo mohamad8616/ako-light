@@ -9,6 +9,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import type { MediaLibraryItem } from "@/lib/media/library";
+import { Play } from "lucide-react";
 import Image from "next/image";
 
 /**
@@ -53,16 +54,51 @@ export function MediaCard({
     <div className="relative">
       <figure className="border-border bg-card overflow-hidden rounded-lg border">
         <div className="bg-muted relative aspect-square overflow-hidden">
-          <Image
-            src={item.url}
-            alt={altText}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 16vw"
-            className="object-cover"
-          />
+          {item.mediaType === "video" ? (
+            /*
+             * A video tile renders the VIDEO itself rather than a poster image.
+             * `preload="metadata"` makes the browser fetch just enough to paint
+             * the first frame, which gives a real preview with no transcoding,
+             * no poster generation and no extra dependency — the plan puts
+             * encoding and streaming explicitly out of scope.
+             *
+             * `muted` + `playsInline` keep it inert: this is a still preview,
+             * not a player. The controls live behind the details panel.
+             */
+            <video
+              src={item.url}
+              className="absolute inset-0 h-full w-full object-cover"
+              muted
+              playsInline
+              preload="metadata"
+              aria-label={altText}
+            />
+          ) : (
+            <Image
+              src={item.url}
+              alt={altText}
+              fill
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 16vw"
+              className="object-cover"
+            />
+          )}
+
           <Badge variant="secondary" className="absolute start-2 top-2 shadow-sm">
             {kindLabel}
           </Badge>
+
+          {item.mediaType === "video" ? (
+            // A play glyph so a video tile is distinguishable at a glance even
+            // when its first frame looks like a photograph.
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 flex items-center justify-center"
+            >
+              <span className="bg-background/70 text-foreground flex size-8 items-center justify-center rounded-full backdrop-blur-sm">
+                <Play className="size-3.5 translate-x-px fill-current" />
+              </span>
+            </span>
+          ) : null}
         </div>
 
         <figcaption className="space-y-1 p-2">

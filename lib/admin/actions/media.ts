@@ -32,11 +32,15 @@ import {
 } from "@/lib/admin/result";
 import { toActionResult } from "@/lib/admin/result-server";
 import {
+  directUploadRegistrationSchema,
   mediaMetadataFormSchema,
+  type DirectUploadRegistrationInput,
   type MediaMetadataFormInput,
 } from "@/lib/admin/schemas/media";
 import {
+  listMediaPage,
   MediaError,
+  registerUploadedMedia,
   removeMedia,
   updateMediaInfo,
   uploadMedia,
@@ -69,6 +73,7 @@ function mediaErrorToAdminCode(code: MediaErrorCode): AdminErrorCode {
     case "required":
     case "tooLarge":
     case "notImage":
+    case "unsupportedType":
     case "notFound":
     case "inUse":
       return code;
@@ -128,6 +133,94 @@ export async function uploadMediaAction(
       alt: meta.data.alt,
       title: meta.data.title,
     });
+    revalidateCatalog("media", { id: row.id });
+    return actionOk({ id: row.id, url: row.url });
+  } catch (error) {
+    return toMediaActionResult(error);
+  }
+}
+
+/** One tile in the picker dialog — only what a chooser needs. */
+export interface MediaPickerItem {
+  id: string;
+  url: string;
+  filename: string;
+  alt: string | null;
+  title: string | null;
+}
+
+/** Page size for the picker dialog; smaller than the library grid on purpose. */
+const PICKER_PAGE_SIZE = 24;
+
+/**
+ * Lists media for the reusable picker (Pass 13.5D).
+ *
+ * Deliberately a thin authorised wrapper over the SAME `listMediaPage` the
+ * library grid uses: the picker must never grow its own media query, or the two
+ * would drift and the picker would show a different set of files than
+ * /admin/media.
+ *
+ * Search and paging happen in the database, exactly as in the library — the
+ * dialog is handed one page, never the whole table.
+ */
+export async function listMediaForPickerAction(input: {
+  search?: string;
+  page?: number;
+}): Promise<ActionResult<{ items: MediaPickerItem[]; total: number; page: number }>> {
+  await requireAdminAccess();
+
+  const page = Math.max(1, Math.floor(input.page ?? 1));
+  const search = input.search?.trim() || undefined;
+
+  try {
+    const { rows, total } = await listMediaPage({
+      search,
+      sort: "newest",
+      limit: PICKER_PAGE_SIZE,
+      offset: (page - 1) * PICKER_PAGE_SIZE,
+    });
+
+    return actionOk({
+      items: rows.map((row) => ({
+        id: row.id,
+        url: row.url,
+        filename: row.filename,
+        alt: row.alt,
+        title: row.title,
+      })),
+      total,
+      page,
+    });
+  } catch (error) {
+    return toMediaActionResult(error);
+  }
+}
+
+/**
+ * Registers an object the BROWSER uploaded directly (Pass 13.5E).
+ *
+ * The second half of the large-file flow: the bytes went straight from the
+ * browser to the provider, and this creates the `Media` row that makes the file
+ * visible in the library.
+ *
+ * Authorised independently, like every other entry point — the token that
+ * permitted the upload was issued by a different route, so this one cannot
+ * assume it. The client's report of url/pathname/size is then re-validated in
+ * `registerUploadedMedia`, which derives the kind and MIME from the pathname
+ * rather than trusting the browser's `contentType`.
+ */
+export async function registerDirectUploadAction(
+  input: DirectUploadRegistrationInput,
+): Promise<ActionResult<MediaUploadResult>> {
+  await requireAdminAccess();
+
+  const parsed = directUploadRegistrationSchema.safeParse(input);
+  if (!parsed.success) {
+    return actionFail("invalid", zodIssuesToFieldIssues(parsed.error));
+  }
+
+  try {
+    const row = await registerUploadedMedia(parsed.data);
     revalidateCatalog("media", { id: row.id });
     return actionOk({ id: row.id, url: row.url });
   } catch (error) {

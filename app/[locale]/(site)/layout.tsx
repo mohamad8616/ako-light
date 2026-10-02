@@ -5,6 +5,10 @@ import PageLoader from "@/components/ui/PageLoader";
 import PageTransition from "@/components/ui/PageTransition";
 import Preloader from "@/components/ui/Preloader";
 import { getNavCategories } from "@/lib/repositories/product-categories";
+import {
+  getActiveSocialLinks,
+  getSiteSettings,
+} from "@/lib/repositories/site-settings";
 
 /**
  * Public site chrome.
@@ -23,16 +27,35 @@ export default async function SiteLayout({
   // eager-loads EVERY product with its images, and because Navbar is a client
   // component the whole catalog would be serialized into this layout's payload
   // on every public page. See getNavCategories().
-  const navCategories = await getNavCategories();
+  // Site settings and social links are read HERE, once, and passed down —
+  // rather than each chrome component querying for itself. All three reads are
+  // React-`cache()`d, so `generateMetadata` in the parent layout shares the
+  // same settings query instead of issuing a second one.
+  //
+  // Only the ACTIVE links are fetched: the public site has no use for a hidden
+  // one, and `getActiveSocialLinks` is the reader that encodes that rule.
+  const [navCategories, settings, socialLinks] = await Promise.all([
+    getNavCategories(),
+    getSiteSettings(),
+    getActiveSocialLinks(),
+  ]);
 
   return (
     <>
-      <Navbar categories={navCategories} />
+      <Navbar categories={navCategories} logoUrl={settings?.logoUrl ?? null} />
       <PageLoader />
       <Preloader />
       <PageTransition>{children}</PageTransition>
       <NewsletterSectionWrapper />
-      <Footer />
+      <Footer
+        logoUrl={settings?.logoUrl ?? null}
+        socialLinks={socialLinks.map((link) => ({
+          key: link.id,
+          label: link.label,
+          href: link.url,
+          icon: link.platform,
+        }))}
+      />
     </>
   );
 }

@@ -16,11 +16,30 @@ import {
   safeBaseName,
   sniffImageType,
 } from "@/lib/admin/image-sniff";
+import { IMAGE_MAX_BYTES, VIDEO_MAX_BYTES } from "@/lib/media/limits";
+import {
+  VIDEO_EXTENSIONS,
+  isSupportedVideoType,
+  sniffVideoType,
+} from "@/lib/media/video-sniff";
 
-export { MAX_UPLOAD_BYTES };
+export { MAX_UPLOAD_BYTES, IMAGE_MAX_BYTES, VIDEO_MAX_BYTES };
 
-/** Why a candidate upload was rejected — 1:1 with the admin error dictionary. */
-export type MediaValidationCode = "required" | "tooLarge" | "notImage";
+/**
+ * Why a candidate upload was rejected — 1:1 with the admin error dictionary.
+ *
+ * `unsupportedType` exists because `notImage` would be a lie for a rejected
+ * video: the message it renders is "not a supported image", and telling an admin
+ * that about their `.mov` file sends them looking for the wrong problem.
+ */
+export type MediaValidationCode =
+  | "required"
+  | "tooLarge"
+  | "notImage"
+  | "unsupportedType";
+
+/** The two kinds of asset the library stores. Mirrors the `MediaType` enum. */
+export type MediaKind = "image" | "video";
 
 /** A file that passed every check, described in the terms the service needs. */
 export interface ValidatedImage {
@@ -38,13 +57,30 @@ export type ImageValidationResult =
   | { ok: true; value: ValidatedImage }
   | { ok: false; code: MediaValidationCode };
 
-/** The image extensions the shared allow-list permits, as a lookup set. */
-const ALLOWED_EXTENSIONS: ReadonlySet<string> = new Set(
-  Object.values(IMAGE_EXTENSIONS),
-);
+/** A validated image or video, described in the terms the service needs. */
+export interface ValidatedMedia extends ValidatedImage {
+  /** Which kind was detected — this is what the `Media` row is created with. */
+  mediaType: MediaKind;
+}
 
-/** A trailing image extension on an already-sanitized base name. */
-const IMAGE_EXTENSION_SUFFIX = /\.(jpe?g|png|webp|avif)$/;
+export type MediaValidationResult =
+  | { ok: true; value: ValidatedMedia }
+  | { ok: false; code: MediaValidationCode };
+
+/**
+ * Every extension the storage-key builder may emit: images AND videos.
+ *
+ * The two allow-lists stay separate (they are validated by different sniffers),
+ * but a key is just a pathname, so one union is enough to keep `safeExtension`
+ * from degrading a legitimate `.mp4` to `.bin`.
+ */
+const ALLOWED_EXTENSIONS: ReadonlySet<string> = new Set([
+  ...Object.values(IMAGE_EXTENSIONS),
+  ...Object.values(VIDEO_EXTENSIONS),
+]);
+
+/** A trailing media extension on an already-sanitized base name. */
+const MEDIA_EXTENSION_SUFFIX = /\.(jpe?g|png|webp|avif|mp4|webm)$/;
 
 /**
  * Validates an image upload against the shared rules, in the same order the
@@ -84,9 +120,78 @@ export function validateImageUpload(input: {
   };
 }
 
-/** Drops a trailing image extension from an already-sanitized base name. */
+/**
+ * Validates an image OR video upload and reports which kind it is.
+ *
+ * The image path is tried FIRST and unchanged, so an AVIF (which shares the
+ * ISO-BMFF `ftyp` container with MP4) can never be claimed as a video. The
+ * declared type is only ever a cheap first filter on either branch — the bytes
+ * decide.
+ *
+ * `size` is taken from the byte length, never from a client-supplied number, so
+ * a caller cannot understate a file's size to slip past the ceiling.
+ */
+export function validateMediaUpload(input: {
+  filename: string;
+  declaredMimeType: string;
+  bytes: ArrayBuffer;
+}): MediaValidationResult {
+  const size = input.bytes.byteLength;
+  if (size === 0) return { ok: false, code: "required" };
+
+  // --- Image branch: the existing, unchanged rules. ---
+  if (input.declaredMimeType in IMAGE_EXTENSIONS) {
+    if (size > IMAGE_MAX_BYTES) return { ok: false, code: "tooLarge" };
+
+    const sniffed = sniffImageType(new Uint8Array(input.bytes));
+    if (!sniffed || !(sniffed in IMAGE_EXTENSIONS)) {
+      return { ok: false, code: "notImage" };
+    }
+
+    return {
+      ok: true,
+      value: {
+        mimeType: sniffed,
+        extension: IMAGE_EXTENSIONS[sniffed],
+        size,
+        baseName: stripImageExtension(safeBaseName(input.filename)),
+        mediaType: "image",
+      },
+    };
+  }
+
+  // --- Video branch. ---
+  if (isSupportedVideoType(input.declaredMimeType)) {
+    if (size > VIDEO_MAX_BYTES) return { ok: false, code: "tooLarge" };
+
+    const sniffed = sniffVideoType(new Uint8Array(input.bytes));
+    if (!sniffed || !(sniffed in VIDEO_EXTENSIONS)) {
+      // A file claiming to be a video whose bytes are not one. `unsupportedType`
+      // rather than `notImage`: the admin uploaded a video, and the useful
+      // message is "this type is not supported", not "this is not an image".
+      return { ok: false, code: "unsupportedType" };
+    }
+
+    return {
+      ok: true,
+      value: {
+        mimeType: sniffed,
+        extension: VIDEO_EXTENSIONS[sniffed],
+        size,
+        baseName: stripImageExtension(safeBaseName(input.filename)),
+        mediaType: "video",
+      },
+    };
+  }
+
+  // Anything else (a `.mov`, a PDF, an executable) is refused on the declared
+  // type alone — no need to read the bytes to say "we do not accept this".
+  return { ok: false, code: "unsupportedType" };
+}
+
+/** Drops a trailing media extension from an already-sanitized base name. */
 function stripImageExtension(name: string): string {
-  const stripped = name.replace(IMAGE_EXTENSION_SUFFIX, "");
+  const stripped = name.replace(MEDIA_EXTENSION_SUFFIX, "");
   // `"photo.jpg"` -> `"photo"`, but a bare `".jpg"`-style name must not become
   // an empty segment — fall back to the sniffer's own neutral default.
   return stripped.length > 0 ? stripped : "image";

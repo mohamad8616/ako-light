@@ -97,6 +97,29 @@ const PUBLIC_ROUTES: Record<AdminSection, readonly string[]> = {
  * update action wraps its repository write in `updateWithSlugHistory`, which is
  * what records a retired slug and keeps the entity update atomic with it.
  */
+/**
+ * Expires everything a site-settings change affects (Pass 13.5D).
+ *
+ * Settings are NOT a catalog section: the logo, favicon and social links render
+ * in the navbar and footer of EVERY public page. Revalidating one route would
+ * leave the rest showing the old branding, so the whole `(site)` LAYOUT is
+ * expired instead — `revalidatePath(..., "layout")` invalidates every page
+ * beneath it in one call, which is both correct and cheaper than enumerating
+ * them.
+ *
+ * This is deliberately separate from {@link revalidateCatalog}: that function's
+ * `PUBLIC_ROUTES` table maps one section to the routes that render its rows,
+ * and no such mapping exists for a value that appears everywhere.
+ */
+export function revalidateSiteSettings(): void {
+  revalidatePath("/[locale]/(admin)/admin/settings", "page");
+  // The overview reads the same settings (it shows the brand name), so keep it
+  // honest too.
+  revalidatePath("/[locale]/(admin)/admin", "page");
+  revalidatePath("/[locale]/(site)", "layout");
+  refresh();
+}
+
 export function revalidateCatalog(
   section: AdminSection,
   options: { id?: string } = {},

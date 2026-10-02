@@ -19,6 +19,12 @@ export type AdminErrorCode =
   | "tooLarge"
   /** An uploaded file is not a real image of a supported type. */
   | "notImage"
+  /**
+   * The file's kind is not one this app accepts at all (a `.mov`, a PDF, an
+   * executable). Distinct from `notImage`, which would misdescribe a rejected
+   * video.
+   */
+  | "unsupportedType"
   | "slugTaken"
   | "notFound"
   /**
@@ -100,6 +106,7 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
       invalid: 0,
       tooLarge: 0,
       notImage: 0,
+      unsupportedType: 0,
       slugTaken: 0,
       notFound: 0,
       inUse: 0,

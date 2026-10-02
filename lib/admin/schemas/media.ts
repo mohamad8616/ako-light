@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TEXT_MAX } from "./common";
+import { TEXT_MAX, URL_MAX, linkSchema } from "./common";
 
 /**
  * The media metadata form's rules (mirrors `UpdateMediaMetadataInput`).
@@ -36,6 +36,26 @@ export const mediaMetadataFormSchema = z.object({
   /** Admin-facing label. */
   title: clearableTextSchema,
 });
+
+/**
+ * What the browser reports after a DIRECT upload (Pass 13.5E).
+ *
+ * Shape only. The authoritative checks — that the pathname is inside our
+ * namespace, that its extension maps to a supported kind, and that the size fits
+ * that kind's ceiling — are re-derived server-side in `registerUploadedMedia`,
+ * because none of these values can be trusted just because they validated.
+ */
+export const directUploadRegistrationSchema = z.object({
+  filename: z.string().min(1).max(TEXT_MAX),
+  url: linkSchema,
+  /** The provider key actually written (`blob.pathname`). */
+  pathname: z.string().min(1).max(URL_MAX),
+  size: z.number().int().positive(),
+});
+
+export type DirectUploadRegistrationInput = z.infer<
+  typeof directUploadRegistrationSchema
+>;
 
 /** What a caller submits — blank strings not yet normalised. */
 export type MediaMetadataFormInput = z.input<typeof mediaMetadataFormSchema>;

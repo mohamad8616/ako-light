@@ -25,6 +25,7 @@ import {
   productFormSchema,
   type ProductFormValues,
 } from "@/lib/admin/schemas/product";
+import { findMediaIdsByUrl } from "@/lib/repositories/media";
 import {
   createProduct,
   deleteProduct,
@@ -63,6 +64,39 @@ function productImageUrls(values: {
   ];
 }
 
+/**
+ * Attaches the Media RELATIONSHIP to a validated product payload (Pass 13.5C).
+ *
+ * The form still submits plain URL strings — that contract is deliberately
+ * unchanged, because rewriting a dozen zod schemas and forms would be a large,
+ * risky change for no user-visible gain. So the server looks the URLs up
+ * against the media library and stores the real `mediaId` FKs alongside them.
+ *
+ * A URL the library does not own (every seeded row today — they are all
+ * external) resolves to `null`, which is the correct answer: there is no
+ * relationship to record, and the legacy column still renders.
+ *
+ * This runs OUTSIDE the write transaction on purpose: it is a read, and keeping
+ * it out shortens the window in which rows are locked.
+ */
+async function withMediaLinks(values: ProductFormValues) {
+  const mediaIds = await findMediaIdsByUrl([
+    values.heroImage,
+    values.hoverImage,
+    ...values.images.map((image) => image.url),
+  ]);
+
+  return {
+    ...values,
+    heroMediaId: mediaIds.get(values.heroImage) ?? null,
+    hoverMediaId: mediaIds.get(values.hoverImage) ?? null,
+    images: values.images.map((image) => ({
+      ...image,
+      mediaId: mediaIds.get(image.url) ?? null,
+    })),
+  };
+}
+
 /** Creates a product (images included) and returns its new id. */
 export async function createProductAction(
   input: ProductFormValues,
@@ -76,7 +110,7 @@ export async function createProductAction(
   }
 
   try {
-    const id = await createProduct(parsed.data, db);
+    const id = await createProduct(await withMediaLinks(parsed.data), db);
     revalidateCatalog("products", { id });
     return actionOk(id);
   } catch (error) {
@@ -103,11 +137,14 @@ export async function updateProductAction(
     const previous = await getProductAdminDetail(id);
     const beforeUrls = previous ? productImageUrls(previous) : [];
 
+    // Resolve the Media links once, before the transaction opens.
+    const input = await withMediaLinks(parsed.data);
+
     await updateWithSlugHistory(
       "product",
       id,
       parsed.data.slug,
-      (tx) => updateProduct(id, parsed.data, tx),
+      (tx) => updateProduct(id, input, tx),
       { db },
     );
 

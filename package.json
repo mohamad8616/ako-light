@@ -11,6 +11,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:clean-fixtures": "tsx scripts/clean-leaked-test-fixtures.ts",
+    "media:orphans": "tsx scripts/media-orphans.ts",
     "postinstall": "prisma generate --config prisma7.config.ts && prisma skills sync || exit 0"
   },
   "dependencies": {

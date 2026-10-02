@@ -32,6 +32,7 @@ import {
   Image01Icon,
   Package01Icon,
   ShirtIcon,
+  Settings01Icon,
   SparklesIcon,
   SwatchIcon,
   UserGroupIcon,
@@ -63,6 +64,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   "/admin/fabrics": <HugeiconsIcon icon={ShirtIcon} strokeWidth={2} />,
   "/admin/catalogue": <HugeiconsIcon icon={Book01Icon} strokeWidth={2} />,
   "/admin/media": <HugeiconsIcon icon={Image01Icon} strokeWidth={2} />,
+  "/admin/settings": <HugeiconsIcon icon={Settings01Icon} strokeWidth={2} />,
   "/admin/admins": <HugeiconsIcon icon={UserShield01Icon} strokeWidth={2} />,
 }
 

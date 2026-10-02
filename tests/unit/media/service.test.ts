@@ -193,10 +193,17 @@ describe("removeMedia", () => {
     expect(provider.delete).toHaveBeenCalledWith([STORED_KEY]);
   });
 
-  it("checks references against the row's URL before deleting anything", async () => {
+  it("checks references by BOTH id and url before deleting anything", async () => {
     await removeMedia("m1");
 
-    expect(references.findMediaReferences).toHaveBeenCalledWith(STORED_URL);
+    // Pass 13.5C: the id covers the real foreign keys (product.heroMediaId,
+    // productImage.mediaId, siteSettings.logoMediaId, …) and the url covers the
+    // legacy columns that predate them. Passing only one would leave a whole
+    // probe family unrun — which is how a referenced asset gets deleted.
+    expect(references.findMediaReferences).toHaveBeenCalledWith({
+      id: "m1",
+      url: STORED_URL,
+    });
   });
 
   it("refuses to delete a REFERENCED asset, touching neither the row nor the object", async () => {

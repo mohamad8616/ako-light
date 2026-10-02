@@ -283,3 +283,39 @@ export async function deleteMedia(
 ): Promise<MediaRow> {
   return db.media.delete({ where: { id } });
 }
+
+/**
+ * Maps image URLs to the `Media` rows that own them (Pass 13.5C).
+ *
+ * WHY THIS EXISTS INSTEAD OF A FORM FIELD. Every admin image field is a plain
+ * URL string, and that contract is deliberately unchanged — adding a `mediaId`
+ * input to a dozen zod schemas and a dozen forms would have been a large, risky
+ * change for no user-visible gain. Instead the SERVER resolves the relationship
+ * from the URL that was submitted, so the database link is a real `mediaId` FK
+ * while the form keeps editing a URL exactly as it always did.
+ *
+ * The url is only a LOOKUP KEY here, never the stored relationship.
+ *
+ * `Media.url` has no unique constraint, so two rows sharing one URL would
+ * resolve ambiguously. Ascending `createdAt` plus last-write-wins keeps the
+ * OLDEST match, which is the more stable choice. In practice URLs are unique:
+ * every upload gets its own key.
+ */
+export async function findMediaIdsByUrl(
+  urls: readonly (string | null | undefined)[],
+): Promise<Map<string, string>> {
+  const unique = [
+    ...new Set(urls.filter((url): url is string => Boolean(url))),
+  ];
+  if (unique.length === 0) return new Map();
+
+  const rows = await prisma.media.findMany({
+    where: { url: { in: unique } },
+    select: { id: true, url: true },
+    orderBy: { createdAt: "asc" },
+  });
+
+  const byUrl = new Map<string, string>();
+  for (const row of rows) byUrl.set(row.url, row.id);
+  return byUrl;
+}

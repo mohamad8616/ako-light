@@ -14,6 +14,7 @@ export const adminEn = {
   "admin.nav.homepage": "Homepage",
   "admin.nav.about": "About page",
   "admin.nav.s34": "S34 page",
+  "admin.nav.settings": "Site settings",
   "admin.nav.admins": "Admins",
   "admin.nav.orders": "Orders",
   "admin.section.products.description":
@@ -35,6 +36,8 @@ export const adminEn = {
     "Configure the homepage banners and the content they display.",
   "admin.section.about.description": "Edit the About page section content.",
   "admin.section.s34.description": "Edit the S34 page section content.",
+  "admin.section.settings.description":
+    "Global branding, contact details and footer social links.",
   "admin.section.orders.description":
     "View and manage customer orders and fulfillment.",
   "admin.section.flagships.description":
@@ -240,6 +243,7 @@ export const adminEn = {
 
   // Image upload (components/admin/ImageUpload.tsx + actions/upload.ts)
   "admin.upload.pick": "Upload image",
+  "admin.upload.fromLibrary": "Select from library",
   "admin.upload.remove": "Remove",
   "admin.upload.uploading": "Uploading…",
   "admin.upload.done": "Image uploaded",
@@ -265,7 +269,9 @@ export const adminEn = {
     "Images are validated and stored in the shared media library.",
   "admin.media.uploadPick": "Choose a file",
   "admin.media.uploadChange": "Choose another file",
-  "admin.media.uploadHint": "JPEG, PNG, WebP or AVIF · up to 5 MB",
+  "admin.media.uploadHint": "JPEG, PNG, WebP, AVIF, MP4 or WebM",
+  "admin.media.uploading": "Uploading…",
+  "admin.media.uploadSaving": "Saving metadata…",
   "admin.media.uploadSubmit": "Upload",
   "admin.media.uploadCancel": "Cancel",
   "admin.media.uploadNoFile": "Choose a file to upload.",
@@ -295,6 +301,42 @@ export const adminEn = {
   "admin.media.info.url": "Public URL",
   "admin.media.deleteTitle": "Delete media?",
   "admin.media.deleteDescription": "This action cannot be undone.",
+
+  // Site settings (app/[locale]/(admin)/admin/settings)
+  "admin.settings.branding": "Branding",
+  "admin.settings.contact": "Contact information",
+  "admin.settings.social": "Social links",
+  "admin.settings.socialHint":
+    "Only active links appear in the footer. Order controls display position.",
+  "admin.settings.socialEmpty": "No social links yet.",
+  "admin.settings.socialAdd": "Add a link",
+  "admin.settings.socialPlatform": "Platform key",
+  "admin.settings.socialLabel": "Label",
+  "admin.settings.socialUrl": "URL",
+  "admin.settings.socialActive": "Visible in the footer",
+  "admin.settings.socialEnabled": "Link shown",
+  "admin.settings.socialDisabled": "Link hidden",
+  "admin.settings.field.logo": "Logo",
+  "admin.settings.field.logoHint": "Shown in the navbar and footer.",
+  "admin.settings.field.logoFallback":
+    "No custom logo — the site name is shown as text.",
+  "admin.settings.field.favicon": "Favicon",
+  "admin.settings.field.faviconHint": "Shown in the browser tab.",
+  "admin.settings.field.faviconFallback":
+    "No custom favicon — the built-in one is used.",
+  "admin.settings.field.siteName": "Site name",
+  "admin.settings.field.siteDescription": "Site description",
+  "admin.settings.field.phone": "Phone",
+  "admin.settings.field.email": "Email",
+  "admin.settings.field.address": "Address",
+  "admin.settings.selectMedia": "Select from library",
+  "admin.settings.changeMedia": "Change image",
+  "admin.settings.clearMedia": "Clear",
+  "admin.settings.pickerTitle": "Select media",
+  "admin.settings.pickerDescription":
+    "Choose an image from the media library.",
+  "admin.settings.pickerSelect": "Select",
+  "admin.settings.pickerLoading": "Loading media…",
 
   "admin.error.unknown": "Something went wrong.",
   // Flagships & projects (dedicated-route sections)
@@ -424,6 +466,7 @@ export const adminEn = {
   // Upload-specific codes (lib/admin/actions/upload.ts).
   "admin.error.tooLarge": "This file is too large (max 5 MB).",
   "admin.error.notImage": "The file is not a supported image.",
+  "admin.error.unsupportedType": "This file type is not supported.",
   "admin.error.slugTaken": "This handle is already in use.",
   "admin.error.notFound": "The item was not found.",
   "admin.error.inUse":
@@ -483,6 +526,7 @@ export const adminFa = {
   "admin.nav.homepage": "صفحه اصلی",
   "admin.nav.about": "صفحه درباره ما",
   "admin.nav.s34": "صفحه اس ۳۴",
+  "admin.nav.settings": "تنظیمات سایت",
   "admin.nav.admins": "مدیران",
   "admin.nav.orders": "سفارش‌ها",
   "admin.section.products.description": "مدیریت لیست محصولات و موجودی کاتالوگ.",
@@ -501,6 +545,8 @@ export const adminFa = {
     "تنظیم بنرهای صفحه اصلی و محتوایی که نمایش می‌دهند.",
   "admin.section.about.description": "ویرایش محتوای بخش‌های صفحه درباره ما.",
   "admin.section.s34.description": "ویرایش محتوای بخش‌های صفحه اس ۳۴.",
+  "admin.section.settings.description":
+    "برندینگ، اطلاعات تماس و پیوندهای شبکه‌های اجتماعی فوتر.",
   "admin.section.orders.description":
     "مشاهده و مدیریت سفارش‌های مشتریان و تکمیل سفارش.",
   "admin.section.flagships.description":
@@ -706,6 +752,7 @@ export const adminFa = {
 
   // آپلود تصویر (components/admin/ImageUpload.tsx و actions/upload.ts)
   "admin.upload.pick": "آپلود تصویر",
+  "admin.upload.fromLibrary": "انتخاب از کتابخانه",
   "admin.upload.remove": "حذف",
   "admin.upload.uploading": "در حال آپلود…",
   "admin.upload.done": "تصویر آپلود شد",
@@ -731,7 +778,9 @@ export const adminFa = {
     "تصاویر اعتبارسنجی و در کتابخانه رسانه مشترک ذخیره می‌شوند.",
   "admin.media.uploadPick": "انتخاب فایل",
   "admin.media.uploadChange": "انتخاب فایل دیگر",
-  "admin.media.uploadHint": "JPEG، PNG، WebP یا AVIF · حداکثر ۵ مگابایت",
+  "admin.media.uploadHint": "JPEG، PNG، WebP، AVIF، MP4 یا WebM",
+  "admin.media.uploading": "در حال آپلود…",
+  "admin.media.uploadSaving": "در حال ذخیره فراداده…",
   "admin.media.uploadSubmit": "آپلود",
   "admin.media.uploadCancel": "انصراف",
   "admin.media.uploadNoFile": "برای آپلود یک فایل انتخاب کنید.",
@@ -761,6 +810,41 @@ export const adminFa = {
   "admin.media.info.url": "نشانی عمومی",
   "admin.media.deleteTitle": "حذف رسانه؟",
   "admin.media.deleteDescription": "این کار قابل بازگشت نیست.",
+
+  // تنظیمات سایت (app/[locale]/(admin)/admin/settings)
+  "admin.settings.branding": "برندینگ",
+  "admin.settings.contact": "اطلاعات تماس",
+  "admin.settings.social": "شبکه‌های اجتماعی",
+  "admin.settings.socialHint":
+    "فقط پیوندهای فعال در فوتر نمایش داده می‌شوند. ترتیب، جایگاه نمایش را تعیین می‌کند.",
+  "admin.settings.socialEmpty": "هنوز پیوندی ثبت نشده است.",
+  "admin.settings.socialAdd": "افزودن پیوند",
+  "admin.settings.socialPlatform": "کلید پلتفرم",
+  "admin.settings.socialLabel": "برچسب",
+  "admin.settings.socialUrl": "نشانی",
+  "admin.settings.socialActive": "نمایش در فوتر",
+  "admin.settings.socialEnabled": "پیوند نمایش داده می‌شود",
+  "admin.settings.socialDisabled": "پیوند پنهان شد",
+  "admin.settings.field.logo": "لوگو",
+  "admin.settings.field.logoHint": "در نوار بالا و فوتر نمایش داده می‌شود.",
+  "admin.settings.field.logoFallback":
+    "لوگوی اختصاصی وجود ندارد — نام سایت به‌صورت متنی نمایش داده می‌شود.",
+  "admin.settings.field.favicon": "فاوآیکون",
+  "admin.settings.field.faviconHint": "در زبانه مرورگر نمایش داده می‌شود.",
+  "admin.settings.field.faviconFallback":
+    "فاوآیکون اختصاصی وجود ندارد — نسخه پیش‌فرض استفاده می‌شود.",
+  "admin.settings.field.siteName": "نام سایت",
+  "admin.settings.field.siteDescription": "توضیح سایت",
+  "admin.settings.field.phone": "تلفن",
+  "admin.settings.field.email": "ایمیل",
+  "admin.settings.field.address": "نشانی",
+  "admin.settings.selectMedia": "انتخاب از کتابخانه",
+  "admin.settings.changeMedia": "تغییر تصویر",
+  "admin.settings.clearMedia": "پاک کردن",
+  "admin.settings.pickerTitle": "انتخاب رسانه",
+  "admin.settings.pickerDescription": "تصویری از کتابخانه رسانه انتخاب کنید.",
+  "admin.settings.pickerSelect": "انتخاب",
+  "admin.settings.pickerLoading": "در حال بارگذاری رسانه…",
 
   "admin.error.unknown": "مشکلی پیش آمد.",
   // فلگ‌شپ‌ها و پروژه‌ها (بخش‌های دارای مسیر اختصاصی)
@@ -885,6 +969,7 @@ export const adminFa = {
   // کدهای مخصوص آپلود (lib/admin/actions/upload.ts)
   "admin.error.tooLarge": "این فایل بسیار بزرگ است (حداکثر ۵ مگابایت).",
   "admin.error.notImage": "این فایل یک تصویر پشتیبانی‌شده نیست.",
+  "admin.error.unsupportedType": "این نوع فایل پشتیبانی نمی‌شود.",
   "admin.error.slugTaken": "این شناسه قبلاً استفاده شده است.",
   "admin.error.notFound": "موردی یافت نشد.",
   "admin.error.inUse":

@@ -107,13 +107,29 @@ export function MediaDetailsDialog({
           </DialogHeader>
 
           <div className="bg-muted relative aspect-video w-full overflow-hidden rounded-md">
-            <Image
-              src={item.url}
-              alt={altText}
-              fill
-              sizes="(max-width: 640px) 92vw, 32rem"
-              className="object-contain"
-            />
+            {item.mediaType === "video" ? (
+              /*
+               * The details panel is where a video is actually PLAYABLE — the
+               * grid tile only paints a still first frame. `controls` is
+               * correct here (unlike the tile) because the panel has no
+               * competing click target and the admin is inspecting the asset.
+               */
+              <video
+                src={item.url}
+                className="absolute inset-0 h-full w-full object-contain"
+                controls
+                playsInline
+                preload="metadata"
+              />
+            ) : (
+              <Image
+                src={item.url}
+                alt={altText}
+                fill
+                sizes="(max-width: 640px) 92vw, 32rem"
+                className="object-contain"
+              />
+            )}
           </div>
 
           <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-3">

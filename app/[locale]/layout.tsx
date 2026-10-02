@@ -3,8 +3,10 @@ import SmoothScroll from "@/components/smoothScroll";
 import { PageLoadInitializer } from "@/components/ui/PageLoadInitializer";
 import { readCartResetSignal } from "@/lib/cart/reset-signal";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
+import { pick } from "@/lib/i18n/localized";
 import { getLocalizedPath, isLocale, type Locale } from "@/lib/i18n/routing";
 import { translations } from "@/lib/i18n/translations";
+import { getSiteSettings } from "@/lib/repositories/site-settings";
 import { siteName, siteUrl } from "@/lib/seo/config";
 import {
   jsonLdScript,
@@ -110,14 +112,32 @@ export async function generateMetadata({
   const t = translations[lang];
   const homePath = "/";
 
+  // Pass 13.5D — admin-managed defaults.
+  //
+  // PRIORITY IS UNCHANGED: these are DEFAULTS on the root layout, and every
+  // page's own `metadata` still wins over them (Next merges child over parent
+  // field by field). A null settings row — a fresh database — leaves every
+  // value exactly as it was before this pass, which is what keeps the SEO
+  // system untouched.
+  const settings = await getSiteSettings();
+  const brand = settings ? pick(settings.siteName, lang).trim() : "";
+  const description = settings
+    ? pick(settings.siteDescription, lang).trim()
+    : "";
+
   return {
     metadataBase: new URL(siteUrl),
     title: {
-      // Home title is brand-complete; child pages get "| Home Form".
-      default: t["page.home.title"],
-      template: `%s | ${siteName}`,
+      // Home title is brand-complete; child pages get "| <brand>".
+      default: brand || t["page.home.title"],
+      template: `%s | ${brand || siteName}`,
     },
-    description: t["page.home.description"],
+    description: description || t["page.home.description"],
+    // A custom favicon replaces the static app/favicon.ico; with none set the
+    // file convention keeps serving the built-in one.
+    ...(settings?.faviconUrl
+      ? { icons: { icon: settings.faviconUrl, shortcut: settings.faviconUrl } }
+      : {}),
     alternates: {
       canonical: getLocalizedPath(homePath, lang),
       languages: {
@@ -127,8 +147,8 @@ export async function generateMetadata({
       },
     },
     openGraph: {
-      title: t["page.home.title"],
-      description: t["page.home.description"],
+      title: brand || t["page.home.title"],
+      description: description || t["page.home.description"],
       url: getLocalizedPath(homePath, lang),
       siteName,
       locale: lang === "fa" ? "fa_IR" : "en_US",

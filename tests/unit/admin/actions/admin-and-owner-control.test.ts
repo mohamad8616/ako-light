@@ -68,6 +68,21 @@ vi.mock("@/lib/repositories/products", () => ({
   deleteProduct: repoMocks.deleteProduct,
   getProductAdminDetail: repoMocks.getProductAdminDetail,
 }));
+/**
+ * Pass 13.5C: the product actions now resolve the Media relationship from the
+ * submitted URLs before writing, which adds a repository dependency here.
+ *
+ * It MUST be mocked — this suite is a positive control that deliberately mocks
+ * every repository so it never reaches the database, and an empty map is the
+ * honest stub: none of these fixtures reference a Media row.
+ *
+ * Spread over `importOriginal` rather than replacing the module, so any other
+ * export a transitively-loaded module needs still resolves.
+ */
+vi.mock("@/lib/repositories/media", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/repositories/media")>()),
+  findMediaIdsByUrl: vi.fn().mockResolvedValue(new Map()),
+}));
 vi.mock("@/lib/repositories/designers", () => ({
   createDesigner: repoMocks.createDesigner,
   updateDesigner: repoMocks.updateDesigner,

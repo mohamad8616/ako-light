@@ -109,19 +109,51 @@ const SOCIAL_ICONS: Record<SocialIconKey, React.ComponentType> = {
   telegram: TelegramIcon,
 };
 
+/**
+ * A neutral link glyph for a platform the icon map does not know.
+ *
+ * Pass 13.5D made the link list database-driven, which means an admin can add a
+ * platform this build has never heard of. That must render something sane
+ * rather than crash the footer, so an unknown key gets this instead of an
+ * `undefined` component.
+ */
+const FallbackIcon = memo(function FallbackIcon() {
+  return (
+    <svg {...SVG_BASE} className={ICON_CLASS} fill="none" stroke="currentColor" strokeWidth={1.8}>
+      <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+});
+
+/** The shape this row renders, whichever source it came from. */
+export interface FooterSocialLink {
+  /** Stable React key — the DB row id, or the label for the static fallback. */
+  key: string;
+  label: string;
+  href: string;
+  /** Unknown keys fall back to a neutral icon. */
+  icon: string;
+}
+
 // ---------------------------------------------------------------------------
-// Memoized social row — only re-renders when `socialLinks` reference changes
-// (which it never does, since it's a module constant).
+// Social row. `links` is a prop now (Pass 13.5D) rather than a module constant,
+// so `memo` actually earns its keep: it re-renders only when the list changes.
 // ---------------------------------------------------------------------------
 
-const SocialLinksRow = memo(function SocialLinksRow() {
+const SocialLinksRow = memo(function SocialLinksRow({
+  links,
+}: {
+  links: FooterSocialLink[];
+}) {
   return (
     <div className={SOCIAL_WRAPPER_CLASS}>
-      {socialLinks.map(({ label, href, icon }) => {
-        const Icon = SOCIAL_ICONS[icon];
+      {links.map(({ key, label, href, icon }) => {
+        const Icon =
+          SOCIAL_ICONS[icon as SocialIconKey] ?? FallbackIcon;
         return (
           <Link
-            key={label}
+            key={key}
             href={href}
             aria-label={label}
             className={SOCIAL_BTN_CLASS}
@@ -134,8 +166,31 @@ const SocialLinksRow = memo(function SocialLinksRow() {
   );
 });
 
-export default function Footer() {
+export default function Footer({
+  socialLinks: dbLinks,
+  logoUrl,
+}: {
+  /**
+   * Active social links from the database (Pass 13.5D). When the list is EMPTY
+   * the footer falls back to the static seed list, so a site that has not been
+   * configured yet looks exactly as it did before this pass instead of losing
+   * its social row.
+   */
+  socialLinks?: FooterSocialLink[];
+  /** Brand logo from SiteSettings; falls back to the text wordmark. */
+  logoUrl?: string | null;
+}) {
   const { t } = useLanguage();
+
+  const links: FooterSocialLink[] =
+    dbLinks && dbLinks.length > 0
+      ? dbLinks
+      : socialLinks.map((link) => ({
+          key: link.label,
+          label: link.label,
+          href: link.href,
+          icon: link.icon,
+        }));
 
   return (
     <footer className="bg-background text-background-secondary">
@@ -145,7 +200,10 @@ export default function Footer() {
           {/* Logo + Mobile Links */}
           <div className="flex w-full items-center justify-between md:w-full md:justify-start">
             <Link href="/" className="cursor-pointer">
-              <Logo className="fill-[#f4f4f4] transition-opacity hover:opacity-70" />
+              <Logo
+                src={logoUrl}
+                className="h-auto max-h-10 w-auto object-contain fill-[#f4f4f4] transition-opacity hover:opacity-70"
+              />
             </Link>
 
             {/* Credits / Privacy - Mobile */}
@@ -190,7 +248,7 @@ export default function Footer() {
         </div>
 
         {/* Social */}
-        <SocialLinksRow />
+        <SocialLinksRow links={links} />
       </HomepageSection>
     </footer>
   );

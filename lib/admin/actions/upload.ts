@@ -1,110 +1,91 @@
 "use server";
 
 /**
- * Server action for admin image uploads (Vercel Blob).
+ * Server action for admin image uploads.
  *
  * Same contract as every admin action module: `requireAdminAccess()` FIRST
  * (server functions are reachable by direct POST, so the client form is never
  * the authorization — see the bundled data-security guide), then validate,
  * then persist, and map failures into the structured `ActionResult` contract.
  *
- * VALIDATION IS SERVER-SIDE AND CONTENT-BASED. A browser-supplied
- * `File.type` is a claim, not a fact — anyone can POST a script named
- * "cat.png" with `type: "image/png"`. So the declared MIME is only a cheap
- * first filter; the authoritative check reads the file's leading bytes and
- * requires them to be a real JPEG / PNG / WebP / AVIF signature. A file whose
- * bytes do not match a supported image is rejected no matter what it claims.
+ * WHAT CHANGED IN PASS 13.5C (step 14 — consolidate direct Blob usage)
  *
- * The action returns only the resulting public URL. Every image column in the
- * admin is already a plain URL string, so the field component is a drop-in
- * replacement for the old text inputs and NO zod schema changes shape.
+ * This action used to call `put()` from `@vercel/blob` directly, which made it
+ * one of only two modules outside `lib/media/storage/` importing the SDK. It
+ * now delegates to `uploadMedia` (lib/media/service.ts), so an upload:
+ *
+ *   - is validated by the SHARED validator (byte sniffing — the declared
+ *     `File.type` is still only a claim, never the evidence);
+ *   - is stored through the `StorageProvider` abstraction, so swapping the
+ *     provider touches one module instead of every action;
+ *   - REGISTERS a `Media` row, so the file appears in /admin/media and can be
+ *     reused instead of re-uploaded.
+ *
+ * Two consequences to be aware of:
+ *
+ *   1. **Keys move from `admin/…` to `media/…`.** The namespaces stay disjoint,
+ *      which is what keeps the legacy URL sweep from deleting a media-owned
+ *      object — and `deleteBlobUrls` additionally filters media-owned URLs now.
+ *   2. **Replacing an image no longer deletes the object.** Removing an image
+ *      from a product removes the relationship only; the Media row and its file
+ *      survive and are deleted from /admin/media, and only once unreferenced.
+ *
+ * The action still returns just a public URL, because every image column in the
+ * admin is a plain URL string — so NO zod schema changes shape and the field
+ * component stays a drop-in replacement for the old text inputs.
  */
-import { put } from "@vercel/blob";
 import { requireAdminAccess } from "@/lib/admin/access";
-import {
-  IMAGE_EXTENSIONS,
-  MAX_UPLOAD_BYTES,
-  safeBaseName,
-  sniffImageType,
-} from "@/lib/admin/image-sniff";
-import {
-  actionFail,
-  actionOk,
-  type ActionResult,
-} from "@/lib/admin/result";
+import { actionFail, actionOk, type ActionResult } from "@/lib/admin/result";
+import { MediaError, uploadMedia } from "@/lib/media/service";
 
 /**
- * Blob keys are grouped per entity ("products", "designers", …) so the store
- * stays navigable. The value comes from the client, so it is matched against a
- * strict slug pattern and falls back to a neutral folder — never interpolated
- * raw into a pathname.
- */
-const FOLDER_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const DEFAULT_FOLDER = "uploads";
-
-/**
- * Uploads one image to Vercel Blob and returns its public URL.
+ * Uploads one image through the media layer and returns its public URL.
  *
- * `folder` groups keys per entity; anything that is not a plain slug silently
- * falls back to `uploads` (defensive: the value crosses a client boundary).
+ * `folder` groups keys per entity ("products", "designers", …); anything that
+ * is not a plain slug falls back inside the service rather than being
+ * interpolated into a pathname.
  */
 export async function uploadImageAction(
   formData: FormData,
 ): Promise<ActionResult<{ url: string }>> {
   await requireAdminAccess();
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    // Surfaced to the admin as the generic failure; the real cause (the store
-    // is not connected to this Vercel project / the env is missing) is only
-    // knowable server-side, so it goes to the log.
-    console.error("[upload] BLOB_READ_WRITE_TOKEN is not set");
-    return actionFail("unknown");
-  }
-
   const file = formData.get("file");
-  const folder = formData.get("folder");
-
   if (!(file instanceof File) || file.size === 0) {
     return actionFail("required");
   }
-  if (file.size > MAX_UPLOAD_BYTES) {
-    return actionFail("tooLarge");
-  }
-  if (!(file.type in IMAGE_EXTENSIONS)) {
-    return actionFail("notImage");
-  }
 
-  // Read once: the same buffer is sniffed and then uploaded, so validation
-  // and the stored bytes can never diverge.
-  const buffer = await file.arrayBuffer();
-  // The declared type is a claim; the bytes are the evidence.
-  const sniffed = sniffImageType(new Uint8Array(buffer));
-  if (!sniffed || !(sniffed in IMAGE_EXTENSIONS)) {
-    return actionFail("notImage");
-  }
-
-  const group =
-    typeof folder === "string" && FOLDER_PATTERN.test(folder)
-      ? folder
-      : DEFAULT_FOLDER;
-  const extension = IMAGE_EXTENSIONS[sniffed];
-  const base = safeBaseName(file.name).replace(
-    /\.(jpe?g|png|webp|avif)$/,
-    "",
-  );
-  // `addRandomSuffix` keeps two admins uploading "hero.png" from colliding,
-  // and the timestamp keeps keys roughly chronological in the store listing.
-  const pathname = `admin/${group}/${Date.now()}-${base}.${extension}`;
+  const folder = formData.get("folder");
 
   try {
-    const blob = await put(pathname, buffer, {
-      access: "public",
-      contentType: sniffed,
-      addRandomSuffix: true,
+    // Read once and hand the same bytes to the service: the payload that is
+    // validated is exactly the payload that gets stored.
+    const row = await uploadMedia({
+      filename: file.name,
+      declaredMimeType: file.type,
+      bytes: await file.arrayBuffer(),
+      folder: typeof folder === "string" ? folder : undefined,
     });
-    return actionOk({ url: blob.url });
+
+    return actionOk({ url: row.url });
   } catch (error) {
-    console.error("[upload] blob put failed", error);
+    if (error instanceof MediaError) {
+      // The validation codes have their own copy in the admin dictionary; every
+      // other failure (missing token, provider outage, DB error) is only
+      // knowable server-side, so it collapses to the generic message — exactly
+      // as the old action did.
+      if (
+        error.code === "required" ||
+        error.code === "tooLarge" ||
+        error.code === "notImage"
+      ) {
+        return actionFail(error.code);
+      }
+      console.error(`[upload] media upload failed: ${error.code}`, error);
+      return actionFail("unknown");
+    }
+
+    console.error("[upload] media upload failed", error);
     return actionFail("unknown");
   }
 }

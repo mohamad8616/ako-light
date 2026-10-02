@@ -8,6 +8,7 @@ import {
   useList,
   type FieldIssue,
 } from "@/components/admin/catalog/fields/form";
+import { MediaPickerDialog } from "@/components/admin/settings/MediaPickerField";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
@@ -82,6 +83,8 @@ export function ImageUpload({
   const value = (watch(name) as string | undefined) ?? "";
 
   const inputRef = React.useRef<HTMLInputElement>(null);
+  /** The reusable Media picker (Pass 13.5C) — "select existing", not "upload again". */
+  const [pickerOpen, setPickerOpen] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
 
   const handleFile = React.useCallback(
@@ -147,6 +150,26 @@ export function ImageUpload({
             >
               {uploading ? t("admin.upload.uploading") : t("admin.upload.pick")}
             </Button>
+
+            {/*
+              Pass 13.5C: "upload new OR select existing".
+              
+              Before this, the only way to set an image was to upload it again —
+              so reusing a file that was already in the library meant duplicating
+              it in the store. The picker writes the chosen Media's URL into the
+              same field, and the server resolves the `mediaId` relationship from
+              that URL on save, so nothing about this field's contract changes.
+            */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={disabled || uploading}
+              onClick={() => setPickerOpen(true)}
+            >
+              {t("admin.upload.fromLibrary")}
+            </Button>
+
             {value ? (
               <Button
                 type="button"
@@ -195,6 +218,19 @@ export function ImageUpload({
           event.target.value = "";
           void handleFile(file);
         }}
+      />
+
+      {/*
+        The picker reports a Media item; this field stores its URL. The
+        `mediaId` relationship is resolved from that URL server-side on save, so
+        the form contract stays exactly what it always was.
+      */}
+      <MediaPickerDialog
+        open={pickerOpen}
+        onOpenChange={setPickerOpen}
+        onSelect={(item) =>
+          setValue(name, item.url, { shouldValidate: true, shouldDirty: true })
+        }
       />
     </>
   );

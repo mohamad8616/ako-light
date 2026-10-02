@@ -1,12 +1,22 @@
 /**
  * Vercel Blob cleanup helpers (lib/admin/blob.ts) — which URLs this app may
- * delete, and which URLs an edit actually dropped.
+ * delete, which URLs an edit actually dropped, and (Pass 13.5C) which objects
+ * the media library still owns.
  *
- * Only the pure predicates are exercised here; `deleteBlobUrls` talks to the
- * Blob API and is never called from a network-free unit test.
+ * The network call is mocked rather than made, so this file stays network-free
+ * while still covering the deletion policy — including the guard that keeps a
+ * replaced image's file alive for the Media row that points at it.
  */
-import { describe, expect, it } from "vitest";
-import { isBlobUrl, removedUrls } from "@/lib/admin/blob";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { deleteBlobUrls, isBlobUrl, removedUrls } from "@/lib/admin/blob";
+
+const delMock = vi.hoisted(() => vi.fn());
+const mediaFindMany = vi.hoisted(() => vi.fn());
+
+vi.mock("@vercel/blob", () => ({ del: delMock }));
+vi.mock("@/lib/db/prisma", () => ({
+  prisma: { media: { findMany: mediaFindMany } },
+}));
 
 const BLOB = "https://store123.public.blob.vercel-storage.com/admin/products/a.png";
 
@@ -77,5 +87,66 @@ describe("removedUrls", () => {
 
   it("returns nothing when nothing changed", () => {
     expect(removedUrls([BLOB], [BLOB])).toEqual([]);
+  });
+});
+
+describe("deleteBlobUrls — media ownership (Pass 13.5C)", () => {
+  const SECOND =
+    "https://store123.public.blob.vercel-storage.com/admin/products/b.png";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    delMock.mockResolvedValue(undefined);
+    mediaFindMany.mockResolvedValue([]);
+  });
+
+  it("deletes a blob URL that no Media row owns", async () => {
+    await deleteBlobUrls([BLOB]);
+
+    expect(mediaFindMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { url: { in: [BLOB] } } }),
+    );
+    expect(delMock).toHaveBeenCalledWith([BLOB]);
+  });
+
+  it("NEVER deletes the object a Media row still points at", async () => {
+    mediaFindMany.mockResolvedValue([{ url: BLOB }]);
+
+    await deleteBlobUrls([BLOB]);
+
+    // The whole point of the pass: removing an image from an entity removes the
+    // relationship, not the file. The Media row keeps rendering.
+    expect(delMock).not.toHaveBeenCalled();
+  });
+
+  it("deletes only the unowned subset of a batch", async () => {
+    mediaFindMany.mockResolvedValue([{ url: BLOB }]);
+
+    await deleteBlobUrls([BLOB, SECOND]);
+
+    expect(delMock).toHaveBeenCalledWith([SECOND]);
+  });
+
+  it("FAILS CLOSED when the ownership check itself fails — deletes nothing", async () => {
+    mediaFindMany.mockRejectedValue(new Error("database unreachable"));
+
+    await expect(deleteBlobUrls([BLOB])).resolves.toBeUndefined();
+
+    // An orphan object is recoverable; deleting a file a live Media row needs
+    // is not. When in doubt, keep the file.
+    expect(delMock).not.toHaveBeenCalled();
+  });
+
+  it("touches neither the database nor the provider for non-blob URLs", async () => {
+    await deleteBlobUrls(["https://images.example.com/seed/hero.jpg"]);
+
+    expect(mediaFindMany).not.toHaveBeenCalled();
+    expect(delMock).not.toHaveBeenCalled();
+  });
+
+  it("swallows a provider failure — cleanup must never fail a successful save", async () => {
+    delMock.mockRejectedValue(new Error("blob is down"));
+
+    await expect(deleteBlobUrls([BLOB])).resolves.toBeUndefined();
   });
 });

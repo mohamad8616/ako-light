@@ -52,10 +52,29 @@ export interface StoredObject {
 }
 
 /**
+ * What the server knows about a direct (browser → provider) upload before it
+ * authorises one.
+ *
+ * The constraints are enforced BY THE PROVIDER at upload time, not by the
+ * browser afterwards — which is why the client's later report of what it
+ * uploaded is not the security boundary.
+ */
+export interface ClientUploadConstraints {
+  /** Provider-relative key the browser will write to. */
+  key: string;
+  /** The only content types the provider should accept for this upload. */
+  allowedContentTypes: readonly string[];
+  /** Hard ceiling the provider enforces on the wire. */
+  maximumSizeInBytes: number;
+}
+
+/**
  * The storage contract every provider implements.
  *
  * Implementations are SERVER-ONLY (they hold credentials) and must never be
- * imported from a client component.
+ * imported from a client component. The browser half of a direct upload lives
+ * in `lib/media/storage/client.ts` — see the note there on why direct uploads
+ * cannot be fully provider-agnostic.
  */
 export interface StorageProvider {
   /** Stable identifier ("vercel-blob") — for logs and diagnostics. */
@@ -88,6 +107,33 @@ export interface StorageProvider {
    * it here is what keeps that assumption out of every caller.
    */
   getUrl(key: string): string | null;
+
+  /**
+   * Whether this provider can accept an upload DIRECT from the browser
+   * (Pass 13.5E).
+   *
+   * Optional on purpose: a provider that cannot do this simply cannot serve
+   * large files, and the service reports that honestly instead of routing a
+   * 200 MB video through a Server Action that would buffer it in memory.
+   */
+  readonly supportsClientUpload?: boolean;
+
+  /**
+   * Authorises ONE direct upload and returns the provider's own response body.
+   *
+   * `body` is passed through untouched: it is the provider's client SDK that
+   * produced it, and its shape is the provider's business — translating it here
+   * would leak the provider's protocol into the abstraction.
+   *
+   * The implementation MUST re-check authorization and MUST enforce
+   * `constraints` on the wire, because the browser is the untrusted half.
+   */
+  authorizeClientUpload?(input: {
+    body: unknown;
+    /** The original request, for providers that verify an origin/signature. */
+    request: Request;
+    constraints: ClientUploadConstraints;
+  }): Promise<unknown>;
 }
 
 /**

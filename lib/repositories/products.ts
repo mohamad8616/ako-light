@@ -19,6 +19,7 @@ import {
   asOptionalLocalized,
   asRelatedProducts,
 } from "./casting";
+import { MEDIA_URL_SELECT, resolveMediaUrl } from "@/lib/media/resolve";
 
 /** Shared `include` for every product read in this layer.
  *
@@ -29,7 +30,16 @@ import {
 export const productInclude = {
   category: true,
   designer: true,
-  productImages: { orderBy: { sortOrder: "asc" } },
+  // Pass 13.5C: the Media relations are joined so `mapProductRow` can prefer
+  // them over the legacy URL columns (see lib/media/resolve.ts). Only the `url`
+  // is selected — pulling whole Media rows into every product read would put
+  // filename/size/storageKey into the public payload for no reason.
+  heroMedia: MEDIA_URL_SELECT,
+  hoverMedia: MEDIA_URL_SELECT,
+  productImages: {
+    orderBy: { sortOrder: "asc" },
+    include: { media: MEDIA_URL_SELECT },
+  },
 } satisfies Prisma.ProductInclude;
 
 /** A `product` row after {@link productInclude} has been applied. */
@@ -59,14 +69,15 @@ export function mapProductRow(row: ProductRow): Product {
     id: row.id,
     name: asLocalized(row.name),
     slug: row.slug,
-    images: row.productImages.map((img) => img.url),
-    hoverImage: row.hoverImage,
+    // Media wins, legacy URL falls back — per row, not per table.
+    images: row.productImages.map((img) => resolveMediaUrl(img.media, img.url)),
+    hoverImage: resolveMediaUrl(row.hoverMedia, row.hoverImage),
     priceEur: row.priceEur.toNumber(),
     priceToman: row.priceToman.toNumber(),
     store: { existsInStore: row.existsInStore, quantity: row.quantity },
     category: row.category.slug,
     categoryLabel: row.category ? asLocalized(row.category.name) : undefined,
-    heroImage: row.heroImage,
+    heroImage: resolveMediaUrl(row.heroMedia, row.heroImage),
     description: asLocalized(row.description),
     moreInfo: asOptionalLocalized(row.moreInfo),
     downloads: asDownloadLinks(row.downloads),
@@ -196,8 +207,16 @@ export type ProductAdminDetail = {
   id: string;
   slug: string;
   name: Localized;
+  /** Resolved for display: the Media URL when linked, else the legacy column. */
   hoverImage: string;
   heroImage: string;
+  /**
+   * The Media RELATIONSHIP ids (Pass 13.5C). Distinct from the urls above: the
+   * admin form edits a url, and the server derives the id from it, so these are
+   * what the picker highlights as "already attached".
+   */
+  heroMediaId: string | null;
+  hoverMediaId: string | null;
   priceEur: number;
   priceToman: number;
   existsInStore: boolean;
@@ -214,6 +233,8 @@ export type ProductAdminDetail = {
     url: string;
     alt: string | null;
     isPrimary: boolean;
+    /** Pass 13.5C — the linked Media row, when this image has one. */
+    mediaId: string | null;
   }[];
 };
 
@@ -222,6 +243,14 @@ export type ProductWriteInput = {
   name: Localized;
   hoverImage: string;
   heroImage: string;
+  /**
+   * Pass 13.5C Media links. Optional so every existing caller (tests, the
+   * seeder, the slug-history suite) keeps compiling and behaves exactly as
+   * before — absent means "no Media link", which is the correct default for a
+   * row that was never attached to the library.
+   */
+  heroMediaId?: string | null;
+  hoverMediaId?: string | null;
   priceEur: number;
   priceToman: number;
   existsInStore: boolean;
@@ -238,6 +267,8 @@ export type ProductWriteInput = {
     url: string;
     alt: string | null;
     isPrimary: boolean;
+    /** Optional for the same reason as the hero/hover ids above. */
+    mediaId?: string | null;
   }[];
 };
 
@@ -308,7 +339,12 @@ export const getProductAdminDetail = cache(
       include: {
         category: true,
         designer: true,
-        productImages: { orderBy: { sortOrder: "asc" } },
+        heroMedia: MEDIA_URL_SELECT,
+        hoverMedia: MEDIA_URL_SELECT,
+        productImages: {
+          orderBy: { sortOrder: "asc" },
+          include: { media: MEDIA_URL_SELECT },
+        },
       },
     });
 
@@ -318,8 +354,10 @@ export const getProductAdminDetail = cache(
       id: row.id,
       slug: row.slug,
       name: asLocalized(row.name),
-      hoverImage: row.hoverImage,
-      heroImage: row.heroImage,
+      hoverImage: resolveMediaUrl(row.hoverMedia, row.hoverImage),
+      heroImage: resolveMediaUrl(row.heroMedia, row.heroImage),
+      heroMediaId: row.heroMediaId,
+      hoverMediaId: row.hoverMediaId,
       priceEur: row.priceEur.toNumber(),
       priceToman: row.priceToman.toNumber(),
       existsInStore: row.existsInStore,
@@ -333,9 +371,10 @@ export const getProductAdminDetail = cache(
       designerId: row.designerId,
       images: row.productImages.map((image) => ({
         id: image.id,
-        url: image.url,
+        url: resolveMediaUrl(image.media, image.url),
         alt: image.alt,
         isPrimary: image.isPrimary,
+        mediaId: image.mediaId,
       })),
     };
   },
@@ -355,11 +394,15 @@ export const createProduct = async (
         slug: input.slug,
         name: asJsonInput(input.name),
         hoverImage: input.hoverImage,
+        // Pass 13.5C: the relationship alongside the URL. `?? null` because the
+        // field is optional on the input type — an absent link is a real NULL.
+        hoverMediaId: input.hoverMediaId ?? null,
         priceEur: input.priceEur,
         priceToman: input.priceToman,
         existsInStore: input.existsInStore,
         quantity: input.quantity,
         heroImage: input.heroImage,
+        heroMediaId: input.heroMediaId ?? null,
         description: asJsonInput(input.description),
         // Optional jsonb: real SQL NULL when the product has no extra info block.
         moreInfo: asNullableJsonInput(input.moreInfo),
@@ -377,6 +420,7 @@ export const createProduct = async (
           id: image.id ?? crypto.randomUUID(),
           productId: created.id,
           url: image.url,
+          mediaId: image.mediaId ?? null,
           alt: image.alt ?? null,
           isPrimary: image.isPrimary,
           sortOrder: index,
@@ -403,11 +447,13 @@ export const updateProduct = async (
         slug: input.slug,
         name: asJsonInput(input.name),
         hoverImage: input.hoverImage,
+        hoverMediaId: input.hoverMediaId ?? null,
         priceEur: input.priceEur,
         priceToman: input.priceToman,
         existsInStore: input.existsInStore,
         quantity: input.quantity,
         heroImage: input.heroImage,
+        heroMediaId: input.heroMediaId ?? null,
         description: asJsonInput(input.description),
         // Optional jsonb: real SQL NULL when the product has no extra info block.
         moreInfo: asNullableJsonInput(input.moreInfo),
@@ -439,6 +485,9 @@ export const updateProduct = async (
           where: { id: image.id },
           data: {
             url: image.url,
+            // Re-derived on every save, so clearing an image's Media link in
+            // the picker actually clears it here too.
+            mediaId: image.mediaId ?? null,
             alt: image.alt ?? null,
             isPrimary: image.isPrimary,
             sortOrder: index,
@@ -450,6 +499,7 @@ export const updateProduct = async (
             id: crypto.randomUUID(),
             productId: id,
             url: image.url,
+            mediaId: image.mediaId ?? null,
             alt: image.alt ?? null,
             isPrimary: image.isPrimary,
             sortOrder: index,

@@ -46,6 +46,19 @@ export interface MediaReference {
  * Exported so the refusal message and the docs can be accurate about the
  * boundary of the check instead of implying it is exhaustive.
  */
+/**
+ * What to look for: a Media row's id, its url, or both.
+ *
+ * Both are accepted because the two probe families need different keys — the
+ * foreign keys need the id, the legacy URL columns need the url — and passing
+ * both is what makes the check complete. `removeMedia` has the row in hand and
+ * passes both; a bare string still works and resolves the id itself.
+ */
+export interface MediaReferenceTarget {
+  id?: string;
+  url: string;
+}
+
 export const UNCHECKABLE_REFERENCE_AREAS: readonly string[] = [
   "flagship.detail (jsonb: heroImage / video / gallery)",
   "aboutPageSection.content (jsonb)",
@@ -70,7 +83,7 @@ interface ReferenceProbe {
  * `user.image` is included because an admin avatar is set to a URL like any
  * other field.
  */
-const PROBES: readonly ReferenceProbe[] = [
+const URL_PROBES: readonly ReferenceProbe[] = [
   {
     area: "product.heroImage",
     count: (url, db) => db.product.count({ where: { heroImage: url } }),
@@ -142,6 +155,43 @@ const PROBES: readonly ReferenceProbe[] = [
 ];
 
 /**
+ * The REAL relationships (Pass 13.5C/13.5D), checked by Media **id**.
+ *
+ * These are authoritative where the URL probes are only a best-effort
+ * approximation: a foreign key cannot be stale, whereas a URL probe can miss a
+ * reference that was written with a different string spelling of the same
+ * object.
+ *
+ * They exist because the pass added genuine FKs, and a guard that ignored them
+ * would refuse to delete an object that nothing actually points at, or — far
+ * worse — allow deleting one that a `mediaId` still references.
+ */
+const FK_PROBES: readonly ReferenceProbe[] = [
+  {
+    area: "product.heroMediaId",
+    count: (id, db) => db.product.count({ where: { heroMediaId: id } }),
+  },
+  {
+    area: "product.hoverMediaId",
+    count: (id, db) => db.product.count({ where: { hoverMediaId: id } }),
+  },
+  {
+    area: "productImage.mediaId",
+    count: (id, db) => db.productImage.count({ where: { mediaId: id } }),
+  },
+  {
+    area: "siteSettings.logoMediaId",
+    count: (id, db) =>
+      db.siteSettings.count({ where: { logoMediaId: id } }),
+  },
+  {
+    area: "siteSettings.faviconMediaId",
+    count: (id, db) =>
+      db.siteSettings.count({ where: { faviconMediaId: id } }),
+  },
+];
+
+/**
  * Every location that currently points at `url`, with a row count each.
  *
  * Returns `[]` for an unreferenced object, which is the common case and the
@@ -162,15 +212,42 @@ const PROBES: readonly ReferenceProbe[] = [
  * whole check can be exercised inside a rolled-back test transaction.
  */
 export async function findMediaReferences(
-  url: string,
+  target: MediaReferenceTarget | string,
   db: Prisma.TransactionClient = prisma,
 ): Promise<MediaReference[]> {
-  if (!url) return [];
+  const { id, url } =
+    typeof target === "string" ? { id: undefined, url: target } : target;
+
+  if (!url && !id) return [];
+
+  // A caller that supplied only a URL still gets the FK probes: the id is
+  // resolved here rather than skipped, so a reference can never be missed just
+  // because of how the caller phrased the question. `removeMedia` already has
+  // the row, so this extra read only happens for string callers.
+  let mediaId = id;
+  if (!mediaId && url) {
+    const row = await db.media.findFirst({
+      where: { url },
+      select: { id: true },
+    });
+    mediaId = row?.id;
+  }
 
   const found: MediaReference[] = [];
-  for (const probe of PROBES) {
-    const count = await probe.count(url, db);
-    if (count > 0) found.push({ area: probe.area, count });
+
+  if (url) {
+    for (const probe of URL_PROBES) {
+      const count = await probe.count(url, db);
+      if (count > 0) found.push({ area: probe.area, count });
+    }
   }
+
+  if (mediaId) {
+    for (const probe of FK_PROBES) {
+      const count = await probe.count(mediaId, db);
+      if (count > 0) found.push({ area: probe.area, count });
+    }
+  }
+
   return found;
 }

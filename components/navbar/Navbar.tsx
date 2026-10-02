@@ -66,8 +66,15 @@ type ActiveOverlay = "products" | "menu" | null;
  */
 export default function Navbar({
   categories,
+  logoUrl,
 }: {
   categories: NavCategory[];
+  /**
+   * Brand logo resolved from SiteSettings through the Media library
+   * (Pass 13.5D). Optional: when it is null the logo falls back to the text
+   * wordmark, so the navbar is unchanged on a site with no custom logo.
+   */
+  logoUrl?: string | null;
 }) {
   const [activeOverlay, setActiveOverlay] = useState<ActiveOverlay>(null);
   const [hidden, setHidden] = useState(false);
@@ -190,7 +197,10 @@ export default function Navbar({
             onClick={closeOverlay}
             className={`group cursor-pointer ${overlayOpen ? "pointer-events-auto" : ""}`}
           >
-            <Logo className="z-999 h-auto fill-white transition-all duration-500 group-hover:opacity-70" />
+            <Logo
+              src={logoUrl}
+              className="z-999 h-auto max-h-10 w-auto object-contain fill-white transition-all duration-500 group-hover:opacity-70"
+            />
           </Link>
 
           {/* Right-side action cluster. */}

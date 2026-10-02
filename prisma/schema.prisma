@@ -193,6 +193,12 @@ model Product {
   /// Localized { en, fa }
   name          Json
   hoverImage    String
+  /// Optional Media link for `hoverImage` (Pass 13.5C). NULL means the image is
+  /// still served from the legacy URL column — every row in the dev database is
+  /// currently an EXTERNAL url (picsum/henge07/dummyimage), and the plan forbids
+  /// converting those. `SetNull`: deleting the Media row must never delete the
+  /// product, and the legacy URL remains as the fallback.
+  hoverMediaId String?
   /// Shown to en-locale visitors, informational only (the charged amount is
   /// priceToman — see below).
   priceEur     Decimal  @db.Decimal(12, 2)
@@ -206,6 +212,8 @@ model Product {
   /// Product.store.quantity in the source data.
   quantity      Int      @default(0)
   heroImage     String
+  /// Optional Media link for `heroImage`; see `hoverMediaId` above.
+  heroMediaId  String?
   /// Localized { en, fa }
   description   Json
   /// Localized { en, fa } — optional in the source data.
@@ -229,12 +237,16 @@ model Product {
 
   category      ProductCategory  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   designer      Designer?        @relation(fields: [designerId], references: [id], onDelete: SetNull)
+  heroMedia     Media?           @relation("ProductHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
+  hoverMedia    Media?           @relation("ProductHoverMedia", fields: [hoverMediaId], references: [id], onDelete: SetNull)
   projectsUsed  ProjectProduct[]
   productImages ProductImage[]
   orderItems    OrderItem[]
 
   @@index([categoryId])
   @@index([designerId])
+  @@index([heroMediaId])
+  @@index([hoverMediaId])
   @@map("product")
 }
 
@@ -419,7 +431,17 @@ model ProductImage {
   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   /// Publicly served image URL/path.
+  ///
+  /// RETAINED as the fallback source (Pass 13.5C). Every existing row holds an
+  /// EXTERNAL url that cannot be converted to Media safely, so both columns are
+  /// live and `media.url` simply wins when a Media link exists.
   url       String
+  /// Pass 13.5C — the central Media record this image points at. This is the
+  /// real database relationship (an id FK), NOT the url: the plan forbids
+  /// relating by url/filename/slug/storageKey. Nullable because most rows are
+  /// still legacy-url-sourced; `SetNull` so removing a Media row never deletes
+  /// a product image (see docs: remove-relationship ≠ delete-media).
+  mediaId   String?
   /// Alt text for accessibility / SEO.
   alt       String?
   /// Zero-based display order inside the product's image list.
@@ -430,7 +452,10 @@ model ProductImage {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  media     Media?  @relation("ProductImageMedia", fields: [mediaId], references: [id], onDelete: SetNull)
+
   @@index([productId])
+  @@index([mediaId])
   @@map("product_image")
 }
 
@@ -759,6 +784,67 @@ enum MediaType {
   video
 }
 
+/// Pass 13.5D — the ONE global configuration row.
+///
+/// Deliberately a single row rather than a key/value table: there is exactly one
+/// website, a settings screen edits the whole object at once, and a singleton
+/// keeps the type CHECKED (a key/value store would make every field a string and
+/// move all validation into runtime lookups).
+///
+/// `id` is a fixed literal so an upsert is idempotent and a second row can never
+/// be created by accident. Every `Media` reference is an id FK — no blob URLs,
+/// filenames or storage keys are stored here (the plan is explicit about that).
+model SiteSettings {
+  /// Fixed singleton key — see the model note above.
+  id              String   @id @default("singleton")
+  /// Localized { en, fa } — the brand name shown in the navbar/footer when no
+  /// logo image is set.
+  siteName        Json
+  /// Localized { en, fa } — default SEO description.
+  siteDescription Json
+  /// Optional brand logo image. NULL = fall back to the text wordmark.
+  logoMediaId     String?
+  /// Optional favicon. NULL = fall back to the static app/favicon.ico.
+  faviconMediaId  String?
+  phone           String?
+  email           String?
+  /// Localized { en, fa }
+  address         Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // SetNull, never Cascade: deleting a Media row must not delete the settings.
+  logoMedia    Media? @relation("SiteLogoMedia", fields: [logoMediaId], references: [id], onDelete: SetNull)
+  faviconMedia Media? @relation("SiteFaviconMedia", fields: [faviconMediaId], references: [id], onDelete: SetNull)
+
+  @@map("site_settings")
+}
+
+/// Pass 13.5D — footer/contact social links, database-driven.
+///
+/// Data ONLY: `platform` is a stable machine key ("instagram", "telegram", …)
+/// that the FRONTEND maps to an icon. No React components, no SVG, no icon
+/// markup is ever stored here. An unrecognised platform renders a fallback icon
+/// rather than crashing, so a new platform can be added without a code change.
+model SocialLink {
+  id        String   @id @default(uuid())
+  /// Machine key matched against the frontend icon map; unknown values are
+  /// allowed and render a neutral fallback.
+  platform  String
+  /// Accessible label (also the tooltip).
+  label     String
+  url       String
+  /// Display position, ascending.
+  sortOrder Int      @default(0)
+  /// Inactive links are hidden from the public site but kept in the admin.
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([sortOrder])
+  @@map("social_link")
+}
+
 model Media {
   id          String    @id @default(uuid())
   /// Original client filename (display/download only — never a path segment).
@@ -784,6 +870,17 @@ model Media {
   mediaType   MediaType @default(image)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  // Pass 13.5C back-relations. ONE Media row may be referenced by MANY entities
+  // (a shared image on two products) — these are the "many" sides, which is
+  // exactly why removing an image from one entity must only delete the join row
+  // and never the Media itself (docs: remove-relationship ≠ delete-media).
+  productHeroes  Product[]       @relation("ProductHeroMedia")
+  productHovers  Product[]       @relation("ProductHoverMedia")
+  productImages  ProductImage[]  @relation("ProductImageMedia")
+  // Pass 13.5D brand assets.
+  siteLogos      SiteSettings[]  @relation("SiteLogoMedia")
+  siteFavicons   SiteSettings[]  @relation("SiteFaviconMedia")
 
   @@index([mediaType])
   @@index([createdAt])
