@@ -15,14 +15,15 @@ export function isAdminPath(pathname: string): boolean {
 /**
  * Locale URL architecture (see lib/i18n/routing.ts):
  *
- *   /about          → Persian (canonical, unprefixed — rewritten internally
- *                     to /fa/about so app/[locale=fa]/about renders)
- *   /en/about       → English (matches app/[locale=en]/about directly)
- *   /fa/about       → 308 redirect to /about (/fa is NOT canonical)
+ *   /about          → English (canonical, unprefixed — rewritten internally
+ *                     to /en/about so app/[locale=en]/about renders)
+ *   /fa/about       → Persian (matches app/[locale=fa]/about directly)
+ *   /en/about       → 308 redirect to /about (/en is NOT canonical)
  *
  * The URL always wins over the henge-lang cookie/localStorage: unprefixed
- * paths are ALWAYS Persian and /en paths are ALWAYS English, regardless of
- * any stored preference. No Accept-Language detection — deterministic URLs.
+ * paths are ALWAYS English and /fa paths are ALWAYS Persian, regardless of
+ * any stored preference. No Accept-Language detection — deterministic URLs,
+ * so `/` is English for every visitor and the canonical URL cannot flip.
  */
 
 /** What the middleware should do with a request path. */
@@ -37,24 +38,36 @@ export type ProxyAction =
  * covers the wiring itself).
  */
 export function resolveProxyAction(pathname: string): ProxyAction {
-  // Explicit English tree — pass through untouched.
-  if (pathname === "/en" || pathname.startsWith("/en/")) {
+  // Canonical Persian tree — pass through untouched.
+  if (pathname === "/fa" || pathname.startsWith("/fa/")) {
     return { type: "pass" };
   }
 
-  // Legacy /fa prefix is not canonical (Persian is unprefixed).
-  // Redirect /fa → / and /fa/<path> → /<path>.
-  if (pathname === "/fa" || pathname.startsWith("/fa/")) {
+  // Legacy /en prefix is not canonical (English is unprefixed).
+  // Redirect /en → / and /en/<path> → /<path>.
+  if (pathname === "/en" || pathname.startsWith("/en/")) {
     return {
       type: "redirect",
-      target: pathname === "/fa" ? "/" : pathname.slice(3),
+      target: pathname === "/en" ? "/" : pathname.slice(3),
     };
   }
 
-  // Every other page path is Persian. Rewrite internally so the browser URL
-  // stays unprefixed while app/[locale=fa]/ renders the page.
+  // Every other page path is English. Rewrite internally so the browser URL
+  // stays unprefixed while app/[locale=en]/ renders the page.
   const internalPath = pathname === "/" ? "" : pathname;
-  return { type: "rewrite", target: `/fa${internalPath}` };
+  return { type: "rewrite", target: `/en${internalPath}` };
+}
+
+/**
+ * The canonical Persian prefix of a request path, or "" for English.
+ *
+ * Used to keep the admin gate's redirects in the language the visitor was
+ * already browsing: a Persian admin hitting `/fa/admin` must land on
+ * `/fa/sign-in`, not the English one. Mirrors the proxy's own pass/redirect
+ * rule above — only `/fa` is a live prefix.
+ */
+function localePrefixOf(pathname: string): string {
+  return pathname === "/fa" || pathname.startsWith("/fa/") ? "/fa" : "";
 }
 
 /**
@@ -85,14 +98,16 @@ export async function proxy(request: NextRequest) {
       headers: request.headers,
     });
 
+    const prefix = localePrefixOf(pathname);
+
     if (!session) {
-      const redirectUrl = new URL("/sign-in", request.url);
+      const redirectUrl = new URL(`${prefix}/sign-in`, request.url);
       redirectUrl.searchParams.set("redirectTo", `${pathname}${search}`);
       return NextResponse.redirect(redirectUrl, 307);
     }
 
     // Role gate: a signed-in user without an admin-level role (plain `user`)
-    // is bounced to the sign-in page with an access-denied message. This is
+    // is bounced to the homepage with an access-denied message. This is
     // the fast edge check; the React-tree backstop lives in
     // lib/admin/access.ts (requireAdminAccess / requireOwnerAccess).
     const role = session.user?.role;
@@ -101,7 +116,7 @@ export async function proxy(request: NextRequest) {
       ADMIN_ROLES.includes(role as (typeof ADMIN_ROLES)[number]);
 
     if (!isAdminRole) {
-      return NextResponse.redirect(new URL("/", request.url), 307);
+      return NextResponse.redirect(new URL(prefix || "/", request.url), 307);
     }
   }
 

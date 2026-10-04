@@ -1,6 +1,6 @@
 import CheckoutForm from "@/components/checkout/CheckoutForm";
 import { auth } from "@/lib/auth/auth";
-import { isLocale } from "@/lib/i18n/routing";
+import { getLocalizedPath, isLocale } from "@/lib/i18n/routing";
 import { headers } from "next/headers";
 import { redirect, notFound } from "next/navigation";
 
@@ -16,8 +16,13 @@ export default async function CheckoutPage({
 
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) {
-    const callback = locale === "en" ? "/en/checkout" : "/checkout";
-    redirect(`/sign-in?redirectTo=${encodeURIComponent(callback)}`);
+    // Both the callback target and the sign-in URL keep the visitor's
+    // language tree, so a Persian checkout returns to /fa/... after sign-in
+    // rather than dropping them into the English default.
+    const callback = getLocalizedPath("/checkout", locale);
+    redirect(
+      `${getLocalizedPath("/sign-in", locale)}?redirectTo=${encodeURIComponent(callback)}`,
+    );
   }
 
   const orderId = typeof query.orderId === "string" ? query.orderId : undefined;

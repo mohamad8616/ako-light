@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { requireAdminAccess } from "@/lib/admin/access";
 import { ADMIN_SHELL_DIR } from "@/lib/admin/sections";
+import { adminTranslations } from "@/lib/i18n/admin-strings";
 import { isLocale } from "@/lib/i18n/routing";
 import { notFound } from "next/navigation";
 
@@ -21,16 +22,17 @@ import { notFound } from "next/navigation";
  * reaches any page below this layout.
  *
  * Direction is CENTRALIZED in ADMIN_SHELL_DIR (lib/admin/sections.ts): the
- * dashboard shell is RTL for EVERY locale, including /en/admin, which used to
- * render LTR and flip the sidebar to the left. The sidebar is docked on the
+ * dashboard shell is RTL for EVERY locale, including the unprefixed English
+ * `/admin`, which used to render LTR and flip the sidebar to the left. The
+ * sidebar is docked on the
  * right in RTL because the shared sidebar's fixed layer relies on physical
  * left/right positioning — in an RTL document with side="left" it would
  * overlay the content instead of sitting beside it.
  *
  * DirectionProvider restates the same direction for Base UI's portalled
  * primitives: dialog/select/menu render into document.body, outside the
- * shell's dir wrapper, so on /en/admin they would otherwise inherit the
- * document's ltr (see components/ui/direction.tsx).
+ * shell's dir wrapper, so on English admin routes they would otherwise
+ * inherit the document's ltr (see components/ui/direction.tsx).
  *
  * The sonner <Toaster /> lives here because every admin CRUD screen reports
  * through useCrudSubmit's toast.success()/toast.error() — without a mounted
@@ -47,12 +49,20 @@ export default async function AdminLayout({
 }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  await requireAdminAccess();
+  await requireAdminAccess(locale);
 
   const dir = ADMIN_SHELL_DIR;
 
+  // The admin dictionary is selected HERE, on the server, from the route's
+  // locale. Admin screens resolve only `admin.*` keys (297 admin keys, 0 public
+  // keys — verified), so the public dictionary is not sent to admin routes at
+  // all, and only the active locale is. See
+  // components/admin/AdminLanguageProvider.tsx.
   return (
-    <AdminLanguageProvider>
+    <AdminLanguageProvider
+      locale={locale}
+      dictionary={adminTranslations[locale]}
+    >
       <DirectionProvider dir={dir}>
         <SidebarProvider
           dir={dir}

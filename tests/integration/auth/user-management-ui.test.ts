@@ -3,7 +3,7 @@
  *
  * This file deliberately mocks NOTHING. It boots the real Next app, signs in
  * over the real `/api/auth/*` surface with a real cookie jar, and then fetches
- * `/en/admin/admins` as each role to assert what the SERVER actually returns.
+ * `/admin/admins` as each role to assert what the SERVER actually returns.
  *
  * Why it is separate from `tests/server/user-management-actions-live.test.ts`:
  * that file must stub `next/headers` to hand a Server Action its request, and
@@ -89,7 +89,7 @@ describeAuth("owner-only user management — real HTTP surface", () => {
     async () => {
       const { user, jar } = await signInAsRole("owner");
 
-      const response = await getPage("/en/admin/admins", jar);
+      const response = await getPage("/admin/admins", jar);
       expect(response.status).toBe(200);
 
       const html = await response.text();
@@ -112,7 +112,20 @@ describeAuth("owner-only user management — real HTTP surface", () => {
     async () => {
       const { jar } = await signInAsRole("admin");
 
-      const response = await getPage("/en/admin/admins", jar);
+      // A second account the table WOULD list (getAdminUserRows selects every
+      // user, not just admin-level ones). Its email is the leak probe: the
+      // refusal is only meaningful if no ROW DATA reaches the body.
+      //
+      // Why not assert on the "you cannot change your own role or status" copy
+      // any more: since Pass 13.6C the admin dictionary is selected on the
+      // server and travels in the RSC payload, so the (admin) LAYOUT's payload
+      // legitimately contains that string even though the page never rendered.
+      // A UI-copy substring can no longer distinguish "table rendered" from
+      // "layout rendered"; account data can.
+      const bystander = await registerUser();
+      created.push(bystander);
+
+      const response = await getPage("/admin/admins", jar);
 
       expect(
         response.status,
@@ -123,7 +136,9 @@ describeAuth("owner-only user management — real HTTP surface", () => {
 
       // The refusal must not leak the management table.
       const html = await response.text();
-      expect(html).not.toContain("You cannot change your own role or status.");
+      expect(html, "no table row data may reach the refusal").not.toContain(
+        bystander.email,
+      );
     },
     // Generous: a cold Turbopack compile of the admin shell has been measured
     // at ~70s, on top of the warm-retry budget.
@@ -135,7 +150,7 @@ describeAuth("owner-only user management — real HTTP surface", () => {
     async () => {
       const { jar } = await signInAsRole("user");
 
-      const response = await getPage("/en/admin/admins", jar);
+      const response = await getPage("/admin/admins", jar);
 
       expect(response.status).toBeGreaterThanOrEqual(300);
       expect(response.status).toBeLessThan(400);

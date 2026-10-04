@@ -4,11 +4,15 @@ import Navbar from "@/components/navbar/Navbar";
 import PageLoader from "@/components/ui/PageLoader";
 import PageTransition from "@/components/ui/PageTransition";
 import Preloader from "@/components/ui/Preloader";
+import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
+import { isLocale } from "@/lib/i18n/routing";
+import { translations } from "@/lib/i18n/translations";
 import { getNavCategories } from "@/lib/repositories/product-categories";
 import {
   getActiveSocialLinks,
   getSiteSettings,
 } from "@/lib/repositories/site-settings";
+import { notFound } from "next/navigation";
 
 /**
  * Public site chrome.
@@ -16,12 +20,23 @@ import {
  * Lives in the (site) route group so the private admin dashboard in (admin)
  * renders without it — route groups never affect the URL, only which layout
  * wraps the pages inside them.
+ *
+ * It also owns the PUBLIC dictionary for this subtree. The [locale] layout above
+ * it provides only a small shell (enough for not-found), so each route group
+ * hands its own subtree the dictionary it needs: (site) the public strings,
+ * (admin) the admin strings. That is what keeps the public dictionary out of the
+ * client graph for admin routes, and keeps the unused locale out of it for both.
  */
 export default async function SiteLayout({
   children,
+  params,
 }: {
   children: React.ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+  if (!isLocale(locale)) notFound();
+
   // The nav menu only needs each category's slug + translation key, so this
   // uses the light reader rather than getProductCategories() — that one
   // eager-loads EVERY product with its images, and because Navbar is a client
@@ -41,7 +56,7 @@ export default async function SiteLayout({
   ]);
 
   return (
-    <>
+    <LanguageProvider locale={locale} dictionary={translations[locale]}>
       <Navbar categories={navCategories} logoUrl={settings?.logoUrl ?? null} />
       <PageLoader />
       <Preloader />
@@ -56,6 +71,6 @@ export default async function SiteLayout({
           icon: link.platform,
         }))}
       />
-    </>
+    </LanguageProvider>
   );
 }

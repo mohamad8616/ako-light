@@ -141,8 +141,16 @@ enum OrderStatus {
 }
 
 /// Fulfillment lifecycle — separate from payment status. Admin-editable.
+///
+/// Forward-only: `unfulfilled → processing → shipped → delivered`, with any
+/// forward step skippable (an admin can ship without marking `processing`) and
+/// `cancelled` reachable from anywhere. Backwards moves and moves out of a
+/// terminal state are refused — see lib/orders/lifecycle.ts, which is the single
+/// source of truth for the rules. Only a `paid` order may progress; cancelling
+/// is allowed from any payment state.
 enum FulfillmentStatus {
   unfulfilled
+  processing
   shipped
   delivered
   cancelled
@@ -522,8 +530,24 @@ model Order {
   totalAmount        Decimal           @db.Decimal(14, 0)
   /// Always "TOMAN" — the unit of totalAmount/OrderItem rows.
   currency           String            @default("TOMAN")
+  /// The ZarinPal authority issued for this order's payment request. The
+  /// callback resolves an order FROM THIS VALUE (`findOrderByAuthority`), never
+  /// from a client-supplied order id — see lib/payments/settlement.ts.
+  ///
+  /// Indexed because that lookup runs on every customer return from the
+  /// gateway; without an index it is a sequential scan of the whole table.
+  /// Deliberately NOT `@unique`: the value is issued by ZarinPal, and a unique
+  /// constraint would convert any historical duplicate into a failed INSERT at
+  /// checkout time — breaking new orders to police data that does not exist.
   zarinpalAuthority  String?
   zarinpalRefId      String?
+  /// Duplicate-checkout guard (Pass 14). A UUID generated once per checkout
+  /// ATTEMPT in the browser and sent with the payload. The unique index makes a
+  /// double-submit — a double-click, a retry, a replayed request — collide with
+  /// the first insert instead of creating a second order and claiming stock
+  /// twice. Nullable so pre-existing rows and any future non-idempotent writer
+  /// are unaffected (Postgres allows many NULLs in a unique index).
+  idempotencyKey     String?           @unique
   recipientName      String
   phone              String
   addressLine        String
@@ -537,6 +561,7 @@ model Order {
   @@index([userId])
   @@index([status])
   @@index([fulfillmentStatus])
+  @@index([zarinpalAuthority])
   @@map("order")
 }
 

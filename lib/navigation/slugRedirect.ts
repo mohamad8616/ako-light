@@ -20,7 +20,7 @@ import { resolveLocale } from "@/lib/seo/metadata";
 
 export interface SlugRedirectOptions {
   /** Route locale param ("fa" | "en"). The redirect keeps the URL's language
-   * tree: Persian is unprefixed, English stays under `/en`. */
+   * tree: English is unprefixed, Persian stays under `/fa`. */
   locale: string;
   /** Product routes only: the category slug segment of the requested URL. */
   categorySlug?: string;

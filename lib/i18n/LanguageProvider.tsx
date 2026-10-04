@@ -8,11 +8,12 @@ import {
   useMemo,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  translations,
-  type TranslationKey,
-} from "./translations";
 import { getLocalizedPath, type Locale } from "./routing";
+// TYPE-ONLY. `TranslationKey` is erased at compile time, so importing it does
+// not pull `./translations` — and with it both locales — back into the client
+// graph. Changing this to a value import silently undoes the whole point of
+// the `dictionary` prop below.
+import type { TranslationKey } from "./translations";
 
 interface LanguageContextValue {
   lang: Locale;
@@ -33,22 +34,33 @@ interface LanguageProviderProps {
    */
   locale: Locale;
   /**
-   * Extra strings merged ON TOP of the public dictionary for this subtree.
+   * The ACTIVE locale's dictionary, selected on the SERVER and passed down.
    *
-   * Admin routes pass the admin dictionary here (`AdminLanguageProvider`), so
-   * the ~43 KB of admin-only strings stay out of the public barrel that every
-   * visitor downloads — see `@/lib/i18n/admin-translations`.
+   * WHY THIS IS A PROP AND NOT AN IMPORT
    *
-   * Pass a module-level object: `useMemo` keys on its identity, so a fresh
-   * object per render would rebuild the merged dictionary every time.
+   * This module is `"use client"`. It used to import the whole `translations`
+   * object and index it at runtime (`translations[lang]`). A dynamic index into
+   * a static object cannot be tree-shaken, so the bundler kept BOTH locales in
+   * the client chunk and every visitor downloaded the unused dictionary —
+   * measured at 18,825 gz for the public pair, present in one chunk.
+   *
+   * The locale is already known server-side (`params.locale`), so the server
+   * picks the dictionary and hands down one locale. That takes the dictionary
+   * out of the client JS graph entirely; it travels in the RSC payload. A
+   * shared layout is NOT re-fetched on client navigation (only the page segment
+   * changes — see the Next docs on partial rendering), so this is paid once per
+   * locale, not once per page.
+   *
+   * Pass a module-level object (as the layouts do). `t` is memoised on its
+   * identity, so a fresh object per render would rebuild it every time.
    */
-  extra?: Record<string, string>;
+  dictionary: Record<string, string>;
 }
 
 export function LanguageProvider({
   children,
   locale,
-  extra,
+  dictionary,
 }: LanguageProviderProps) {
   // The URL is the source of truth: `lang` derives directly from the
   // route locale prop. No internal state — when a navigation changes the
@@ -92,16 +104,9 @@ export function LanguageProvider({
     setLang(lang === "en" ? "fa" : "en");
   }, [setLang, lang]);
 
-  // Merged once per (locale, extra) rather than per `t()` call — `t` runs for
-  // every translated string of every render.
-  const dictionary = useMemo(
-    () =>
-      extra
-        ? ({ ...translations[lang], ...extra } as Record<string, string>)
-        : (translations[lang] as Record<string, string>),
-    [lang, extra],
-  );
-
+  // No merge step any more: the server hands down exactly the dictionary this
+  // subtree needs (see the `dictionary` prop doc above), so there is nothing to
+  // combine here and no per-render allocation.
   const t = useCallback(
     (key: TranslationKey | string) => dictionary[key] ?? key,
     [dictionary],

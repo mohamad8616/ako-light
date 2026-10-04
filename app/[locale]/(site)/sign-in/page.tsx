@@ -4,14 +4,14 @@ import { isLocale } from "@/lib/i18n/routing";
 import { notFound } from "next/navigation";
 
 /**
- * Sign-in route — `/sign-in` for Persian and `/en/sign-in` for English.
+ * Sign-in route — `/sign-in` for English and `/fa/sign-in` for Persian.
  *
  * URL map (see lib/i18n/routing.ts and the proxy in proxy.ts):
- *   /sign-in     fa, canonical and unprefixed: the proxy rewrites it to
- *                /fa/sign-in so this [locale] page renders while the address
+ *   /sign-in     en, canonical and unprefixed: the proxy rewrites it to
+ *                /en/sign-in so this [locale] page renders while the address
  *                bar stays clean.
- *   /en/sign-in  en, the explicit English tree.
- *   /fa/sign-in  308 redirect to /sign-in (/fa is not canonical).
+ *   /fa/sign-in  fa, the explicit Persian tree.
+ *   /en/sign-in  308 redirect to /sign-in (/en is not canonical).
  *
  * This path is also the auth hand-off: proxy.ts lets it through
  * unauthenticated, and when it blocks a protected page it redirects here with

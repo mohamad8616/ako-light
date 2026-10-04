@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useSyncExternalStore } from "react";
+import { clampQuantity } from "./limits";
 
 export interface CartItem {
   productId: string;
@@ -36,12 +37,16 @@ export const useCart = create<CartState>()(
             return {
               items: state.items.map((i) =>
                 i.productId === item.productId
-                  ? { ...i, quantity: i.quantity + quantity }
+                  // Clamped to the same ceiling the server enforces, so the cart
+                  // can never silently grow into a basket checkout will reject.
+                  ? { ...i, quantity: clampQuantity(i.quantity + quantity) }
                   : i
               ),
             };
           }
-          return { items: [...state.items, { ...item, quantity }] };
+          return {
+            items: [...state.items, { ...item, quantity: clampQuantity(quantity) }],
+          };
         }),
 
       removeItem: (productId) =>
@@ -50,14 +55,18 @@ export const useCart = create<CartState>()(
         })),
 
       // quantity <= 0 removes the item entirely, matching the "−" button
-      // at qty 1 acting as a remove control.
+      // at qty 1 acting as a remove control. Anything above the server's
+      // ceiling is clamped rather than stored, so the UI and the checkout
+      // action always agree on what is a valid line.
       setQuantity: (productId, quantity) =>
         set((state) => ({
           items:
             quantity <= 0
               ? state.items.filter((i) => i.productId !== productId)
               : state.items.map((i) =>
-                  i.productId === productId ? { ...i, quantity } : i
+                  i.productId === productId
+                    ? { ...i, quantity: clampQuantity(quantity) }
+                    : i
                 ),
         })),
 

@@ -48,7 +48,18 @@ const createdUsers: TestUser[] = [];
 /** Order ids this suite inserted, deleted before the users they belong to. */
 const createdOrderIds: string[] = [];
 
-/** Inserts a pending order plus one item, returning the order id. */
+/**
+ * A ZarinPal-shaped authority for a test order.
+ *
+ * Settlement resolves the order FROM THE STORED AUTHORITY (never the query
+ * string), so a fixture must carry one to be reachable by the callback. The
+ * shape matches what ZarinPal issues: uppercase alphanumeric, no punctuation.
+ */
+function authorityFor(orderId: string): string {
+  return `ZF${orderId.replace(/-/g, "").toUpperCase()}`;
+}
+
+/** Inserts a pending order plus one item, returning the order id and its authority. */
 async function insertOrder({
   userId,
   phone,
@@ -61,14 +72,15 @@ async function insertOrder({
 }): Promise<string> {
   const orderId = randomUUID();
   const itemId = randomUUID();
+  const authority = authorityFor(orderId);
 
   // `updatedAt` is Prisma's `@updatedAt` — the ORM fills it in, so the column
   // has no database default and a raw insert must supply it explicitly.
   await query(
     `INSERT INTO "order"
-       (id, "userId", "totalAmount", "recipientName", phone, "addressLine", city, "postalCode", "createdAt", "updatedAt")
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())`,
-    [orderId, userId, totalToman, "Test Recipient", phone, "1 Test St", "Tehran", "1234567890"],
+       (id, "userId", "totalAmount", "recipientName", phone, "addressLine", city, "postalCode", "zarinpalAuthority", "createdAt", "updatedAt")
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW(), NOW())`,
+    [orderId, userId, totalToman, "Test Recipient", phone, "1 Test St", "Tehran", "1234567890", authority],
   );
 
   await query(
@@ -111,12 +123,12 @@ async function hitCallback(orderId: string, jar: CookieJar): Promise<Response> {
   const { origin } = await startAuthServer();
   const query = new URLSearchParams({
     orderId,
-    Authority: `AUTH-${orderId}`,
+    Authority: authorityFor(orderId),
     Status: "OK",
   });
   return fetchPageWhenWarm(
     origin,
-    `/en/checkout/callback?${query.toString()}`,
+    `/checkout/callback?${query.toString()}`,
     jar,
   );
 }
@@ -137,13 +149,13 @@ async function hitCallbackWithToken(
     Status: options.status ?? "OK",
     token,
   });
-  const authority = options.authority ?? `AUTH-${orderId}`;
+  const authority = options.authority ?? authorityFor(orderId);
   if (authority) query.set("Authority", authority);
 
   // `new CookieJar()` holds nothing, so `header()` is undefined and the request
   // carries no session cookie at all. Using the harness's warm-retry helper
   // (rather than a bare fetch) keeps this immune to a cold Turbopack compile.
-  return fetchPageWhenWarm(origin, `/en/checkout/callback?${query.toString()}`, new CookieJar());
+  return fetchPageWhenWarm(origin, `/checkout/callback?${query.toString()}`, new CookieJar());
 }
 
 /** Drives the callback route with no cookie AND no token. */
@@ -151,12 +163,12 @@ async function hitCallbackAnonymous(orderId: string): Promise<Response> {
   const { origin } = await startAuthServer();
   const query = new URLSearchParams({
     orderId,
-    Authority: `AUTH-${orderId}`,
+    Authority: authorityFor(orderId),
     Status: "OK",
   });
   return fetchPageWhenWarm(
     origin,
-    `/en/checkout/callback?${query.toString()}`,
+    `/checkout/callback?${query.toString()}`,
     new CookieJar(),
   );
 }
@@ -450,7 +462,7 @@ describeAuth("order receipt — fired by the real payment callback", () => {
       // navigating in-app is not made worse by a bad query param.
       const response = await fetchPageWhenWarm(
         (await startAuthServer()).origin,
-        `/en/checkout/callback?orderId=${orderId}&Authority=AUTH-${orderId}&Status=OK&token=clearly-not-valid`,
+        `/checkout/callback?orderId=${orderId}&Authority=${authorityFor(orderId)}&Status=OK&token=clearly-not-valid`,
         jar,
       );
 
@@ -505,6 +517,182 @@ describeAuth("order receipt — fired by the real payment callback", () => {
       } finally {
         errorSpy.mockRestore();
       }
+    },
+    240_000,
+  );
+
+  // -------------------------------------------------------------------------
+  // Pass 14.5 — callback security through the REAL route
+  // -------------------------------------------------------------------------
+
+  it(
+    "refuses a callback whose authority belongs to ANOTHER order — neither order is touched",
+    async () => {
+      const user = await registerUser();
+      createdUsers.push(user);
+      const { jar } = await signInAs(user.email, user.password, {
+        ip: uniqueTestIp(),
+      });
+
+      const mine = await insertOrder({
+        userId: user.id,
+        phone: "09191234567",
+        totalToman: 1_200_000,
+      });
+      const theirs = await insertOrder({
+        userId: user.id,
+        phone: "09191234567",
+        totalToman: 1_300_000,
+      });
+
+      // The genuine authority for `mine`, but the URL claims `theirs`.
+      const { origin } = await startAuthServer();
+      const query = new URLSearchParams({
+        orderId: theirs,
+        Authority: authorityFor(mine),
+        Status: "OK",
+      });
+      const response = await fetchPageWhenWarm(
+        origin,
+        `/checkout/callback?${query.toString()}`,
+        jar,
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toContain("Unable to verify order");
+      // Neither order was settled by a mismatched callback.
+      expect(await orderStatus(mine)).toBe("pending");
+      expect(await orderStatus(theirs)).toBe("pending");
+    },
+    240_000,
+  );
+
+  it(
+    "rejects a callback with NO authority rather than settling from the order id",
+    async () => {
+      const user = await registerUser();
+      createdUsers.push(user);
+      const { jar } = await signInAs(user.email, user.password, {
+        ip: uniqueTestIp(),
+      });
+
+      const orderId = await insertOrder({
+        userId: user.id,
+        phone: "09191234567",
+        totalToman: 900_000,
+      });
+
+      const { origin } = await startAuthServer();
+      // `orderId` alone is NOT enough to settle: a browser redirect is not proof
+      // of payment, so there is nothing server-side to verify against.
+      const response = await fetchPageWhenWarm(
+        origin,
+        `/checkout/callback?orderId=${orderId}&Status=OK`,
+        jar,
+      );
+
+      expect(response.status).toBe(200);
+      expect(await orderStatus(orderId)).toBe("pending");
+    },
+    240_000,
+  );
+
+  it(
+    "rejects a callback with an unknown authority",
+    async () => {
+      const user = await registerUser();
+      createdUsers.push(user);
+      const { jar } = await signInAs(user.email, user.password, {
+        ip: uniqueTestIp(),
+      });
+
+      const orderId = await insertOrder({
+        userId: user.id,
+        phone: "09191234567",
+        totalToman: 700_000,
+      });
+
+      const { origin } = await startAuthServer();
+      const query = new URLSearchParams({
+        orderId,
+        Authority: "ZF00000000000000000000000000000000",
+        Status: "OK",
+      });
+      const response = await fetchPageWhenWarm(
+        origin,
+        `/checkout/callback?${query.toString()}`,
+        jar,
+      );
+
+      expect(response.status).toBe(200);
+      expect(await response.text()).toContain("Unable to verify order");
+      expect(await orderStatus(orderId)).toBe("pending");
+    },
+    240_000,
+  );
+
+  it(
+    "is safe when the same successful callback is delivered twice — one settlement",
+    async () => {
+      const user = await registerUser();
+      createdUsers.push(user);
+      const { jar } = await signInAs(user.email, user.password, {
+        ip: uniqueTestIp(),
+      });
+
+      const orderId = await insertOrder({
+        userId: user.id,
+        phone: "09191234567",
+        totalToman: 1_400_000,
+      });
+
+      const first = await hitCallback(orderId, jar);
+      expect(first.status).toBe(200);
+      expect(await first.text()).toContain("Payment received");
+      expect(await orderStatus(orderId)).toBe("paid");
+
+      // A gateway retry / refresh. The second delivery must still show success
+      // (the customer must not be told their paid order failed) but must not
+      // write again.
+      const second = await hitCallback(orderId, jar);
+      expect(second.status).toBe(200);
+      expect(await second.text()).toContain("Payment received");
+      expect(await orderStatus(orderId)).toBe("paid");
+    },
+    240_000,
+  );
+
+  it(
+    "serves the callback under the Persian locale without introducing /en",
+    async () => {
+      const user = await registerUser();
+      createdUsers.push(user);
+      const { jar } = await signInAs(user.email, user.password, {
+        ip: uniqueTestIp(),
+      });
+
+      const orderId = await insertOrder({
+        userId: user.id,
+        phone: "09191234567",
+        totalToman: 800_000,
+      });
+
+      const { origin } = await startAuthServer();
+      const query = new URLSearchParams({
+        orderId,
+        Authority: authorityFor(orderId),
+        Status: "OK",
+      });
+      // `/fa/...` is the canonical Persian form; the default English locale is
+      // unprefixed, so `/en/...` must never be introduced by this pass.
+      const response = await fetchPageWhenWarm(
+        origin,
+        `/fa/checkout/callback?${query.toString()}`,
+        jar,
+      );
+
+      expect(response.status).toBe(200);
+      expect(await orderStatus(orderId)).toBe("paid");
     },
     240_000,
   );

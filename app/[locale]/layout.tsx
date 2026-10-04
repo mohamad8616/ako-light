@@ -4,7 +4,14 @@ import { PageLoadInitializer } from "@/components/ui/PageLoadInitializer";
 import { readCartResetSignal } from "@/lib/cart/reset-signal";
 import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import { pick } from "@/lib/i18n/localized";
-import { getLocalizedPath, isLocale, type Locale } from "@/lib/i18n/routing";
+import {
+  defaultLocale,
+  getLocalizedPath,
+  isLocale,
+  locales,
+  type Locale,
+} from "@/lib/i18n/routing";
+import { shellTranslations } from "@/lib/i18n/shell-translations";
 import { translations } from "@/lib/i18n/translations";
 import { getSiteSettings } from "@/lib/repositories/site-settings";
 import { siteName, siteUrl } from "@/lib/seo/config";
@@ -84,14 +91,15 @@ const noora = localFont({
 /**
  * The URL is the source of truth for the active locale:
  *
- *   /about      -> fa (unprefixed -- Persian is the primary language)
- *   /en/about   -> en
+ *   /about      -> en (unprefixed -- English is the primary language)
+ *   /fa/about   -> fa
  *
- * The proxy rewrites unprefixed URLs to /fa/... internally, so every request
- * that reaches this layout has a valid locale param.
+ * The proxy rewrites unprefixed URLs to /en/... internally, so every request
+ * that reaches this layout has a valid locale param. Both locales are still
+ * prerendered; only which one is prefixed changed.
  */
 export function generateStaticParams() {
-  return [{ locale: "fa" }, { locale: "en" }];
+  return locales.map((locale) => ({ locale }));
 }
 
 // Only the two known locales are valid route params; anything else 404s.
@@ -143,7 +151,7 @@ export async function generateMetadata({
       languages: {
         "fa-IR": getLocalizedPath(homePath, "fa"),
         "en-US": getLocalizedPath(homePath, "en"),
-        "x-default": getLocalizedPath(homePath, "fa"),
+        "x-default": getLocalizedPath(homePath, defaultLocale),
       },
     },
     openGraph: {
@@ -213,7 +221,16 @@ export default async function LocaleLayout({
           dangerouslySetInnerHTML={{ __html: jsonLdScript(webSite) }}
         />
         <SmoothScroll>
-          <LanguageProvider locale={initialLang}>
+          {/* The SHELL dictionary, not the full public one: this layout wraps
+              BOTH route groups, and the only consumer above them is
+              app/[locale]/not-found.tsx. (site) and (admin) each re-provide the
+              dictionary their own subtree needs, so the full public dictionary
+              never has to reach the client for an admin route. See
+              lib/i18n/shell-translations.ts. */}
+          <LanguageProvider
+            locale={initialLang}
+            dictionary={shellTranslations[initialLang]}
+          >
             {/* Clears the persisted cart when a payment for this order has
                 succeeded. Renders nothing. */}
             <CartResetOnPaidOrder paidOrderId={cartResetOrderId} />

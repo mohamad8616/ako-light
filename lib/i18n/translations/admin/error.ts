@@ -17,6 +17,8 @@ export const errorEn = {
   "admin.error.unsupportedType": "This file type is not supported.",
   "admin.error.slugTaken": "This handle is already in use.",
   "admin.error.notFound": "The item was not found.",
+  "admin.error.invalidTransition":
+    "That fulfillment change is not allowed for this order's current state.",
   "admin.error.inUse":
     "This media item is currently in use and cannot be deleted.",
   "admin.error.relationViolation": "A linked item is missing.",
@@ -37,6 +39,8 @@ export const errorFa = {
   "admin.error.unsupportedType": "این نوع فایل پشتیبانی نمی‌شود.",
   "admin.error.slugTaken": "این شناسه قبلاً استفاده شده است.",
   "admin.error.notFound": "موردی یافت نشد.",
+  "admin.error.invalidTransition":
+    "این تغییر وضعیت برای سفارش در وضعیت فعلی مجاز نیست.",
   "admin.error.inUse":
     "این رسانه در حال استفاده است و حذف نمی‌شود.",
   "admin.error.relationViolation": "یک مورد مرتبط یافت نشد.",

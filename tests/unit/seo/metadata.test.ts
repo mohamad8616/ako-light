@@ -12,9 +12,9 @@ describe("resolveLocale", () => {
     expect(resolveLocale("fa")).toBe("fa");
   });
 
-  it("falls back to Persian for unknown values", () => {
-    expect(resolveLocale("de")).toBe("fa");
-    expect(resolveLocale("")).toBe("fa");
+  it("falls back to the default locale for unknown values", () => {
+    expect(resolveLocale("de")).toBe("en");
+    expect(resolveLocale("")).toBe("en");
   });
 });
 
@@ -58,19 +58,21 @@ describe("trimDescription", () => {
 describe("buildLocalizedMetadata", () => {
   const base = { title: "About Home Form", description: "About page." };
 
-  it("canonicalizes Persian URLs unprefixed", () => {
+  it("canonicalizes Persian URLs with the /fa prefix", () => {
     const meta = buildLocalizedMetadata({ locale: "fa", path: "/about", ...base });
-    expect(meta.alternates?.canonical).toBe("/about");
-    expect(meta.alternates?.languages?.["fa-IR"]).toBe("/about");
-    expect(meta.alternates?.languages?.["en-US"]).toBe("/en/about");
+    expect(meta.alternates?.canonical).toBe("/fa/about");
+    expect(meta.alternates?.languages?.["fa-IR"]).toBe("/fa/about");
+    expect(meta.alternates?.languages?.["en-US"]).toBe("/about");
+    // x-default always points at the default locale — unprefixed English.
     expect(meta.alternates?.languages?.["x-default"]).toBe("/about");
   });
 
-  it("canonicalizes English URLs with the /en prefix", () => {
+  it("canonicalizes English URLs unprefixed (the default locale)", () => {
     const meta = buildLocalizedMetadata({ locale: "en", path: "/about", ...base });
-    expect(meta.alternates?.canonical).toBe("/en/about");
-    expect(meta.alternates?.languages?.["en-US"]).toBe("/en/about");
-    expect(meta.alternates?.languages?.["fa-IR"]).toBe("/about");
+    expect(meta.alternates?.canonical).toBe("/about");
+    expect(meta.alternates?.languages?.["en-US"]).toBe("/about");
+    expect(meta.alternates?.languages?.["fa-IR"]).toBe("/fa/about");
+    expect(meta.alternates?.languages?.["x-default"]).toBe("/about");
   });
 
   it("sets the right OpenGraph locale fields per language", () => {

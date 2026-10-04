@@ -13,6 +13,7 @@ import { productEn, productFa } from "./product";
 import { productsEn, productsFa } from "./products";
 import { projectsEn, projectsFa } from "./projects";
 import { s34En, s34Fa } from "./s34";
+import { ordersEn, ordersFa } from "./orders";
 import { searchEn, searchFa } from "./search";
 
 // Combined per-language dictionaries. Key order follows module order below;
@@ -33,6 +34,7 @@ export const en = {
   ...productsEn,
   ...productEn,
   ...cartEn,
+  ...ordersEn,
   ...collectionsEn,
   ...flagshipEn,
   ...materialsEn,
@@ -52,6 +54,7 @@ export const fa = {
   ...productsFa,
   ...productFa,
   ...cartFa,
+  ...ordersFa,
   ...collectionsFa,
   ...flagshipFa,
   ...materialsFa,

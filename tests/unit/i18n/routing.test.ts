@@ -10,16 +10,28 @@ import {
 } from "@/lib/i18n/routing";
 
 describe("locale model constants", () => {
-  it("exposes the two supported locales", () => {
-    expect(locales).toEqual(["fa", "en"]);
+  it("exposes the two supported locales, default first", () => {
+    expect(locales).toEqual(["en", "fa"]);
   });
 
-  it("uses Persian as the default locale", () => {
-    expect(defaultLocale).toBe("fa");
+  it("uses English as the default locale", () => {
+    expect(defaultLocale).toBe("en");
   });
 
-  it("uses only English as an explicit URL prefix", () => {
-    expect(prefixedLocales).toEqual(["en"]);
+  it("uses only Persian as an explicit URL prefix", () => {
+    expect(prefixedLocales).toEqual(["fa"]);
+  });
+
+  it("keeps the default locale inside the supported set", () => {
+    expect(locales).toContain(defaultLocale);
+  });
+
+  it("keeps every prefixed locale inside the supported set", () => {
+    for (const l of prefixedLocales) expect(locales).toContain(l);
+  });
+
+  it("never lists the default locale as a prefixed one", () => {
+    expect(prefixedLocales).not.toContain(defaultLocale);
   });
 });
 
@@ -37,30 +49,30 @@ describe("isLocale", () => {
 });
 
 describe("stripLocalePrefix", () => {
-  it("strips the English root prefix", () => {
-    expect(stripLocalePrefix("/en")).toBe("/");
-  });
-
-  it("strips the English prefix from nested paths", () => {
-    expect(stripLocalePrefix("/en/about")).toBe("/about");
-    expect(stripLocalePrefix("/en/products")).toBe("/products");
-    expect(stripLocalePrefix("/en/products/pendant-light")).toBe(
+  it("strips the Persian prefix (the canonical one)", () => {
+    expect(stripLocalePrefix("/fa")).toBe("/");
+    expect(stripLocalePrefix("/fa/about")).toBe("/about");
+    expect(stripLocalePrefix("/fa/products")).toBe("/products");
+    expect(stripLocalePrefix("/fa/products/pendant-light")).toBe(
       "/products/pendant-light",
     );
   });
 
-  it("leaves unprefixed Persian paths unchanged", () => {
+  it("strips the legacy English prefix too", () => {
+    expect(stripLocalePrefix("/en")).toBe("/");
+    expect(stripLocalePrefix("/en/about")).toBe("/about");
+    expect(stripLocalePrefix("/en/products")).toBe("/products");
+  });
+
+  it("leaves unprefixed (English) paths unchanged", () => {
     expect(stripLocalePrefix("/")).toBe("/");
     expect(stripLocalePrefix("/about")).toBe("/about");
     expect(stripLocalePrefix("/products")).toBe("/products");
   });
 
-  it("does not strip /fa — /fa → / redirect lives in proxy.ts, not routing.ts", () => {
-    // The routing helpers only understand the explicit /en prefix. The
-    // legacy /fa prefix is normalized by proxy.ts (a 308 redirect) so the
-    // unit-level contract here is "leave /fa alone".
-    expect(stripLocalePrefix("/fa")).toBe("/fa");
-    expect(stripLocalePrefix("/fa/about")).toBe("/fa/about");
+  it("does not strip a path that merely starts with the letters", () => {
+    expect(stripLocalePrefix("/english")).toBe("/english");
+    expect(stripLocalePrefix("/fast")).toBe("/fast");
   });
 
   it("handles the empty path", () => {
@@ -69,65 +81,82 @@ describe("stripLocalePrefix", () => {
 });
 
 describe("toCanonicalPath", () => {
-  it("normalizes English paths to their canonical unprefixed form", () => {
-    expect(toCanonicalPath("/en")).toBe("/");
+  it("normalizes both prefixed forms to the locale-neutral path", () => {
     expect(toCanonicalPath("/en/about")).toBe("/about");
-    expect(toCanonicalPath("/en/products")).toBe("/products");
+    expect(toCanonicalPath("/fa/about")).toBe("/about");
+    expect(toCanonicalPath("/en")).toBe("/");
+    expect(toCanonicalPath("/fa")).toBe("/");
   });
 
-  it("keeps canonical Persian paths unchanged", () => {
+  it("keeps canonical English paths unchanged", () => {
     expect(toCanonicalPath("/about")).toBe("/about");
     expect(toCanonicalPath("/products")).toBe("/products");
   });
 });
 
 describe("getLocalizedPath", () => {
-  it("keeps Persian (default locale) paths unprefixed", () => {
-    expect(getLocalizedPath("/", "fa")).toBe("/");
-    expect(getLocalizedPath("/about", "fa")).toBe("/about");
-    expect(getLocalizedPath("/products", "fa")).toBe("/products");
+  it("keeps English (the default locale) unprefixed", () => {
+    expect(getLocalizedPath("/", "en")).toBe("/");
+    expect(getLocalizedPath("/about", "en")).toBe("/about");
+    expect(getLocalizedPath("/products", "en")).toBe("/products");
   });
 
-  it("prefixes English paths with /en", () => {
-    expect(getLocalizedPath("/", "en")).toBe("/en");
-    expect(getLocalizedPath("/about", "en")).toBe("/en/about");
-    expect(getLocalizedPath("/products", "en")).toBe("/en/products");
+  it("prefixes Persian paths with /fa", () => {
+    expect(getLocalizedPath("/", "fa")).toBe("/fa");
+    expect(getLocalizedPath("/about", "fa")).toBe("/fa/about");
+    expect(getLocalizedPath("/products", "fa")).toBe("/fa/products");
   });
 
   it("handles nested and dynamic paths", () => {
     expect(getLocalizedPath("/products/pendant-light", "en")).toBe(
-      "/en/products/pendant-light",
-    );
-    expect(getLocalizedPath("/designers/massimo-castagna", "en")).toBe(
-      "/en/designers/massimo-castagna",
+      "/products/pendant-light",
     );
     expect(getLocalizedPath("/products/pendant-light", "fa")).toBe(
-      "/products/pendant-light",
+      "/fa/products/pendant-light",
+    );
+    expect(getLocalizedPath("/designers/massimo-castagna", "fa")).toBe(
+      "/fa/designers/massimo-castagna",
     );
   });
 
   it("is idempotent for already-prefixed paths", () => {
-    expect(getLocalizedPath("/en/about", "en")).toBe("/en/about");
-    expect(getLocalizedPath("/en", "en")).toBe("/en");
+    expect(getLocalizedPath("/fa/about", "fa")).toBe("/fa/about");
+    expect(getLocalizedPath("/fa", "fa")).toBe("/fa");
   });
 
-  it("normalizes a /en input back to the root for Persian", () => {
-    expect(getLocalizedPath("/en", "fa")).toBe("/");
-    expect(getLocalizedPath("/en/about", "fa")).toBe("/about");
+  it("normalizes a legacy /en input to the canonical unprefixed form", () => {
+    expect(getLocalizedPath("/en", "en")).toBe("/");
+    expect(getLocalizedPath("/en/about", "en")).toBe("/about");
   });
 
   it("preserves trailing slashes", () => {
-    expect(getLocalizedPath("/about/", "en")).toBe("/en/about/");
-    expect(getLocalizedPath("/about/", "fa")).toBe("/about/");
+    expect(getLocalizedPath("/about/", "en")).toBe("/about/");
+    expect(getLocalizedPath("/about/", "fa")).toBe("/fa/about/");
   });
 
   it("treats the empty path as the root", () => {
-    expect(getLocalizedPath("", "fa")).toBe("/");
-    expect(getLocalizedPath("", "en")).toBe("/en");
+    expect(getLocalizedPath("", "en")).toBe("/");
+    expect(getLocalizedPath("", "fa")).toBe("/fa");
   });
 
-  it("does not rewrite /fa prefixes (proxy concern)", () => {
-    expect(getLocalizedPath("/fa/about", "fa")).toBe("/fa/about");
-    expect(getLocalizedPath("/fa/about", "en")).toBe("/en/fa/about");
+  it("round-trips: a localized path strips back to its canonical form", () => {
+    for (const locale of locales) {
+      for (const path of ["/", "/about", "/products/x"]) {
+        expect(stripLocalePrefix(getLocalizedPath(path, locale))).toBe(
+          path === "" ? "/" : path,
+        );
+      }
+    }
+  });
+
+  it("derives the prefix from defaultLocale rather than hardcoding a locale", () => {
+    // The rule is "default => no prefix, other => prefix". If this ever
+    // regresses to a hardcoded "fa", the first assertion below fails.
+    const nonDefault = locales.filter((l) => l !== defaultLocale);
+    expect(nonDefault).toEqual(["fa"]);
+    expect(getLocalizedPath("/about", defaultLocale)).toBe("/about");
+    for (const l of nonDefault) {
+      expect(getLocalizedPath("/about", l)).toBe(`/${l}/about`);
+    }
   });
 });

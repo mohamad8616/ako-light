@@ -28,6 +28,13 @@ export type AdminErrorCode =
   | "slugTaken"
   | "notFound"
   /**
+   * The requested order fulfillment move is not permitted by the lifecycle —
+   * walking an order backwards, leaving a terminal state, or starting
+   * fulfilment on an order that has not been paid
+   * (lib/orders/lifecycle.ts).
+   */
+  | "invalidTransition"
+  /**
    * The row is still referenced and must not be deleted (media reference guard,
    * lib/repositories/media-references.ts).
    */
@@ -112,6 +119,7 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
       inUse: 0,
       relationViolation: 0,
       selfTarget: 0,
+      invalidTransition: 0,
       unknown: 0,
     };
     const field = issue.path.join(".");

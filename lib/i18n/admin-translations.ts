@@ -20,31 +20,21 @@
  * only such case was the sign-in page's access-denied message, which now lives
  * in `./translations/auth` as `auth.access.denied.*` — see the note there.
  */
-import {
-  translations,
-  type Language,
-  type TranslationKey,
-} from "./translations";
-import { adminEn, adminFa } from "./translations/admin";
-
-/** The admin strings for each locale, kept out of the public barrel. */
-export const adminTranslations: Record<Language, Record<string, string>> = {
-  en: adminEn,
-  fa: adminFa,
-};
-
-/** Keys that exist ONLY in the admin dictionary. */
-export type AdminOnlyKey = keyof typeof adminEn;
+import { translations, type Language } from "./translations";
+import { adminTranslations } from "./admin-strings";
 
 /**
- * Every key an admin screen may render.
+ * The admin dictionary, re-exported for existing server-side importers and for
+ * the unit tests that assert its shape.
  *
- * Admin screens legitimately use both halves — a heading from `admin.*` next to
- * a shared `common.*` label — so the admin type is the union rather than just
- * the admin keys. Public code must keep using `TranslationKey`, which stays
- * admin-free and is what keeps the split honest.
+ * The definition lives in `./admin-strings`, which imports nothing but the admin
+ * dictionary. It has to: the CLIENT (`AdminLanguageProvider`) imports the
+ * dictionary, and anything this module imports lands in the admin client chunk.
+ * While `adminTranslations` was defined HERE it dragged the public
+ * `translations` object into that chunk — see the note in `./admin-strings`.
  */
-export type AdminTranslationKey = TranslationKey | AdminOnlyKey;
+export { adminTranslations } from "./admin-strings";
+export type { AdminOnlyKey, AdminTranslationKey } from "./admin-strings";
 
 /**
  * Public ∪ admin, merged once at module load.

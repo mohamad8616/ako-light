@@ -13,12 +13,12 @@ type LinkProps = ComponentProps<typeof NextLink>;
  * Internal string hrefs (starting with a single "/") are rewritten to the
  * active route locale:
  *
- *   current locale fa: href="/about"      → "/about"
- *   current locale en: href="/about"      → "/en/about"
+ *   current locale en: href="/about"      → "/about"
+ *   current locale fa: href="/about"      → "/fa/about"
  *
  * External URLs, anchors (#...) and non-string hrefs pass through untouched.
  * The `lang` comes from the URL via LanguageProvider, so every internal link
- * on an /en page automatically keeps the /en prefix.
+ * on a /fa page automatically keeps the /fa prefix.
  */
 export default function Link({ href, ...rest }: LinkProps) {
   const { lang } = useLanguage();

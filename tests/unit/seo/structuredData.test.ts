@@ -35,10 +35,11 @@ describe("jsonLdScript", () => {
 
 describe("absoluteUrl", () => {
   it("builds locale-aware absolute URLs", () => {
-    expect(absoluteUrl("/about", "en")).toBe(`${siteUrl}/en/about`);
-    expect(absoluteUrl("/about", "fa")).toBe(`${siteUrl}/about`);
-    expect(absoluteUrl("/", "en")).toBe(`${siteUrl}/en`);
-    expect(absoluteUrl("/", "fa")).toBe(`${siteUrl}/`);
+    // English is the default locale, so its URLs are unprefixed.
+    expect(absoluteUrl("/about", "en")).toBe(`${siteUrl}/about`);
+    expect(absoluteUrl("/about", "fa")).toBe(`${siteUrl}/fa/about`);
+    expect(absoluteUrl("/", "en")).toBe(`${siteUrl}/`);
+    expect(absoluteUrl("/", "fa")).toBe(`${siteUrl}/fa`);
   });
 });
 
@@ -58,7 +59,7 @@ describe("webSiteJsonLd", () => {
     const org = organizationJsonLd("Home Form", "d");
     const site = webSiteJsonLd("Home Form", "d", absoluteUrl("/", "en"), org);
     expect(site["@type"]).toBe("WebSite");
-    expect(site.url).toBe(`${siteUrl}/en`);
+    expect(site.url).toBe(`${siteUrl}/`);
     expect(site.publisher).toBe(org);
   });
 });
@@ -137,7 +138,7 @@ describe("breadcrumbListJsonLd", () => {
     expect(items).toHaveLength(2);
     expect(items[0].position).toBe(1);
     expect(items[1].position).toBe(2);
-    expect(items[0].item).toBe(`${siteUrl}/en/products`);
-    expect(items[1].item).toBe(`${siteUrl}/en/products/lighting`);
+    expect(items[0].item).toBe(`${siteUrl}/products`);
+    expect(items[1].item).toBe(`${siteUrl}/products/lighting`);
   });
 });

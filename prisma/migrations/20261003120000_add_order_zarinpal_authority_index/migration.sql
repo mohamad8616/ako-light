@@ -1,0 +1,32 @@
+-- Pass 16 — index the payment-authority lookups.
+--
+-- WHY THIS INDEX EXISTS
+--
+-- The callback path resolves a payment to its order by AUTHORITY, never by a
+-- client-supplied order id:
+--
+--   app/[locale]/(site)/checkout/callback/page.tsx
+--     prisma.order.findFirst({ where: { zarinpalAuthority: authority } })
+--   lib/payments/settlement.ts
+--     findOrderByAuthority() → prisma.order.findFirst({ where: { zarinpalAuthority } })
+--
+-- `zarinpalAuthority` had no index, so both were sequential scans of the whole
+-- `order` table on the hottest write path in the commerce system (every
+-- customer returning from ZarinPal). That is a real production problem the
+-- moment the table grows past a few thousand rows, and it is exactly the query
+-- whose latency sits between a customer paying and their order being recorded.
+--
+-- WHY NOT `@unique`
+--
+-- A NOT-UNIQUE index is deliberate. Authority generation is ZarinPal's, not
+-- ours, and the existing behaviour on a duplicate would be to return whichever
+-- row Postgres found first. Making the column unique would turn any historical
+-- duplicate (or a future gateway quirk) into a failed INSERT at checkout time —
+-- i.e. it would break NEW checkouts to protect against a data problem that does
+-- not exist today. The index is here for lookup speed, not as a constraint.
+--
+-- PURELY ADDITIVE and non-blocking: one index, no column change, no data
+-- rewrite. The `order` table keeps serving traffic throughout.
+
+-- CreateIndex
+CREATE INDEX "order_zarinpalAuthority_idx" ON "order"("zarinpalAuthority");

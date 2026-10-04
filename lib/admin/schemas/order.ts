@@ -18,6 +18,7 @@ import { idSchema } from "./common";
  */
 export const fulfillmentStatusSchema = z.enum([
   "unfulfilled",
+  "processing",
   "shipped",
   "delivered",
   "cancelled",

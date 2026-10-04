@@ -77,3 +77,41 @@ describe("Toman -> Rial conversion (payment boundary only)", () => {
     expect(formatRial(1234.7)).toBe("۱٬۲۳۵ ریال");
   });
 });
+
+/**
+ * The x10 unit fact is encoded in TWO modules — `tomanToRial` here and
+ * `toRial` in lib/payments/zarinpal.ts — because the gateway module is a
+ * frozen protocol boundary that must not import from the i18n layer. That
+ * duplication is deliberate, so it is pinned instead of removed: if either
+ * copy drifts, the charge and the displayed "amount charged" disagree and this
+ * fails.
+ *
+ * This is the specific accident §12 of Pass 14 names: 10,000,000 Toman
+ * silently becoming 10,000,000 Rial — a 10x undercharge at the gateway.
+ */
+describe("Toman -> Rial is the SAME conversion on both sides of the boundary", () => {
+  it("agrees with the gateway's own toRial", async () => {
+    const { toRial } = await import("@/lib/payments/zarinpal");
+    for (const toman of [0, 1, 10, 999, 10_000_000, 45_000_000, 1_234_567_890]) {
+      expect(tomanToRial(toman)).toBe(toRial(toman));
+    }
+  });
+
+  it("is never a 1:1 pass-through — 10,000,000 Toman is 100,000,000 Rial", async () => {
+    const { toRial } = await import("@/lib/payments/zarinpal");
+    expect(toRial(10_000_000)).toBe(100_000_000);
+    expect(tomanToRial(10_000_000)).toBe(100_000_000);
+    expect(toRial(10_000_000)).not.toBe(10_000_000);
+  });
+
+  it("stays exact for the largest amount the Decimal(14,0) column can hold", async () => {
+    const { toRial } = await import("@/lib/payments/zarinpal");
+    // 99,999,999,999,999 Toman — the column's ceiling.
+    const maxToman = 99_999_999_999_999;
+    const rial = toRial(maxToman);
+    // 999,999,999,999,990 Rial is still well inside Number.MAX_SAFE_INTEGER.
+    expect(rial).toBe(999_999_999_999_990);
+    expect(Number.isSafeInteger(rial)).toBe(true);
+    expect(tomanToRial(maxToman)).toBe(rial);
+  });
+});

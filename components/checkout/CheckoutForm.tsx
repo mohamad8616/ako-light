@@ -9,6 +9,21 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { formatProductPrice } from "@/lib/i18n/price";
 import { useState } from "react";
 
+/**
+ * A fresh duplicate-checkout key. Generated in the browser because only the
+ * browser knows whether two submissions are the SAME attempt (a double-click,
+ * a retry) or two genuinely different ones.
+ *
+ * `crypto.randomUUID` is unavailable in non-secure contexts, so there is a
+ * fallback — the key only has to be unique per attempt, not unguessable.
+ */
+function newIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `ck-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export default function CheckoutForm() {
   const { dir, lang } = useLanguage();
   const items = useCart((state) => state.items);
@@ -24,12 +39,33 @@ export default function CheckoutForm() {
   const [result, setResult] = useState<CheckoutActionResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Duplicate-checkout guard (Pass 14). One key per checkout ATTEMPT: a
+  // double-submitted form re-sends the same value, so the server returns the
+  // order it already created instead of making a second one.
+  const [idempotencyKey, setIdempotencyKey] = useState(newIdempotencyKey);
+  // …but a key must only ever describe ONE basket. If the cart changes, a new
+  // key is minted, otherwise a genuine second order for different items would
+  // be deduplicated against the first. Render-phase reset, matching the pattern
+  // in ProductModal — no effect, so there is no stale-key window.
+  const cartSignature = items
+    .map((item) => `${item.productId}:${item.quantity}`)
+    .sort()
+    .join("|");
+  const [lastCartSignature, setLastCartSignature] = useState(cartSignature);
+  if (cartSignature !== lastCartSignature) {
+    setLastCartSignature(cartSignature);
+    setIdempotencyKey(newIdempotencyKey());
+  }
+
   function update(field: keyof typeof form, value: string) {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    // Second line of defence behind the disabled button: a submit that fires
+    // while one is already in flight would otherwise send a second request.
+    if (submitting) return;
     setSubmitting(true);
     setResult(null);
 
@@ -38,6 +74,7 @@ export default function CheckoutForm() {
         productId: item.productId,
         quantity: item.quantity,
       })),
+      idempotencyKey,
       ...form,
     });
 

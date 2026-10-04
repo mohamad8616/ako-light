@@ -6,8 +6,11 @@ import { formatToman } from "@/lib/i18n/price";
 import { isLocale } from "@/lib/i18n/routing";
 import { sendOrderReceipt } from "@/lib/notifications/order-receipt";
 import { authorizeOrderAccess } from "@/lib/orders/access-token";
-import { verify, ZarinPalError } from "@/lib/payments/zarinpal";
-import { claimPendingOrder } from "@/lib/repositories/orders";
+import {
+  failPendingPayment,
+  settlePayment,
+  type SettlementOutcome,
+} from "@/lib/payments/settlement";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 
@@ -37,28 +40,39 @@ export default async function CheckoutCallbackPage({
   // the one order it names.
   const token = typeof query.token === "string" ? query.token : undefined;
 
-  if (!orderId) {
+  // The order is resolved FROM THE AUTHORITY, not from the query string. The
+  // `?orderId=` param is a convenience/consistency hint only: it can never
+  // select an order, and a mismatch between it and the authority's order is
+  // refused outright (see settlePayment). Everything the settlement writes —
+  // the expected amount above all — comes from the order row itself, so a
+  // browser cannot influence what is verified or charged.
+  const order = authority
+    ? await prisma.order.findFirst({
+        where: { zarinpalAuthority: authority },
+        select: {
+          id: true,
+          status: true,
+          userId: true,
+          currency: true,
+          totalAmount: true,
+          zarinpalAuthority: true,
+        },
+      })
+    : null;
+
+  if (!order) {
+    // No stored authority matches. We cannot know WHICH order was paid, so
+    // nothing is read or written — not even for a signed-in visitor.
     return (
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
-        <h1 className="text-3xl font-medium">Payment failed</h1>
+        <h1 className="text-3xl font-medium">Unable to verify order</h1>
         <p className="mt-4 text-stone-600">
-          The payment callback did not include an order reference.
+          We could not match this payment to one of your orders. If you were
+          charged, contact us with your order number and we will confirm it.
         </p>
       </main>
     );
   }
-
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    select: {
-      id: true,
-      status: true,
-      userId: true,
-      currency: true,
-      totalAmount: true,
-      zarinpalAuthority: true,
-    },
-  });
 
   // Two accepted paths, decided in one place (see lib/orders/access-token.ts):
   //   1. the signed-in owner of the order — the in-app path, unchanged;
@@ -71,7 +85,7 @@ export default async function CheckoutCallbackPage({
     token,
   });
 
-  if (!order || !access) {
+  if (!access) {
     return (
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
         <h1 className="text-3xl font-medium">Unable to verify order</h1>
@@ -83,16 +97,12 @@ export default async function CheckoutCallbackPage({
   }
 
   if (status !== "OK" || !authority) {
-    // The customer came back from the gateway WITHOUT a success status ("NOK",
-    // or no Authority at all) — ZarinPal is telling us this payment did not
-    // happen. That is a verdict about the payment, so recording it failed is
-    // correct, and the guarded claim releases the stock this order reserved
-    // (see claimPendingOrder). It will not downgrade an order that another
-    // callback has already settled as paid.
-    await claimPendingOrder({
-      orderId: order.id,
-      status: "failed",
-    });
+    // ZarinPal is telling us this payment did not happen, and it is the same
+    // order the authority belongs to. `failPendingPayment` only ever moves
+    // `pending → failed` and releases the reservation exactly once, so a
+    // re-delivered non-success callback cannot double-release stock and cannot
+    // downgrade an order another callback already settled as paid.
+    await failPendingPayment(order.id);
 
     return (
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
@@ -105,45 +115,34 @@ export default async function CheckoutCallbackPage({
     );
   }
 
-  // Only the network + DB work is guarded. React does not render synchronously
-  // with `return <JSX>`, so rendering must happen OUTSIDE the try/catch —
-  // otherwise a rendering error would never be caught here anyway.
-  let refId: string | null = null;
-  let verifyErrorMessage: string | null = null;
-  // Set only when we have NO verdict on the payment — see the catch below.
-  let couldNotConfirm = false;
-
-  // Captured BEFORE the update so the receipt fires only on the real
-  // pending/failed → paid transition. This page re-runs verification on every
+  // Captured BEFORE the settle so the receipt fires only on the real
+  // (pending|failed) → paid transition. This page re-runs verification on every
   // visit, so without the guard a customer refreshing (or reopening the link
   // from their receipt) would be sent a second copy each time.
   const alreadyPaid = order.status === "paid";
 
+  // Verification and settlement are one guarded operation: verify with
+  // ZarinPal using the STORED total, then make the status change and the stock
+  // reconciliation commit together. A browser redirect is not proof of
+  // payment — this call is.
+  let outcome: SettlementOutcome;
   try {
-    const result = await verify({
+    outcome = await settlePayment({
       authority,
-      // Order.totalAmount is stored in Toman; verify converts x10 to Rial to
-      // match the amount sent when the payment request was created.
-      amountToman: Number(order.totalAmount.toString()),
+      orderIdHint: orderId ?? null,
     });
-
-    refId = result.refId ?? null;
-
-    // A verified payment is the one transition that must never be lost, so the
-    // order is claimed with a single guarded UPDATE rather than a plain write:
-    //   - `pending` → this callback is the first to settle it;
-    //   - `paid`    → a re-visit re-verifies harmlessly (the receipt guard
-    //                 below stops a duplicate);
-    //   - `failed`  → ZarinPal has now confirmed payment, so a previously
-    //                 mis-recorded failure is CORRECTED to paid. This is what
-    //                 un-does the damage the old catch block caused.
-    // `claimPendingOrder` also releases the stock reservation on a
-    // pending → failed transition (see lib/repositories/orders.ts).
-    await claimPendingOrder({
+  } catch (error) {
+    // `settlePayment` is written not to throw, but a fault here must never
+    // surface an internal message to the customer.
+    console.error("[checkout] Unexpected settlement fault", {
       orderId: order.id,
-      status: refId ? "paid" : "failed",
-      zarinpalRefId: refId,
+      category: error instanceof Error ? error.name : "UnknownError",
     });
+    outcome = { kind: "error", orderId: order.id };
+  }
+
+  if (outcome.kind === "paid") {
+    const refId = outcome.refId;
 
     // The payment is now durably recorded, so record the "empty the cart"
     // signal server-side. Doing it HERE rather than only through the client
@@ -162,47 +161,70 @@ export default async function CheckoutCallbackPage({
     if (refId && !alreadyPaid) {
       await sendOrderReceipt(order.id);
     }
-  } catch (error) {
-    // THE BUG THIS BLOCK EXISTS TO PREVENT: this used to unconditionally write
-    // `status: "failed"`. When ZARINPAL_MERCHANT_ID was missing or malformed,
-    // ZarinPal rejected every call with `code: 0`, so a genuinely PAID order
-    // was recorded as failed — for every customer, silently, with the customer
-    // told to retry (and able to pay twice).
-    //
-    // A gateway fault means we have NO VERDICT on this payment. The only safe
-    // actions are: leave the order recoverable, say so plainly, and do NOT
-    // invite a retry. The order stays `pending`, which is honest — and because
-    // ZarinPal has already taken the money in the common case, a later
-    // re-visit of this callback (or reconciliation) can still settle it to
-    // `paid`, which a `failed` status would have made impossible to distinguish
-    // from a genuine decline.
-    if (error instanceof ZarinPalError && error.isGatewayFault) {
-      couldNotConfirm = true;
 
-      // Logged loudly, naming the variable family rather than any value, so an
-      // operator can find this in production logs without a database query.
-      console.error(
-        `[checkout] Gateway fault while verifying order ${order.id}: ${error.message} ` +
-          `Order left "${order.status}" so it can still be reconciled to paid.`,
-      );
-    } else {
-      // ZarinPal answered about THIS payment and the answer was no (or an
-      // unexpected non-gateway error). Recording it failed is correct, and the
-      // guarded claim keeps the transition one-way — it will not overwrite an
-      // order that another concurrent callback has already settled as paid.
-      await claimPendingOrder({
-        orderId: order.id,
-        status: "failed",
-      });
-
-      verifyErrorMessage =
-        error instanceof Error
-          ? error.message
-          : "We could not verify the payment with ZarinPal.";
-    }
+    return (
+      <>
+        <PaymentCallbackState success orderId={order.id} />
+        <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
+          <h1 className="text-3xl font-medium">Payment received</h1>
+          <p className="mt-4 text-stone-600">
+            Your order has been paid successfully.
+          </p>
+          <div className="mt-6 rounded border border-stone-200 bg-white p-4 text-sm text-stone-700">
+            Order ID: <span className="font-mono break-all">{order.id}</span>
+            <div className="mt-2">
+              Amount paid:{" "}
+              <span className="font-medium text-stone-950">
+                {formatOrderAmount(order.totalAmount, order.currency, locale)}
+              </span>
+            </div>
+            {refId ? (
+              <div className="mt-2">
+                Reference ID:{" "}
+                <span className="font-mono break-all">{refId}</span>
+              </div>
+            ) : null}
+          </div>
+        </main>
+      </>
+    );
   }
 
-  if (couldNotConfirm) {
+  if (outcome.kind === "alreadyPaid") {
+    // A re-delivered callback, a refresh, or a gateway retry. The order is
+    // already settled, so there is nothing to write and no side effect to
+    // repeat — but the customer must still see their success and order details.
+    return (
+      <>
+        <PaymentCallbackState success orderId={order.id} />
+        <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
+          <h1 className="text-3xl font-medium">Payment received</h1>
+          <p className="mt-4 text-stone-600">
+            Your order has been paid successfully.
+          </p>
+          <div className="mt-6 rounded border border-stone-200 bg-white p-4 text-sm text-stone-700">
+            Order ID: <span className="font-mono break-all">{order.id}</span>
+            <div className="mt-2">
+              Amount paid:{" "}
+              <span className="font-medium text-stone-950">
+                {formatOrderAmount(order.totalAmount, order.currency, locale)}
+              </span>
+            </div>
+          </div>
+        </main>
+      </>
+    );
+  }
+
+  if (outcome.kind === "unconfirmed") {
+    // NO VERDICT from ZarinPal. Leave the order recoverable, say so plainly,
+    // and do NOT invite a retry — the customer may have already paid. Logged
+    // with the order id only, never a credential or gateway payload.
+    console.error(
+      `[checkout] Gateway fault while verifying order ${order.id}. ` +
+        `Order left "${order.status}" so it can still be reconciled to paid.`,
+    );
+
     return (
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
         <h1 className="text-3xl font-medium">We could not confirm your payment</h1>
@@ -219,49 +241,71 @@ export default async function CheckoutCallbackPage({
     );
   }
 
-  if (verifyErrorMessage) {
+  if (outcome.kind === "manualReview") {
+    // A real successful payment on an order whose reservation was already
+    // released and cannot be re-established. Marking it paid would sell stock
+    // the shop does not hold, so the order stays failed and a human is asked to
+    // resolve it. The customer is told the truth without being told to pay
+    // again.
+    console.error(
+      `[checkout] Payment verified for order ${order.id} but its stock ` +
+        `reservation could not be restored; left "${order.status}" for manual review.`,
+    );
+
     return (
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
-        <h1 className="text-3xl font-medium">Payment verification failed</h1>
-        <p className="mt-4 text-stone-600">{verifyErrorMessage}</p>
+        <h1 className="text-3xl font-medium">Payment received — confirmation pending</h1>
+        <p className="mt-4 text-stone-600">
+          Your payment was received, but we cannot confirm this order
+          automatically. Please do not pay again — contact us with your order
+          number and we will sort it out.
+        </p>
+        <div className="mt-6 rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          Order ID: <span className="font-mono break-all">{order.id}</span>
+        </div>
       </main>
     );
   }
 
-  return (
-    <>
-      <PaymentCallbackState success={Boolean(refId)} orderId={order.id} />
+  if (outcome.kind === "cancelled") {
+    return (
       <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
-        {refId ? (
-          <>
-            <h1 className="text-3xl font-medium">Payment received</h1>
-            <p className="mt-4 text-stone-600">
-              Your order has been paid successfully.
-            </p>
-            <div className="mt-6 rounded border border-stone-200 bg-white p-4 text-sm text-stone-700">
-              Order ID: <span className="font-mono break-all">{order.id}</span>
-              <div className="mt-2">
-                Amount paid:{" "}
-                <span className="font-medium text-stone-950">
-                  {formatOrderAmount(order.totalAmount, order.currency, locale)}
-                </span>
-              </div>
-              <div className="mt-2">
-                Reference ID:{" "}
-                <span className="font-mono break-all">{refId}</span>
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            <h1 className="text-3xl font-medium">Payment verification failed</h1>
-            <p className="mt-4 text-stone-600">
-              The payment was not verified by ZarinPal. Please retry checkout.
-            </p>
-          </>
-        )}
+        <h1 className="text-3xl font-medium">This order was cancelled</h1>
+        <p className="mt-4 text-stone-600">
+          This payment was received after the order was cancelled, so it was not
+          applied automatically. Contact us with your order number and we will
+          refund or re-place the order.
+        </p>
+        <div className="mt-6 rounded border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+          Order ID: <span className="font-mono break-all">{order.id}</span>
+        </div>
       </main>
-    </>
+    );
+  }
+
+  if (outcome.kind === "mismatch") {
+    // The URL named a different order than the authority belongs to. Neither
+    // order was touched and no stock was moved.
+    return (
+      <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
+        <h1 className="text-3xl font-medium">Unable to verify order</h1>
+        <p className="mt-4 text-stone-600">
+          This payment callback does not belong to the order it references.
+        </p>
+      </main>
+    );
+  }
+
+  // `failed` (a real decline) and `error` (a database fault) share the same
+  // customer-facing outcome: the order is not paid and the customer may retry.
+  // No internal message is exposed.
+  return (
+    <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
+      <h1 className="text-3xl font-medium">Payment verification failed</h1>
+      <p className="mt-4 text-stone-600">
+        The payment was not verified by ZarinPal. Please retry checkout.
+      </p>
+    </main>
   );
 }
 

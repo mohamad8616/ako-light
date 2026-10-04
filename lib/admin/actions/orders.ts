@@ -26,12 +26,22 @@ import {
   orderFulfillmentFormSchema,
   type OrderFulfillmentFormValues,
 } from "@/lib/admin/schemas/order";
-import { updateOrderFulfillmentStatus } from "@/lib/repositories/orders";
+import {
+  InvalidOrderTransitionError,
+  updateOrderFulfillmentStatus,
+} from "@/lib/repositories/orders";
 
 /**
  * Updates an order's fulfillment status. Payment status is intentionally not
  * accepted — it is not part of the schema, so a forged payload cannot smuggle
  * it in either.
+ *
+ * The lifecycle rules are enforced in the repository, not here and not in the
+ * form: `updateOrderFulfillmentStatus` re-reads the order's CURRENT state inside
+ * a transaction and refuses anything the lifecycle does not permit (walking
+ * backwards, leaving a terminal state, or starting fulfilment on an order that
+ * has not been paid). A refusal is reported as a field-level error so the admin
+ * sees why the change did not stick.
  */
 export async function updateOrderFulfillmentAction(
   input: OrderFulfillmentFormValues,
@@ -51,6 +61,13 @@ export async function updateOrderFulfillmentAction(
     revalidateCatalog("orders", { id: parsed.data.id });
     return actionOk(undefined);
   } catch (error) {
+    if (error instanceof InvalidOrderTransitionError) {
+      // The message comes from `admin.error.invalidTransition` via the shared
+      // code→copy mapping, so no internals are echoed to the admin.
+      return actionFail("invalidTransition", [
+        { field: "fulfillmentStatus", code: "invalidTransition" },
+      ]);
+    }
     return toActionResult(error);
   }
 }

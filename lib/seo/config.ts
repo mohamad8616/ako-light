@@ -1,4 +1,4 @@
-import type { Locale } from "@/lib/i18n/routing";
+import { defaultLocale, locales, type Locale } from "@/lib/i18n/routing";
 
 /**
  * Central site/SEO configuration.
@@ -28,11 +28,15 @@ export const siteUrl: string = normalizeSiteUrl(rawSiteUrl);
 /** Metadata/structured-data brand name. */
 export const siteName = "Home Form";
 
-/** Persian is the primary locale — canonical Persian URLs are unprefixed. */
-export const defaultLocale: Locale = "fa";
+/**
+ * Re-exported, NOT redefined. `lib/i18n/routing.ts` owns the locale model;
+ * a second `defaultLocale = "fa"` used to live here and was a genuine second
+ * source of truth for the exact thing this pass inverts.
+ */
+export { defaultLocale };
 
 /** Locales exposed to search engines (order conveys priority). */
-export const supportedLocales: Locale[] = ["fa", "en"];
+export const supportedLocales: Locale[] = locales;
 
 /** hreflang region tags, matched to the URL architecture. */
 export const hreflangTags = {

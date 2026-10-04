@@ -88,7 +88,7 @@ const PUBLIC_ROUTES: Record<AdminSection, readonly string[]> = {
  * `revalidatePath` matches the ROUTE FILE structure, not the browser URL. The
  * route groups are part of that structure, so both `(admin)` and `(site)` must
  * be included in the patterns below. `proxy.ts` rewrites the unprefixed public
- * URL to the `fa` locale internally, while `/en/...` passes through; using the
+ * URL to the `en` locale internally, while `/fa/...` passes through; using the
  * route-file patterns invalidates both locale variants. `refresh()` then
  * re-renders the page the action ran on so the table reflects the change
  * immediately.

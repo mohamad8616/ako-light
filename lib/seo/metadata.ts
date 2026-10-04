@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import {
+  defaultLocale,
   getLocalizedPath,
   isLocale,
   type Locale,
@@ -13,7 +14,7 @@ import type { JsonLdObject } from "./structuredData";
  * source of truth.
  */
 export function resolveLocale(locale: string): Locale {
-  return isLocale(locale) ? locale : "fa";
+  return isLocale(locale) ? locale : defaultLocale;
 }
 
 /**
@@ -27,7 +28,7 @@ export interface LocalizedMetadataInput {
   /**
    * Locale-neutral canonical path, e.g. "/about" or "/collections/ritual-gravity".
    * The per-locale URLs are derived with getLocalizedPath():
-   *   fa → "/collections/ritual-gravity", en → "/en/collections/ritual-gravity".
+   *   en → "/collections/ritual-gravity", fa → "/fa/collections/ritual-gravity".
    * Never pass a path that already contains "/en" or "/fa".
    */
   path: string;
@@ -50,9 +51,10 @@ export interface LocalizedMetadataInput {
  * Build page metadata with the correct canonical URL and hreflang
  * alternates for the active locale.
  *
- * Canonicals always use the browser-visible URLs from Pass 5's routing:
- * Persian pages canonicalize to their unprefixed URL, English pages to
- * their /en URL. "/fa/..." (the proxy's internal rewrite) never appears.
+ * Canonicals always use the browser-visible URLs from the routing model:
+ * English pages canonicalize to their unprefixed URL, Persian pages to their
+ * /fa URL. "/en/..." (the legacy prefix) and the proxy's internal rewrite
+ * never appear.
  */
 export function buildLocalizedMetadata({
   locale,
@@ -71,8 +73,8 @@ export function buildLocalizedMetadata({
   for (const [tag, l] of Object.entries(hreflangTags)) {
     languages[tag] = getLocalizedPath(path, l as Locale);
   }
-  // x-default points at the primary language (unprefixed Persian).
-  languages["x-default"] = getLocalizedPath(path, "fa");
+  // x-default points at the default locale — the unprefixed English tree.
+  languages["x-default"] = getLocalizedPath(path, defaultLocale);
 
   const ogLocale = lang === "fa" ? "fa_IR" : "en_US";
   const ogAlternateLocale = lang === "fa" ? "en_US" : "fa_IR";

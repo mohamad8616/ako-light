@@ -7,6 +7,7 @@ import { formatToman } from "@/lib/i18n/price";
 import { isLocale, type Locale } from "@/lib/i18n/routing";
 import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import { getOrderAdminDetail } from "@/lib/repositories/orders";
+import type { OrderPaymentStatus } from "@/lib/orders/lifecycle";
 import { notFound } from "next/navigation";
 
 /**
@@ -241,10 +242,15 @@ export default async function OrderDetailPage({
           </div>
         </section>
 
-        {/* The one editable control */}
+        {/* The one editable control. `paymentStatus` gates it: the lifecycle
+            only lets a PAID order progress, so an unpaid order can only be
+            cancelled (see lib/orders/lifecycle.ts). */}
         <FulfillmentStatusForm
           orderId={detail.id}
           fulfillmentStatus={detail.fulfillmentStatus}
+          paymentStatus={
+            detail.status as OrderPaymentStatus
+          }
         />
       </div>
     </div>

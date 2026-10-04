@@ -1,5 +1,6 @@
 import { ADMIN_ROLES, ROLES, type AppRole } from "@/lib/auth/permissions";
 import { auth } from "@/lib/auth/auth";
+import { defaultLocale, getLocalizedPath, type Locale } from "@/lib/i18n/routing";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -53,11 +54,20 @@ export async function getAdminIdentity(): Promise<{
  * admin-level role (`admin` or `owner` — see ADMIN_ROLES). Anything else
  * (anonymous or plain `user`) lands on the sign-in page with an
  * access-denied message rendered above the form.
+ *
+ * `locale` is OPTIONAL and defaults to the default locale, so the ~60 existing
+ * no-argument call sites (and their tests) are unaffected. Only the `(admin)`
+ * layout passes it, because only the layout knows the route locale — that
+ * keeps a Persian admin on `/fa/sign-in` instead of dropping them into the
+ * English default. The proxy's own gate (proxy.ts) already does this for the
+ * primary path; this is the React-tree backstop.
  */
-export async function requireAdminAccess(): Promise<AppRole> {
+export async function requireAdminAccess(
+  locale: Locale = defaultLocale,
+): Promise<AppRole> {
   const role = await getAdminRole();
   if (!role) {
-    redirect("/sign-in?denied=1");
+    redirect(`${getLocalizedPath("/sign-in", locale)}?denied=1`);
   }
   return role;
 }
@@ -67,13 +77,15 @@ export async function requireAdminAccess(): Promise<AppRole> {
  * this point is bounced back to the dashboard — deliberately not to the
  * sign-in page, because they *are* signed in and authorized for the shell.
  */
-export async function requireOwnerAccess(): Promise<"owner"> {
+export async function requireOwnerAccess(
+  locale: Locale = defaultLocale,
+): Promise<"owner"> {
   const role = await getAdminRole();
   if (!role) {
-    redirect("/sign-in?denied=1");
+    redirect(`${getLocalizedPath("/sign-in", locale)}?denied=1`);
   }
   if (role !== ROLES.owner) {
-    redirect("/admin");
+    redirect(getLocalizedPath("/admin", locale));
   }
   return role as "owner";
 }

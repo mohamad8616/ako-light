@@ -3,7 +3,7 @@
  *
  * This file deliberately mocks NOTHING. It boots the real Next app, signs in
  * over the real `/api/auth/*` surface with a real cookie jar, and then fetches
- * `/en/admin/media` as each role to assert what the SERVER actually returns.
+ * `/admin/media` as each role to assert what the SERVER actually returns.
  *
  * The plan asks for exactly this and it cannot be proved any other way: the
  * media page has no gate of its own — it inherits the `(admin)` layout's
@@ -65,7 +65,7 @@ async function signInAsRole(
  */
 async function getMediaPage(jar: CookieJar): Promise<Response> {
   const { origin } = await startAuthServer();
-  return fetchPageWhenWarm(origin, "/en/admin/media", jar);
+  return fetchPageWhenWarm(origin, "/admin/media", jar);
 }
 
 describeAuth("media library route — real HTTP authorization", () => {

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getLocalizedPath, type Locale } from "@/lib/i18n/routing";
+import { getLocalizedPath, locales, type Locale } from "@/lib/i18n/routing";
 import { getCollections } from "@/lib/repositories/collections";
 import { getDesigners } from "@/lib/repositories/designers";
 import { getFlagshipsWithDetail } from "@/lib/repositories/flagships";
@@ -8,16 +8,17 @@ import { getProductCategories } from "@/lib/repositories/product-categories";
 import { getProjects } from "@/lib/repositories/projects";
 import { siteUrl } from "@/lib/seo/config";
 
-const SITEMAP_LOCALES: Locale[] = ["fa", "en"];
+const SITEMAP_LOCALES: Locale[] = locales;
 
 /**
  * Sitemap for the public site in both languages.
  *
- * Every canonical URL is emitted explicitly: Persian unprefixed and English
- * /en. Each entry carries its language alternates (fa-IR / en-US) so
+ * Every canonical URL is emitted explicitly: English unprefixed and Persian
+ * /fa. Each entry carries its language alternates (fa-IR / en-US) so
  * crawlers see the full language mapping either way.
  *
- *  - No /fa/... URLs (not canonical) and no /search (noindex).
+ *  - No /en/... URLs (the legacy prefix is not canonical) and no /search
+ *    (noindex).
  *  - Dynamic URLs come from the same data sources the pages use, so every
  *    listed URL is guaranteed to exist.
  *  - No fabricated lastModified: the placeholder data has no reliable

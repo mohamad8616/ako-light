@@ -22,7 +22,7 @@ import { stripLocalePrefix } from "@/lib/i18n/routing";
  *     lib/i18n/Link.tsx adds the `/en` prefix at render time.
  */
 
-/** The admin shell is RTL regardless of the `/en` prefix (forced in the layout). */
+/** The admin shell is RTL regardless of locale (forced in the layout). */
 export const ADMIN_SHELL_DIR = "rtl";
 
 /** The dashboard route, and the only nav item that matches itself exactly. */
@@ -82,22 +82,17 @@ export const ADMIN_NAV_ITEMS: readonly AdminNavItem[] = [
 ];
 
 /**
- * `/fa` is never a canonical browser URL — proxy.ts 308-redirects it to the
- * unprefixed form — but a rewritten request can surface internally as
- * `/fa/admin/...`. The previous sidebar handled that case explicitly, so the
- * lookup tolerates it here rather than silently losing the active state.
- */
-const INTERNAL_FA_PREFIX = /^\/fa(?=\/|$)/;
-
-/**
  * The locale-less, trailing-slash-free form of a live pathname, so the
- * browser's `/en/admin/products`, a rewritten `/fa/admin/products`, and the
+ * browser's `/fa/admin/products`, a legacy `/en/admin/products`, and the
  * canonical `/admin/products` all behave identically (the URL is the source
  * of truth for locale — see lib/i18n/routing.ts).
+ *
+ * `stripLocalePrefix` removes BOTH known prefixes, so this needs no
+ * locale-specific handling of its own: whichever language is default, the
+ * prefixed form of the other one normalizes to the same canonical path.
  */
 function canonicalPath(pathname: string): string {
-  const path = stripLocalePrefix(pathname).replace(INTERNAL_FA_PREFIX, "");
-  return path.replace(/\/+$/, "") || "/";
+  return stripLocalePrefix(pathname).replace(/\/+$/, "") || "/";
 }
 
 /**
