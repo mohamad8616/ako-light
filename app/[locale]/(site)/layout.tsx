@@ -13,6 +13,8 @@ import {
   getSiteSettings,
 } from "@/lib/repositories/site-settings";
 import { notFound } from "next/navigation";
+import { Analytics } from "@vercel/analytics/next";
+
 
 /**
  * Public site chrome.
@@ -57,6 +59,7 @@ export default async function SiteLayout({
 
   return (
     <LanguageProvider locale={locale} dictionary={translations[locale]}>
+      <Analytics />
       <Navbar categories={navCategories} logoUrl={settings?.logoUrl ?? null} />
       <PageLoader />
       <Preloader />
