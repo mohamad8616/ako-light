@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db/prisma";
 import type { Localized } from "@/lib/i18n/localized";
 import {
   checkFulfillmentTransition,
+  releasesReservationOnCancel,
   type FulfillmentStatus,
   type TransitionRefusal,
 } from "@/lib/orders/lifecycle";
@@ -166,6 +167,19 @@ export const getOrderAdminDetail = cache(
  *      callback settling the order mid-flight) makes this match 0 rows and the
  *      move is refused instead of clobbering the newer state.
  *
+ *   3. **Cancelling an unpaid order returns its reservation, exactly once.**
+ *      A `pending` order's checkout reservation (`claimProductStock`) is still
+ *      held, and the stale sweep will never touch the order once its fulfilment
+ *      is `cancelled` — so this IS the release path. It runs only after the
+ *      guarded update matched a row (the winner), INSIDE the same transaction,
+ *      so:
+ *        - a repeat cancellation is a same-state no-op and moves no stock;
+ *        - a duplicate concurrent cancellation matches 0 rows and throws, so
+ *          the two callers cannot both credit the shelf.
+ *      A `paid` order releases nothing (the goods are owed; there is no
+ *      automatic refund) and a `failed` order releases nothing (its reservation
+ *      was already returned by the `pending → failed` transition).
+ *
  * Payment status is deliberately NOT writable here — `Order.status` is written
  * only by ZarinPal's callback, so no dashboard action can mark an order paid.
  *
@@ -215,6 +229,14 @@ export const updateOrderFulfillmentStatus = async (
         from,
         fulfillmentStatus,
       );
+    }
+
+    // The guarded update above is the IDEMPOTENCY + CONCURRENCY guard: it matched
+    // a row exactly once, so exactly one caller reaches this release for this
+    // transition. See guarantee (3) in the doc comment for why each payment
+    // status is handled the way it is.
+    if (releasesReservationOnCancel(from, fulfillmentStatus, order.status)) {
+      await releaseOrderStock(id, tx);
     }
   }, ORDER_TX_OPTIONS);
 };
@@ -564,6 +586,13 @@ export async function releaseOrderStock(
  *      the stock movement commit together; and because the status update is
  *      guarded, a re-delivered failure callback releases nothing a second time.
  *
+ *   4. **A cancelled fulfilment is refused on BOTH transitions.** Cancelling an
+ *      order returns its reservation in `updateOrderFulfillmentStatus`, so a row
+ *      whose fulfilment is `cancelled` no longer holds stock. Letting a later
+ *      callback write `paid` would sell inventory the order does not have, and
+ *      letting it write `failed` would release (credit) the reservation a second
+ *      time. The WHERE clause therefore excludes cancelled fulfilments.
+ *
  * @returns whether the status actually changed. Callers use it to gate
  *          side-effects that must happen once (the order receipt).
  *
@@ -601,9 +630,23 @@ export async function claimPendingOrder(params: {
         // accepted only while the order is still pending, so it cannot undo a
         // confirmed payment.
         status: status === "paid" ? { not: "paid" } : "pending",
-        ...(staleBefore
-          ? { createdAt: { lt: staleBefore }, fulfillmentStatus: "unfulfilled" as const }
-          : {}),
+        // A CANCELLED FULFILMENT is refused on BOTH transitions. This is an
+        // INVENTORY guard on the payment axis, not a merge of the two axes:
+        //   - `→ paid` is refused because the reservation was released when the
+        //     order was cancelled, so writing `paid` would record a payment for
+        //     goods the shop no longer holds ("paid with phantom inventory").
+        //     lib/payments/settlement.ts refuses the same case up front.
+        //   - `→ failed` is refused because `failed` RELEASES the reservation,
+        //     and this order's was already returned by the cancellation — a
+        //     decline callback arriving afterwards would otherwise credit the
+        //     shelf a second time.
+        // The stale sweep additionally pins `fulfillmentStatus = "unfulfilled"`
+        // (below), which already excludes cancelled orders; the two agree, so
+        // the sweep's behaviour is unchanged.
+        fulfillmentStatus: staleBefore
+          ? ("unfulfilled" as const)
+          : { not: "cancelled" as const },
+        ...(staleBefore ? { createdAt: { lt: staleBefore } } : {}),
       },
       data: {
         status,

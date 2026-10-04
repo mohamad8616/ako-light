@@ -44,6 +44,7 @@ import {
   type PaymentStatus,
   type PaymentTransitionRefusal,
 } from "@/lib/payments/payment-state";
+import type { FulfillmentStatus } from "@/lib/orders/lifecycle";
 import {
   claimProductStock,
   releaseOrderStock,
@@ -58,6 +59,15 @@ export type SettleableOrder = {
   /** Stored in Toman — the ONLY authoritative amount. Never from the client. */
   totalAmount: number;
   zarinpalAuthority: string | null;
+  /**
+   * The FULFILMENT axis. Settlement never writes it — it is read purely as a
+   * refusal precondition. A `cancelled` fulfilment means an operator abandoned
+   * the order and its reservation was already returned to the shelf (see
+   * `updateOrderFulfillmentStatus`), so a late gateway success must not settle
+   * it: that would be "paid with phantom inventory", and it would re-open the
+   * exact state the cancellation closed.
+   */
+  fulfillmentStatus: FulfillmentStatus;
 };
 
 /**
@@ -111,6 +121,7 @@ export async function findOrderByAuthority(
     select: {
       id: true,
       status: true,
+      fulfillmentStatus: true,
       userId: true,
       totalAmount: true,
       zarinpalAuthority: true,
@@ -122,6 +133,7 @@ export async function findOrderByAuthority(
   return {
     id: row.id,
     status: row.status as PaymentStatus,
+    fulfillmentStatus: row.fulfillmentStatus as FulfillmentStatus,
     userId: row.userId,
     // Decimal -> number at the boundary. Stored Toman, never Rial.
     totalAmount: Number(row.totalAmount.toString()),
@@ -223,9 +235,24 @@ export async function settlePayment(params: {
     return { kind: "alreadyPaid", orderId: order.id };
   }
 
-  if (order.status === "cancelled") {
+  if (order.status === "cancelled" || order.fulfillmentStatus === "cancelled") {
     // A deliberate cancellation is not resurrected by a later gateway success.
     // Nothing is written and no stock is touched.
+    //
+    // The FULFILMENT check is the operator-side cancellation. Only the gateway
+    // may write `Order.status`, so an admin cancelling an unpaid order leaves
+    // the payment axis at `pending` while `fulfillmentStatus` becomes
+    // `cancelled` — and that cancellation already returned the reservation.
+    // Without this check the callback would flip the order to `paid`, producing
+    // "paid with phantom inventory" on an order an operator deliberately
+    // abandoned.
+    //
+    // The callback is NOT swallowed: this project has no automatic refund path,
+    // so a real charge on a cancelled order is an operational signal that a
+    // human must resolve. Log the category and order id (never customer, amount
+    // or gateway data) and answer with the `cancelled` copy, which already tells
+    // the customer to contact us instead of paying again.
+    logSafely("cancelled-order-callback", order.id, "settlement refused");
     return { kind: "cancelled", orderId: order.id };
   }
 
@@ -283,7 +310,7 @@ export async function settleVerifiedPayment(params: {
         // pre-verification read (another callback, the sweep, an admin action).
         const current = await tx.order.findUnique({
           where: { id: orderId },
-          select: { id: true, status: true },
+          select: { id: true, status: true, fulfillmentStatus: true },
         });
 
         if (!current) return { kind: "error" as const };
@@ -296,7 +323,11 @@ export async function settleVerifiedPayment(params: {
           return { kind: "alreadyPaid" as const };
         }
 
-        if (status === "cancelled") {
+        // A cancellation on EITHER axis refuses the settlement. The fulfilment
+        // axis carries the OPERATOR cancellation (see `settlePayment`) and its
+        // reservation has already been returned — settling it would be "paid
+        // with phantom inventory".
+        if (status === "cancelled" || current.fulfillmentStatus === "cancelled") {
           return { kind: "cancelled" as const };
         }
 
@@ -336,7 +367,17 @@ export async function settleVerifiedPayment(params: {
           status === "failed" ? ["failed"] : ["pending"];
 
         const settled = await tx.order.updateMany({
-          where: { id: orderId, status: { in: allowedFrom } },
+          where: {
+            id: orderId,
+            status: { in: allowedFrom },
+            // Re-asserted AT THE DATABASE, not merely read above. An operator can
+            // cancel between that read and this write, and the cancellation does
+            // NOT touch `status` — so without this clause the update would still
+            // match and stamp `paid` onto a cancelled order. With it, the cancel
+            // wins, this matches 0 rows, and the transaction rolls back (undoing
+            // any re-reservation) instead of resurrecting the order.
+            fulfillmentStatus: { not: "cancelled" },
+          },
           data: {
             status: "paid",
             updatedAt: new Date(),
@@ -388,8 +429,10 @@ export async function settleVerifiedPayment(params: {
       // The transaction rolled back, so any re-reservation was undone. Report
       // the winner's state rather than an error.
       const settled = await readSettledState(orderId);
-      if (settled === "paid") return { kind: "alreadyPaid", orderId };
-      if (settled === "cancelled") return { kind: "cancelled", orderId };
+      if (settled?.status === "paid") return { kind: "alreadyPaid", orderId };
+      if (settled?.status === "cancelled" || settled?.fulfillmentCancelled) {
+        return { kind: "cancelled", orderId };
+      }
       return { kind: "failed", orderId, changed: false };
     }
 
@@ -495,16 +538,27 @@ class NotReservableError extends Error {
   }
 }
 
-/** Reads the durable payment status after a lost race. */
+/**
+ * Reads the durable state after a lost race.
+ *
+ * BOTH axes are read: a concurrent OPERATOR cancellation does not change
+ * `status`, so the payment column alone cannot tell the loser what won the race
+ * — it would report `failed` for an order that was cancelled.
+ */
 async function readSettledState(
   orderId: string,
-): Promise<PaymentStatus | null> {
+): Promise<{ status: PaymentStatus; fulfillmentCancelled: boolean } | null> {
   try {
     const row = await prisma.order.findUnique({
       where: { id: orderId },
-      select: { status: true },
+      select: { status: true, fulfillmentStatus: true },
     });
-    return row ? (row.status as PaymentStatus) : null;
+    return row
+      ? {
+          status: row.status as PaymentStatus,
+          fulfillmentCancelled: row.fulfillmentStatus === "cancelled",
+        }
+      : null;
   } catch {
     return null;
   }

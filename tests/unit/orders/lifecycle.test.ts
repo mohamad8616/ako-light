@@ -11,6 +11,7 @@ import {
   deriveTimeline,
   FULFILLMENT_STATUSES,
   isTerminalFulfillmentStatus,
+  releasesReservationOnCancel,
   TIMELINE_STEP_KEYS,
   type FulfillmentStatus,
   type OrderPaymentStatus,
@@ -141,6 +142,77 @@ describe("checkFulfillmentTransition — same-state submit", () => {
       ok: true,
       changed: false,
     });
+  });
+});
+
+describe("releasesReservationOnCancel — the inventory half of a cancellation", () => {
+  /** The states a cancellation move can actually come from. */
+  const cancellable = FULFILLMENT_STATUSES.filter(
+    (status) => !isTerminalFulfillmentStatus(status),
+  );
+
+  it("returns the reservation when an UNPAID order is cancelled", () => {
+    // The leak this fixes: a `pending` order still holds its checkout
+    // reservation, and the stale sweep ignores a cancelled order — so if the
+    // cancellation does not release, those units are gone from the shelf
+    // forever.
+    for (const from of cancellable) {
+      expect(releasesReservationOnCancel(from, "cancelled", "pending")).toBe(true);
+    }
+  });
+
+  it("never releases a PAID or already-released order's stock", () => {
+    // The goods are owed, so the ordered inventory stays accounted for exactly
+    // once. Cancelling a paid order is an operational record, not a stock
+    // movement — and this project has NO automatic refund. A `failed` payment
+    // already returned the reservation, so releasing again would over-credit.
+    for (const from of cancellable) {
+      expect(releasesReservationOnCancel(from, "cancelled", "paid")).toBe(false);
+      expect(releasesReservationOnCancel(from, "cancelled", "failed")).toBe(false);
+      expect(releasesReservationOnCancel(from, "cancelled", "cancelled")).toBe(false);
+    }
+  });
+
+  it("never releases for a terminal state — that move does not exist", () => {
+    for (const from of FULFILLMENT_STATUSES.filter(
+      isTerminalFulfillmentStatus,
+    )) {
+      for (const payment of [
+        "pending",
+        "paid",
+        "failed",
+        "cancelled",
+      ] as OrderPaymentStatus[]) {
+        expect(releasesReservationOnCancel(from, "cancelled", payment)).toBe(false);
+      }
+    }
+  });
+
+  it("releases only on a move INTO cancelled", () => {
+    // Every forward step keeps the reservation; only abandonment returns it.
+    for (const to of ["processing", "shipped", "delivered"] as FulfillmentStatus[]) {
+      expect(releasesReservationOnCancel("unfulfilled", to, "pending")).toBe(false);
+    }
+    // A same-state submit is a no-op, so it must not move stock either.
+    expect(releasesReservationOnCancel("cancelled", "cancelled", "pending")).toBe(false);
+    expect(releasesReservationOnCancel("unfulfilled", "unfulfilled", "pending")).toBe(false);
+  });
+
+  it("agrees with the transition check: release implies the move was allowed", () => {
+    for (const from of FULFILLMENT_STATUSES) {
+      for (const payment of [
+        "pending",
+        "paid",
+        "failed",
+        "cancelled",
+      ] as OrderPaymentStatus[]) {
+        if (!releasesReservationOnCancel(from, "cancelled", payment)) continue;
+        expect(checkFulfillmentTransition(from, "cancelled", payment)).toEqual({
+          ok: true,
+          changed: true,
+        });
+      }
+    }
   });
 });
 

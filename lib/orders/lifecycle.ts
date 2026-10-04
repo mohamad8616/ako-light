@@ -122,6 +122,47 @@ export function checkFulfillmentTransition(
   return { ok: true, changed: true };
 }
 
+/**
+ * Whether this transition abandons a reservation that is STILL HELD — and so
+ * must return the ordered quantities to the shelf, exactly once.
+ *
+ * The reservation is claimed at checkout (`claimProductStock`) and released by
+ * the payment axis: `pending → failed` (a declined callback, a non-success
+ * callback, or the stale sweep). So an order holds its reservation exactly
+ * while its payment status is `pending`.
+ *
+ * Cancelling such an order MUST release the stock. It is the ONLY release path
+ * left once fulfilment is cancelled, because the stale sweep deliberately
+ * selects `fulfillmentStatus = "unfulfilled"` — a cancelled order is invisible
+ * to it. Without this, the 2 units reserved for an abandoned order would be
+ * gone from the shelf forever.
+ *
+ * The two cases that must NOT release:
+ *
+ *   - `paid`: the goods are owed, so its ordered inventory stays accounted for
+ *     exactly once. (This project has no automatic refund — see the note on
+ *     `releaseOrderStock`. Cancelling a paid order is an operational record,
+ *     not an inventory movement.)
+ *   - anything already released (`failed`): crediting it again would INFLATE
+ *     the shelf. `failed` means the `pending → failed` transition already
+ *     returned the reservation.
+ *
+ * The transition that actually happens is decided by `checkFulfillmentTransition`;
+ * this function only answers the inventory question for a `to === "cancelled"`
+ * move, and it deliberately refuses the states that move cannot come from — a
+ * terminal (`delivered`, `cancelled`) order can never be cancelled again, so it
+ * must never be released either. That keeps the pair consistent: a `true` here
+ * implies `checkFulfillmentTransition` would allow the move.
+ */
+export function releasesReservationOnCancel(
+  from: FulfillmentStatus,
+  to: FulfillmentStatus,
+  paymentStatus: OrderPaymentStatus,
+): boolean {
+  if (to !== "cancelled" || isTerminalFulfillmentStatus(from)) return false;
+  return paymentStatus === "pending";
+}
+
 // ---------------------------------------------------------------------------
 // Customer-facing progress
 // ---------------------------------------------------------------------------

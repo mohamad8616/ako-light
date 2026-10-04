@@ -29,6 +29,14 @@ export interface StaleOrderCleanupResult {
  * Errors on individual orders are counted and logged as safe categories. The
  * rest of the bounded batch still runs; a failure to select the batch itself
  * bubbles up so the route can report a generic 500 rather than a false success.
+ *
+ * CANCELLED ORDERS ARE OUT OF SCOPE, BY DESIGN. An admin cancelling an unpaid
+ * order releases its reservation itself (`updateOrderFulfillmentStatus`), so
+ * this sweep must never touch it — and it cannot: both the selection
+ * (`fulfillmentStatus: "unfulfilled"`) and the final guarded transition
+ * (`claimPendingOrder` excludes `fulfillmentStatus: "cancelled"`) require an
+ * UNFULFILLED order. That is what keeps the release to exactly once: the sweep
+ * covers only orders that are still holding their reservation.
  */
 export async function cleanupStalePendingOrders({
   now = new Date(),
