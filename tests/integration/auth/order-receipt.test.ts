@@ -40,7 +40,7 @@ import {
   uniqueTestIp,
   type TestUser,
 } from "@/tests/helpers/auth-db";
-import { zarinpalCalls } from "@/tests/helpers/zarinpal-guard";
+import { zarinpalCalls, setVerifyRefIdOmitted } from "@/tests/helpers/zarinpal-guard";
 
 const describeAuth = describe.skipIf(!hasDatabaseUrl);
 
@@ -100,6 +100,15 @@ async function orderStatus(orderId: string): Promise<string | undefined> {
     [orderId],
   );
   return rows[0]?.status;
+}
+
+/** Reads an order's stored gateway reference id (may be null). */
+async function orderRefId(orderId: string): Promise<string | null | undefined> {
+  const rows = await query<{ zarinpalRefId: string | null }>(
+    `SELECT "zarinpalRefId" FROM "order" WHERE id = $1`,
+    [orderId],
+  );
+  return rows[0]?.zarinpalRefId;
 }
 
 /**
@@ -243,6 +252,8 @@ describeAuth("order receipt — fired by the real payment callback", () => {
       // The payment was really verified…
       expect(zarinpalCalls.length).toBeGreaterThan(callsBefore);
       expect(await orderStatus(orderId)).toBe("paid");
+      // …and the gateway reference id was persisted.
+      expect(await orderRefId(orderId)).toBe("TEST-REF-1");
 
       // …and exactly one receipt was dispatched.
       expect(deliveredBulkSms.length - smsBefore).toBe(1);
@@ -693,6 +704,96 @@ describeAuth("order receipt — fired by the real payment callback", () => {
 
       expect(response.status).toBe(200);
       expect(await orderStatus(orderId)).toBe("paid");
+    },
+    240_000,
+  );
+
+  // -------------------------------------------------------------------------
+  // Pass 16.1 — a verified payment with NO gateway reference id
+  // -------------------------------------------------------------------------
+
+  it(
+    "settles a paid order, resets the cart and sends the receipt when verify returns NO refId",
+    async () => {
+      // ZarinPal does not guarantee a ref_id in every success envelope. The
+      // absence of one is METADATA, not a verdict: the payment must still
+      // complete exactly like a normal success.
+      const user = await registerUser();
+      createdUsers.push(user);
+      const { jar } = await signInAs(user.email, user.password, {
+        ip: uniqueTestIp(),
+      });
+
+      const orderId = await insertOrder({
+        userId: user.id,
+        phone: "09191234567",
+        totalToman: 1_600_000,
+      });
+      expect(await orderStatus(orderId)).toBe("pending");
+
+      const smsBefore = deliveredBulkSms.length;
+      setVerifyRefIdOmitted(true);
+      try {
+        const response = await hitCallback(orderId, jar);
+
+        expect(response.status).toBe(200);
+        expect(await response.text()).toContain("Payment received");
+
+        // The order is genuinely paid even though there is no reference id.
+        expect(await orderStatus(orderId)).toBe("paid");
+        // No fake reference is invented or stored.
+        expect(await orderRefId(orderId)).toBeNull();
+
+        // The normal successful-payment receipt is still dispatched. This is
+        // the observable side effect that used to be gated on `refId` and is
+        // now gated on the successful settlement transition instead — see the
+        // cart-reset signal (lib/cart/reset-signal.ts) for the sibling path.
+        expect(deliveredBulkSms.length - smsBefore).toBe(1);
+      } finally {
+        setVerifyRefIdOmitted(false);
+      }
+    },
+    240_000,
+  );
+
+  it(
+    "does not duplicate settlement, receipt or stock on a repeated no-refId callback",
+    async () => {
+      const user = await registerUser();
+      createdUsers.push(user);
+      const { jar } = await signInAs(user.email, user.password, {
+        ip: uniqueTestIp(),
+      });
+
+      const orderId = await insertOrder({
+        userId: user.id,
+        phone: "09191234567",
+        totalToman: 1_250_000,
+      });
+
+      const smsBefore = deliveredBulkSms.length;
+      setVerifyRefIdOmitted(true);
+      try {
+        const first = await hitCallback(orderId, jar);
+        expect(first.status).toBe(200);
+        expect(await first.text()).toContain("Payment received");
+        expect(await orderStatus(orderId)).toBe("paid");
+
+        // A gateway retry / refresh: success is still shown, but nothing is
+        // written or sent again.
+        const second = await hitCallback(orderId, jar);
+        expect(second.status).toBe(200);
+        expect(await second.text()).toContain("Payment received");
+        expect(await orderStatus(orderId)).toBe("paid");
+        expect(await orderRefId(orderId)).toBeNull();
+
+        expect(
+          deliveredBulkSms.length - smsBefore,
+          "a duplicate callback must not send a second receipt",
+        ).toBe(1);
+      } finally {
+        setVerifyRefIdOmitted(false);
+      }
     },
     240_000,
   );

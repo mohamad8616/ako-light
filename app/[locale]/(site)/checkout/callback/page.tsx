@@ -150,15 +150,25 @@ export default async function CheckoutCallbackPage({
     // an un-hydrated page, a closed tab, or a return visit days later — see
     // lib/cart/reset-signal.ts. It is set only on a real payment, so a failed
     // order can never clear a cart the customer still needs.
-    if (refId) {
-      await signalCartReset(order.id);
-    }
+    //
+    // Keyed on the SETTLEMENT, not on the gateway reference id: `refId` is
+    // optional metadata and ZarinPal does not guarantee it, so gating this on
+    // it would leave a genuinely paid customer staring at a cart full of goods
+    // the money had already bought. The settle path is idempotent, so a
+    // duplicate callback cannot clear a rebuilt cart twice for the same order
+    // (the cookie value is the order id; see CartResetOnPaidOrder).
+    await signalCartReset(order.id);
 
     // The receipt is sent only now that the payment is durably recorded, and
     // only on the first transition to paid. `sendOrderReceipt` never throws, so
     // a notification failure cannot turn a successful payment into an error
     // page for the customer.
-    if (refId && !alreadyPaid) {
+    //
+    // Gated on the SUCCESSFUL TRANSITION (`!alreadyPaid`), not on `refId`:
+    // a verified payment without a gateway reference must still receive its
+    // receipt. A duplicate callback reports `alreadyPaid` (or re-renders with
+    // the pre-settle status already paid), so this stays single-fire.
+    if (!alreadyPaid) {
       await sendOrderReceipt(order.id);
     }
 

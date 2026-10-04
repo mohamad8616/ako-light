@@ -26,6 +26,19 @@ const ZARINPAL_HOSTS = ["zarinpal.com", "sandbox.zarinpal.com", "payment.zarinpa
 /** Every intercepted call, for assertions. */
 export const zarinpalCalls: { url: string; body: unknown }[] = [];
 
+/**
+ * When true, the verify envelope OMITS `ref_id` — the real-world case this
+ * guard exists to be able to reproduce (ZarinPal does not guarantee a ref_id
+ * in every success envelope). Tests that need a genuinely paid order WITHOUT a
+ * gateway reference set this around the callback and restore it afterwards.
+ */
+let omitVerifyRefId = false;
+
+/** Forces the next verify responses to omit `ref_id`; pass false to restore. */
+export function setVerifyRefIdOmitted(omit: boolean): void {
+  omitVerifyRefId = omit;
+}
+
 function isZarinpalUrl(input: RequestInfo | URL): boolean {
   const url =
     typeof input === "string"
@@ -69,7 +82,13 @@ beforeAll(() => {
     //   verify.json  → { data: { code: 100, ref_id } }
     const isVerify = url.includes("/verify.json");
     const data = isVerify
-      ? { code: 100, message: "Verified", ref_id: "TEST-REF-1" }
+      ? {
+          code: 100,
+          message: "Verified",
+          // A genuine success code with no reference id: the case the payment
+          // callback must treat as a real, settled payment.
+          ...(omitVerifyRefId ? {} : { ref_id: "TEST-REF-1" }),
+        }
       : { code: 100, message: "Success", authority: "TEST-AUTHORITY-1" };
 
     return Promise.resolve(
