@@ -64,7 +64,7 @@ export type CheckoutActionResult =
  * confirms — is what stops two customers paying for the same unit.
  *
  * The trade-off is that an order which is never paid holds its stock until
- * something releases it. `releaseOrderStock()` in lib/repositories/orders.ts is
+ * something releases it. `releaseOrderStock()` in lib/repositories/orders/ is
  * the release path, and `claimPendingOrder()` drives it from the two status
  * transitions that can only happen once. A customer who abandons the ZarinPal
  * page still never reaches a callback, so their reservation is held until a

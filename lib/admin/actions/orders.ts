@@ -11,7 +11,7 @@
  * Same contract as every other admin action: re-run `requireAdminAccess()`
  * (server functions are reachable by direct POST), re-validate the payload with
  * the SAME zod schema the client uses, and map failures into `ActionResult`.
- * All persistence goes through lib/repositories/orders.ts — no Prisma here.
+ * All persistence goes through lib/repositories/orders/ — no Prisma here.
  */
 import { requireAdminAccess } from "@/lib/admin/access";
 import { revalidateCatalog } from "@/lib/admin/revalidate";

@@ -2,7 +2,7 @@
  * Owner-only user-management reads/writes for the `/admin/admins` screen.
  *
  * Mirrors the shape of the other admin repositories (see
- * lib/repositories/orders.ts): a `cache()`d read that returns a plain,
+ * lib/repositories/orders/): a `cache()`d read that returns a plain,
  * serializable DTO, plus the write functions the server actions call. No
  * authorization lives here — every caller is a server action that has already
  * run `requireOwnerAccess()` (lib/admin/access.ts). Keeping the guard in the

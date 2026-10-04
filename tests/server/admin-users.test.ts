@@ -15,7 +15,7 @@
  *
  * Unlike the catalog CRUD tests — whose repository functions accept an optional
  * transaction client — these retain `prisma` directly (matching
- * lib/repositories/orders.ts), because the actions call them without a
+ * lib/repositories/orders/), because the actions call them without a
  * transaction. So this file creates a throwaway user row, asserts against it,
  * and deletes it in `afterAll` regardless of outcome. Rows are tagged with a
  * unique run marker so a failed test can never leave a stray account behind
