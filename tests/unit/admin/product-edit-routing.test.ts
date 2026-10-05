@@ -1,4 +1,4 @@
-2import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 
 /**
  * Pass 4 regression — the admin product Edit flow.
