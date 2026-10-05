@@ -70,14 +70,16 @@ export async function uploadImageAction(
     return actionOk({ url: row.url });
   } catch (error) {
     if (error instanceof MediaError) {
-      // The validation codes have their own copy in the admin dictionary; every
-      // other failure (missing token, provider outage, DB error) is only
-      // knowable server-side, so it collapses to the generic message — exactly
-      // as the old action did.
+      // The validation codes have their own copy in the admin dictionary, as
+      // does a store/visibility mismatch (a settings fault the admin can act
+      // on). Every other failure (missing token, provider outage, DB error) is
+      // only knowable server-side, so it collapses to the generic message —
+      // exactly as the old action did.
       if (
         error.code === "required" ||
         error.code === "tooLarge" ||
-        error.code === "notImage"
+        error.code === "notImage" ||
+        error.code === "storageAccessMismatch"
       ) {
         return actionFail(error.code);
       }

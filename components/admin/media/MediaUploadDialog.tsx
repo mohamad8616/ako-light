@@ -21,7 +21,10 @@ import {
   IMAGE_MAX_BYTES,
   VIDEO_MAX_BYTES,
 } from "@/lib/media/limits";
-import { uploadDirectToStorage } from "@/lib/media/storage/client";
+import {
+  DirectUploadError,
+  uploadDirectToStorage,
+} from "@/lib/media/storage/client";
 import { buildStorageKey } from "@/lib/media/validation";
 import { Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -227,11 +230,18 @@ export function MediaUploadDialog({
       const message = t(`admin.error.${code}`);
       setError(message);
       toast.error(message);
-    } catch {
+    } catch (error) {
       // The action rethrows unknown errors on purpose; the server log carries
-      // the stack while the admin sees something actionable.
-      setError(t("admin.error.unknown"));
-      toast.error(t("admin.error.unknown"));
+      // the stack while the admin sees something actionable. A DIRECT-upload
+      // failure is surfaced distinctly: it never reaches the server, so this is
+      // its only chance to say what went wrong — a store/visibility mismatch is
+      // a settings fault the admin can act on, not an anonymous "unknown".
+      const code =
+        error instanceof DirectUploadError && error.reason === "access_mismatch"
+          ? "storageAccessMismatch"
+          : "unknown";
+      setError(t(`admin.error.${code}`));
+      toast.error(t(`admin.error.${code}`));
     } finally {
       setPending(false);
       // Progress only ever describes the run that just finished; leaving it set

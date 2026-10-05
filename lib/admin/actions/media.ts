@@ -76,6 +76,7 @@ function mediaErrorToAdminCode(code: MediaErrorCode): AdminErrorCode {
     case "unsupportedType":
     case "notFound":
     case "inUse":
+    case "storageAccessMismatch":
       return code;
     case "storageNotConfigured":
     case "storageFailed":

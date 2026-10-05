@@ -15,6 +15,11 @@ export const errorEn = {
   "admin.error.tooLarge": "This file is too large (max 5 MB).",
   "admin.error.notImage": "The file is not a supported image.",
   "admin.error.unsupportedType": "This file type is not supported.",
+  // Storage misconfiguration: the store refused the write because its
+  // visibility does not match BLOB_ACCESS. Says what is wrong and who can fix
+  // it, rather than the generic "something went wrong".
+  "admin.error.storageAccessMismatch":
+    "Uploads are misconfigured: the storage store's access setting does not match this app. An administrator must set the Blob store to public access.",
   "admin.error.slugTaken": "This handle is already in use.",
   "admin.error.notFound": "The item was not found.",
   "admin.error.invalidTransition":
@@ -37,6 +42,9 @@ export const errorFa = {
   "admin.error.tooLarge": "این فایل بسیار بزرگ است (حداکثر ۵ مگابایت).",
   "admin.error.notImage": "این فایل یک تصویر پشتیبانی‌شده نیست.",
   "admin.error.unsupportedType": "این نوع فایل پشتیبانی نمی‌شود.",
+  // پیکربندی نادرست فضای ذخیره‌سازی: تنظیم دسترسی انبار با برنامه هم‌خوان نیست.
+  "admin.error.storageAccessMismatch":
+    "آپلودها به‌درستی پیکربندی نشده‌اند: تنظیم دسترسی فضای ذخیره‌سازی با این برنامه هم‌خوان نیست. مدیر باید انبار Blob را روی دسترسی عمومی (public) قرار دهد.",
   "admin.error.slugTaken": "این شناسه قبلاً استفاده شده است.",
   "admin.error.notFound": "موردی یافت نشد.",
   "admin.error.invalidTransition":

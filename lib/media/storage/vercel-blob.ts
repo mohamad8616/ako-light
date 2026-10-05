@@ -11,7 +11,9 @@
  */
 import { del, put } from "@vercel/blob";
 import { handleUpload } from "@vercel/blob/client";
+import { BLOB_ACCESS, type BlobAccess } from "@/lib/media/limits";
 import {
+  StorageAccessMismatchError,
   StorageNotConfiguredError,
   type ClientUploadConstraints,
   type StorageProvider,
@@ -36,6 +38,27 @@ export function isBlobConfigured(env: NodeJS.ProcessEnv = process.env): boolean 
   return readBlobToken(env) !== undefined;
 }
 
+/**
+ * Recognises the provider's access-visibility refusal and re-throws it as the
+ * dedicated {@link StorageAccessMismatchError}, so callers can tell a
+ * misconfigured store apart from a transport failure.
+ *
+ * Vercel answers a mismatched write with HTTP 400 and a message naming both
+ * sides ("Cannot use public access on a private store. The store is configured
+ * with private access."). Matching on the stable phrase — not the status code,
+ * which other 400s share — keeps this from swallowing a legitimate bad request.
+ */
+function rethrowAccessMismatch(error: unknown, expectedAccess: BlobAccess): never {
+  const message = error instanceof Error ? error.message : String(error);
+  if (/private store|public access on a private|private access on a public/i.test(message)) {
+    throw new StorageAccessMismatchError(expectedAccess, {
+      storeMessage: message,
+      cause: error,
+    });
+  }
+  throw error;
+}
+
 export const vercelBlobStorage: StorageProvider = {
   name: "vercel-blob",
 
@@ -48,14 +71,24 @@ export const vercelBlobStorage: StorageProvider = {
     const token = readBlobToken();
     if (!token) throw new StorageNotConfiguredError();
 
-    const blob = await put(key, bytes, {
-      access: "public",
-      // The sniffed type, not the client's claim — the bytes were already
-      // verified against this type before reaching the provider.
-      contentType,
-      addRandomSuffix,
-      token,
-    });
+    const access = BLOB_ACCESS;
+
+    let blob;
+    try {
+      blob = await put(key, bytes, {
+        access,
+        // The sniffed type, not the client's claim — the bytes were already
+        // verified against this type before reaching the provider.
+        contentType,
+        addRandomSuffix,
+        token,
+      });
+    } catch (error) {
+      // A store whose visibility does not match `BLOB_ACCESS` is a
+      // CONFIGURATION fault, not a transport one — surface it as such so the
+      // admin gets actionable copy instead of the generic failure.
+      rethrowAccessMismatch(error, access);
+    }
 
     // `blob.pathname` is the key actually written. With `addRandomSuffix` it is
     // NOT the requested key, which is exactly why the caller persists this
@@ -110,20 +143,34 @@ export const vercelBlobStorage: StorageProvider = {
     const token = readBlobToken();
     if (!token) throw new StorageNotConfiguredError();
 
-    return handleUpload({
-      body: body as Parameters<typeof handleUpload>[0]["body"],
-      request,
-      onBeforeGenerateToken: async () => ({
-        allowedContentTypes: [...constraints.allowedContentTypes],
-        maximumSizeInBytes: constraints.maximumSizeInBytes,
-        addRandomSuffix: true,
-        token,
-      }),
-      onUploadCompleted: async () => {
-        // See the note above: registration is client-triggered so that local
-        // development behaves exactly like production.
-      },
-    });
+    let result: unknown;
+    try {
+      result = await handleUpload({
+        body: body as Parameters<typeof handleUpload>[0]["body"],
+        request,
+        onBeforeGenerateToken: async () => ({
+          allowedContentTypes: [...constraints.allowedContentTypes],
+          maximumSizeInBytes: constraints.maximumSizeInBytes,
+          addRandomSuffix: true,
+          // The visibility the browser will write with. The client sends this
+          // as the `x-vercel-blob-access` header on its PUT, derived from the
+          // same shared constant, so the token and the write cannot disagree.
+          access: BLOB_ACCESS,
+          token,
+        }),
+        onUploadCompleted: async () => {
+          // See the note above: registration is client-triggered so that local
+          // development behaves exactly like production.
+        },
+      });
+    } catch (error) {
+      // Minting itself rarely fails on access mode, but the SDK surfaces an
+      // invalid store/token here too — normalise the mismatch if it appears so
+      // the route answers with the actionable code rather than a 500.
+      rethrowAccessMismatch(error, BLOB_ACCESS);
+    }
+
+    return result;
   },
 
   getUrl(): string | null {

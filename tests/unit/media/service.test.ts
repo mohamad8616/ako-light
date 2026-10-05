@@ -53,7 +53,10 @@ vi.mock("@/lib/repositories/media-references", () => ({
 
 import { Prisma } from "@/generated/prisma/client";
 import { MediaError, removeMedia, updateMediaInfo, uploadMedia } from "@/lib/media/service";
-import { StorageNotConfiguredError } from "@/lib/media/types";
+import {
+  StorageAccessMismatchError,
+  StorageNotConfiguredError,
+} from "@/lib/media/types";
 
 /** The key the fake provider reports back (as if a random suffix was added). */
 const STORED_KEY = "media/products/9-hero.png-abc123";
@@ -137,6 +140,22 @@ describe("uploadMedia", () => {
     await expect(uploadMedia(uploadInput())).rejects.toMatchObject({
       code: "storageNotConfigured",
     });
+  });
+
+  it("maps a store/visibility mismatch to its own actionable code", async () => {
+    // The store refused the write's access mode (private store, public write).
+    // It must NOT collapse to the generic storageFailed, or the admin sees
+    // "something went wrong" for a one-line settings fix.
+    provider.upload.mockRejectedValue(
+      new StorageAccessMismatchError("public", {
+        storeMessage: "Cannot use public access on a private store.",
+      }),
+    );
+
+    await expect(uploadMedia(uploadInput())).rejects.toMatchObject({
+      code: "storageAccessMismatch",
+    });
+    expect(repo.createMedia).not.toHaveBeenCalled();
   });
 
   describe("failure handling — DB creation fails after a successful Blob upload", () => {

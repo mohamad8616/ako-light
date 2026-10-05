@@ -148,3 +148,41 @@ export class StorageNotConfiguredError extends Error {
     this.name = "StorageNotConfiguredError";
   }
 }
+
+/**
+ * Thrown by a provider when the credentials ARE present but the store refuses
+ * the requested access mode — the store was provisioned with a different
+ * visibility than the app is configured to write with.
+ *
+ * WHY THIS IS ITS OWN ERROR, NOT A GENERIC STORAGE FAILURE. The real Vercel
+ * symptom is a bare HTTP 400 whose body reads "Cannot use public access on a
+ * private store" (or the mirror case). Without a distinct type that fact is
+ * indistinguishable from a network blip or a provider outage, so the admin sees
+ * the generic "something went wrong" and the operator has to reconstruct the
+ * cause from a stack trace. Carrying `expectedAccess` and `storeMessage` lets
+ * the service log a single actionable line and lets the action map to a
+ * dedicated code with real user-facing copy.
+ *
+ * Provider-agnostic: the service maps it to `storageAccessMismatch` without
+ * knowing which provider raised it.
+ */
+export class StorageAccessMismatchError extends Error {
+  /** The access mode the app asked for ("public" / "private"). */
+  readonly expectedAccess: string;
+  /** The provider's own explanation of the refusal, when it gave one. */
+  readonly storeMessage: string | null;
+
+  constructor(
+    expectedAccess: string,
+    options?: { storeMessage?: string | null; cause?: unknown },
+  ) {
+    super(
+      `The storage store refused "${expectedAccess}" access. ` +
+        `Check the store's visibility setting against BLOB_ACCESS.`,
+      options?.cause ? { cause: options.cause } : undefined,
+    );
+    this.name = "StorageAccessMismatchError";
+    this.expectedAccess = expectedAccess;
+    this.storeMessage = options?.storeMessage ?? null;
+  }
+}

@@ -42,4 +42,7 @@ export {
   readBlobToken,
   vercelBlobStorage,
 } from "@/lib/media/storage/vercel-blob";
-export { StorageNotConfiguredError } from "@/lib/media/types";
+export {
+  StorageAccessMismatchError,
+  StorageNotConfiguredError,
+} from "@/lib/media/types";

@@ -64,6 +64,33 @@ export const DIRECT_UPLOAD_THRESHOLD_BYTES = 4 * 1024 * 1024;
 /** The largest file the server-action path will ever accept. */
 export const SERVER_UPLOAD_MAX_BYTES = IMAGE_MAX_BYTES;
 
+/**
+ * The Blob store visibility the app writes with — shared by the SERVER write
+ * (`put`) and the BROWSER write (`upload`) so the two can never disagree.
+ *
+ * WHY THIS IS HERE, AND WHY IT MATTERS. Vercel provisions each Blob store as
+ * EITHER public or private, and it REJECTS any write whose `access` does not
+ * match with a bare HTTP 400 ("Cannot use public access on a private store").
+ * That mismatch previously lived in two hardcoded `"public"` strings — one in
+ * the server provider, one in the browser adapter — so a store provisioned the
+ * other way made EVERY upload fail while looking like an unrelated code bug.
+ *
+ * `"public"` is required by this app: the catalog renders stored URLs directly
+ * with `<Image>` and `next.config.ts` whitelists `*.public.blob.vercel-storage.com`.
+ * A private store would additionally need a signing/read path that does not
+ * exist here. Keep this in sync with the store's dashboard visibility — the
+ * provider turns a drift into an explicit `StorageAccessMismatchError`, not a
+ * silent failure.
+ *
+ * Lives in this module (not the server-only provider) because the BROWSER half
+ * must read it too, and `limits.ts` is the established server+browser-safe
+ * constants module.
+ */
+export const BLOB_ACCESS = "public" as const;
+
+/** The blob visibility modes Vercel Blob accepts. */
+export type BlobAccess = "public" | "private";
+
 /** Human-readable ceilings, for messages and docs. */
 export const LIMITS_SUMMARY = {
   imageMaxBytes: IMAGE_MAX_BYTES,

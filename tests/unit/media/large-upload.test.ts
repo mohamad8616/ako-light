@@ -48,6 +48,7 @@ import {
   MediaError,
 } from "@/lib/media/service";
 import { IMAGE_MAX_BYTES, readByteLimit, VIDEO_MAX_BYTES } from "@/lib/media/limits";
+import { StorageAccessMismatchError } from "@/lib/media/types";
 import { validateMediaUpload } from "@/lib/media/validation";
 import { sniffVideoType } from "@/lib/media/video-sniff";
 import { POST } from "@/app/api/admin/media/upload/route";
@@ -368,5 +369,30 @@ describe("POST /api/admin/media/upload — authorization", () => {
         },
       }),
     );
+  });
+
+  it("answers a store/visibility refusal with an actionable 400, not a generic 500", async () => {
+    getAdminRoleMock.mockResolvedValue("admin");
+    // The provider recognised a private-store/public-write mismatch.
+    provider.authorizeClientUpload.mockRejectedValue(
+      new StorageAccessMismatchError("public", {
+        storeMessage: "Cannot use public access on a private store.",
+      }),
+    );
+
+    const response = await POST(request(tokenBody));
+
+    // 400 (client-visible, actionable) rather than 500 (looks like a crash),
+    // and a NAMED code the dialog can translate — this is what keeps the
+    // failure from being silent.
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "storage_access_mismatch" });
+  });
+
+  it("still reports an unexpected provider failure as a 500", async () => {
+    getAdminRoleMock.mockResolvedValue("admin");
+    provider.authorizeClientUpload.mockRejectedValue(new Error("boom"));
+
+    expect((await POST(request(tokenBody))).status).toBe(500);
   });
 });

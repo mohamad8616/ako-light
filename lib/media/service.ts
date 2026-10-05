@@ -24,7 +24,11 @@ import { Prisma } from "@/generated/prisma/client";
 import { IMAGE_EXTENSIONS } from "@/lib/admin/image-sniff";
 import { IMAGE_MAX_BYTES, VIDEO_MAX_BYTES } from "@/lib/media/limits";
 import { getStorageProvider } from "@/lib/media/storage";
-import { StorageNotConfiguredError, type StoredObject } from "@/lib/media/types";
+import {
+  StorageAccessMismatchError,
+  StorageNotConfiguredError,
+  type StoredObject,
+} from "@/lib/media/types";
 import {
   buildStorageKey,
   validateMediaUpload,
@@ -57,6 +61,12 @@ export type MediaErrorCode =
   /** The object is still pointed at by catalog/order rows — see `removeMedia`. */
   | "inUse"
   | "storageNotConfigured"
+  /**
+   * The store's visibility does not match BLOB_ACCESS, so every write is
+   * refused. Distinct from `storageFailed` so the admin sees an actionable
+   * message and the log carries a one-line diagnosis instead of a stack trace.
+   */
+  | "storageAccessMismatch"
   | "storageFailed";
 
 /** A media operation failure carrying a stable, translatable code. */
@@ -121,7 +131,18 @@ export async function uploadMedia(input: UploadMediaInput): Promise<MediaRow> {
     });
   } catch (error) {
     // Nothing was persisted yet, so there is no orphan to clean up.
-    // A missing credential is reported distinctly from a transport failure.
+    // A missing credential is reported distinctly from a transport failure, and
+    // a store/brand visibility mismatch distinctly again — because only the
+    // last one is fixable by a settings change, and the admin needs to know
+    // that rather than seeing the generic failure.
+    if (error instanceof StorageAccessMismatchError) {
+      console.error(
+        `[media] storage access mismatch: the app writes with "${error.expectedAccess}" ` +
+          `but the store rejected it. Set the Blob store's visibility to match ` +
+          `BLOB_ACCESS (lib/media/limits.ts). Store said: ${error.storeMessage ?? "(no message)"}`,
+      );
+      throw new MediaError("storageAccessMismatch", undefined, { cause: error });
+    }
     if (error instanceof StorageNotConfiguredError) {
       console.error("[media] storage provider is not configured");
       throw new MediaError("storageNotConfigured", undefined, { cause: error });

@@ -4,6 +4,7 @@ import { IMAGE_MAX_BYTES, VIDEO_MAX_BYTES } from "@/lib/media/limits";
 import { getStorageProvider } from "@/lib/media/storage";
 import { MEDIA_KEY_PREFIX } from "@/lib/media/validation";
 import { VIDEO_EXTENSIONS } from "@/lib/media/video-sniff";
+import { StorageAccessMismatchError } from "@/lib/media/types";
 import { NextResponse } from "next/server";
 
 /**
@@ -112,6 +113,20 @@ export async function POST(request: Request): Promise<Response> {
     });
     return NextResponse.json(result);
   } catch (error) {
+    // A store whose visibility does not match the app's write mode is a
+    // CONFIGURATION fault. Reported as its own code (and 400, not 500) so the
+    // client can show actionable copy instead of "authorization failed", and so
+    // the operator gets a named cause in the log.
+    if (error instanceof StorageAccessMismatchError) {
+      console.error(
+        `[media] client upload access mismatch: app writes "${error.expectedAccess}" ` +
+          `but the store refused it. Store said: ${error.storeMessage ?? "(no message)"}`,
+      );
+      return NextResponse.json(
+        { error: "storage_access_mismatch" },
+        { status: 400 },
+      );
+    }
     console.error("[media] client upload authorization failed", error);
     return NextResponse.json({ error: "authorization_failed" }, { status: 500 });
   }
