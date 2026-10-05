@@ -2,6 +2,7 @@
 
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogHeader,
   DialogTitle,
@@ -43,7 +44,10 @@ export function ProductEditModalShell({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <div className="overflow-y-auto px-6 pb-6">{children}</div>
+        {/* The body is the ONLY scrolling region — the header above stays
+            pinned while the long ProductForm scrolls under it. px-6 pb-6
+            supplies the shared inset (the header already carries its own). */}
+        <DialogBody className="px-6 pb-6">{children}</DialogBody>
       </DialogContent>
     </Dialog>
   );

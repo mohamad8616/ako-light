@@ -3,7 +3,9 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -71,23 +73,41 @@ export function DialogFormShell<TValues extends FieldValues>({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={submit} className="space-y-4">
-          <FormProvider {...form}>{children}</FormProvider>
-          <div className="flex items-center justify-end gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              disabled={pending}
-            >
-              {t("admin.crud.cancel")}
-            </Button>
-            <Button type="submit" size="sm" disabled={pending}>
-              {pending ? t("admin.table.saving") : t("admin.crud.save")}
-            </Button>
-          </div>
-        </form>
+        <DialogBody>
+          <form onSubmit={submit}>
+            {/*
+              The field stack AND the action row are both inside the scrolling
+              body on purpose. The grid fields need the form element as their
+              parent, so hoisting the footer out would mean splitting the form
+              across a scroll boundary — the fields would lose their submit
+              semantics and Enter-to-submit would break with them.
+
+              What this still guarantees is the property that was actually
+              missing before: the modal itself never scrolls the page. Scroll
+              belongs to this region (`overflow-y-auto overscroll-contain`), and
+              the header stays pinned above it. The action row keeps the same
+              `px-6 pb-6` inset as the fields, so the buttons line up with the
+              inputs rather than hugging the modal edge.
+            */}
+            <div className="space-y-4 px-6 pb-6">
+              <FormProvider {...form}>{children}</FormProvider>
+              <DialogFooter className="justify-end pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onClose}
+                  disabled={pending}
+                >
+                  {t("admin.crud.cancel")}
+                </Button>
+                <Button type="submit" size="sm" disabled={pending}>
+                  {pending ? t("admin.table.saving") : t("admin.crud.save")}
+                </Button>
+              </DialogFooter>
+            </div>
+          </form>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

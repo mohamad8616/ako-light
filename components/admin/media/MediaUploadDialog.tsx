@@ -3,8 +3,10 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -263,131 +265,140 @@ export function MediaUploadDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            {/* Kept visually hidden and driven by the button below, so the
-                control is a real labelled button rather than a bare file input. */}
-            <input
-              ref={inputRef}
-              type="file"
-              accept={ACCEPT}
-              className="hidden"
-              onChange={(event) => {
-                const picked = event.target.files?.[0];
-                handleFile(picked);
-              }}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={pending}
-              onClick={() => inputRef.current?.click()}
-            >
-              <Upload aria-hidden="true" />
-              {file
-                ? t("admin.media.uploadChange")
-                : t("admin.media.uploadPick")}
-            </Button>
-            {file ? (
-              <p
-                dir="ltr"
-                className="text-muted-foreground truncate text-xs"
-                title={file.name}
+        {/*
+          The body keeps the standard px-6 inset so the fields line up with the
+          header, and it is the only scrolling region — a long filename list or
+          the progress block can never push the Cancel/Upload row off screen.
+          The form element stays INSIDE the body because the hidden file input
+          and the submit button are both its descendants.
+        */}
+        <DialogBody>
+          <form onSubmit={handleSubmit} className="space-y-4 px-6 pb-6">
+            <div className="space-y-2">
+              {/* Kept visually hidden and driven by the button below, so the
+                  control is a real labelled button rather than a bare file input. */}
+              <input
+                ref={inputRef}
+                type="file"
+                accept={ACCEPT}
+                className="hidden"
+                onChange={(event) => {
+                  const picked = event.target.files?.[0];
+                  handleFile(picked);
+                }}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={pending}
+                onClick={() => inputRef.current?.click()}
               >
-                {file.name}
-              </p>
-            ) : (
-              <p className="text-muted-foreground text-xs">
-                {t("admin.media.uploadHint")}
-              </p>
-            )}
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="media-upload-alt">
-              {t("admin.media.field.alt")}
-            </Label>
-            <Input
-              id="media-upload-alt"
-              value={alt}
-              maxLength={METADATA_MAX}
-              disabled={pending}
-              onChange={(event) => setAlt(event.target.value)}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="media-upload-title">
-              {t("admin.media.field.title")}
-            </Label>
-            <Input
-              id="media-upload-title"
-              value={title}
-              maxLength={METADATA_MAX}
-              disabled={pending}
-              onChange={(event) => setTitle(event.target.value)}
-            />
-          </div>
-
-          {/*
-            Honest progress for the large-file flow. The admin is told which
-            step is running — a 200 MB transfer followed by a silent pause while
-            the row is written would look like a hang.
-          */}
-          {phase !== "idle" ? (
-            <div className="space-y-1.5" aria-live="polite">
-              <p className="text-muted-foreground text-xs">
-                {phase === "uploading"
-                  ? `${t("admin.media.uploading")}${
-                      progress === null ? "" : ` ${Math.round(progress)}%`
-                    }`
-                  : t("admin.media.uploadSaving")}
-              </p>
-              <div
-                role="progressbar"
-                aria-valuemin={0}
-                aria-valuemax={100}
-                aria-valuenow={
-                  phase === "saving" ? 100 : Math.round(progress ?? 0)
-                }
-                className="bg-muted h-1.5 w-full overflow-hidden rounded-full"
-              >
-                <div
-                  className="bg-primary h-full rounded-full transition-[width] duration-200"
-                  style={{
-                    width: `${
-                      phase === "saving" ? 100 : Math.round(progress ?? 0)
-                    }%`,
-                  }}
-                />
-              </div>
+                <Upload aria-hidden="true" />
+                {file
+                  ? t("admin.media.uploadChange")
+                  : t("admin.media.uploadPick")}
+              </Button>
+              {file ? (
+                <p
+                  dir="ltr"
+                  className="text-muted-foreground truncate text-xs"
+                  title={file.name}
+                >
+                  {file.name}
+                </p>
+              ) : (
+                <p className="text-muted-foreground text-xs">
+                  {t("admin.media.uploadHint")}
+                </p>
+              )}
             </div>
-          ) : null}
 
-          {error ? (
-            <p role="alert" className="text-destructive text-xs">
-              {error}
-            </p>
-          ) : null}
+            <div className="space-y-1.5">
+              <Label htmlFor="media-upload-alt">
+                {t("admin.media.field.alt")}
+              </Label>
+              <Input
+                id="media-upload-alt"
+                value={alt}
+                maxLength={METADATA_MAX}
+                disabled={pending}
+                onChange={(event) => setAlt(event.target.value)}
+              />
+            </div>
 
-          <div className="flex items-center justify-end gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={pending}
-              onClick={() => handleOpenChange(false)}
-            >
-              {t("admin.media.uploadCancel")}
-            </Button>
-            <Button type="submit" size="sm" disabled={pending || !file}>
-              {pending
-                ? t("admin.upload.uploading")
-                : t("admin.media.uploadSubmit")}
-            </Button>
-          </div>
-        </form>
+            <div className="space-y-1.5">
+              <Label htmlFor="media-upload-title">
+                {t("admin.media.field.title")}
+              </Label>
+              <Input
+                id="media-upload-title"
+                value={title}
+                maxLength={METADATA_MAX}
+                disabled={pending}
+                onChange={(event) => setTitle(event.target.value)}
+              />
+            </div>
+
+            {/*
+              Honest progress for the large-file flow. The admin is told which
+              step is running — a 200 MB transfer followed by a silent pause while
+              the row is written would look like a hang.
+            */}
+            {phase !== "idle" ? (
+              <div className="space-y-1.5" aria-live="polite">
+                <p className="text-muted-foreground text-xs">
+                  {phase === "uploading"
+                    ? `${t("admin.media.uploading")}${
+                        progress === null ? "" : ` ${Math.round(progress)}%`
+                      }`
+                    : t("admin.media.uploadSaving")}
+                </p>
+                <div
+                  role="progressbar"
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  aria-valuenow={
+                    phase === "saving" ? 100 : Math.round(progress ?? 0)
+                  }
+                  className="bg-muted h-1.5 w-full overflow-hidden rounded-full"
+                >
+                  <div
+                    className="bg-primary h-full rounded-full transition-[width] duration-200"
+                    style={{
+                      width: `${
+                        phase === "saving" ? 100 : Math.round(progress ?? 0)
+                      }%`,
+                    }}
+                  />
+                </div>
+              </div>
+            ) : null}
+
+            {error ? (
+              <p role="alert" className="text-destructive text-xs">
+                {error}
+              </p>
+            ) : null}
+
+            <DialogFooter className="justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={pending}
+                onClick={() => handleOpenChange(false)}
+              >
+                {t("admin.media.uploadCancel")}
+              </Button>
+              <Button type="submit" size="sm" disabled={pending || !file}>
+                {pending
+                  ? t("admin.upload.uploading")
+                  : t("admin.media.uploadSubmit")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

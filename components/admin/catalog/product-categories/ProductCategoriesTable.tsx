@@ -18,7 +18,9 @@ import { DataTable } from "@/components/admin/data-table/DataTable";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -220,46 +222,51 @@ function CategoryDialog({
             {isEdit ? t("admin.product.edit") : t("admin.product.new")}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <FormProvider {...form}>
-            <LocalizedField
-              name="name"
-              label={t("admin.product.field.name")}
-              required
-            />
-            <SlugField
-              name="slug"
-              label={t("admin.product.field.slug")}
-              source="name.en"
-              required
-            />
-            <TextField
-              name="i18nKey"
-              label={t("admin.productCategory.field.i18nKey")}
-              required
-              placeholder="products.coffeeTables"
-            />
-            <NumberField
-              name="sortOrder"
-              label={t("admin.product.field.sortOrder")}
-              min={0}
-            />
-          </FormProvider>
-          <div className="flex items-center justify-end gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              disabled={pending}
-            >
-              {t("admin.crud.cancel")}
-            </Button>
-            <Button type="submit" size="sm" disabled={pending}>
-              {pending ? t("admin.table.saving") : t("admin.crud.save")}
-            </Button>
-          </div>
-        </form>
+        {/* Fields and buttons share one `px-6 pb-6` inset and one scroll
+            region — the grid fields need the <form> as their direct parent,
+            so the action row stays inside it. */}
+        <DialogBody>
+          <form onSubmit={handleSubmit} className="space-y-4 px-6 pb-6">
+            <FormProvider {...form}>
+              <LocalizedField
+                name="name"
+                label={t("admin.product.field.name")}
+                required
+              />
+              <SlugField
+                name="slug"
+                label={t("admin.product.field.slug")}
+                source="name.en"
+                required
+              />
+              <TextField
+                name="i18nKey"
+                label={t("admin.productCategory.field.i18nKey")}
+                required
+                placeholder="products.coffeeTables"
+              />
+              <NumberField
+                name="sortOrder"
+                label={t("admin.product.field.sortOrder")}
+                min={0}
+              />
+            </FormProvider>
+            <DialogFooter className="justify-end pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+                disabled={pending}
+              >
+                {t("admin.crud.cancel")}
+              </Button>
+              <Button type="submit" size="sm" disabled={pending}>
+                {pending ? t("admin.table.saving") : t("admin.crud.save")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

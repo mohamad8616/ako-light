@@ -3,8 +3,10 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -61,13 +63,18 @@ export function DeleteDialog({
           <DialogDescription>
             {description ?? t("admin.crud.deleteDescription")}
           </DialogDescription>
+        </DialogHeader>
+        {/* The warning is the part that can grow (a cascade count is only one
+            line today, but a caller may pass a longer sentence), so it lives in
+            the scrolling region while the two action buttons stay pinned. */}
+        <DialogBody className="px-6 pb-6">
           {warning ? (
             <p className="bg-warning/10 text-warning rounded-md px-3 py-2 text-xs font-medium">
               {warning}
             </p>
           ) : null}
-        </DialogHeader>
-        <div className="flex items-center justify-end gap-2">
+        </DialogBody>
+        <DialogFooter className="justify-end px-6 pb-6">
           <Button
             type="button"
             variant="outline"
@@ -86,7 +93,7 @@ export function DeleteDialog({
           >
             {t("admin.table.delete")}
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

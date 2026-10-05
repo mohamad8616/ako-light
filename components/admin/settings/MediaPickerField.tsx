@@ -3,8 +3,10 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -95,77 +97,90 @@ export function MediaPickerDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="relative w-full">
-          <Search
-            aria-hidden="true"
-            className="text-muted-foreground pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2"
-          />
-          <Input
-            type="search"
-            value={term}
-            onChange={(event) => setTerm(event.target.value)}
-            placeholder={t("admin.media.search")}
-            aria-label={t("admin.media.search")}
-            className="h-8 ps-8"
-          />
-        </div>
+        {/*
+          Search, error and the grid all live in the scrolling region, so a full
+          page of tiles scrolls under the pinned title and never pushes the
+          Cancel button off screen. `px-6 pb-6` matches the header inset.
+        */}
+        <DialogBody className="space-y-4 px-6 pb-6">
+          <div className="relative w-full">
+            <Search
+              aria-hidden="true"
+              className="text-muted-foreground pointer-events-none absolute start-2.5 top-1/2 size-3.5 -translate-y-1/2"
+            />
+            <Input
+              type="search"
+              value={term}
+              onChange={(event) => setTerm(event.target.value)}
+              placeholder={t("admin.media.search")}
+              aria-label={t("admin.media.search")}
+              className="h-8 ps-8"
+            />
+          </div>
 
-        {error ? (
-          <p role="alert" className="text-destructive text-xs">
-            {error}
-          </p>
-        ) : null}
+          {error ? (
+            <p role="alert" className="text-destructive text-xs">
+              {error}
+            </p>
+          ) : null}
 
-        {items.length === 0 ? (
-          <p className="text-muted-foreground py-10 text-center text-xs">
-            {loading
-              ? t("admin.settings.pickerLoading")
-              : loaded
-                ? t("admin.media.noResults")
-                : t("admin.settings.pickerLoading")}
-          </p>
-        ) : (
-          <ul
-            aria-busy={loading}
-            className={cn(
-              "grid max-h-[50vh] grid-cols-3 gap-3 overflow-y-auto sm:grid-cols-4 md:grid-cols-6",
-              loading && "opacity-60",
-            )}
-          >
-            {items.map((item) => (
-              <li key={item.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelect(item);
-                    onOpenChange(false);
-                  }}
-                  aria-label={`${t("admin.settings.pickerSelect")}: ${item.filename}`}
-                  aria-pressed={item.id === selectedId}
-                  className={cn(
-                    "focus-visible:ring-ring w-full rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
-                    item.id === selectedId && "ring-primary ring-2 ring-offset-2",
-                  )}
-                >
-                  <span className="bg-muted relative block aspect-square overflow-hidden rounded-lg">
-                    <Image
-                      src={item.url}
-                      alt={item.alt || item.title || item.filename}
-                      fill
-                      sizes="(max-width: 640px) 33vw, 16vw"
-                      className="object-cover"
-                    />
-                  </span>
-                  <span className="mt-1 block truncate text-[11px]">
-                    {item.filename}
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+          {items.length === 0 ? (
+            <p className="text-muted-foreground py-10 text-center text-xs">
+              {loading
+                ? t("admin.settings.pickerLoading")
+                : loaded
+                  ? t("admin.media.noResults")
+                  : t("admin.settings.pickerLoading")}
+            </p>
+          ) : (
+            /*
+              The grid no longer needs its own `max-h-[50vh]` scroll: the body
+              above it already caps the region and owns the scrollbar. Keeping
+              the grid's own cap would produce a scroll area inside a scroll
+              area, which traps the wheel gesture halfway down the dialog.
+            */
+            <ul
+              aria-busy={loading}
+              className={cn(
+                "grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6",
+                loading && "opacity-60",
+              )}
+            >
+              {items.map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelect(item);
+                      onOpenChange(false);
+                    }}
+                    aria-label={`${t("admin.settings.pickerSelect")}: ${item.filename}`}
+                    aria-pressed={item.id === selectedId}
+                    className={cn(
+                      "focus-visible:ring-ring w-full rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+                      item.id === selectedId && "ring-primary ring-2 ring-offset-2",
+                    )}
+                  >
+                    <span className="bg-muted relative block aspect-square overflow-hidden rounded-lg">
+                      <Image
+                        src={item.url}
+                        alt={item.alt || item.title || item.filename}
+                        fill
+                        sizes="(max-width: 640px) 33vw, 16vw"
+                        className="object-cover"
+                      />
+                    </span>
+                    <span className="mt-1 block truncate text-[11px]">
+                      {item.filename}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </DialogBody>
 
-        <div className="flex items-center justify-end">
+        <DialogFooter className="justify-end px-6 pb-6">
           <Button
             type="button"
             variant="outline"
@@ -174,7 +189,7 @@ export function MediaPickerDialog({
           >
             {t("admin.crud.cancel")}
           </Button>
-        </div>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

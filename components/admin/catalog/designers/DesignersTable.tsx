@@ -22,7 +22,9 @@ import { DataTable } from "@/components/admin/data-table/DataTable";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -228,61 +230,69 @@ function DesignerDialog({
             {isEdit ? t("admin.product.edit") : t("admin.product.new")}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <FormProvider {...form}>
-            <LocalizedField
-              name="name"
-              label={t("admin.product.field.name")}
-              required
-            />
-            <SlugField
-              name="slug"
-              label={t("admin.product.field.slug")}
-              source="name.en"
-              required
-            />
-            <ImageUpload
-              name="image"
-              label={t("admin.designer.field.image")}
-              required
-              folder="designers"
-            />
-            <TextField
-              name="website"
-              label={t("admin.designer.field.website")}
-              optional
-              placeholder="https://..."
-              mono
-            />
-            <LocalizedListField
-              name="bio"
-              label={t("admin.designer.field.bio")}
-              hint={t("admin.designer.field.bioHint")}
-              textarea
-              rows={3}
-              addLabel={t("admin.crud.add")}
-            />
-            <NumberField
-              name="sortOrder"
-              label={t("admin.product.field.sortOrder")}
-              min={0}
-            />
-          </FormProvider>
-          <div className="flex items-center justify-end gap-2 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onClose}
-              disabled={pending}
-            >
-              {t("admin.crud.cancel")}
-            </Button>
-            <Button type="submit" size="sm" disabled={pending}>
-              {pending ? t("admin.table.saving") : t("admin.crud.save")}
-            </Button>
-          </div>
-        </form>
+        {/*
+          The field stack and the action row share ONE `px-6 pb-6` inset, so the
+          buttons line up with the inputs instead of hugging the modal edge. Both
+          sit inside the scrolling body — the grid fields need the <form> as
+          their direct parent, so the footer cannot be hoisted out of it.
+        */}
+        <DialogBody>
+          <form onSubmit={handleSubmit} className="space-y-4 px-6 pb-6">
+            <FormProvider {...form}>
+              <LocalizedField
+                name="name"
+                label={t("admin.product.field.name")}
+                required
+              />
+              <SlugField
+                name="slug"
+                label={t("admin.product.field.slug")}
+                source="name.en"
+                required
+              />
+              <ImageUpload
+                name="image"
+                label={t("admin.designer.field.image")}
+                required
+                folder="designers"
+              />
+              <TextField
+                name="website"
+                label={t("admin.designer.field.website")}
+                optional
+                placeholder="https://..."
+                mono
+              />
+              <LocalizedListField
+                name="bio"
+                label={t("admin.designer.field.bio")}
+                hint={t("admin.designer.field.bioHint")}
+                textarea
+                rows={3}
+                addLabel={t("admin.crud.add")}
+              />
+              <NumberField
+                name="sortOrder"
+                label={t("admin.product.field.sortOrder")}
+                min={0}
+              />
+            </FormProvider>
+            <DialogFooter className="justify-end pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+                disabled={pending}
+              >
+                {t("admin.crud.cancel")}
+              </Button>
+              <Button type="submit" size="sm" disabled={pending}>
+                {pending ? t("admin.table.saving") : t("admin.crud.save")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogBody>
       </DialogContent>
     </Dialog>
   );

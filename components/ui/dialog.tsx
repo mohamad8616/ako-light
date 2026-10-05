@@ -58,7 +58,15 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-40 flex max-h-[90vh] w-[92vw] -translate-x-1/2 -translate-y-1/2 flex-col overflow-y-auto bg-popover bg-clip-padding text-xs/relaxed text-popover-foreground shadow-lg sm:w-full sm:max-w-3xl",
+          // The popup is a flex COLUMN whose own height is capped relative to
+          // the viewport. It must NOT scroll itself: `overflow-y-auto` here
+          // (the previous behaviour) made the header and the action row scroll
+          // away with the fields, so a long form left the admin with no title
+          // and no Save button. Scrolling belongs to `DialogBody` instead, which
+          // is why this element is `overflow-hidden` and every direct child is
+          // a flex item that either stays put (header, footer) or shrinks
+          // (`min-h-0`) so the body can absorb the scroll.
+          "fixed top-1/2 left-1/2 z-40 flex max-h-[90dvh] w-[92vw] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden bg-popover bg-clip-padding text-xs/relaxed text-popover-foreground shadow-lg sm:w-full sm:max-w-3xl",
           !motionProps &&
             "transition duration-200 ease-in-out data-ending-style:scale-95 data-ending-style:opacity-0 data-starting-style:scale-95 data-starting-style:opacity-0",
           className
@@ -112,7 +120,57 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="dialog-header"
-      className={cn("flex flex-col gap-1.5 p-6", className)}
+      // `shrink-0` keeps the title in place while the body scrolls beneath it.
+      // The close button is absolutely positioned inside the popup, so the
+      // header's end padding reserves room for it and a long title can never
+      // run underneath the X.
+      className={cn("flex shrink-0 flex-col gap-1.5 p-6 pe-12", className)}
+      {...props}
+    />
+  )
+}
+
+/**
+ * The scrolling region of a dialog.
+ *
+ * Everything that can grow without bound (a long form, a media grid, a list)
+ * belongs in here. `min-h-0` is what actually lets the body shrink: a flex item
+ * defaults to `min-height: auto`, which would make the column grow past the
+ * popup's cap instead of scrolling. `overscroll-contain` stops a wheel gesture
+ * at the end of the content from chaining to the page behind the modal — that
+ * chaining is exactly what made the underlying page scroll while the dialog was
+ * open.
+ *
+ * Padding is deliberately NOT applied here. Dialogs whose content is a plain
+ * stack of fields only need the region itself; the admin dialogs add the shared
+ * `px-6 pb-6` inset on the form they put inside it, and full-bleed dialogs (the
+ * public product modal) lay their own grid out to the edges.
+ */
+function DialogBody({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="dialog-body"
+      className={cn(
+        "min-h-0 flex-1 overflow-y-auto overscroll-contain",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+/**
+ * The action row of a dialog.
+ *
+ * `shrink-0` + `mt-auto` pin it to the bottom of the popup's flex column, so
+ * Save/Cancel stay reachable no matter how tall the body grows. Callers pass
+ * their own alignment/padding classes.
+ */
+function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="dialog-footer"
+      className={cn("flex shrink-0 items-center gap-2", className)}
       {...props}
     />
   )
@@ -150,6 +208,8 @@ export {
   DialogClose,
   DialogContent,
   DialogHeader,
+  DialogBody,
+  DialogFooter,
   DialogTitle,
   DialogDescription,
 }

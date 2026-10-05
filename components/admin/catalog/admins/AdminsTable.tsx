@@ -9,6 +9,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -288,7 +289,7 @@ export function AdminsTable({
               </span>
             </DialogDescription>
           </DialogHeader>
-          <div className="flex items-center justify-end gap-2 px-6 pb-6">
+          <DialogFooter className="justify-end px-6 pb-6">
             <Button
               type="button"
               variant="outline"
@@ -307,7 +308,7 @@ export function AdminsTable({
             >
               {t("admin.admins.confirm.submit")}
             </Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </>

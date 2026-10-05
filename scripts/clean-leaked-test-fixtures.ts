@@ -5,15 +5,26 @@ import { PrismaClient } from "../generated/prisma/client.js";
 /**
  * Reports (and optionally removes) leaked test fixtures.
  *
- * These rows come from tests/server/order-stock.test.ts, which creates products
- * with a `stock-test-<uuid>` / `settle-test-<uuid>` slug and deletes them in a
- * `finally`. A test run that is KILLED (timeout, hung process) never reaches
- * that block, so the rows survive in the shared dev database — and because they
- * carry sortOrder 0 they sort to the FRONT of their category, which is how two
- * of them ended up as the homepage carousel's first slide.
+ * These rows come from the order/payment test tiers, which create products with
+ * a `<prefix>-<uuid>` slug and delete them in a `finally`:
+ *
+ *   - `stock-test-<key>`  — tests/server/order-stock.test.ts
+ *   - `settle-test-<uuid>`— tests/server/order-stock.test.ts and
+ *                           tests/server/payment-settlement.test.ts
+ *   - `cancel-test-<uuid>`— tests/server/cancelled-order-stock.test.ts
+ *
+ * A test run that is KILLED (timeout, hung process) never reaches that block, so
+ * the rows survive in the shared dev database — and because they carry
+ * sortOrder 9999 (later tiers) or 0 (earlier ones) they can sort to the FRONT of
+ * their category, which is how two of them once ended up as the homepage
+ * carousel's first slide.
  *
  * Scope is deliberately narrow: only slugs with those exact prefixes, which no
  * seed row or admin-created row can have. Dry run unless APPLY=1.
+ *
+ * A leaked product also drags its orders along: `OrderItem.productId` is
+ * SetNull, so deleting the product would leave an orphan Order behind, which is
+ * why the orders themselves are removed too.
  *
  * Run with:
  *   node_modules/.bin/tsx scripts/clean-leaked-test-fixtures.ts          # report
@@ -21,16 +32,22 @@ import { PrismaClient } from "../generated/prisma/client.js";
  */
 const APPLY = process.env.APPLY === "1";
 
+/** Slug prefixes only the test tiers can produce. Keep in sync with tests/. */
+const LEAKED_SLUG_PREFIXES = [
+  "stock-test-",
+  "settle-test-",
+  "cancel-test-",
+];
+
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
 });
 
 const leaked = await prisma.product.findMany({
   where: {
-    OR: [
-      { slug: { startsWith: "stock-test-" } },
-      { slug: { startsWith: "settle-test-" } },
-    ],
+    OR: LEAKED_SLUG_PREFIXES.map((prefix) => ({
+      slug: { startsWith: prefix },
+    })),
   },
   select: {
     id: true,

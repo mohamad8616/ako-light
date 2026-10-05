@@ -11,8 +11,10 @@ import {
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
+  DialogBody,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -31,6 +33,13 @@ import * as React from "react";
 
 /** Mirrors `TEXT_MAX` in lib/admin/schemas/common.ts, the server's own cap. */
 const METADATA_MAX = 2000;
+
+/**
+ * Ties the metadata inputs (in the scrollable body) to the form that owns the
+ * Delete/Save row (in the pinned footer). A form cannot straddle the scroll
+ * boundary, so the association is by id instead of by nesting.
+ */
+const FORM_ID = "media-details-form";
 
 /**
  * The media detail panel — metadata editing plus the guarded delete.
@@ -106,72 +115,86 @@ export function MediaDetailsDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="bg-muted relative aspect-video w-full overflow-hidden rounded-md">
-            {item.mediaType === "video" ? (
-              /*
-               * The details panel is where a video is actually PLAYABLE — the
-               * grid tile only paints a still first frame. `controls` is
-               * correct here (unlike the tile) because the panel has no
-               * competing click target and the admin is inspecting the asset.
-               */
-              <video
-                src={item.url}
-                className="absolute inset-0 h-full w-full object-contain"
-                controls
-                playsInline
-                preload="metadata"
-              />
-            ) : (
-              <Image
-                src={item.url}
-                alt={altText}
-                fill
-                sizes="(max-width: 640px) 92vw, 32rem"
-                className="object-contain"
-              />
-            )}
-          </div>
-
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-3">
-            <Fact label={t("admin.media.info.type")}>
-              {shortType(item.mimeType)}
-            </Fact>
-            <Fact label={t("admin.media.info.size")}>
-              {formatBytes(item.size)}
-            </Fact>
-            <Fact label={t("admin.media.info.dimensions")}>
-              {dimensions ? (
-                <span dir="ltr" className="tabular-nums">
-                  {dimensions}
-                </span>
+          {/*
+            Everything between the header and the button row is the scrolling
+            region: the preview (aspect-video) plus the fact grid plus the two
+            metadata fields are taller than a short viewport on their own, so
+            without this the Delete/Save row would be pushed out of reach.
+            `px-6 pb-6` keeps it aligned with the header inset.
+          */}
+          <DialogBody className="space-y-4 px-6 pb-6">
+            <div className="bg-muted relative aspect-video w-full overflow-hidden rounded-md">
+              {item.mediaType === "video" ? (
+                /*
+                 * The details panel is where a video is actually PLAYABLE — the
+                 * grid tile only paints a still first frame. `controls` is
+                 * correct here (unlike the tile) because the panel has no
+                 * competing click target and the admin is inspecting the asset.
+                 */
+                <video
+                  src={item.url}
+                  className="absolute inset-0 h-full w-full object-contain"
+                  controls
+                  playsInline
+                  preload="metadata"
+                />
               ) : (
-                "—"
+                <Image
+                  src={item.url}
+                  alt={altText}
+                  fill
+                  sizes="(max-width: 640px) 92vw, 32rem"
+                  className="object-contain"
+                />
               )}
-            </Fact>
-            <Fact label={t("admin.media.info.uploaded")}>
-              {formatDate(item.createdAt, lang)}
-            </Fact>
-            <div className="col-span-2 sm:col-span-3">
-              <dt className="text-muted-foreground">
-                {t("admin.media.info.url")}
-              </dt>
-              <dd
-                dir="ltr"
-                className="truncate font-mono text-[11px]"
-                title={item.url}
-              >
-                {item.url}
-              </dd>
             </div>
-          </dl>
 
-          <form className="space-y-4" onSubmit={handleSubmit}>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs sm:grid-cols-3">
+              <Fact label={t("admin.media.info.type")}>
+                {shortType(item.mimeType)}
+              </Fact>
+              <Fact label={t("admin.media.info.size")}>
+                {formatBytes(item.size)}
+              </Fact>
+              <Fact label={t("admin.media.info.dimensions")}>
+                {dimensions ? (
+                  <span dir="ltr" className="tabular-nums">
+                    {dimensions}
+                  </span>
+                ) : (
+                  "—"
+                )}
+              </Fact>
+              <Fact label={t("admin.media.info.uploaded")}>
+                {formatDate(item.createdAt, lang)}
+              </Fact>
+              <div className="col-span-2 sm:col-span-3">
+                <dt className="text-muted-foreground">
+                  {t("admin.media.info.url")}
+                </dt>
+                <dd
+                  dir="ltr"
+                  className="truncate font-mono text-[11px]"
+                  title={item.url}
+                >
+                  {item.url}
+                </dd>
+              </div>
+            </dl>
+
+            {/*
+              The editable metadata belongs to the same <form> as the Save
+              button, so it is rendered here via the form's `id` association
+              rather than nesting: the form element sits in the footer and the
+              fields stay in the scroll region, both wired by `form="..."`.
+            */}
             <div className="space-y-1.5">
               <Label htmlFor="media-detail-alt">
                 {t("admin.media.field.alt")}
               </Label>
               <Input
                 id="media-detail-alt"
+                form={FORM_ID}
                 value={alt}
                 maxLength={METADATA_MAX}
                 disabled={pending}
@@ -185,14 +208,25 @@ export function MediaDetailsDialog({
               </Label>
               <Input
                 id="media-detail-title"
+                form={FORM_ID}
                 value={title}
                 maxLength={METADATA_MAX}
                 disabled={pending}
                 onChange={(event) => setTitle(event.target.value)}
               />
             </div>
+          </DialogBody>
 
-            <div className="flex flex-wrap items-center justify-between gap-2">
+          {/*
+            Delete and Save are the form's controls, so the <form> has to wrap
+            them, and a form element cannot be split across the scroll
+            boundary. The pair therefore lives in its own pinned footer BELOW
+            the body, while the two metadata inputs above join it by `form={id}`
+            — the submit wiring is identical and it can never scroll out of
+            reach no matter how tall the preview and fact grid get.
+          */}
+          <form id={FORM_ID} onSubmit={handleSubmit}>
+            <DialogFooter className="flex-wrap justify-between px-6 pb-6">
               <Button
                 type="button"
                 variant="destructive"
@@ -206,7 +240,7 @@ export function MediaDetailsDialog({
               <Button type="submit" size="sm" disabled={pending}>
                 {t("admin.crud.save")}
               </Button>
-            </div>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
