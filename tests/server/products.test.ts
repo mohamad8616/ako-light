@@ -205,3 +205,70 @@ describeDb("products repository", () => {
     expect(findUnique).toHaveBeenCalledTimes(2);
   });
 });
+
+describeDb("products repository — admin edit contract (Pass 4)", () => {
+  beforeAll(async () => {
+    await prisma.$queryRaw`SELECT 1`;
+  });
+
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
+  /**
+   * The Edit flow's core data contract: the id the products list hands to the
+   * editHref is the SAME key getProductAdminDetail resolves. A mismatch here is
+   * what "click Edit → notFound" looks like from the dashboard. Products the
+   * seed created have id === slug ("pendant-light"); products created through
+   * the dashboard have a uuid id — both must resolve.
+   */
+  it("resolves getProductAdminDetail with the id every admin row carries", async () => {
+    const { getProductAdminRows, getProductAdminDetail } = await import(
+      "@/lib/repositories/products"
+    );
+
+    const rows = await getProductAdminRows();
+    expect(rows.length).toBeGreaterThan(0);
+
+    // First few rows resolve, seeded and dashboard-created alike.
+    for (const row of rows.slice(0, 5)) {
+      const detail = await getProductAdminDetail(row.id);
+      expect(detail, `row id "${row.id}" must resolve a detail`).not.toBeNull();
+      expect(detail!.id).toBe(row.id);
+      expect(detail!.slug).toBe(row.slug);
+    }
+  });
+
+  it("resolves the seeded pendant-light by its id (the exact reported bug)", async () => {
+    const { getProductAdminDetail } = await import("@/lib/repositories/products");
+
+    const detail = await getProductAdminDetail("pendant-light");
+    expect(detail).not.toBeNull();
+    expect(detail!.id).toBe("pendant-light");
+    expect(detail!.slug).toBe("pendant-light");
+    expect(typeof detail!.priceEur).toBe("number");
+  });
+
+  it("returns null — the notFound() contract — for an unknown id", async () => {
+    const { getProductAdminDetail } = await import("@/lib/repositories/products");
+
+    expect(await getProductAdminDetail("no-such-product-id")).toBeNull();
+  });
+
+  it("loads DIFFERENT details for different ids (product A never loads product B)", async () => {
+    const { getProductAdminRows, getProductAdminDetail } = await import(
+      "@/lib/repositories/products"
+    );
+
+    const rows = await getProductAdminRows();
+    const [a, b] = rows;
+    if (!a || !b) return; // degenerate database; other tests cover shape
+
+    const detailA = await getProductAdminDetail(a.id);
+    const detailB = await getProductAdminDetail(b.id);
+    expect(detailA).not.toBeNull();
+    expect(detailB).not.toBeNull();
+    expect(detailA!.id).not.toBe(detailB!.id);
+    expect(detailA!.slug).not.toBe(detailB!.slug);
+  });
+});
