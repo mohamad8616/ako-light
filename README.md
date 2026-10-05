@@ -232,6 +232,7 @@ ZARINPAL_MODE="sandbox"   # or "production"
 # Provisioned automatically once Blob storage is connected to the Vercel
 # project — confirm it exists for Production/Preview/Development before
 # relying on uploads.
+# The Blob store must be created with Public access; it cannot be changed afterward.
 BLOB_READ_WRITE_TOKEN="your-blob-read-write-token"
 ```
 
