@@ -11,8 +11,7 @@
     "test:watch": "vitest",
     "test:clean-fixtures": "tsx scripts/clean-leaked-test-fixtures.ts",
     "media:orphans": "tsx scripts/media-orphans.ts",
-    "postinstall": "prisma generate && prisma skills sync || exit 0",
-    "build": "prisma generate && prisma migrate deploy && next build"
+    "build": "prisma generate --config prisma7.config.ts && node --max-old-space-size=8192 ./node_modules/next/dist/bin/next build"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
