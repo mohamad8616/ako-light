@@ -12,7 +12,7 @@
     "test:clean-fixtures": "tsx scripts/clean-leaked-test-fixtures.ts",
     "media:orphans": "tsx scripts/media-orphans.ts",
     "postinstall": "prisma generate && prisma skills sync || exit 0",
-    "build": "prisma generate && node --max-old-space-size=8192 ./node_modules/next/dist/bin/next build"
+    "build": "prisma generate && prisma migrate deploy && next build"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
@@ -43,6 +43,7 @@
     "next-themes": "^0.4.6",
     "nodemailer": "^10.0.12",
     "pg": "^8.23.0",
+    "prisma": "^7.10.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-hook-form": "^7.16.0",
@@ -68,7 +69,6 @@
     "eslint-config-next": "16.2.12",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
-    "prisma": "^7.10.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.13",
     "typescript": "^5",
