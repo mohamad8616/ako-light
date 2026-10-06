@@ -12,6 +12,24 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 
 /**
+ * Publishes the modal's close action to the form it renders.
+ *
+ * The intercepted page is a SERVER component, so it cannot pass a client
+ * callback down to the client ProductForm. The shell owns the close logic
+ * (router.back) and shares it here; ProductForm reads it with
+ * `useOptionalProductModalClose`, which is undefined on the dedicated [id]
+ * page, where an inline save correctly stays put instead of navigating.
+ */
+const ProductModalCloseContext = React.createContext<(() => void) | undefined>(
+  undefined,
+);
+
+/** The modal's close action, or undefined when not rendered inside the modal. */
+export function useOptionalProductModalClose(): (() => void) | undefined {
+  return React.useContext(ProductModalCloseContext);
+}
+
+/**
  * The URL-backed product edit modal shell.
  *
  * This is the "chrome" half of the parallel/intercepting-route modal (the
@@ -39,16 +57,18 @@ export function ProductEditModalShell({
   const onClose = React.useCallback(() => router.back(), [router]);
 
   return (
-    <Dialog open onOpenChange={onClose}>
-      <DialogContent dir={ADMIN_SHELL_DIR} className="sm:max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-        </DialogHeader>
-        {/* The body is the ONLY scrolling region — the header above stays
-            pinned while the long ProductForm scrolls under it. px-6 pb-6
-            supplies the shared inset (the header already carries its own). */}
-        <DialogBody className="px-6 pb-6">{children}</DialogBody>
-      </DialogContent>
-    </Dialog>
+    <ProductModalCloseContext.Provider value={onClose}>
+      <Dialog open onOpenChange={onClose}>
+        <DialogContent dir={ADMIN_SHELL_DIR} className="sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+          </DialogHeader>
+          {/* The body is the ONLY scrolling region — the header above stays
+              pinned while the long ProductForm scrolls under it. px-6 pb-6
+              supplies the shared inset (the header already carries its own). */}
+          <DialogBody className="px-6 pb-6">{children}</DialogBody>
+        </DialogContent>
+      </Dialog>
+    </ProductModalCloseContext.Provider>
   );
 }

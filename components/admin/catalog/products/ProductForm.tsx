@@ -1,7 +1,6 @@
 "use client";
 
 import { DeleteDialog } from "@/components/admin/catalog/DeleteDialog";
-import { ImageUpload } from "@/components/admin/ImageUpload";
 import { FormCard } from "@/components/admin/catalog/fields/form";
 import { LocalizedLabeledRowsField } from "@/components/admin/catalog/fields/ListFields";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
@@ -15,7 +14,9 @@ import {
 } from "@/components/admin/catalog/fields/ScalarFields";
 import { SelectField } from "@/components/admin/catalog/fields/SelectField";
 import { SlugField } from "@/components/admin/catalog/fields/SlugField";
+import { useOptionalProductModalClose } from "@/components/admin/catalog/products/ProductEditModalShell";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -24,18 +25,18 @@ import {
   updateProductAction,
 } from "@/lib/admin/actions/products";
 import { productFormSchema } from "@/lib/admin/schemas/product";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import LocaleLink from "@/lib/i18n/Link";
+import { pick } from "@/lib/i18n/localized";
+import { getLocalizedPath } from "@/lib/i18n/routing";
 import type { DesignerOption } from "@/lib/repositories/designers";
 import type { ProductCategoryOption } from "@/lib/repositories/product-categories";
 import type { ProductAdminDetail } from "@/lib/repositories/products";
-import LocaleLink from "@/lib/i18n/Link";
-import { pick } from "@/lib/i18n/localized";
-import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { getLocalizedPath } from "@/lib/i18n/routing";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { FormProvider, useForm, useWatch } from "react-hook-form";
 import * as React from "react";
+import { FormProvider, useForm, useWatch } from "react-hook-form";
 
 /**
  * The full product form — every `Product` column via the shared kit. Same zod
@@ -56,6 +57,12 @@ export function ProductForm({
   const { run, pending, applyFieldIssues } = useCrudSubmit();
   const [confirming, setConfirming] = React.useState(false);
   const isEdit = Boolean(detail);
+
+  // When this form is rendered inside the intercepted edit modal, the shell
+  // publishes its close action here so a successful save returns to the
+  // Products list. On the dedicated [id] page the context is undefined and an
+  // inline edit keeps the pre-existing behaviour (stays on the page).
+  const closeModal = useOptionalProductModalClose();
 
   const form = useForm({
     resolver: zodResolver(productFormSchema),
@@ -121,7 +128,10 @@ export function ProductForm({
         onSuccess: (id) => {
           if (!detail && id) {
             router.push(getLocalizedPath(`/admin/products/${id}`, lang));
+            return;
           }
+          // Edit saved inside the modal: close it, revealing the list again.
+          if (detail) closeModal?.();
         },
       },
     );

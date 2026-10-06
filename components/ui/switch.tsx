@@ -17,14 +17,14 @@ function Switch({ className, ...props }: SwitchPrimitive.Root.Props) {
     <SwitchPrimitive.Root
       data-slot="switch"
       className={cn(
-        "peer bg-input focus-visible:border-ring focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-checked:bg-primary dark:bg-input/60 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-start rounded-full border border-transparent p-0.5 transition-colors outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 data-checked:justify-end",
+        "group peer bg-input focus-visible:border-ring focus-visible:ring-ring/30 aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-checked:bg-blue-500 dark:bg-input/60 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-start rounded-full border border-transparent p-0.5 transition-colors outline-none focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 data-checked:justify-end duration-200 ease-in-out",
         className,
       )}
       {...props}
     >
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
-        className="bg-background pointer-events-none block size-4 rounded-full shadow-sm"
+        className="bg-black group-data-checked:bg-white pointer-events-none block size-4 rounded-full shadow-sm"
       />
     </SwitchPrimitive.Root>
   );

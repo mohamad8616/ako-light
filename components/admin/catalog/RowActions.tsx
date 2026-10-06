@@ -1,10 +1,11 @@
 "use client";
 
 import { DeleteDialog } from "@/components/admin/catalog/DeleteDialog";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type { ActionResult } from "@/lib/admin/result";
 import LocaleLink from "@/lib/i18n/Link";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { cn } from "@/lib/utils";
 import { Pencil, Trash2 } from "lucide-react";
 import * as React from "react";
 
@@ -35,20 +36,23 @@ export function RowActions({
   return (
     <div className="flex items-center justify-end gap-1">
       {editHref ? (
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
+        // A real anchor, styled as a button.
+        //
+        // This must NOT be a <Button render={<LocaleLink/>}>: Base UI's Button
+        // asserts native <button> semantics (nativeButton defaults to true) and
+        // warns at runtime when the render prop produces an <a>, because a link
+        // is not a button. An edit action is navigation, so the anchor is the
+        // correct element outright — the styling comes from buttonVariants.
+        <LocaleLink
+          href={editHref}
           aria-label={t("admin.table.edit")}
-          render={
-            <LocaleLink
-              href={editHref}
-              className="flex items-center justify-center"
-            />
-          }
+          className={cn(
+            buttonVariants({ variant: "ghost", size: "icon-sm" }),
+            "flex items-center justify-center",
+          )}
         >
           <Pencil className="h-3.5 w-3.5" />
-        </Button>
+        </LocaleLink>
       ) : null}
       {onEdit ? (
         <Button
