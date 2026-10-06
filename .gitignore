@@ -9,6 +9,7 @@
 .agents/*
 .claude/
 .windsurf/
+.freebuff/
 .workbuddy-ai/
 !.yarn/patches
 !.yarn/plugins
