@@ -589,6 +589,86 @@ describeDb("createPendingOrder", () => {
     }
   });
 
+  // -------------------------------------------------------------------------
+  // Pass 8 — the payment boundary (external call OUTSIDE the transaction)
+  // -------------------------------------------------------------------------
+
+  it("calls the gateway only AFTER the order is committed and visible", async () => {
+    // Proves the boundary behaviourally: when the gateway is invoked, the order
+    // must already be readable through a NEW connection, i.e. its transaction
+    // has COMMITTED. If the request were made inside the transaction, the row
+    // would still be uncommitted and invisible to an outside reader.
+    const product = await makeProduct({ quantity: 3 });
+
+    let orderVisibleWhenGatewayCalled = false;
+    let orderStatusWhenGatewayCalled: string | null = null;
+
+    mockRequest.mockImplementation(async (input: { description: string }) => {
+      // `description` is `Order <orderId>` — extract the id and read it from a
+      // fresh client, outside the checkout transaction.
+      const orderId = input.description.replace(/^Order\s+/, "");
+      const row = await prisma.order.findUnique({
+        where: { id: orderId },
+        select: { status: true },
+      });
+      orderVisibleWhenGatewayCalled = row !== null;
+      orderStatusWhenGatewayCalled = row?.status ?? null;
+      return {
+        code: 100,
+        message: "ok",
+        authority: AUTHORITY,
+        redirectUrl: `https://sandbox.zarinpal.com/pg/StartPay/${AUTHORITY}`,
+      };
+    });
+
+    const result = await createPendingOrder({
+      items: itemsFor(product.id, 1),
+      ...SHIPPING,
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) trackOrder(result.orderId);
+
+    // The commit happened before the gateway call.
+    expect(orderVisibleWhenGatewayCalled).toBe(true);
+    expect(orderStatusWhenGatewayCalled).toBe("pending");
+  });
+
+  it("does not hold the transaction open while the gateway is contacted", async () => {
+    // A slow gateway must not extend the transaction. If the request were made
+    // inside the transaction, this artificial delay would be inside it too; the
+    // order would still be invisible when the gateway returns. Asserting the
+    // order is visible and its stock already decremented proves the transaction
+    // closed first.
+    const product = await makeProduct({ quantity: 3 });
+
+    mockRequest.mockImplementation(async () => {
+      // Sleep to make "inside the transaction" impossible to hide.
+      await new Promise((resolve) => setTimeout(resolve, 400));
+      // By now the transaction must have committed: the stock decrement is
+      // visible from an independent reader.
+      const after = await prisma.product.findUniqueOrThrow({
+        where: { id: product.id },
+        select: { quantity: true },
+      });
+      expect(after.quantity).toBe(2);
+      return {
+        code: 100,
+        message: "ok",
+        authority: AUTHORITY,
+        redirectUrl: `https://sandbox.zarinpal.com/pg/StartPay/${AUTHORITY}`,
+      };
+    });
+
+    const result = await createPendingOrder({
+      items: itemsFor(product.id, 1),
+      ...SHIPPING,
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) trackOrder(result.orderId);
+  });
+
   it("never leaks internals in a failure message", async () => {
     mockRequest.mockRejectedValue(
       new Error("connect ECONNREFUSED 10.0.0.5:5432 secret=abc"),
@@ -603,5 +683,125 @@ describeDb("createPendingOrder", () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error).not.toMatch(/ECONNREFUSED|5432|secret|prisma|stack/i);
+  });
+
+  // -------------------------------------------------------------------------
+  // Pass 8 — concurrency on the checkout action itself
+  // -------------------------------------------------------------------------
+
+  it("lets only ONE of two concurrent checkouts take the last unit", async () => {
+    // The whole point of claiming stock at order creation. Both requests are
+    // real calls to the real action against the real database; only the
+    // gateway is mocked. Exactly one must win, and stock must never go
+    // negative.
+    const product = await makeProduct({ quantity: 1 });
+
+    const payloadFor = () => ({
+      items: itemsFor(product.id, 1),
+      // Distinct keys: this is the stock race, not an idempotency replay.
+      idempotencyKey: randomUUID(),
+      ...SHIPPING,
+    });
+
+    const [a, b] = await Promise.all([
+      createPendingOrder(payloadFor()),
+      createPendingOrder(payloadFor()),
+    ]);
+
+    for (const result of [a, b]) {
+      if (result.ok) trackOrder(result.orderId);
+    }
+
+    // Exactly one succeeded.
+    expect([a.ok, b.ok].filter(Boolean)).toHaveLength(1);
+
+    const after = await prisma.product.findUniqueOrThrow({
+      where: { id: product.id },
+      select: { quantity: true },
+    });
+    // One unit left the shelf, and never below zero.
+    expect(after.quantity).toBe(0);
+    expect(after.quantity).toBeGreaterThanOrEqual(0);
+
+    // Exactly one order was created for this product.
+    const orders = await prisma.order.count({
+      where: { items: { some: { productId: product.id } } },
+    });
+    expect(orders).toBe(1);
+  });
+
+  it("keeps exactly one order under concurrent requests with the SAME key", async () => {
+    const product = await makeProduct({ quantity: 5, priceToman: 10_000_000 });
+    const idempotencyKey = randomUUID();
+    const payload = {
+      items: itemsFor(product.id, 2),
+      idempotencyKey,
+      ...SHIPPING,
+    };
+
+    const [a, b] = await Promise.all([
+      createPendingOrder(payload),
+      createPendingOrder(payload),
+    ]);
+
+    for (const result of [a, b]) {
+      if (result.ok) trackOrder(result.orderId);
+    }
+
+    // At most one may fail the unique-index race; the winner's order is the one
+    // both should resolve to.
+    const okResults = [a, b].filter((r): r is { ok: true; orderId: string; redirectUrl: string } => r.ok);
+    expect(okResults.length).toBeGreaterThanOrEqual(1);
+
+    expect(
+      await prisma.order.count({ where: { idempotencyKey } }),
+      "a concurrent same-key checkout must never create two orders",
+    ).toBe(1);
+
+    // Stock claimed exactly once.
+    const after = await prisma.product.findUniqueOrThrow({
+      where: { id: product.id },
+      select: { quantity: true },
+    });
+    expect(after.quantity).toBe(3);
+
+    // Exactly one OrderItem.
+    const order = await prisma.order.findUniqueOrThrow({
+      where: { idempotencyKey },
+      include: { items: true },
+    });
+    expect(order.items).toHaveLength(1);
+  });
+
+  // -------------------------------------------------------------------------
+  // Pass 8 — the transaction budget is explicit
+  // -------------------------------------------------------------------------
+
+  it("completes a multi-line checkout well inside the transaction budget", async () => {
+    // A behavioural smoke test that the transaction does not approach its
+    // ceiling on a normal cart. No millisecond threshold is asserted (that
+    // would be flaky against a remote DB); the assertion is that a 4-line
+    // checkout SUCCEEDS at all — which it could not reliably do under the old
+    // 5 s default if the round-trip count regressed.
+    const products = await Promise.all(
+      Array.from({ length: 4 }, () => makeProduct({ quantity: 3 })),
+    );
+
+    const result = await createPendingOrder({
+      items: products.map((p) => ({ productId: p.id, quantity: 1 })),
+      ...SHIPPING,
+    });
+
+    expect(result.ok).toBe(true);
+    if (result.ok) trackOrder(result.orderId);
+
+    const order = result.ok
+      ? await prisma.order.findUniqueOrThrow({
+          where: { id: result.orderId },
+          include: { items: true },
+        })
+      : null;
+    expect(order?.items).toHaveLength(4);
+    expect(order?.totalAmount.toNumber()).toBe(4 * 10_000_000);
   });
 });

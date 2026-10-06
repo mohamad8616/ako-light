@@ -23,6 +23,7 @@ export const navEn = {
   "admin.nav.s34": "S34 page",
   "admin.nav.settings": "Site settings",
   "admin.nav.admins": "Admins",
+  "admin.nav.users": "Users",
   "admin.nav.orders": "Orders",
 } as const;
 
@@ -44,5 +45,6 @@ export const navFa = {
   "admin.nav.s34": "صفحه اس ۳۴",
   "admin.nav.settings": "تنظیمات سایت",
   "admin.nav.admins": "مدیران",
+  "admin.nav.users": "کاربران",
   "admin.nav.orders": "سفارش‌ها",
 } as const;

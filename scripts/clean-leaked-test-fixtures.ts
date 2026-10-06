@@ -12,6 +12,7 @@ import { PrismaClient } from "../generated/prisma/client.js";
  *   - `settle-test-<uuid>`— tests/server/order-stock.test.ts and
  *                           tests/server/payment-settlement.test.ts
  *   - `cancel-test-<uuid>`— tests/server/cancelled-order-stock.test.ts
+ *   - `order-access-<uuid>`— tests/server/order-access.test.ts
  *
  * A test run that is KILLED (timeout, hung process) never reaches that block, so
  * the rows survive in the shared dev database — and because they carry
@@ -37,6 +38,10 @@ const LEAKED_SLUG_PREFIXES = [
   "stock-test-",
   "settle-test-",
   "cancel-test-",
+  // tests/server/order-access.test.ts. A SIGTERM-interrupted server run once left one
+  // of these behind (sortOrder 9999), which broke
+  // tests/integration/schema.test.ts ("expected 31 to be 32").
+  "order-access-",
 ];
 
 const prisma = new PrismaClient({

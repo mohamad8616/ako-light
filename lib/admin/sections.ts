@@ -54,6 +54,12 @@ export const ADMIN_CATALOG_NAV: readonly AdminNavItem[] = [
   // and moves their fulfillment status (payment status is never editable here —
   // it changes only through ZarinPal's verify() callback).
   { href: "/admin/orders", labelKey: "admin.nav.orders" },
+  // The shared user directory: visible to every admin-level role, because BOTH
+  // admin and owner may review customers and moderate (ban/unban) accounts.
+  // The role-change control inside it is owner-only, but that is enforced
+  // server-side per action — not by hiding this entry. Staff/role management
+  // proper stays on the owner-only `/admin/admins` (ADMIN_OWNER_NAV below).
+  { href: "/admin/users", labelKey: "admin.nav.users" },
   { href: "/admin/products", labelKey: "admin.nav.products" },
   { href: "/admin/categories", labelKey: "admin.nav.categories" },
   { href: "/admin/designers", labelKey: "admin.nav.designers" },

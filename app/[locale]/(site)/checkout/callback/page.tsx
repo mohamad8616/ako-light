@@ -1,6 +1,6 @@
+import CartResetBeacon from "@/components/checkout/CartResetBeacon";
 import PaymentCallbackState from "@/components/checkout/PaymentCallbackState";
 import { auth } from "@/lib/auth/auth";
-import { signalCartReset } from "@/lib/cart/reset-signal";
 import { prisma } from "@/lib/db/prisma";
 import { formatToman } from "@/lib/i18n/price";
 import { isLocale } from "@/lib/i18n/routing";
@@ -144,21 +144,21 @@ export default async function CheckoutCallbackPage({
   if (outcome.kind === "paid") {
     const refId = outcome.refId;
 
-    // The payment is now durably recorded, so record the "empty the cart"
-    // signal server-side. Doing it HERE rather than only through the client
-    // component is what makes the reset survive a callback that renders early,
-    // an un-hydrated page, a closed tab, or a return visit days later — see
-    // lib/cart/reset-signal.ts. It is set only on a real payment, so a failed
-    // order can never clear a cart the customer still needs.
+    // The payment is now durably recorded. The durable "empty the cart" signal
+    // is written by the Route Handler the success view below points the browser
+    // at (`app/api/checkout/cart-reset/`) — NOT from here. Setting a cookie is
+    // only legal in a Route Handler or Server Action; doing it from this Server
+    // Component render throws `ReadonlyRequestCookiesError`, which is precisely
+    // how the durable reset was silently dead before (see
+    // lib/cart/reset-signal.ts). The handler re-reads the order and refuses
+    // unless it is already `paid`, so it stays strictly downstream of
+    // settlement and can never clear a cart for an unpaid order.
     //
     // Keyed on the SETTLEMENT, not on the gateway reference id: `refId` is
     // optional metadata and ZarinPal does not guarantee it, so gating this on
     // it would leave a genuinely paid customer staring at a cart full of goods
-    // the money had already bought. The settle path is idempotent, so a
-    // duplicate callback cannot clear a rebuilt cart twice for the same order
-    // (the cookie value is the order id; see CartResetOnPaidOrder).
-    await signalCartReset(order.id);
-
+    // the money had already bought.
+    //
     // The receipt is sent only now that the payment is durably recorded, and
     // only on the first transition to paid. `sendOrderReceipt` never throws, so
     // a notification failure cannot turn a successful payment into an error
@@ -175,6 +175,7 @@ export default async function CheckoutCallbackPage({
     return (
       <>
         <PaymentCallbackState success orderId={order.id} />
+        <CartResetBeacon orderId={order.id} />
         <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
           <h1 className="text-3xl font-medium">Payment received</h1>
           <p className="mt-4 text-stone-600">
@@ -204,9 +205,13 @@ export default async function CheckoutCallbackPage({
     // A re-delivered callback, a refresh, or a gateway retry. The order is
     // already settled, so there is nothing to write and no side effect to
     // repeat — but the customer must still see their success and order details.
+    // The beacon is re-rendered too: it is idempotent and re-asserts the
+    // durable signal for a browser that lost the cookie (or paid in a tab that
+    // navigated away before hydrating).
     return (
       <>
         <PaymentCallbackState success orderId={order.id} />
+        <CartResetBeacon orderId={order.id} />
         <main className="mx-auto max-w-xl px-6 py-32 text-stone-950">
           <h1 className="text-3xl font-medium">Payment received</h1>
           <p className="mt-4 text-stone-600">

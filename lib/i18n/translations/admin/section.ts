@@ -35,6 +35,8 @@ export const sectionEn = {
     "Curate projects and the products used in them.",
   "admin.section.admins.description":
     "Manage staff accounts and their roles. Owner only.",
+  "admin.section.users.description":
+    "Find customers and moderate their accounts. Admins may ban; only owners may change roles.",
 } as const;
 
 export const sectionFa = {
@@ -64,4 +66,6 @@ export const sectionFa = {
     "گردآوری پروژه‌ها و محصولات استفاده‌شده در آن‌ها.",
   "admin.section.admins.description":
     "مدیریت حساب‌های کارکنان و نقش‌های آن‌ها. فقط مالک.",
+  "admin.section.users.description":
+    "یافتن مشتریان و مدیریت حساب آن‌ها. مدیران می‌توانند مسدود کنند؛ فقط مالک می‌تواند نقش‌ها را تغییر دهد.",
 } as const;

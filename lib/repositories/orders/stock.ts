@@ -18,6 +18,17 @@
 import type { Prisma } from "@/generated/prisma/client";
 
 /**
+ * A product row already read by the caller, for the columns a claim decision
+ * needs. Passing these in avoids re-reading the same row inside the claim.
+ */
+export type ClaimableProduct = {
+  id: string;
+  slug: string;
+  existsInStore: boolean;
+  priceToman: { toNumber(): number };
+};
+
+/**
  * Atomically decrements each product's stock, failing the whole claim if any
  * line cannot be satisfied.
  *
@@ -34,10 +45,31 @@ import type { Prisma } from "@/generated/prisma/client";
  * caller already has a translated error path for a partial failure and needs
  * the list of offending items to report them.
  *
+ * PERFORMANCE — PASS 8
+ * --------------------
+ * The guarded `updateMany` is the DECISION and must run once per line; that is
+ * irreducible. What was reducible is the `findUnique` that used to precede it:
+ * the checkout action had already read the very same rows, so the claim was
+ * re-reading one row per line purely to fetch `slug`/`existsInStore`/
+ * `priceToman` for the error message. Against a remote pooler (~320 ms RTT) that
+ * duplicated a round trip per line for zero extra information.
+ *
+ * A caller that already holds the rows passes `known`; the claim then skips the
+ * read entirely and works from that data. A caller that does NOT (the
+ * settlement re-reservation path) omits it and the read happens as before — so
+ * this is additive and no caller is forced to add queries it does not need.
+ *
+ * When `known` is supplied it must be the CURRENT reading of those rows, taken
+ * inside the same transaction. It only feeds the "gone / not purchasable"
+ * classification; the availability DECISION is still made exclusively by the
+ * guarded update below, so a stale `known` entry cannot let a claim through.
+ *
  * @param items  `{ productId, quantity }` — one entry per distinct product,
  *               quantities already summed. `quantity` must be >= 1.
  * @param tx     Transaction client. Required: a claim that is not part of the
  *               order's transaction could commit while the order fails.
+ * @param known  Optional pre-read rows, keyed by product id, for `items`'
+ *               products. Read inside the same transaction.
  * @returns      `{ claimedIds, unavailable }` — ids that were decremented (all
  *               of them when `unavailable` is empty) and the slugs that could
  *               not be satisfied.
@@ -45,6 +77,7 @@ import type { Prisma } from "@/generated/prisma/client";
 export async function claimProductStock(
   items: { productId: string; quantity: number }[],
   tx: Prisma.TransactionClient,
+  known?: ReadonlyMap<string, ClaimableProduct>,
 ): Promise<{ claimedIds: string[]; unavailable: string[] }> {
   const claimedIds: string[] = [];
   const unavailable: string[] = [];
@@ -52,11 +85,14 @@ export async function claimProductStock(
   for (const { productId, quantity } of items) {
     // The row is read for its slug (the human handle used in the error) and to
     // distinguish "gone" from "not purchasable"; the DECISION, however, is
-    // made by the guarded update below, never by this read.
-    const product = await tx.product.findUnique({
-      where: { id: productId },
-      select: { id: true, slug: true, existsInStore: true, priceToman: true },
-    });
+    // made by the guarded update below, never by this read. Callers that
+    // already read the rows pass them in, skipping a duplicate round trip.
+    const product =
+      known?.get(productId) ??
+      (await tx.product.findUnique({
+        where: { id: productId },
+        select: { id: true, slug: true, existsInStore: true, priceToman: true },
+      }));
 
     if (!product) {
       // A deleted product is reported by its raw id — there is no slug left.

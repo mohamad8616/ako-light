@@ -70,6 +70,16 @@ describeDb("admin-users repository", () => {
     expect(row?.role).toBe("admin");
   });
 
+  it("setUserRole promotes a customer STRAIGHT to owner in one guarded write", async () => {
+    // Pass 6.1: user -> owner is a legal single transition (no forced
+    // intermediate admin step). The guarded update proves it commits.
+    const id = await makeUser("user");
+    await expect(setUserRole(id, "user", "owner")).resolves.toBe(true);
+
+    const row = await prisma.user.findUnique({ where: { id } });
+    expect(row?.role).toBe("owner");
+  });
+
   it("setUserRole demotes an admin back to user", async () => {
     const id = await makeUser("admin");
     await expect(setUserRole(id, "admin", "user")).resolves.toBe(true);

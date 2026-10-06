@@ -833,3 +833,202 @@ describeDb("claimPendingOrder", () => {
   });
 });
 
+// ---------------------------------------------------------------------------
+// Pass 8 — the pre-read (`known`) fast path
+// ---------------------------------------------------------------------------
+//
+// `claimProductStock` used to re-read each product row one at a time even when
+// the caller had just read the same rows, costing a full round trip per line
+// against the remote pooler. The `known` map removes that read. What must NOT
+// change is the DECISION: it is still the guarded `updateMany`'s WHERE clause,
+// so a `known` entry that says "available" must not let an unavailable claim
+// through.
+describeDb("claimProductStock — pre-read rows (Pass 8)", () => {
+  afterAll(async () => {
+    await prisma.$disconnect();
+  });
+
+  it("claims identically whether the rows are supplied or re-read", async () => {
+    await expect(
+      prisma.$transaction(
+        async (tx) => {
+          const product = await makeProduct(tx, { quantity: 5 });
+
+          // Read the row the way the checkout action now does.
+          const rows = await tx.product.findMany({
+            where: { id: product.id },
+            select: {
+              id: true,
+              slug: true,
+              existsInStore: true,
+              priceToman: true,
+            },
+          });
+          const known = new Map(rows.map((r) => [r.id, r]));
+
+          const withKnown = await claimProductStock(
+            [{ productId: product.id, quantity: 3 }],
+            tx,
+            known,
+          );
+          expect(withKnown.unavailable).toEqual([]);
+          expect(withKnown.claimedIds).toEqual([product.id]);
+
+          const after = await tx.product.findUnique({
+            where: { id: product.id },
+            select: { quantity: true },
+          });
+          expect(after!.quantity).toBe(2);
+
+          throw new Error(ROLLBACK);
+        },
+        TX_OPTIONS,
+      ),
+    ).rejects.toThrow(ROLLBACK);
+  });
+
+  it("still refuses an insufficient claim even when `known` says it exists", async () => {
+    await expect(
+      prisma.$transaction(
+        async (tx) => {
+          const product = await makeProduct(tx, { quantity: 2 });
+
+          const rows = await tx.product.findMany({
+            where: { id: product.id },
+            select: { id: true, slug: true, existsInStore: true, priceToman: true },
+          });
+          const known = new Map(rows.map((r) => [r.id, r]));
+
+          // `known` only feeds the "gone / not purchasable" classification.
+          const { claimedIds, unavailable } = await claimProductStock(
+            [{ productId: product.id, quantity: 5 }],
+            tx,
+            known,
+          );
+
+          // The guarded UPDATE is what refuses it, not the read.
+          expect(claimedIds).toEqual([]);
+          expect(unavailable).toEqual([product.slug]);
+
+          const after = await tx.product.findUnique({
+            where: { id: product.id },
+            select: { quantity: true },
+          });
+          expect(after!.quantity).toBe(2);
+
+          throw new Error(ROLLBACK);
+        },
+        TX_OPTIONS,
+      ),
+    ).rejects.toThrow(ROLLBACK);
+  });
+
+  it("refuses a not-in-store product supplied through `known`", async () => {
+    await expect(
+      prisma.$transaction(
+        async (tx) => {
+          const product = await makeProduct(tx, {
+            quantity: 10,
+            existsInStore: false,
+          });
+
+          const rows = await tx.product.findMany({
+            where: { id: product.id },
+            select: { id: true, slug: true, existsInStore: true, priceToman: true },
+          });
+          const known = new Map(rows.map((r) => [r.id, r]));
+
+          const { claimedIds, unavailable } = await claimProductStock(
+            [{ productId: product.id, quantity: 1 }],
+            tx,
+            known,
+          );
+
+          expect(claimedIds).toEqual([]);
+          expect(unavailable).toEqual([product.slug]);
+
+          throw new Error(ROLLBACK);
+        },
+        TX_OPTIONS,
+      ),
+    ).rejects.toThrow(ROLLBACK);
+  });
+
+  it("reports a missing product by id when it is absent from `known`", async () => {
+    await expect(
+      prisma.$transaction(
+        async (tx) => {
+          const missingId = randomUUID();
+
+          // An empty map means "the caller read nothing" — the claim must still
+          // report the id as unavailable rather than silently succeeding.
+          const { claimedIds, unavailable } = await claimProductStock(
+            [{ productId: missingId, quantity: 1 }],
+            tx,
+            new Map(),
+          );
+
+          expect(claimedIds).toEqual([]);
+          expect(unavailable).toEqual([missingId]);
+
+          throw new Error(ROLLBACK);
+        },
+        TX_OPTIONS,
+      ),
+    ).rejects.toThrow(ROLLBACK);
+  });
+
+  it("never lets a stale `known` entry bypass the guarded availability check", async () => {
+    // THE SAFETY PROPERTY OF THE OPTIMIZATION. If `known` were trusted for the
+    // decision, a caller holding a stale "quantity 5" row could claim from an
+    // exhausted shelf. It must not: the WHERE clause decides.
+    await expect(
+      prisma.$transaction(
+        async (tx) => {
+          const product = await makeProduct(tx, { quantity: 1 });
+
+          // A deliberately STALE row: it claims there are 5 units, but the real
+          // row (read inside the same tx below) has 1.
+          const known = new Map([
+            [
+              product.id,
+              {
+                id: product.id,
+                slug: product.slug,
+                existsInStore: true,
+                priceToman: { toNumber: () => 1_000_000 },
+              },
+            ],
+          ]);
+
+          // Drain the real stock to zero behind the stale map's back.
+          await tx.product.update({
+            where: { id: product.id },
+            data: { quantity: 0 },
+          });
+
+          const { claimedIds, unavailable } = await claimProductStock(
+            [{ productId: product.id, quantity: 1 }],
+            tx,
+            known,
+          );
+
+          // The guarded update saw `quantity: 0 < 1` and refused — the stale
+          // map did NOT authorise the claim.
+          expect(claimedIds).toEqual([]);
+          expect(unavailable).toEqual([product.slug]);
+
+          const after = await tx.product.findUnique({
+            where: { id: product.id },
+            select: { quantity: true },
+          });
+          expect(after!.quantity).toBe(0);
+
+          throw new Error(ROLLBACK);
+        },
+        TX_OPTIONS,
+      ),
+    ).rejects.toThrow(ROLLBACK);
+  });
+});
+

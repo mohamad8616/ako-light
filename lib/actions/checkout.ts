@@ -21,6 +21,43 @@ import { asJsonInput } from "../repositories/casting";
 // without pulling this server module into the browser bundle.
 export { MAX_ITEM_QUANTITY };
 
+/**
+ * Transaction budget for the checkout transaction.
+ *
+ * WHY THIS EXISTS (Pass 8)
+ * ------------------------
+ * This transaction previously passed NO options, so it ran on Prisma's
+ * defaults: `maxWait: 2000`, `timeout: 5000`. Every other transaction in the
+ * codebase already opts into a 30 s budget (see `ORDER_TX_OPTIONS` in
+ * lib/repositories/orders/fulfillment.ts) precisely because the dev pooler is
+ * remote and a cold connection can take seconds to hand over.
+ *
+ * Checkout is the WORST case for that default: it is the only transaction that
+ * fans out to roughly `N + 3` round trips for an N-line cart, and each round
+ * trip to the remote pooler measured ~320 ms. A 4-line cart therefore ran ~4.5 s
+ * against a 5 s ceiling — 90 % of budget — and a bigger cart would breach it and
+ * surface the pooler's opaque "Unable to start a transaction in the given time"
+ * as a generic checkout failure.
+ *
+ * The round-trip count was ALSO reduced (see the `knownProducts` de-duplication
+ * below), so this is not a timeout bump papering over a slow query. The budget
+ * is raised because a 5 s wall-clock ceiling is simply too tight for a
+ * multi-round-trip transaction against a pooler whose wait-to-connect is
+ * invisible until it expires; 30 s matches every sibling transaction and still
+ * expires far below any request timeout, so a genuine hang is still reported
+ * rather than masked.
+ *
+ * WHAT KEEPS THE TRANSACTION FROM BECOMING A LONG LOCK HOLDER
+ * ----------------------------------------------------------
+ * The budget is a CEILING, not a duration. The transaction still does only
+ * short, indexed writes (one guarded stock UPDATE per line, one order INSERT,
+ * one OrderItem batch INSERT) and holds its row locks only for those. It never
+ * awaits an external service, so there is no slow operation that could stretch
+ * it toward the ceiling; reaching 30 s would mean the database itself is
+ * unreachable, which is exactly when a clear failure beats a silent one.
+ */
+const CHECKOUT_TX_OPTIONS = { maxWait: 30_000, timeout: 30_000 } as const;
+
 const cartItemSchema = z.object({
   productId: z.string().trim().min(1),
   quantity: z.number().int().min(1).max(MAX_ITEM_QUANTITY),
@@ -158,10 +195,19 @@ export async function createPendingOrder(
         where: { id: { in: [...itemById.keys()] } },
         // Only the columns the order actually needs — the order line is a
         // snapshot of these five, and nothing else is read.
+        //
+        // `slug` / `existsInStore` / `priceToman` are ALSO the fields the stock
+        // claim needs for its "gone / not purchasable" classification, so this
+        // one read serves BOTH the snapshot and the claim. That is deliberate
+        // (Pass 8): the claim used to re-read these same rows one at a time,
+        // which cost a full round trip per line against the remote pooler for
+        // information already in hand. See `known` below.
         select: {
           id: true,
+          slug: true,
           name: true,
           priceToman: true,
+          existsInStore: true,
           heroImage: true,
           productImages: {
             select: { url: true },
@@ -171,6 +217,14 @@ export async function createPendingOrder(
         },
       });
 
+      // Feed the claim the rows just read, so it does not re-read one row per
+      // line. This is purely a de-duplication of reads: the availability
+      // DECISION is still the guarded `updateMany` inside `claimProductStock`,
+      // so passing a stale map could never let an unavailable claim through.
+      const knownProducts = new Map(
+        products.map((product) => [product.id, product]),
+      );
+
       // Claim every line's stock as part of THIS transaction. The claim is
       // atomic per product (see claimProductStock): the availability rule is in
       // the UPDATE's WHERE clause, so two concurrent checkouts for the last
@@ -179,6 +233,7 @@ export async function createPendingOrder(
       const { claimedIds, unavailable } = await claimProductStock(
         [...itemById].map(([productId, quantity]) => ({ productId, quantity })),
         tx,
+        knownProducts,
       );
 
       // One unavailable line fails the whole order. Throwing here rolls the
@@ -245,7 +300,7 @@ export async function createPendingOrder(
         orderId: order.id,
         totalAmount: Number(order.totalAmount.toString()),
       };
-    });
+    }, CHECKOUT_TX_OPTIONS);
 
     // A retry that hit an existing order: send the customer back to the SAME
     // payment page rather than creating a second order.

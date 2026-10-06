@@ -30,6 +30,21 @@
  * The cookie value is the order id, so the client can de-duplicate: the same
  * successful order never triggers a reset twice, even across reloads or
  * multiple tabs.
+ *
+ * WHERE THE WRITE HAPPENS (the part that was wrong)
+ * -------------------------------------------------
+ * `cookies().set()` is legal ONLY during Next's `action` phase — i.e. in a
+ * Route Handler or a Server Action. During a page's `render` phase it throws
+ * `ReadonlyRequestCookiesError`. This module's first version called
+ * `signalCartReset` from the checkout callback PAGE (a Server Component) and
+ * swallowed the resulting throw, so on a real payment the durable signal was
+ * never written at all: the cart only ever emptied when `PaymentCallbackState`
+ * happened to hydrate, and never in the situations this cookie exists to cover.
+ *
+ * The write now happens in a Route Handler (`app/api/checkout/cart-reset/`)
+ * that the page's success render points the browser at — a legitimate mutation
+ * context. The read (`readCartResetSignal`) still happens in Server Components
+ * and is unaffected, because reading a cookie is always allowed.
  */
 import { cookies } from "next/headers";
 
@@ -47,27 +62,33 @@ const MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 /**
  * Records that the order whose payment just succeeded should clear the cart.
  *
- * Called from the checkout callback ONLY after the `paid` transition has been
- * durably written, so the signal can never outlive a failed payment. Errors are
- * swallowed: a cookie that cannot be set must never turn a successful payment
- * into an error page for the customer.
+ * MUST be called from a Route Handler or Server Action, never from a Server
+ * Component render. `cookies().set()` is only permitted in the `action` phase;
+ * during a page's `render` phase Next throws `ReadonlyRequestCookiesError`
+ * ("Cookies can only be modified in a Server Action or Route Handler").
+ *
+ * This is exactly the bug this module shipped with: the checkout callback page
+ * is a Server Component, so its original call site threw here and — because the
+ * error was swallowed — the durable signal silently never reached the browser.
+ * Only the fast path (`PaymentCallbackState`) ever cleared the cart; the
+ * durable one never fired.
+ *
+ * The correct call site is therefore a Route Handler that runs after the
+ * `paid` transition has been durably written (see
+ * `app/api/checkout/cart-reset/route.ts`), which is where payment success is
+ * already established server-side. The throw is deliberately NOT swallowed: if
+ * this ever runs in the wrong phase again, it fails loudly instead of leaving
+ * paying customers with a full cart.
  */
 export async function signalCartReset(orderId: string): Promise<void> {
-  try {
-    const store = await cookies();
-    store.set(CART_RESET_COOKIE, orderId, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: MAX_AGE_SECONDS,
-    });
-  } catch (error) {
-    // Route handlers / server components can both set cookies here; if this
-    // ever runs somewhere read-only, losing the signal is strictly better than
-    // failing the payment confirmation.
-    console.error("[checkout] Could not set the cart-reset signal:", error);
-  }
+  const store = await cookies();
+  store.set(CART_RESET_COOKIE, orderId, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: MAX_AGE_SECONDS,
+  });
 }
 
 /**

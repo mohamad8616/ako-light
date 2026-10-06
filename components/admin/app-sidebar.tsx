@@ -53,6 +53,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   "/admin/homepage": <HugeiconsIcon icon={Layout01Icon} strokeWidth={2} />,
   "/admin/products": <HugeiconsIcon icon={Package01Icon} strokeWidth={2} />,
   "/admin/orders": <HugeiconsIcon icon={ShoppingBag01Icon} strokeWidth={2} />,
+  "/admin/users": <HugeiconsIcon icon={UserGroupIcon} strokeWidth={2} />,
   "/admin/categories": <HugeiconsIcon icon={Folder01Icon} strokeWidth={2} />,
   "/admin/designers": <HugeiconsIcon icon={UserGroupIcon} strokeWidth={2} />,
   "/admin/collections": (
