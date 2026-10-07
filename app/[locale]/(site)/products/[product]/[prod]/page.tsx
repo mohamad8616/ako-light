@@ -1,7 +1,6 @@
 import ProductPageClient from "@/components/products/prod/ProductPageClient";
 import {
   getProduct,
-  getProducts,
   getProductsByCategory,
 } from "@/lib/repositories/products";
 import {
@@ -30,13 +29,10 @@ interface PageProps {
   params: Promise<{ locale: string; product: string; prod: string }>;
 }
 
-export async function generateStaticParams() {
-  const allProducts = await getProducts();
-  return allProducts.map((p) => ({
-    product: p.category,
-    prod: p.slug,
-  }));
-}
+// No `generateStaticParams` on purpose — see the note in app/[locale]/layout.tsx.
+// It runs at build time even for a `force-dynamic` route and reads Postgres,
+// which a container build (Liara) cannot reach. The route is generated on
+// demand instead; a missing product still 404s via `notFound()` below.
 
 export async function generateMetadata({
   params,

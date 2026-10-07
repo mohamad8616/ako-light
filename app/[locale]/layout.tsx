@@ -95,8 +95,10 @@ const noora = localFont({
  *   /fa/about   -> fa
  *
  * The proxy rewrites unprefixed URLs to /en/... internally, so every request
- * that reaches this layout has a valid locale param. Both locales are still
- * prerendered; only which one is prefixed changed.
+ * that reaches this layout has a valid locale param. `generateStaticParams`
+ * below still declares the two locales so that `dynamicParams = false` can
+ * reject anything else — but nothing under this layout is prerendered any more
+ * (see `dynamic` further down).
  */
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -104,6 +106,20 @@ export function generateStaticParams() {
 
 // Only the two known locales are valid route params; anything else 404s.
 export const dynamicParams = false;
+
+// Request-time rendering for everything under [locale].
+//
+// The catalogue lives in Postgres, and every page beneath this layout reads it
+// (this layout itself reads site settings). Container builds — Liara in
+// particular — do NOT expose the runtime environment variables to the image
+// build, so a build-time prerender would need a DATABASE_URL that does not
+// exist there and the build would die on a connection error.
+//
+// Nothing here is prerendered as a result. The cost is bounded because the
+// repository layer wraps its reads in `unstable_cache`, so the database is
+// still only queried when a cache entry is missing or invalidated — not on
+// every request.
+export const dynamic = "force-dynamic";
 
 interface LocaleLayoutProps {
   children: React.ReactNode;

@@ -7,7 +7,6 @@ import FloatingRequestInfoButton from "@/components/flagship/flag/FloatingReques
 import {
   getFlagship,
   getFlagshipDetail,
-  getFlagshipsWithDetail,
 } from "@/lib/repositories/flagships";
 import { pick } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
@@ -30,13 +29,12 @@ interface PageProps {
   params: Promise<{ locale: string; slug: string }>;
 }
 
-export async function generateStaticParams() {
-  // Only pre-render flagships that actually have detail content built
-  // out. A flagship can exist in the summary list (shows a card) without
-  // detail content yet — it just won't have a page here.
-  const withDetail = await getFlagshipsWithDetail();
-  return withDetail.map((f) => ({ slug: f.slug }));
-}
+// No `generateStaticParams` on purpose — see the note in app/[locale]/layout.tsx.
+// It runs at build time even for a `force-dynamic` route and reads Postgres,
+// which a container build (Liara) cannot reach. The route is generated on demand
+// instead. The old behaviour is preserved: a flagship without detail content has
+// no page, because `generateMetadata`/the page body call `notFound()` when
+// `getFlagshipDetail()` comes back empty.
 
 export async function generateMetadata({
   params,

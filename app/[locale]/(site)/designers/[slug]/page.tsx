@@ -1,6 +1,6 @@
 import DesignerBio from "@/components/designers/designer/DesignerBio";
 import DesignerHeader from "@/components/designers/designer/DesignerHeader";
-import { getDesigner, getDesigners } from "@/lib/repositories/designers";
+import { getDesigner } from "@/lib/repositories/designers";
 import { pick } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale, trimDescription } from "@/lib/seo/metadata";
@@ -18,10 +18,10 @@ interface PageProps {
   params: Promise<{ locale: string; slug: string }>;
 }
 
-export async function generateStaticParams() {
-  const allDesigners = await getDesigners();
-  return allDesigners.map((d) => ({ slug: d.slug }));
-}
+// No `generateStaticParams` on purpose — see the note in app/[locale]/layout.tsx.
+// It runs at build time even for a `force-dynamic` route and reads Postgres,
+// which a container build (Liara) cannot reach. The route is generated on
+// demand instead; a missing designer still 404s via `notFound()` below.
 
 export async function generateMetadata({
   params,

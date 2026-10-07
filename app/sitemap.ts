@@ -10,6 +10,16 @@ import { siteUrl } from "@/lib/seo/config";
 
 const SITEMAP_LOCALES: Locale[] = locales;
 
+// `sitemap.ts` is a Route Handler that Next caches by default, which means it
+// would be GENERATED DURING `next build` — and it reads every catalogue
+// repository below. Container builds (Liara) do not expose DATABASE_URL to the
+// image build, so that would fail the build.
+//
+// Forcing dynamic rendering keeps the sitemap out of the build. The underlying
+// reads still go through the repository layer's `unstable_cache`, so the
+// database is not hit on every request.
+export const dynamic = "force-dynamic";
+
 /**
  * Sitemap for the public site in both languages.
  *

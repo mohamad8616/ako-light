@@ -1,8 +1,5 @@
 import ProductCategoryPageClient from "@/components/products/ProductCategoryPageClient";
-import {
-  getProductCategories,
-  getProductCategory,
-} from "@/lib/repositories/product-categories";
+import { getProductCategory } from "@/lib/repositories/product-categories";
 import { redirectIfSlugRenamed } from "@/lib/navigation/slugRedirect";
 import { notFound } from "next/navigation";
 import { translations } from "@/lib/i18n/translations";
@@ -19,10 +16,11 @@ interface PageProps {
   params: Promise<{ locale: string; product: string }>;
 }
 
-export async function generateStaticParams() {
-  const categories = await getProductCategories();
-  return categories.map((c) => ({ product: c.slug }));
-}
+// No `generateStaticParams` on purpose — see the note in app/[locale]/layout.tsx.
+// Next calls it during `next build` for every route with a dynamic segment, even
+// when the route is `force-dynamic`, and it reads Postgres — which a container
+// build (Liara) cannot reach. The route is generated on demand instead; a
+// missing category still 404s via `notFound()` below.
 
 export async function generateMetadata({
   params,
