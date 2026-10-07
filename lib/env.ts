@@ -109,32 +109,22 @@ function checkZarinpal(env: Env, nodeEnv: string | undefined): EnvProblem[] {
 }
 
 /**
- * In production, a delivery channel must be configured or receipts are dropped.
- *
- * Both `lib/notifications/sms.ts` and `lib/notifications/email.ts` fall back to
- * logging in development. That fallback is correct locally and unacceptable in
- * production, where it means a paying customer never receives a confirmation.
- * Nothing is required below production, so local and CI runs are unaffected.
+ * Notification delivery is best-effort: receipts already fall back to server
+ * logs when no complete channel is configured. Do not fail application startup
+ * for a missing notification channel; this must not prevent the payment flow or
+ * the Next.js server from starting. SMS is complete only with both credentials
+ * required by the bulk endpoint.
  */
 function checkNotificationDelivery(
   env: Env,
   nodeEnv: string | undefined,
 ): EnvProblem[] {
-  if (nodeEnv !== "production") return [];
-
-  const hasSms = Boolean(env.SMSIR_API_KEY && env.SMSIR_LINE_NUMBER);
-  const hasEmail = Boolean(env.SMTP_HOST);
-
-  if (!hasSms && !hasEmail) {
-    return [
-      {
-        name: "SMSIR_API_KEY / SMSIR_LINE_NUMBER / SMTP_HOST",
-        message:
-          "none is configured, so order receipts after a successful payment will be written to the server log instead of delivered. Configure at least one channel.",
-      },
-    ];
-  }
-
+  // Notification delivery is intentionally not a startup requirement. The
+  // receipt sender is best-effort and logs the message when no complete channel
+  // is available. In particular, an SMS.ir sandbox key alone cannot send the
+  // bulk receipt request: that endpoint requires a real line number.
+  void env;
+  void nodeEnv;
   return [];
 }
 

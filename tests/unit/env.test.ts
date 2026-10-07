@@ -129,12 +129,8 @@ describe("env preflight — notification delivery", () => {
     ZARINPAL_MODE: "sandbox",
   });
 
-  it("reports that NO receipt channel is configured in production", () => {
-    const problems = collectEnvProblems(noChannel(), "production");
-
-    expect(problems.map((p) => p.name)).toContain(
-      "SMSIR_API_KEY / SMSIR_LINE_NUMBER / SMTP_HOST",
-    );
+  it("allows production startup when no receipt channel is configured", () => {
+    expect(collectEnvProblems(noChannel(), "production")).toEqual([]);
   });
 
   it("is satisfied by a complete SMS channel", () => {
@@ -155,17 +151,10 @@ describe("env preflight — notification delivery", () => {
     expect(problems).toEqual([]);
   });
 
-  it("treats a HALF-configured SMS channel as not configured", () => {
-    // A key with no sending line cannot deliver, so it must not count — the
-    // bulk endpoint requires the line number.
-    const problems = collectEnvProblems(
-      { ...noChannel(), SMSIR_API_KEY: "k" },
-      "production",
-    );
-
-    expect(problems.map((p) => p.name)).toContain(
-      "SMSIR_API_KEY / SMSIR_LINE_NUMBER / SMTP_HOST",
-    );
+  it("allows a sandbox API key without a sending line in production", () => {
+    expect(
+      collectEnvProblems({ ...noChannel(), SMSIR_API_KEY: "sandbox-key" }, "production"),
+    ).toEqual([]);
   });
 
   it("does not require a channel outside production", () => {
@@ -187,9 +176,9 @@ describe("assertEnv", () => {
     }
 
     expect(message).toContain("Invalid environment configuration");
-    // Both classes of problem are reported together, not one at a time.
+    // Unrelated production validation remains enforced.
     expect(message).toContain("ZARINPAL_MERCHANT_ID");
-    expect(message).toContain("SMTP_HOST");
+    expect(message).not.toContain("SMTP_HOST");
     // Points the operator at the documentation.
     expect(message).toContain(".env.example");
   });
