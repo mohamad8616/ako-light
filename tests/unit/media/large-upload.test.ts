@@ -21,7 +21,9 @@ const repo = vi.hoisted(() => ({
 }));
 
 const provider = vi.hoisted(() => ({
-  name: "fake",
+  // Named `vercel-blob` on purpose: the route branches on the provider name, and
+  // these cases exist to pin the EXISTING Vercel protocol.
+  name: "vercel-blob",
   upload: vi.fn(),
   delete: vi.fn(),
   getUrl: vi.fn(() => null),
@@ -43,11 +45,12 @@ vi.mock("@/lib/media/storage", () => ({
 }));
 vi.mock("@/lib/admin/access", () => ({ getAdminRole: getAdminRoleMock }));
 
+import { registerUploadedMedia, MediaError } from "@/lib/media/service";
 import {
-  registerUploadedMedia,
-  MediaError,
-} from "@/lib/media/service";
-import { IMAGE_MAX_BYTES, readByteLimit, VIDEO_MAX_BYTES } from "@/lib/media/limits";
+  IMAGE_MAX_BYTES,
+  readByteLimit,
+  VIDEO_MAX_BYTES,
+} from "@/lib/media/limits";
 import { StorageAccessMismatchError } from "@/lib/media/types";
 import { validateMediaUpload } from "@/lib/media/validation";
 import { sniffVideoType } from "@/lib/media/video-sniff";
@@ -93,7 +96,9 @@ describe("sniffVideoType", () => {
 
   it("rejects Matroska (.mkv) — same EBML header, but not webm", () => {
     expect(
-      sniffVideoType(new Uint8Array(bytes([0x1a, 0x45, 0xdf, 0xa3, ...str("matroska")]))),
+      sniffVideoType(
+        new Uint8Array(bytes([0x1a, 0x45, 0xdf, 0xa3, ...str("matroska")])),
+      ),
     ).toBeNull();
   });
 
@@ -128,7 +133,11 @@ describe("validateMediaUpload", () => {
 
   it("accepts a WebM", () => {
     const result = validateMediaUpload(
-      input({ filename: "clip.webm", declaredMimeType: "video/webm", bytes: webm() }),
+      input({
+        filename: "clip.webm",
+        declaredMimeType: "video/webm",
+        bytes: webm(),
+      }),
     );
 
     expect(result.ok && result.value.mediaType).toBe("video");
@@ -137,7 +146,11 @@ describe("validateMediaUpload", () => {
 
   it("still routes images down the IMAGE branch", () => {
     const result = validateMediaUpload(
-      input({ filename: "hero.png", declaredMimeType: "image/png", bytes: PNG() }),
+      input({
+        filename: "hero.png",
+        declaredMimeType: "image/png",
+        bytes: PNG(),
+      }),
     );
 
     expect(result.ok && result.value.mediaType).toBe("image");
@@ -153,7 +166,11 @@ describe("validateMediaUpload", () => {
 
   it("rejects a file that CLAIMS to be a video but is not one", () => {
     const result = validateMediaUpload(
-      input({ filename: "evil.mp4", declaredMimeType: "video/mp4", bytes: bytes(str("#!/bin/sh")) }),
+      input({
+        filename: "evil.mp4",
+        declaredMimeType: "video/mp4",
+        bytes: bytes(str("#!/bin/sh")),
+      }),
     );
 
     // `unsupportedType`, not `notImage`: the admin uploaded a video, and
@@ -177,7 +194,11 @@ describe("validateMediaUpload", () => {
 
     expect(
       validateMediaUpload(
-        input({ filename: "hero.png", declaredMimeType: "image/png", bytes: huge }),
+        input({
+          filename: "hero.png",
+          declaredMimeType: "image/png",
+          bytes: huge,
+        }),
       ),
     ).toEqual({ ok: false, code: "tooLarge" });
   });
@@ -270,6 +291,12 @@ describe("registerUploadedMedia", () => {
 });
 
 describe("POST /api/admin/media/upload — authorization", () => {
+  /**
+   * These cases pin the VERCEL branch of the route. `getStorageProvider()` is
+   * mocked to return the fake Vercel provider this file already uses, so the
+   * Liara code path introduced later cannot change any of these expectations —
+   * the existing provider's protocol has to stay exactly as it is.
+   */
   const request = (body: unknown) =>
     new Request("https://example.com/api/admin/media/upload", {
       method: "POST",
@@ -279,7 +306,10 @@ describe("POST /api/admin/media/upload — authorization", () => {
 
   const tokenBody = {
     type: "blob.generate-client-token",
-    payload: { pathname: "media/library/1-clip.mp4", callbackUrl: "https://example.com" },
+    payload: {
+      pathname: "media/library/1-clip.mp4",
+      callbackUrl: "https://example.com",
+    },
   };
 
   beforeEach(() => {
@@ -333,7 +363,10 @@ describe("POST /api/admin/media/upload — authorization", () => {
     const response = await POST(
       request({
         ...tokenBody,
-        payload: { pathname: "admin/products/x.mp4", callbackUrl: "https://example.com" },
+        payload: {
+          pathname: "admin/products/x.mp4",
+          callbackUrl: "https://example.com",
+        },
       }),
     );
 
@@ -347,7 +380,10 @@ describe("POST /api/admin/media/upload — authorization", () => {
     const response = await POST(
       request({
         ...tokenBody,
-        payload: { pathname: "media/library/x.mov", callbackUrl: "https://example.com" },
+        payload: {
+          pathname: "media/library/x.mov",
+          callbackUrl: "https://example.com",
+        },
       }),
     );
 

@@ -45,13 +45,23 @@ export const mediaMetadataFormSchema = z.object({
  * that kind's ceiling — are re-derived server-side in `registerUploadedMedia`,
  * because none of these values can be trusted just because they validated.
  */
-export const directUploadRegistrationSchema = z.object({
-  filename: z.string().min(1).max(TEXT_MAX),
-  url: linkSchema,
-  /** The provider key actually written (`blob.pathname`). */
-  pathname: z.string().min(1).max(URL_MAX),
-  size: z.number().int().positive(),
-});
+export const directUploadRegistrationSchema = z
+  .object({
+    filename: z.string().min(1).max(TEXT_MAX),
+    /** Present for Liara's server-signed direct-upload authorization. */
+    uploadToken: z.string().max(URL_MAX).optional(),
+    /** Legacy Vercel result fields remain accepted during coexistence. */
+    url: linkSchema.optional(),
+    pathname: z.string().min(1).max(URL_MAX).optional(),
+    size: z.number().int().positive(),
+  })
+  .refine(
+    (value) =>
+      Boolean(value.uploadToken) || Boolean(value.url && value.pathname),
+    {
+      message: "Upload authorization is required",
+    },
+  );
 
 export type DirectUploadRegistrationInput = z.infer<
   typeof directUploadRegistrationSchema

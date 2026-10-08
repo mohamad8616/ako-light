@@ -36,12 +36,31 @@ const nextConfig: NextConfig = {
     deviceSizes: [640, 750, 1080, 1920],
     remotePatterns: [
       {
-        // Admin uploads (lib/admin/actions/upload.ts) land on Vercel Blob, so
-        // the public pages render `*.public.blob.vercel-storage.com` URLs. In
-        // production the optimizer REJECTS a host that is not listed here
-        // (dev is `unoptimized`, so the gap would only show up after deploy).
+        // Keep the existing Vercel media hostname during provider coexistence.
         protocol: "https",
         hostname: "*.public.blob.vercel-storage.com",
+        pathname: "/**",
+      },
+      {
+        // Liara public bucket URLs use the configured bucket as the subdomain.
+        //
+        // The TLD is `site`, NOT `ir`. Liara's storage cluster answers on
+        // `liara.site` and `liara.space` (both resolve to the same IPs); the
+        // corporate `liara.ir` domain does not resolve for storage at all
+        // (ENOTFOUND), so a `*.storage.iran.liara.ir` pattern could never match
+        // a real upload. Keep in sync with LIARA_HOST_SUFFIXES in
+        // lib/media/storage/liara.ts, and add the `liara.space` pair here if
+        // LIARA_ENDPOINT is ever pointed at that alias instead.
+        protocol: "https",
+        hostname: "*.storage.iran.liara.site",
+        pathname: "/**",
+      },
+      {
+        // The bare host, for path-style object URLs. Liara serves an object at
+        // BOTH shapes, so a row written by an older build (path-style) must keep
+        // rendering after the switch to bucket-subdomain URLs above.
+        protocol: "https",
+        hostname: "storage.iran.liara.site",
         pathname: "/**",
       },
       {

@@ -134,6 +134,14 @@ export interface StorageProvider {
     request: Request;
     constraints: ClientUploadConstraints;
   }): Promise<unknown>;
+
+  /** Verify an uploaded object against server-issued authorization before registration. */
+  verifyClientUpload?(input: {
+    key: string;
+    contentType: string;
+    maximumSizeInBytes: number;
+    reportedSize?: number;
+  }): Promise<{ key: string; url: string; size: number; contentType: string }>;
 }
 
 /**

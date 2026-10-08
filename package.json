@@ -11,9 +11,12 @@
     "test:watch": "vitest",
     "test:clean-fixtures": "tsx scripts/clean-leaked-test-fixtures.ts",
     "media:orphans": "tsx scripts/media-orphans.ts",
+    "create:owner": "tsx scripts/create-owner.ts",
     "build": "prisma generate --config prisma7.config.ts && node --max-old-space-size=8192 ./node_modules/next/dist/bin/next build"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1146.0",
+    "@aws-sdk/s3-request-presigner": "^3.1146.0",
     "@base-ui/react": "^1.7.0",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/modifiers": "^9.0.0",

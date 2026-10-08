@@ -19,6 +19,8 @@ const putMock = vi.hoisted(() => vi.fn());
 const delMock = vi.hoisted(() => vi.fn());
 const handleUploadMock = vi.hoisted(() => vi.fn());
 const clientUploadMock = vi.hoisted(() => vi.fn());
+/** Provider discovery, so the browser half can pick Vercel vs Liara. */
+const fetchMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@vercel/blob", () => ({ put: putMock, del: delMock }));
 vi.mock("@vercel/blob/client", () => ({
@@ -36,10 +38,11 @@ const TOKEN = "vercel_blob_rw_storeid_randomrandomrandomrandomrandomrandomr";
 beforeEach(() => {
   vi.clearAllMocks();
   process.env.BLOB_READ_WRITE_TOKEN = TOKEN;
+  vi.stubGlobal("fetch", fetchMock);
 });
 
 describe("the shared access mode", () => {
-  it("is exactly \"public\" — what next.config.ts whitelists for <Image>", () => {
+  it('is exactly "public" — what next.config.ts whitelists for <Image>', () => {
     // If this changes, the image remotePatterns and every stored URL consumer
     // must change with it, so the value is asserted rather than assumed.
     expect(BLOB_ACCESS).toBe("public");
@@ -129,15 +132,20 @@ describe("a store/visibility refusal", () => {
 
 describe("the direct-upload token mint", () => {
   it("passes the shared access mode into onBeforeGenerateToken", async () => {
-    handleUploadMock.mockImplementation(async (options: {
-      onBeforeGenerateToken: () => Promise<Record<string, unknown>>;
-    }) => {
-      const payload = await options.onBeforeGenerateToken();
-      return { type: "blob.generate-client-token", ok: true, payload };
-    });
+    handleUploadMock.mockImplementation(
+      async (options: {
+        onBeforeGenerateToken: () => Promise<Record<string, unknown>>;
+      }) => {
+        const payload = await options.onBeforeGenerateToken();
+        return { type: "blob.generate-client-token", ok: true, payload };
+      },
+    );
 
     await vercelBlobStorage.authorizeClientUpload!({
-      body: { type: "blob.generate-client-token", payload: { pathname: "media/x.png" } },
+      body: {
+        type: "blob.generate-client-token",
+        payload: { pathname: "media/x.png" },
+      },
       request: new Request("https://example.com/api/admin/media/upload"),
       constraints: {
         key: "media/x.png",
@@ -149,7 +157,11 @@ describe("the direct-upload token mint", () => {
     const passed = handleUploadMock.mock.calls[0][0];
     // The callback must bake the SAME access mode the browser will write with,
     // so the minted token and the PUT cannot disagree.
-    const resolved = await passed.onBeforeGenerateToken("media/x.png", null, false);
+    const resolved = await passed.onBeforeGenerateToken(
+      "media/x.png",
+      null,
+      false,
+    );
     expect(resolved.access).toBe(BLOB_ACCESS);
   });
 });
@@ -158,6 +170,20 @@ describe("the browser-side direct upload", () => {
   const file = new File([new Uint8Array([1, 2, 3])], "clip.mp4", {
     type: "video/mp4",
   });
+
+  /**
+   * The browser now asks the route which provider is configured before it
+   * chooses a protocol, so that discovery call has to be faked too. These tests
+   * all pin the VERCEL branch, which must stay byte-for-byte as it was.
+   */
+  beforeEach(() => {
+    fetchMock.mockResolvedValue(
+      new Response(JSON.stringify({ provider: "vercel-blob" }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+    );
+  }, 20000);
 
   it("writes with the same shared access mode as the server", async () => {
     clientUploadMock.mockResolvedValue({
@@ -183,7 +209,10 @@ describe("the browser-side direct upload", () => {
 
     await expect(
       uploadDirectToStorage({ key: "media/library/clip.mp4", file }),
-    ).rejects.toMatchObject({ name: "DirectUploadError", reason: "access_mismatch" });
+    ).rejects.toMatchObject({
+      name: "DirectUploadError",
+      reason: "access_mismatch",
+    });
   });
 
   it("treats a swallowed token-mint failure as a store fault, not a silent unknown", async () => {

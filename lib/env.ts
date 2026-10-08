@@ -53,8 +53,35 @@ export function collectEnvProblems(
 
   problems.push(...checkZarinpal(env, nodeEnv));
   problems.push(...checkNotificationDelivery(env, nodeEnv));
+  problems.push(...checkLiaraStorage(env));
 
   return problems;
+}
+
+/**
+ * Liara Object Storage is optional: the app defaults to Vercel Blob and only
+ * needs these four values once `MEDIA_STORAGE_PROVIDER=liara` is set. Validated
+ * only when Liara is SELECTED, so importing this file never forces a provider
+ * choice on a deployment that has not migrated yet.
+ *
+ * The secret value is never repeated in a message — this output can reach a log
+ * or a build artifact.
+ */
+function checkLiaraStorage(env: Env): EnvProblem[] {
+  if (env.MEDIA_STORAGE_PROVIDER !== "liara") return [];
+
+  return [
+    "LIARA_ENDPOINT",
+    "LIARA_BUCKET_NAME",
+    "LIARA_ACCESS_KEY",
+    "LIARA_SECRET_KEY",
+  ]
+    .filter((name) => !env[name] || env[name]!.trim().length === 0)
+    .map((name) => ({
+      name,
+      message:
+        "is required because MEDIA_STORAGE_PROVIDER=liara. Without it every media upload fails with the storage-not-configured error.",
+    }));
 }
 
 /**

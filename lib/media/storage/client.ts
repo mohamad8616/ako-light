@@ -37,10 +37,10 @@ export interface DirectUploadInput {
 
 export interface DirectUploadResult {
   url: string;
-  /** The key ACTUALLY written — differs from the request when a suffix is added. */
   pathname: string;
   contentType: string;
   size: number;
+  uploadToken?: string;
 }
 
 /**
@@ -85,7 +85,11 @@ export class DirectUploadError extends Error {
 function classifyUploadError(error: unknown): DirectUploadError {
   const message = error instanceof Error ? error.message : String(error);
 
-  if (/private store|public access on a private|private access on a public/i.test(message)) {
+  if (
+    /private store|public access on a private|private access on a public/i.test(
+      message,
+    )
+  ) {
     return new DirectUploadError("access_mismatch", message);
   }
   if (/failed to .*retrieve the client token/i.test(message)) {
@@ -110,6 +114,56 @@ export async function uploadDirectToStorage({
   file,
   onProgress,
 }: DirectUploadInput): Promise<DirectUploadResult> {
+  const providerResponse = await fetch(`${DIRECT_UPLOAD_ENDPOINT}?provider`, {
+    method: "GET",
+  });
+  if (!providerResponse.ok)
+    throw new DirectUploadError(
+      "unknown",
+      "Could not determine the configured media provider.",
+    );
+  const providerInfo = (await providerResponse.json()) as { provider: string };
+
+  if (providerInfo.provider === "liara") {
+    const response = await fetch(DIRECT_UPLOAD_ENDPOINT, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        payload: { filename: file.name, size: file.size },
+      }),
+    });
+    if (!response.ok)
+      throw new DirectUploadError(
+        "unknown",
+        `Upload authorization failed (${response.status}).`,
+      );
+    const auth = (await response.json()) as {
+      provider: string;
+      url: string;
+      key: string;
+      contentType: string;
+      uploadToken?: string;
+    };
+    const result = await fetch(auth.url, {
+      method: "PUT",
+      headers: { "content-type": auth.contentType },
+      body: file,
+    });
+    if (!result.ok)
+      throw new DirectUploadError(
+        "unknown",
+        `Liara upload failed (${result.status}).`,
+      );
+    onProgress?.(100);
+    return {
+      url: "",
+      pathname: auth.key,
+      contentType: auth.contentType,
+      size: file.size,
+      uploadToken: auth.uploadToken,
+    };
+  }
+
   let blob;
   try {
     blob = await upload(key, file, {

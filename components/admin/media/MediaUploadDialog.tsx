@@ -187,8 +187,9 @@ export function MediaUploadDialog({
         setPhase("saving");
         const registered = await registerDirectUploadAction({
           filename: file.name,
-          url: uploaded.url,
-          pathname: uploaded.pathname,
+          ...(uploaded.uploadToken
+            ? { uploadToken: uploaded.uploadToken }
+            : { url: uploaded.url, pathname: uploaded.pathname }),
           size: uploaded.size,
         });
 
@@ -200,8 +201,7 @@ export function MediaUploadDialog({
           return;
         }
 
-        const directCode =
-          registered.issues[0]?.code ?? registered.formError;
+        const directCode = registered.issues[0]?.code ?? registered.formError;
         setError(t(`admin.error.${directCode}`));
         toast.error(t(`admin.error.${directCode}`));
         return;

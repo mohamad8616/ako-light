@@ -108,7 +108,10 @@ export async function uploadMedia(input: UploadMediaInput): Promise<MediaRow> {
   // first, so an AVIF (which shares the MP4 container header) stays an image.
   const validated = validateMediaUpload(input);
   if (!validated.ok) {
-    throw new MediaError(validated.code, `Media upload rejected: ${validated.code}`);
+    throw new MediaError(
+      validated.code,
+      `Media upload rejected: ${validated.code}`,
+    );
   }
 
   const { mimeType, extension, size, baseName, mediaType } = validated.value;
@@ -141,7 +144,9 @@ export async function uploadMedia(input: UploadMediaInput): Promise<MediaRow> {
           `but the store rejected it. Set the Blob store's visibility to match ` +
           `BLOB_ACCESS (lib/media/limits.ts). Store said: ${error.storeMessage ?? "(no message)"}`,
       );
-      throw new MediaError("storageAccessMismatch", undefined, { cause: error });
+      throw new MediaError("storageAccessMismatch", undefined, {
+        cause: error,
+      });
     }
     if (error instanceof StorageNotConfiguredError) {
       console.error("[media] storage provider is not configured");
@@ -177,10 +182,16 @@ export async function uploadMedia(input: UploadMediaInput): Promise<MediaRow> {
 
 /** MIME -> extension, inverted, so a stored pathname can be read back. */
 const IMAGE_MIME_BY_EXTENSION = new Map(
-  Object.entries(IMAGE_EXTENSIONS).map(([mime, extension]) => [extension, mime]),
+  Object.entries(IMAGE_EXTENSIONS).map(([mime, extension]) => [
+    extension,
+    mime,
+  ]),
 );
 const VIDEO_MIME_BY_EXTENSION = new Map(
-  Object.entries(VIDEO_EXTENSIONS).map(([mime, extension]) => [extension, mime]),
+  Object.entries(VIDEO_EXTENSIONS).map(([mime, extension]) => [
+    extension,
+    mime,
+  ]),
 );
 
 /** The lowercase extension of a storage pathname, without the dot. */
@@ -194,11 +205,11 @@ function extensionOfPath(pathname: string): string {
 export interface RegisterUploadedMediaInput {
   /** Original client filename — display only, never a path segment. */
   filename: string;
-  /** The public URL the provider returned. */
-  url: string;
-  /** The key ACTUALLY written (`blob.pathname`) — becomes `storageKey`. */
-  pathname: string;
-  /** The client's report of the object's size, in bytes. */
+  /** Liara upload authorization signed by the server. */
+  uploadToken?: string;
+  /** Legacy Vercel upload response values. */
+  url?: string;
+  pathname?: string;
   size: number;
   alt?: string | null;
   title?: string | null;
@@ -230,14 +241,65 @@ export interface RegisterUploadedMediaInput {
 export async function registerUploadedMedia(
   input: RegisterUploadedMediaInput,
 ): Promise<MediaRow> {
-  if (!input.pathname.startsWith(`${MEDIA_KEY_PREFIX}/`)) {
+  const provider = getStorageProvider();
+  let pathname = input.pathname;
+  let verifiedUrl = input.url;
+  let verifiedSize = input.size;
+  let verifiedContentType: string | undefined;
+
+  if (provider.name === "liara") {
+    const { verifyLiaraUploadAuthorization } =
+      await import("@/lib/media/storage/liara-upload-token");
+    const authorization = input.uploadToken
+      ? verifyLiaraUploadAuthorization(input.uploadToken)
+      : null;
+    if (!authorization || !provider.verifyClientUpload) {
+      throw new MediaError(
+        "unsupportedType",
+        "Invalid or expired upload authorization",
+      );
+    }
+    if (
+      authorization.filename !== input.filename ||
+      authorization.size !== input.size
+    ) {
+      throw new MediaError(
+        "unsupportedType",
+        "Upload registration does not match its authorization",
+      );
+    }
+    if (!authorization.key.startsWith(`${MEDIA_KEY_PREFIX}/`)) {
+      throw new MediaError(
+        "unsupportedType",
+        "Authorized key is outside the media namespace",
+      );
+    }
+    if (authorization.expiresAt < Date.now()) {
+      throw new MediaError(
+        "unsupportedType",
+        "Upload authorization has expired",
+      );
+    }
+    const verified = await provider.verifyClientUpload({
+      key: authorization.key,
+      contentType: authorization.contentType,
+      maximumSizeInBytes: authorization.size,
+      reportedSize: authorization.size,
+    });
+    pathname = verified.key;
+    verifiedUrl = verified.url;
+    verifiedSize = verified.size;
+    verifiedContentType = verified.contentType;
+  }
+
+  if (!pathname?.startsWith(`${MEDIA_KEY_PREFIX}/`)) {
     throw new MediaError(
       "unsupportedType",
       "Pathname is outside the media namespace",
     );
   }
 
-  const extension = extensionOfPath(input.pathname);
+  const extension = extensionOfPath(pathname);
   const imageMime = IMAGE_MIME_BY_EXTENSION.get(extension);
   const videoMime = VIDEO_MIME_BY_EXTENSION.get(extension);
 
@@ -261,22 +323,31 @@ export async function registerUploadedMedia(
   }
 
   if (
-    !Number.isFinite(input.size) ||
-    input.size <= 0 ||
-    input.size > maximumSizeInBytes
+    !Number.isFinite(verifiedSize) ||
+    verifiedSize <= 0 ||
+    verifiedSize > maximumSizeInBytes
   ) {
     throw new MediaError(
       "tooLarge",
-      `Reported size ${input.size} is outside the ${mediaType} limit`,
+      `Reported size ${verifiedSize} is outside the ${mediaType} limit`,
     );
   }
 
+  if (verifiedContentType && verifiedContentType !== mimeType) {
+    throw new MediaError(
+      "unsupportedType",
+      "Uploaded object MIME does not match its file extension",
+    );
+  }
+  if (!verifiedUrl)
+    throw new MediaError("unsupportedType", "Missing verified media URL");
+
   return createMedia({
     filename: input.filename,
-    storageKey: input.pathname,
-    url: input.url,
+    storageKey: pathname,
+    url: verifiedUrl,
     mimeType,
-    size: input.size,
+    size: verifiedSize,
     mediaType,
     alt: input.alt ?? null,
     title: input.title ?? null,
@@ -297,7 +368,9 @@ export async function updateMediaInfo(
     return await updateMediaMetadata(id, patch);
   } catch (error) {
     if (isPrismaNotFound(error)) {
-      throw new MediaError("notFound", `Media ${id} not found`, { cause: error });
+      throw new MediaError("notFound", `Media ${id} not found`, {
+        cause: error,
+      });
     }
     throw error;
   }
@@ -351,7 +424,9 @@ export async function removeMedia(id: string): Promise<void> {
     removed = await deleteMedia(id);
   } catch (error) {
     if (isPrismaNotFound(error)) {
-      throw new MediaError("notFound", `Media ${id} not found`, { cause: error });
+      throw new MediaError("notFound", `Media ${id} not found`, {
+        cause: error,
+      });
     }
     throw error;
   }
