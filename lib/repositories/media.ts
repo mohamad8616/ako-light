@@ -10,7 +10,7 @@
  * counterpart to keep in sync, so there is nothing to map TO — a mapper would
  * only be a second, drifting copy of the schema.
  *
- * This module owns the DATABASE half of media. The storage half (Blob) and the
+ * This module owns the DATABASE half of media. The storage half and the
  * coordination between the two live in lib/media/service.ts; nothing here talks
  * to a storage provider.
  */

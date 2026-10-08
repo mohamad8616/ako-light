@@ -8,7 +8,7 @@
  * `ActionResult`. `description` is written as one {p1,p2,p3} jsonb value.
  */
 import { requireAdminAccess } from "@/lib/admin/access";
-import { deleteBlobUrls, removedUrls } from "@/lib/admin/blob";
+import { deleteStorageUrls, removedUrls } from "@/lib/admin/storage-cleanup";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
   actionFail,
@@ -76,7 +76,7 @@ export async function updateCollectionAction(
       updateCollection(id, parsed.data, tx),
     );
 
-    await deleteBlobUrls(removedUrls(beforeUrls, [parsed.data.image]));
+    await deleteStorageUrls(removedUrls(beforeUrls, [parsed.data.image]));
     revalidateCatalog("collections", { id });
     return actionOk(undefined);
   } catch (error) {
@@ -95,7 +95,7 @@ export async function destroyCollectionAction(
 
     await deleteCollection(id);
 
-    await deleteBlobUrls(beforeUrls);
+    await deleteStorageUrls(beforeUrls);
     revalidateCatalog("collections");
     return actionOk(undefined);
   } catch (error) {

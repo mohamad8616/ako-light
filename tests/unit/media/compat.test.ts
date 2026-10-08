@@ -1,30 +1,32 @@
 /**
- * Pass 13.5 Step 7 — the compatibility boundary between the legacy
- * URL-string image fields and the new Media foundation.
+ * The compatibility boundary between the catalog's URL-string image fields and
+ * the Media foundation.
  *
  * WHY THIS FILE EXISTS
  *
  * The catalog models (`Product.heroImage`, `Designer.image`, `Project.image`, …)
- * store a BARE URL STRING and are NOT migrated to `Media` in this pass. So for
- * now two image systems coexist:
+ * store a BARE URL STRING and are NOT migrated to `Media`. So two things
+ * coexist:
  *
- *   legacy — `lib/admin/actions/upload.ts` writes an object under `admin/…`
- *            and puts the returned URL straight into a catalog column. Cleanup
- *            is URL-based (`deleteBlobUrls(removedUrls(before, after))`).
- *   media  — `lib/media/service.ts` writes under `media/…`, records a `Media`
- *            row, and cleans up BY KEY (`removeMedia`).
+ *   catalog — an admin upload writes an object under `media/…` and puts the
+ *             returned URL straight into a catalog column. Cleanup is
+ *             URL-based, through `deleteStorageUrls(removedUrls(before, after))`.
+ *   media   — the same upload also records a `Media` row, and cleanup there is
+ *             BY KEY (`removeMedia`).
  *
  * Coexistence is safe only while a specific set of facts holds. They are
  * asserted here rather than described in a comment, because the failure mode is
  * silent and destructive: if a catalog field ever holds a URL that a `Media` row
- * owns, the legacy URL-sweep will delete the object out from under that row,
- * leaving a dangling reference that nothing reports.
+ * owns, the URL sweep would delete the object out from under that row, leaving a
+ * dangling reference that nothing reports. (And if the sweep cannot recognise
+ * our own URLs at all, it deletes nothing and orphans accumulate — which is
+ * exactly what happened when the app moved off Vercel Blob.)
  *
  * These are pure checks — no database, no network, no storage credentials.
  */
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { imageRefSchema } from "@/lib/admin/schemas/common";
-import { isBlobUrl } from "@/lib/admin/blob";
+import { storageKeyFromUrl } from "@/lib/admin/storage-cleanup";
 import { IMAGE_EXTENSIONS, MAX_UPLOAD_BYTES } from "@/lib/admin/image-sniff";
 import {
   buildStorageKey,
@@ -33,23 +35,30 @@ import {
 } from "@/lib/media/validation";
 
 /**
- * The key prefix the LEGACY upload action uses, copied from
- * `lib/admin/actions/upload.ts` (`admin/${group}/…`).
+ * A Liara public URL in the bucket-subdomain shape the app writes.
  *
- * Deliberately a literal: this test exists to notice if that module's layout
- * changes, so importing the value would defeat the point.
+ * Deliberately a literal: this test exists to notice if the URL layout changes,
+ * so importing a helper to build it would defeat the point.
  */
-const LEGACY_KEY_PREFIX = "admin";
+const MEDIA_URL =
+  "https://homeform-media.storage.iran.liara.site/media/products/1-hero.png";
 
-const BLOB_URL =
-  "https://store123.public.blob.vercel-storage.com/media/products/1-hero.png";
+// `storageKeyFromUrl` decides ownership from the CONFIGURED endpoint + bucket,
+// so pin them to match the URL above rather than depending on whatever the
+// developer's `.env` happens to hold.
+beforeAll(() => {
+  process.env.LIARA_ENDPOINT = "https://storage.iran.liara.site";
+  process.env.LIARA_BUCKET_NAME = "homeform-media";
+  process.env.LIARA_ACCESS_KEY = "test-access-key";
+  process.env.LIARA_SECRET_KEY = "test-secret-key";
+});
 
 describe("media output is a drop-in for the existing image fields", () => {
   it("a Media URL satisfies the catalog image schema unchanged", () => {
     // The whole reason the catalog models need no migration yet: the media
     // service returns a plain URL string, which is exactly what every existing
     // image column already validates against.
-    expect(imageRefSchema.safeParse(BLOB_URL).success).toBe(true);
+    expect(imageRefSchema.safeParse(MEDIA_URL).success).toBe(true);
   });
 
   it("a storage key is never an absolute URL or a traversal", () => {
@@ -65,8 +74,8 @@ describe("media output is a drop-in for the existing image fields", () => {
   });
 });
 
-describe("the two systems own disjoint key namespaces", () => {
-  it("media keys live under media/ and never under the legacy prefix", () => {
+describe("the URL sweep recognises exactly our own objects", () => {
+  it("media keys live under media/", () => {
     for (const folder of ["products", "designers", "uploads", undefined]) {
       const key = buildStorageKey({
         folder,
@@ -75,21 +84,23 @@ describe("the two systems own disjoint key namespaces", () => {
         now: 1,
       });
       expect(key.startsWith(`${MEDIA_KEY_PREFIX}/`)).toBe(true);
-      expect(key.startsWith(`${LEGACY_KEY_PREFIX}/`)).toBe(false);
     }
   });
 
-  it("the prefixes differ, so a URL sweep cannot reach across", () => {
-    // If these ever became equal, the legacy `deleteBlobUrls` sweep could
-    // delete an object a Media row still references.
-    expect(MEDIA_KEY_PREFIX).not.toBe(LEGACY_KEY_PREFIX);
+  it("round-trips a stored URL back to its key", () => {
+    expect(storageKeyFromUrl(MEDIA_URL)).toBe("media/products/1-hero.png");
   });
 
-  it("the legacy blob-URL check still recognises our store", () => {
-    // The legacy cleanup filters by host, not by prefix — it must keep working
-    // for the uploads it owns.
-    expect(isBlobUrl(BLOB_URL)).toBe(true);
-    expect(isBlobUrl("/images/seed/hero.jpg")).toBe(false);
+  it("ignores a foreign host, so nothing outside our bucket is ever deleted", () => {
+    // Includes the Vercel Blob host the app used to write to: those objects are
+    // no longer ours to manage, and treating them as ours is what would make the
+    // sweep call a provider that no longer knows them.
+    expect(
+      storageKeyFromUrl(
+        "https://store.public.blob.vercel-storage.com/media/products/1-hero.png",
+      ),
+    ).toBeNull();
+    expect(storageKeyFromUrl("/images/seed/hero.jpg")).toBeNull();
   });
 });
 

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { TEXT_MAX, URL_MAX, linkSchema } from "./common";
+import { TEXT_MAX, URL_MAX } from "./common";
 
 /**
  * The media metadata form's rules (mirrors `UpdateMediaMetadataInput`).
@@ -40,28 +40,24 @@ export const mediaMetadataFormSchema = z.object({
 /**
  * What the browser reports after a DIRECT upload (Pass 13.5E).
  *
- * Shape only. The authoritative checks — that the pathname is inside our
- * namespace, that its extension maps to a supported kind, and that the size fits
- * that kind's ceiling — are re-derived server-side in `registerUploadedMedia`,
- * because none of these values can be trusted just because they validated.
+ * Shape only. The authoritative checks — that the key is inside our namespace,
+ * that its extension maps to a supported kind, and that the size fits that
+ * kind's ceiling — are re-derived server-side in `registerUploadedMedia`, and
+ * the upload token is re-verified there, because none of these values can be
+ * trusted just because they validated.
+ *
+ * `uploadToken` is REQUIRED. The server signed it, so it is the only proof that
+ * this upload was authorised. The `url`/`pathname` fields that used to be
+ * accepted alongside it belonged to the Vercel Blob flow and are gone: Liara
+ * derives the public URL from the bucket and the key, so there is nothing for
+ * the browser to report and nothing for the server to take on trust.
  */
-export const directUploadRegistrationSchema = z
-  .object({
-    filename: z.string().min(1).max(TEXT_MAX),
-    /** Present for Liara's server-signed direct-upload authorization. */
-    uploadToken: z.string().max(URL_MAX).optional(),
-    /** Legacy Vercel result fields remain accepted during coexistence. */
-    url: linkSchema.optional(),
-    pathname: z.string().min(1).max(URL_MAX).optional(),
-    size: z.number().int().positive(),
-  })
-  .refine(
-    (value) =>
-      Boolean(value.uploadToken) || Boolean(value.url && value.pathname),
-    {
-      message: "Upload authorization is required",
-    },
-  );
+export const directUploadRegistrationSchema = z.object({
+  filename: z.string().min(1).max(TEXT_MAX),
+  /** Server-signed authorization for this upload. */
+  uploadToken: z.string().min(1).max(URL_MAX),
+  size: z.number().int().positive(),
+});
 
 export type DirectUploadRegistrationInput = z.infer<
   typeof directUploadRegistrationSchema

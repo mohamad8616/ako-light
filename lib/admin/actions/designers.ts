@@ -9,7 +9,7 @@
  * (SetNull) — no products are removed.
  */
 import { requireAdminAccess } from "@/lib/admin/access";
-import { deleteBlobUrls, removedUrls } from "@/lib/admin/blob";
+import { deleteStorageUrls, removedUrls } from "@/lib/admin/storage-cleanup";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
   actionFail,
@@ -77,7 +77,7 @@ export async function updateDesignerAction(
       updateDesigner(id, parsed.data, tx),
     );
 
-    await deleteBlobUrls(removedUrls(beforeUrls, [parsed.data.image]));
+    await deleteStorageUrls(removedUrls(beforeUrls, [parsed.data.image]));
     revalidateCatalog("designers", { id });
     return actionOk(undefined);
   } catch (error) {
@@ -95,7 +95,7 @@ export async function destroyDesignerAction(
 
     await deleteDesigner(id);
 
-    await deleteBlobUrls(beforeUrls);
+    await deleteStorageUrls(beforeUrls);
     revalidateCatalog("designers");
     return actionOk(undefined);
   } catch (error) {

@@ -8,9 +8,9 @@
  * failure path below is chosen so the system can only ever fail into a
  * recoverable state:
  *
- *   upload   Blob first, then DB. If the DB write fails, the object that was
+ *   upload   storage first, then DB. If the DB write fails, the object that was
  *            just stored is deleted — so a failed upload cannot leak a file.
- *   delete   DB first, then Blob. If the object delete fails, the row is
+ *   delete   DB first, then storage. If the object delete fails, the row is
  *            already gone — leaving a harmless orphan FILE rather than a row
  *            pointing at a file that no longer exists.
  *
@@ -23,9 +23,8 @@
 import { Prisma } from "@/generated/prisma/client";
 import { IMAGE_EXTENSIONS } from "@/lib/admin/image-sniff";
 import { IMAGE_MAX_BYTES, VIDEO_MAX_BYTES } from "@/lib/media/limits";
-import { getStorageProvider } from "@/lib/media/storage";
+import { storageProvider } from "@/lib/media/storage";
 import {
-  StorageAccessMismatchError,
   StorageNotConfiguredError,
   type StoredObject,
 } from "@/lib/media/types";
@@ -61,12 +60,6 @@ export type MediaErrorCode =
   /** The object is still pointed at by catalog/order rows — see `removeMedia`. */
   | "inUse"
   | "storageNotConfigured"
-  /**
-   * The store's visibility does not match BLOB_ACCESS, so every write is
-   * refused. Distinct from `storageFailed` so the admin sees an actionable
-   * message and the log carries a one-line diagnosis instead of a stack trace.
-   */
-  | "storageAccessMismatch"
   | "storageFailed";
 
 /** A media operation failure carrying a stable, translatable code. */
@@ -123,7 +116,7 @@ export async function uploadMedia(input: UploadMediaInput): Promise<MediaRow> {
 
   let stored: StoredObject;
   try {
-    stored = await getStorageProvider().upload({
+    stored = await storageProvider.upload({
       key,
       bytes: input.bytes,
       contentType: mimeType,
@@ -133,21 +126,10 @@ export async function uploadMedia(input: UploadMediaInput): Promise<MediaRow> {
       addRandomSuffix: true,
     });
   } catch (error) {
-    // Nothing was persisted yet, so there is no orphan to clean up.
-    // A missing credential is reported distinctly from a transport failure, and
-    // a store/brand visibility mismatch distinctly again — because only the
-    // last one is fixable by a settings change, and the admin needs to know
-    // that rather than seeing the generic failure.
-    if (error instanceof StorageAccessMismatchError) {
-      console.error(
-        `[media] storage access mismatch: the app writes with "${error.expectedAccess}" ` +
-          `but the store rejected it. Set the Blob store's visibility to match ` +
-          `BLOB_ACCESS (lib/media/limits.ts). Store said: ${error.storeMessage ?? "(no message)"}`,
-      );
-      throw new MediaError("storageAccessMismatch", undefined, {
-        cause: error,
-      });
-    }
+    // Nothing was persisted yet, so there is no orphan to clean up. A missing
+    // credential is reported distinctly from a transport failure, because only
+    // the former is fixable by a settings change and the admin should be told
+    // that rather than shown the generic failure.
     if (error instanceof StorageNotConfiguredError) {
       console.error("[media] storage provider is not configured");
       throw new MediaError("storageNotConfigured", undefined, { cause: error });
@@ -205,11 +187,12 @@ function extensionOfPath(pathname: string): string {
 export interface RegisterUploadedMediaInput {
   /** Original client filename — display only, never a path segment. */
   filename: string;
-  /** Liara upload authorization signed by the server. */
-  uploadToken?: string;
-  /** Legacy Vercel upload response values. */
-  url?: string;
-  pathname?: string;
+  /**
+   * The server-signed authorization for this upload. REQUIRED: it is the only
+   * proof the upload was authorised, and the key, public URL and content type
+   * are all read from it rather than from the request.
+   */
+  uploadToken: string;
   size: number;
   alt?: string | null;
   title?: string | null;
@@ -221,14 +204,17 @@ export interface RegisterUploadedMediaInput {
  * This is the second half of the direct-upload flow: the bytes went straight to
  * the provider, and this creates the `Media` row that makes the file real.
  *
- * WHAT IS AND IS NOT TRUSTED. The client reports the url, pathname and size, so
- * none of them is treated as authoritative:
+ * WHAT IS AND IS NOT TRUSTED. The client reports a filename, a size and the
+ * upload token, so none of them is treated as authoritative:
  *
- *   - the pathname must live under this app's `media/` prefix, so a caller
- *     cannot register an object outside our namespace;
- *   - the KIND and the MIME type are re-derived from the pathname's extension,
- *     never taken from the client's `contentType` claim;
- *   - the size must be positive and within that kind's ceiling.
+ *   - the token is re-verified against the server's own signature, and the KEY,
+ *     public URL and content type come FROM IT rather than from the request;
+ *   - the key must live under this app's `media/` prefix, so a caller cannot
+ *     register an object outside our namespace;
+ *   - the KIND and the MIME type are re-derived from the key's extension, never
+ *     taken from the client's `contentType` claim;
+ *   - the size must be positive, must match the authorization, and must fit that
+ *     kind's ceiling.
  *
  * The remaining claim — that an object exists at that URL with those
  * dimensions — is not re-verified here, because the PROVIDER already enforced
@@ -241,56 +227,49 @@ export interface RegisterUploadedMediaInput {
 export async function registerUploadedMedia(
   input: RegisterUploadedMediaInput,
 ): Promise<MediaRow> {
-  const provider = getStorageProvider();
-  let pathname = input.pathname;
-  let verifiedUrl = input.url;
-  let verifiedSize = input.size;
-  let verifiedContentType: string | undefined;
-
-  if (provider.name === "liara") {
-    const { verifyLiaraUploadAuthorization } =
-      await import("@/lib/media/storage/liara-upload-token");
-    const authorization = input.uploadToken
-      ? verifyLiaraUploadAuthorization(input.uploadToken)
-      : null;
-    if (!authorization || !provider.verifyClientUpload) {
-      throw new MediaError(
-        "unsupportedType",
-        "Invalid or expired upload authorization",
-      );
-    }
-    if (
-      authorization.filename !== input.filename ||
-      authorization.size !== input.size
-    ) {
-      throw new MediaError(
-        "unsupportedType",
-        "Upload registration does not match its authorization",
-      );
-    }
-    if (!authorization.key.startsWith(`${MEDIA_KEY_PREFIX}/`)) {
-      throw new MediaError(
-        "unsupportedType",
-        "Authorized key is outside the media namespace",
-      );
-    }
-    if (authorization.expiresAt < Date.now()) {
-      throw new MediaError(
-        "unsupportedType",
-        "Upload authorization has expired",
-      );
-    }
-    const verified = await provider.verifyClientUpload({
-      key: authorization.key,
-      contentType: authorization.contentType,
-      maximumSizeInBytes: authorization.size,
-      reportedSize: authorization.size,
-    });
-    pathname = verified.key;
-    verifiedUrl = verified.url;
-    verifiedSize = verified.size;
-    verifiedContentType = verified.contentType;
+  // Every direct upload is authorised by THIS server, so the signed token is
+  // the only acceptable proof — and the key, URL and content type are read FROM
+  // it rather than from the request body.
+  const { verifyLiaraUploadAuthorization } =
+    await import("@/lib/media/storage/liara-upload-token");
+  const authorization = verifyLiaraUploadAuthorization(input.uploadToken);
+  if (!authorization || !storageProvider.verifyClientUpload) {
+    throw new MediaError(
+      "unsupportedType",
+      "Invalid or expired upload authorization",
+    );
   }
+  if (
+    authorization.filename !== input.filename ||
+    authorization.size !== input.size
+  ) {
+    throw new MediaError(
+      "unsupportedType",
+      "Upload registration does not match its authorization",
+    );
+  }
+  if (!authorization.key.startsWith(`${MEDIA_KEY_PREFIX}/`)) {
+    throw new MediaError(
+      "unsupportedType",
+      "Authorized key is outside the media namespace",
+    );
+  }
+  if (authorization.expiresAt < Date.now()) {
+    throw new MediaError(
+      "unsupportedType",
+      "Upload authorization has expired",
+    );
+  }
+  const verified = await storageProvider.verifyClientUpload({
+    key: authorization.key,
+    contentType: authorization.contentType,
+    maximumSizeInBytes: authorization.size,
+    reportedSize: authorization.size,
+  });
+  const pathname = verified.key;
+  const verifiedUrl = verified.url;
+  const verifiedSize = verified.size;
+  const verifiedContentType: string | undefined = verified.contentType;
 
   if (!pathname?.startsWith(`${MEDIA_KEY_PREFIX}/`)) {
     throw new MediaError(
@@ -438,13 +417,13 @@ export async function removeMedia(id: string): Promise<void> {
  * Deletes objects without ever failing the caller.
  *
  * Mirrors the policy already established for the admin upload cleanup
- * (lib/admin/blob.ts): an orphan object is the acceptable outcome, and turning
+ * (lib/admin/storage-cleanup.ts): an orphan object is the acceptable outcome, and turning
  * it into a thrown error would report a failure for an operation that, from the
  * database's point of view, already succeeded.
  */
 async function bestEffortDelete(keys: readonly string[]): Promise<void> {
   try {
-    await getStorageProvider().delete(keys);
+    await storageProvider.delete(keys);
   } catch (error) {
     console.warn("[media] storage cleanup failed for", keys, error);
   }

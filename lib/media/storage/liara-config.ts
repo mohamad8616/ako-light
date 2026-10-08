@@ -2,8 +2,7 @@
  * Liara Object Storage configuration.
  *
  * It reads `LIARA_SECRET_KEY`, so it is SERVER-ONLY and must never be reached
- * from a client component (the same rule lib/media/storage/vercel-blob.ts and
- * lib/admin/blob.ts follow).
+ * from a client component (the same rule lib/admin/storage-cleanup.ts follows).
  */
 
 import { StorageNotConfiguredError } from "@/lib/media/types";

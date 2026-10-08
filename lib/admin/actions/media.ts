@@ -17,7 +17,7 @@
  * Storage handling is delegated: `removeMedia` already deletes the database row
  * first and the object second on a best-effort basis (see lib/media/service.ts),
  * so these actions do NOT run the catalog-style
- * `deleteBlobUrls(removedUrls(...))` sweep — there is no URL column to diff
+ * `deleteStorageUrls(removedUrls(...))` sweep — there is no URL column to diff
  * against, and the service owns the ordering that keeps the two systems
  * consistent.
  */
@@ -63,10 +63,10 @@ export interface MediaUploadResult {
  * misleading about why a delete was refused.
  *
  * The two storage codes have no dictionary entry of their own, on purpose: the
- * real cause (a missing `BLOB_READ_WRITE_TOKEN`, a provider outage) is only
- * actionable server-side, and inventing a user-facing message for it would
- * either leak infrastructure detail or say nothing useful. They collapse to the
- * generic failure — exactly what the legacy image upload action already does.
+ * real cause (missing Liara credentials, a provider outage) is only actionable
+ * server-side, and inventing a user-facing message for it would either leak
+ * infrastructure detail or say nothing useful. They collapse to the generic
+ * failure — exactly what the legacy image upload action already does.
  */
 function mediaErrorToAdminCode(code: MediaErrorCode): AdminErrorCode {
   switch (code) {
@@ -76,7 +76,6 @@ function mediaErrorToAdminCode(code: MediaErrorCode): AdminErrorCode {
     case "unsupportedType":
     case "notFound":
     case "inUse":
-    case "storageAccessMismatch":
       return code;
     case "storageNotConfigured":
     case "storageFailed":

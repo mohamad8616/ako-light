@@ -99,7 +99,7 @@ export const getDesignerAdminRows = cache(
 /**
  * Just the image URLs the designer row currently references.
  *
- * Read by the update/delete actions so they can garbage-collect Vercel Blob
+ * Read by the update/delete actions so they can garbage-collect stored objects
  * files that an edit replaced or that the row owned when it was deleted.
  * Deliberately narrow — the cleanup pass needs URLs, not a whole DTO.
  */

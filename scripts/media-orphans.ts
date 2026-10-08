@@ -1,7 +1,10 @@
 import "dotenv/config";
-import { del, list } from "@vercel/blob";
+
+import { ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../generated/prisma/client.js";
+import { createLiaraS3Client, liaraStorage } from "@/lib/media/storage/liara";
+import { readLiaraConfig } from "@/lib/media/storage/liara-config";
 
 /**
  * Pass 13.5E — orphan detection for the direct-upload path.
@@ -11,7 +14,7 @@ import { PrismaClient } from "../generated/prisma/client.js";
  * A direct upload is two steps that cannot be committed together: the browser
  * writes the object, then an authorised action writes the `Media` row. If the
  * second step never happens — the tab was closed, the network dropped, the
- * action failed — the object is in the store with nothing pointing at it.
+ * action failed — the object is in the bucket with nothing pointing at it.
  *
  * The plan asks for "the simplest reliable solution" and explicitly rules out
  * building a background system, so this is a MANUAL SWEEP rather than a cron:
@@ -26,6 +29,10 @@ import { PrismaClient } from "../generated/prisma/client.js";
  * owned by the catalog URL columns, not by `Media`, so "no Media row" would be
  * the normal state and the sweep would delete live files.
  *
+ * It talks to the bucket through the SAME provider the app writes with — it
+ * used to use Vercel Blob's `list`/`del`, which could not see Liara objects at
+ * all and would have reported "nothing to clean" forever.
+ *
  * Run with:
  *   node_modules/.bin/tsx scripts/media-orphans.ts          # report
  *   APPLY=1 node_modules/.bin/tsx scripts/media-orphans.ts  # delete
@@ -39,22 +46,39 @@ const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL! }),
 });
 
-const token = process.env.BLOB_READ_WRITE_TOKEN;
-if (!token) {
-  console.error("BLOB_READ_WRITE_TOKEN is not set — cannot list the store.");
+let config;
+try {
+  config = readLiaraConfig();
+} catch {
+  console.error(
+    "Liara storage is not configured — set LIARA_ENDPOINT, LIARA_BUCKET_NAME, " +
+      "LIARA_ACCESS_KEY and LIARA_SECRET_KEY before running this sweep.",
+  );
   await prisma.$disconnect();
   process.exit(1);
 }
 
-/** Every object pathname in the store under the media prefix. */
+const client = createLiaraS3Client(config);
+
+/** Every object key in the bucket under the media prefix. */
 const objectKeys: string[] = [];
-let cursor: string | undefined;
+let continuationToken: string | undefined;
 
 do {
-  const page = await list({ prefix: MEDIA_PREFIX, cursor, token });
-  for (const blob of page.blobs) objectKeys.push(blob.pathname);
-  cursor = page.hasMore ? page.cursor : undefined;
-} while (cursor);
+  const page = await client.send(
+    new ListObjectsV2Command({
+      Bucket: config.bucket,
+      Prefix: MEDIA_PREFIX,
+      ContinuationToken: continuationToken,
+    }),
+  );
+  for (const object of page.Contents ?? []) {
+    if (object.Key) objectKeys.push(object.Key);
+  }
+  continuationToken = page.IsTruncated
+    ? page.NextContinuationToken
+    : undefined;
+} while (continuationToken);
 
 // One query for every owned key — the whole point is to avoid a per-object
 // round trip against the remote pooler.
@@ -87,7 +111,7 @@ if (!APPLY) {
   process.exit(0);
 }
 
-await del(orphans, { token });
+await liaraStorage.delete(orphans);
 console.log(`\ndeleted ${orphans.length} orphaned object(s).`);
 
 await prisma.$disconnect();

@@ -23,11 +23,7 @@ import {
   IMAGE_MAX_BYTES,
   VIDEO_MAX_BYTES,
 } from "@/lib/media/limits";
-import {
-  DirectUploadError,
-  uploadDirectToStorage,
-} from "@/lib/media/storage/client";
-import { buildStorageKey } from "@/lib/media/validation";
+import { uploadDirectToStorage } from "@/lib/media/storage/client";
 import { Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
@@ -36,17 +32,16 @@ import { toast } from "sonner";
 /**
  * Uploading a file into the media library.
  *
- * The bytes go through `uploadMediaAction` — the Pass 13.5A server action — and
- * NOT through a fresh fetch to Blob. That action already owns the whole
+ * Small files go through `uploadMediaAction` — the Pass 13.5A server action —
+ * and NOT through a fresh fetch to storage. That action already owns the whole
  * contract: it re-runs `requireAdminAccess()` (the client is never the
  * authorization), validates by sniffing the leading bytes, stores through the
  * `StorageProvider` abstraction, registers the `Media` row, and cleans up the
  * stored object if the row write fails. Re-implementing any of that here would
  * be a second, drifting copy of the security-critical path.
  *
- * Scope note: ONE file at a time, images only, inside the existing 5 MB /
- * 6 MB-body limit. Multi-file queues, progress bars and direct-to-Blob large
- * video uploads are deliberately later steps — reliability over bulk.
+ * Large files and videos take the direct path instead (see the size decision in
+ * `handleSubmit`), because a Server Action buffers the whole payload in memory.
  */
 
 /** The types the shared validator accepts; also the file picker's filter. */
@@ -64,12 +59,6 @@ const isVideoFile = (file: File) => file.type.startsWith("video/");
  */
 const maxBytesFor = (file: File) =>
   isVideoFile(file) ? VIDEO_MAX_BYTES : IMAGE_MAX_BYTES;
-
-/** The lowercase extension of a filename, without the dot. */
-function extensionOf(name: string): string {
-  const dot = name.lastIndexOf(".");
-  return dot === -1 ? "" : name.slice(dot + 1).toLowerCase();
-}
 
 /** Mirrors `TEXT_MAX` in lib/admin/schemas/common.ts, the server's own cap. */
 const METADATA_MAX = 2000;
@@ -172,11 +161,6 @@ export function MediaUploadDialog({
         setProgress(0);
 
         const uploaded = await uploadDirectToStorage({
-          key: buildStorageKey({
-            folder: "library",
-            baseName: file.name,
-            extension: extensionOf(file.name),
-          }),
           file,
           onProgress: setProgress,
         });
@@ -187,9 +171,7 @@ export function MediaUploadDialog({
         setPhase("saving");
         const registered = await registerDirectUploadAction({
           filename: file.name,
-          ...(uploaded.uploadToken
-            ? { uploadToken: uploaded.uploadToken }
-            : { url: uploaded.url, pathname: uploaded.pathname }),
+          uploadToken: uploaded.uploadToken ?? "",
           size: uploaded.size,
         });
 
@@ -235,15 +217,12 @@ export function MediaUploadDialog({
     } catch (error) {
       // The action rethrows unknown errors on purpose; the server log carries
       // the stack while the admin sees something actionable. A DIRECT-upload
-      // failure is surfaced distinctly: it never reaches the server, so this is
-      // its only chance to say what went wrong — a store/visibility mismatch is
-      // a settings fault the admin can act on, not an anonymous "unknown".
-      const code =
-        error instanceof DirectUploadError && error.reason === "access_mismatch"
-          ? "storageAccessMismatch"
-          : "unknown";
-      setError(t(`admin.error.${code}`));
-      toast.error(t(`admin.error.${code}`));
+      // failure never reaches the server, so this is its only chance to report
+      // anything — it collapses to the generic message, the same treatment a
+      // server-side storage failure gets.
+      console.error("[media] direct upload failed", error);
+      setError(t("admin.error.unknown"));
+      toast.error(t("admin.error.unknown"));
     } finally {
       setPending(false);
       // Progress only ever describes the run that just finished; leaving it set

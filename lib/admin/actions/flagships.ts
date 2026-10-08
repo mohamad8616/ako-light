@@ -9,7 +9,7 @@
  * the form's detail toggle off writes SQL NULL (no detail page).
  */
 import { requireAdminAccess } from "@/lib/admin/access";
-import { deleteBlobUrls, removedUrls } from "@/lib/admin/blob";
+import { deleteStorageUrls, removedUrls } from "@/lib/admin/storage-cleanup";
 import {
   actionFail,
   actionOk,
@@ -99,7 +99,7 @@ export async function updateFlagshipAction(
       updateFlagship(id, parsed.data, tx),
     );
 
-    await deleteBlobUrls(
+    await deleteStorageUrls(
       removedUrls(beforeUrls, flagshipImageUrls(parsed.data)),
     );
     revalidateCatalog("flagships", { id });
@@ -120,7 +120,7 @@ export async function destroyFlagshipAction(
 
     await deleteFlagship(id);
 
-    await deleteBlobUrls(beforeUrls);
+    await deleteStorageUrls(beforeUrls);
     revalidateCatalog("flagships");
     return actionOk(undefined);
   } catch (error) {

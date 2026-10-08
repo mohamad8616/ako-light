@@ -2,8 +2,8 @@
  * Server-signed authorization for one Liara direct upload.
  *
  * It signs with `BETTER_AUTH_SECRET`, so it is SERVER-ONLY and must never be
- * reached from a client component (the same rule lib/media/storage/vercel-blob.ts
- * and lib/admin/blob.ts follow).
+ * reached from a client component (the same rule lib/admin/storage-cleanup.ts
+ * follows).
  */
 
 import { createHmac, timingSafeEqual } from "node:crypto";
@@ -37,8 +37,13 @@ export function signLiaraUploadAuthorization(
 }
 
 export function verifyLiaraUploadAuthorization(
-  token: string,
+  token: string | null | undefined,
 ): LiaraUploadAuthorization | null {
+  // A missing or non-string token is simply NOT a valid authorization. Guarding
+  // here keeps callers from having to pre-check, and stops a malformed request
+  // from surfacing as a TypeError instead of a clean refusal.
+  if (typeof token !== "string" || token.length === 0) return null;
+
   const [encoded, signature, ...rest] = token.split(".");
   if (!encoded || !signature || rest.length) return null;
   const expected = createHmac("sha256", secret()).update(encoded).digest();

@@ -9,7 +9,7 @@
  * enum inside the repository ("stone-composite" <-> stone_composite).
  */
 import { requireAdminAccess } from "@/lib/admin/access";
-import { deleteBlobUrls, removedUrls } from "@/lib/admin/blob";
+import { deleteStorageUrls, removedUrls } from "@/lib/admin/storage-cleanup";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
   actionFail,
@@ -76,7 +76,7 @@ export async function updateMaterialAction(
       updateMaterial(id, parsed.data, tx),
     );
 
-    await deleteBlobUrls(removedUrls(beforeUrls, [parsed.data.image]));
+    await deleteStorageUrls(removedUrls(beforeUrls, [parsed.data.image]));
     revalidateCatalog("materials", { id });
     return actionOk(undefined);
   } catch (error) {
@@ -94,7 +94,7 @@ export async function destroyMaterialAction(
 
     await deleteMaterial(id);
 
-    await deleteBlobUrls(beforeUrls);
+    await deleteStorageUrls(beforeUrls);
     revalidateCatalog("materials");
     return actionOk(undefined);
   } catch (error) {

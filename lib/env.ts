@@ -53,22 +53,28 @@ export function collectEnvProblems(
 
   problems.push(...checkZarinpal(env, nodeEnv));
   problems.push(...checkNotificationDelivery(env, nodeEnv));
-  problems.push(...checkLiaraStorage(env));
+  problems.push(...checkLiaraStorage(env, nodeEnv));
 
   return problems;
 }
 
 /**
- * Liara Object Storage is optional: the app defaults to Vercel Blob and only
- * needs these four values once `MEDIA_STORAGE_PROVIDER=liara` is set. Validated
- * only when Liara is SELECTED, so importing this file never forces a provider
- * choice on a deployment that has not migrated yet.
+ * Liara Object Storage is the ONLY storage backend, so these four values are
+ * what stands between the app and a working media library.
+ *
+ * Required in PRODUCTION only, deliberately. There is no longer a fallback
+ * provider to be selected by mistake — a missing credential now produces an
+ * explicit storage-not-configured error on the first upload rather than
+ * silently writing somewhere else — so a local or test run does not need real
+ * credentials to boot, and forcing them there would break every hermetic and
+ * auth-tier suite in CI. A real deployment, by contrast, should fail at boot
+ * rather than serve a site whose images cannot be stored.
  *
  * The secret value is never repeated in a message — this output can reach a log
  * or a build artifact.
  */
-function checkLiaraStorage(env: Env): EnvProblem[] {
-  if (env.MEDIA_STORAGE_PROVIDER !== "liara") return [];
+function checkLiaraStorage(env: Env, nodeEnv: string | undefined): EnvProblem[] {
+  if (nodeEnv !== "production") return [];
 
   return [
     "LIARA_ENDPOINT",
@@ -80,7 +86,7 @@ function checkLiaraStorage(env: Env): EnvProblem[] {
     .map((name) => ({
       name,
       message:
-        "is required because MEDIA_STORAGE_PROVIDER=liara. Without it every media upload fails with the storage-not-configured error.",
+        "is required in production. Liara Object Storage is the app's only media backend, so without it every upload and every stored image URL fails.",
     }));
 }
 

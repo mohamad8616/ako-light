@@ -3,8 +3,8 @@
  * `StorageProvider` (lib/media/types.ts).
  *
  * It holds `LIARA_SECRET_KEY`, so it is SERVER-ONLY and must never be reached
- * from a client component (the same rule lib/media/storage/vercel-blob.ts and
- * lib/admin/blob.ts follow). The browser half of a direct upload lives in
+ * from a client component (the same rule lib/admin/storage-cleanup.ts follows).
+ * The browser half of a direct upload lives in
  * lib/media/storage/client.ts.
  *
  * Credentials never leave this module's config: the browser receives only a

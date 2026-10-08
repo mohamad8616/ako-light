@@ -8,11 +8,11 @@
  * the authorization — see the bundled data-security guide), then validate,
  * then persist, and map failures into the structured `ActionResult` contract.
  *
- * WHAT CHANGED IN PASS 13.5C (step 14 — consolidate direct Blob usage)
+ * WHAT CHANGED IN PASS 13.5C (step 14 — consolidate direct storage usage)
  *
- * This action used to call `put()` from `@vercel/blob` directly, which made it
- * one of only two modules outside `lib/media/storage/` importing the SDK. It
- * now delegates to `uploadMedia` (lib/media/service.ts), so an upload:
+ * This action used to talk to a storage SDK directly, which made it one of only
+ * two modules outside `lib/media/storage/` doing so. It now delegates to
+ * `uploadMedia` (lib/media/service.ts), so an upload:
  *
  *   - is validated by the SHARED validator (byte sniffing — the declared
  *     `File.type` is still only a claim, never the evidence);
@@ -25,7 +25,7 @@
  *
  *   1. **Keys move from `admin/…` to `media/…`.** The namespaces stay disjoint,
  *      which is what keeps the legacy URL sweep from deleting a media-owned
- *      object — and `deleteBlobUrls` additionally filters media-owned URLs now.
+ *      object — and `deleteStorageUrls` additionally filters media-owned keys now.
  *   2. **Replacing an image no longer deletes the object.** Removing an image
  *      from a product removes the relationship only; the Media row and its file
  *      survive and are deleted from /admin/media, and only once unreferenced.
@@ -70,16 +70,14 @@ export async function uploadImageAction(
     return actionOk({ url: row.url });
   } catch (error) {
     if (error instanceof MediaError) {
-      // The validation codes have their own copy in the admin dictionary, as
-      // does a store/visibility mismatch (a settings fault the admin can act
-      // on). Every other failure (missing token, provider outage, DB error) is
+      // The validation codes have their own copy in the admin dictionary.
+      // Every other failure (missing credentials, provider outage, DB error) is
       // only knowable server-side, so it collapses to the generic message —
       // exactly as the old action did.
       if (
         error.code === "required" ||
         error.code === "tooLarge" ||
-        error.code === "notImage" ||
-        error.code === "storageAccessMismatch"
+        error.code === "notImage"
       ) {
         return actionFail(error.code);
       }

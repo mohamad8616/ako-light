@@ -198,7 +198,7 @@ function stripImageExtension(name: string): string {
 }
 
 /**
- * Blob keys are grouped per entity ("products", "designers", …) so the store
+ * Storage keys are grouped per entity ("products", "designers", …) so the store
  * stays navigable. The value crosses a client boundary, so it is matched
  * against a strict slug pattern and otherwise falls back to a neutral folder —
  * it is NEVER interpolated raw into a pathname.

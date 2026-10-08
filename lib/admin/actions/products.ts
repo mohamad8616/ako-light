@@ -12,7 +12,7 @@
  */
 import type { Prisma } from "@/generated/prisma/client";
 import { requireAdminAccess } from "@/lib/admin/access";
-import { deleteBlobUrls, removedUrls } from "@/lib/admin/blob";
+import { deleteStorageUrls, removedUrls } from "@/lib/admin/storage-cleanup";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
   actionFail,
@@ -150,7 +150,7 @@ export async function updateProductAction(
 
     // AFTER the successful save only — deleting first would leave the row
     // pointing at a file that no longer exists if the update then failed.
-    await deleteBlobUrls(
+    await deleteStorageUrls(
       removedUrls(beforeUrls, productImageUrls(parsed.data)),
     );
 
@@ -176,7 +176,7 @@ export async function destroyProductAction(
 
     await deleteProduct(id, db);
 
-    await deleteBlobUrls(beforeUrls);
+    await deleteStorageUrls(beforeUrls);
     revalidateCatalog("products");
     return actionOk(undefined);
   } catch (error) {

@@ -39,7 +39,7 @@ import {
 import { findMediaIdsByUrl } from "@/lib/repositories/media";
 import { findMediaReferences } from "@/lib/repositories/media-references";
 
-const MEDIA = { url: "https://store.public.blob.vercel-storage.com/media/x.png" };
+const MEDIA = { url: "https://homeform-media.storage.iran.liara.site/media/x.png" };
 
 describe("resolveMediaUrl — Media wins, legacy URL falls back", () => {
   it("prefers the linked Media row", () => {

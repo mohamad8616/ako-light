@@ -15,7 +15,7 @@
  * that field off its linked entity again.
  */
 import { requireAdminAccess } from "@/lib/admin/access";
-import { deleteBlobUrls, removedUrls } from "@/lib/admin/blob";
+import { deleteStorageUrls, removedUrls } from "@/lib/admin/storage-cleanup";
 import { revalidateCatalog } from "@/lib/admin/revalidate";
 import {
   actionFail,
@@ -100,7 +100,7 @@ export async function updateFlagshipOneFeatureAction(
       image,
     });
 
-    await deleteBlobUrls(removedUrls(beforeUrls, [image]));
+    await deleteStorageUrls(removedUrls(beforeUrls, [image]));
     revalidateCatalog("homepage");
     return actionOk(undefined);
   } catch (error) {
@@ -132,7 +132,7 @@ export async function updateProjectBannerFeatureAction(
       image,
     });
 
-    await deleteBlobUrls(removedUrls(beforeUrls, [image]));
+    await deleteStorageUrls(removedUrls(beforeUrls, [image]));
     revalidateCatalog("homepage");
     return actionOk(undefined);
   } catch (error) {
@@ -164,7 +164,7 @@ export async function updateProjectDarkBackgroundFeatureAction(
       image,
     });
 
-    await deleteBlobUrls(removedUrls(beforeUrls, [image]));
+    await deleteStorageUrls(removedUrls(beforeUrls, [image]));
     revalidateCatalog("homepage");
     return actionOk(undefined);
   } catch (error) {
@@ -193,7 +193,7 @@ export async function updateHomeCollectionFeatureAction(
       text: parsed.data.text,
     });
 
-    await deleteBlobUrls(
+    await deleteStorageUrls(
       removedUrls(beforeUrls, [parsed.data.image]),
     );
     revalidateCatalog("homepage");
@@ -223,7 +223,7 @@ export async function updateCatalogueFeatureAction(
       image: parsed.data.image,
     });
 
-    await deleteBlobUrls(
+    await deleteStorageUrls(
       removedUrls(beforeUrls, [parsed.data.image]),
     );
     revalidateCatalog("homepage");

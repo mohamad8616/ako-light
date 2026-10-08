@@ -19,7 +19,7 @@ import * as React from "react";
 import { uploadImageAction } from "@/lib/admin/actions/upload";
 
 /**
- * The admin's image field: preview + real upload to Vercel Blob.
+ * The admin's image field: preview + real upload to Liara Object Storage.
  *
  * A drop-in replacement for the plain URL text inputs every image field used
  * to be. The component's OUTPUT IS STILL JUST A URL STRING — it writes the
@@ -56,7 +56,7 @@ export function ImageUpload({
   hint,
   required,
   optional,
-  /** Blob key group ("products", "designers", …); defaults to "uploads". */
+  /** Storage key group ("products", "designers", …); defaults to "uploads". */
   folder,
   disabled,
   bare,

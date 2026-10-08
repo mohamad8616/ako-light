@@ -35,34 +35,23 @@ const nextConfig: NextConfig = {
     // Fewer width variants = less optimizer work for remote sources.
     deviceSizes: [640, 750, 1080, 1920],
     remotePatterns: [
-      {
-        // Keep the existing Vercel media hostname during provider coexistence.
-        protocol: "https",
-        hostname: "*.public.blob.vercel-storage.com",
-        pathname: "/**",
-      },
-      {
-        // Liara public bucket URLs use the configured bucket as the subdomain.
-        //
-        // The TLD is `site`, NOT `ir`. Liara's storage cluster answers on
-        // `liara.site` and `liara.space` (both resolve to the same IPs); the
-        // corporate `liara.ir` domain does not resolve for storage at all
-        // (ENOTFOUND), so a `*.storage.iran.liara.ir` pattern could never match
-        // a real upload. Keep in sync with LIARA_HOST_SUFFIXES in
-        // lib/media/storage/liara.ts, and add the `liara.space` pair here if
-        // LIARA_ENDPOINT is ever pointed at that alias instead.
-        protocol: "https",
-        hostname: "*.storage.iran.liara.site",
-        pathname: "/**",
-      },
-      {
-        // The bare host, for path-style object URLs. Liara serves an object at
-        // BOTH shapes, so a row written by an older build (path-style) must keep
-        // rendering after the switch to bucket-subdomain URLs above.
-        protocol: "https",
-        hostname: "storage.iran.liara.site",
-        pathname: "/**",
-      },
+      // Liara Object Storage. The public host is the BUCKET as a subdomain of
+      // the REGION endpoint — e.g. `loving-jones-jefkbq-ay.storage.c2.liara.site`
+      // — so a pattern must name neither the bucket nor the region.
+      //
+      // This previously read `*.storage.iran.liara.site`, which matched NOTHING:
+      // the live endpoint is `storage.c2.liara.site` (the value Liara's own
+      // Next.js guide uses), not `…iran…`. `images.unoptimized` is dev-only, so
+      // the mismatch was invisible locally and would have rejected EVERY Liara
+      // image on the deployed site.
+      //
+      // `hostname` must be a bare host name, not a URL. Keep the wildcard
+      // patterns so the bucket subdomain and future Liara endpoints are allowed.
+      { protocol: "https", hostname: "*.liara.site", pathname: "/**" },
+      { protocol: "https", hostname: "**.liara.site", pathname: "/**" },
+      { protocol: "https", hostname: "*.liara.space", pathname: "/**" },
+      { protocol: "https", hostname: "**.liara.space", pathname: "/**" },
+
       {
         protocol: "https",
         hostname: "www.henge07.com",

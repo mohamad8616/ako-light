@@ -73,7 +73,7 @@ import type { AdminErrorCode } from "@/lib/admin/result";
 import { MediaError, type MediaErrorCode } from "@/lib/media/service";
 
 const DENIED_URL = "/sign-in?denied=1";
-const STORED_URL = "https://store.public.blob.vercel-storage.com/media/products/1-a.png";
+const STORED_URL = "https://homeform-media.storage.iran.liara.site/media/products/1-a.png";
 
 /** A FormData carrying a plausible image upload. */
 function imageForm(name = "hero.png"): FormData {

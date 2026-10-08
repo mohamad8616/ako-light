@@ -22,7 +22,8 @@ export const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
 
 /**
  * The video ceiling. Deliberately generous (a short brand film) but NOT
- * unlimited, and below Vercel Blob's own per-file cap.
+ * unlimited, and equal to the ceiling the Liara provider enforces on a
+ * presigned upload (see `authorizeClientUpload` in lib/media/storage/liara.ts).
  */
 const DEFAULT_VIDEO_MAX_BYTES = 200 * 1024 * 1024;
 
@@ -51,8 +52,8 @@ export const VIDEO_MAX_BYTES = readByteLimit(
 );
 
 /**
- * Above this size a file is uploaded DIRECT to Blob instead of through a Server
- * Action.
+ * Above this size a file is uploaded DIRECT to the storage provider instead of
+ * through a Server Action.
  *
  * The Server Action body limit is 6 MB (next.config.ts) because a server action
  * buffers the whole payload in memory before the handler runs. Anything close to
@@ -65,31 +66,15 @@ export const DIRECT_UPLOAD_THRESHOLD_BYTES = 4 * 1024 * 1024;
 export const SERVER_UPLOAD_MAX_BYTES = IMAGE_MAX_BYTES;
 
 /**
- * The Blob store visibility the app writes with — shared by the SERVER write
- * (`put`) and the BROWSER write (`upload`) so the two can never disagree.
+ * The Liara bucket must be set to PUBLIC access in the console.
  *
- * WHY THIS IS HERE, AND WHY IT MATTERS. Vercel provisions each Blob store as
- * EITHER public or private, and it REJECTS any write whose `access` does not
- * match with a bare HTTP 400 ("Cannot use public access on a private store").
- * That mismatch previously lived in two hardcoded `"public"` strings — one in
- * the server provider, one in the browser adapter — so a store provisioned the
- * other way made EVERY upload fail while looking like an unrelated code bug.
- *
- * `"public"` is required by this app: the catalog renders stored URLs directly
- * with `<Image>` and `next.config.ts` whitelists `*.public.blob.vercel-storage.com`.
- * A private store would additionally need a signing/read path that does not
- * exist here. Keep this in sync with the store's dashboard visibility — the
- * provider turns a drift into an explicit `StorageAccessMismatchError`, not a
- * silent failure.
- *
- * Lives in this module (not the server-only provider) because the BROWSER half
- * must read it too, and `limits.ts` is the established server+browser-safe
- * constants module.
+ * Unlike Vercel Blob's `access` parameter, this is NOT a write-time value — the
+ * S3 API has no such concept, so there is nothing left to keep in sync in code
+ * and no mismatch the provider could refuse. It still matters operationally:
+ * the catalogue renders the stored URLs directly with `<Image>`, and
+ * `next.config.ts` whitelists the bucket's public host. A private bucket would
+ * additionally need a signing/read path that does not exist here.
  */
-export const BLOB_ACCESS = "public" as const;
-
-/** The blob visibility modes Vercel Blob accepts. */
-export type BlobAccess = "public" | "private";
 
 /** Human-readable ceilings, for messages and docs. */
 export const LIMITS_SUMMARY = {

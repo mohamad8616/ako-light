@@ -39,10 +39,7 @@ const repo = vi.hoisted(() => ({
 /** The reference check the delete guard consults. */
 const references = vi.hoisted(() => ({ findMediaReferences: vi.fn() }));
 
-vi.mock("@/lib/media/storage", () => ({
-  getStorageProvider: () => provider,
-  DEFAULT_STORAGE_PROVIDER: "vercel-blob",
-}));
+vi.mock("@/lib/media/storage", () => ({ storageProvider: provider }));
 
 vi.mock("@/lib/repositories/media", () => repo);
 
@@ -53,14 +50,11 @@ vi.mock("@/lib/repositories/media-references", () => ({
 
 import { Prisma } from "@/generated/prisma/client";
 import { MediaError, removeMedia, updateMediaInfo, uploadMedia } from "@/lib/media/service";
-import {
-  StorageAccessMismatchError,
-  StorageNotConfiguredError,
-} from "@/lib/media/types";
+import { StorageNotConfiguredError } from "@/lib/media/types";
 
 /** The key the fake provider reports back (as if a random suffix was added). */
 const STORED_KEY = "media/products/9-hero.png-abc123";
-const STORED_URL = "https://store.public.blob.vercel-storage.com/media/products/9-hero.png-abc123";
+const STORED_URL = "https://homeform-media.storage.iran.liara.site/media/products/9-hero.png-abc123";
 
 function bytes(prefix: number[], filler = 40): ArrayBuffer {
   const out = new Uint8Array(prefix.length + filler);
@@ -142,23 +136,7 @@ describe("uploadMedia", () => {
     });
   });
 
-  it("maps a store/visibility mismatch to its own actionable code", async () => {
-    // The store refused the write's access mode (private store, public write).
-    // It must NOT collapse to the generic storageFailed, or the admin sees
-    // "something went wrong" for a one-line settings fix.
-    provider.upload.mockRejectedValue(
-      new StorageAccessMismatchError("public", {
-        storeMessage: "Cannot use public access on a private store.",
-      }),
-    );
-
-    await expect(uploadMedia(uploadInput())).rejects.toMatchObject({
-      code: "storageAccessMismatch",
-    });
-    expect(repo.createMedia).not.toHaveBeenCalled();
-  });
-
-  describe("failure handling — DB creation fails after a successful Blob upload", () => {
+  describe("failure handling — DB creation fails after a successful upload", () => {
     it("deletes the object it just stored, and rethrows the ORIGINAL error", async () => {
       const dbError = new Error("unique constraint");
       repo.createMedia.mockRejectedValue(dbError);

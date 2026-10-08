@@ -41,14 +41,6 @@ export type AdminErrorCode =
   | "inUse"
   | "relationViolation"
   | "selfTarget"
-  /**
-   * A media/upload operation reached storage, but the store refused the write
-   * because its visibility does not match `BLOB_ACCESS` (a private store with a
-   * public write, or the reverse). Actionable by fixing the store setting, so
-   * it gets its own copy instead of the generic failure
-   * (lib/media/storage/vercel-blob.ts).
-   */
-  | "storageAccessMismatch"
   | "unknown";
 
 /** One failing form field, addressed by its form path ("slug", "name.en", …). */
@@ -128,7 +120,6 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
       relationViolation: 0,
       selfTarget: 0,
       invalidTransition: 0,
-      storageAccessMismatch: 0,
       unknown: 0,
     };
     const field = issue.path.join(".");

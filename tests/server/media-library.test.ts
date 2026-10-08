@@ -65,7 +65,7 @@ async function commitFixture(
   const row = await createMedia({
     filename: nameFor(suffix),
     storageKey: keyFor(suffix),
-    url: `https://store.public.blob.vercel-storage.com/${keyFor(suffix)}`,
+    url: `https://homeform-media.storage.iran.liara.site/${keyFor(suffix)}`,
     mimeType: "image/png",
     size: 1234,
     ...overrides,
@@ -248,7 +248,7 @@ describeDb("media references — findMediaReferences", () => {
   });
 
   it("finds the row that points at the object", async () => {
-    const url = `https://store.public.blob.vercel-storage.com/media/lib-${RUN}/referenced.png`;
+    const url = `https://homeform-media.storage.iran.liara.site/media/lib-${RUN}/referenced.png`;
 
     await inRollback(async (tx) => {
       await tx.material.create({ data: material(url) });
@@ -260,7 +260,7 @@ describeDb("media references — findMediaReferences", () => {
   });
 
   it("counts every row in an area, not just the first", async () => {
-    const url = `https://store.public.blob.vercel-storage.com/media/lib-${RUN}/twice.png`;
+    const url = `https://homeform-media.storage.iran.liara.site/media/lib-${RUN}/twice.png`;
 
     await inRollback(async (tx) => {
       await tx.material.create({ data: material(url) });
@@ -277,7 +277,7 @@ describeDb("media references — findMediaReferences", () => {
   it("returns nothing for an object no one points at", async () => {
     await inRollback(async (tx) => {
       const references = await findMediaReferences(
-        `https://store.public.blob.vercel-storage.com/media/lib-${RUN}/orphan.png`,
+        `https://homeform-media.storage.iran.liara.site/media/lib-${RUN}/orphan.png`,
         tx,
       );
 
@@ -286,7 +286,7 @@ describeDb("media references — findMediaReferences", () => {
   });
 
   it("stops reporting an area once the reference is cleared", async () => {
-    const url = `https://store.public.blob.vercel-storage.com/media/lib-${RUN}/cleared.png`;
+    const url = `https://homeform-media.storage.iran.liara.site/media/lib-${RUN}/cleared.png`;
 
     await inRollback(async (tx) => {
       const created = await tx.material.create({ data: material(url) });

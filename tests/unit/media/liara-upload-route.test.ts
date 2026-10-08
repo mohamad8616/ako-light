@@ -17,7 +17,10 @@ vi.mock("@/lib/media/storage", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/media/storage")>();
   return {
     ...actual,
-    getStorageProvider: () => providerHolder.current,
+    // A getter, so a test can swap the provider between cases.
+    get storageProvider() {
+      return providerHolder.current;
+    },
   };
 });
 
@@ -204,8 +207,15 @@ describe("registerUploadedMedia — Liara verification", () => {
   });
 
   it("refuses a registration with no signed authorization", async () => {
+    // An empty token stands in for "the caller sent nothing usable": the zod
+    // schema rejects a truly missing one before this point, so what is pinned
+    // here is the service-level guard behind it.
     await expect(
-      registerUploadedMedia({ filename: "clip.mp4", size: 1024 }),
+      registerUploadedMedia({
+        filename: "clip.mp4",
+        uploadToken: "",
+        size: 1024,
+      }),
     ).rejects.toBeInstanceOf(MediaError);
     expect(repo.createMedia).not.toHaveBeenCalled();
   });
@@ -266,30 +276,16 @@ describe("registerUploadedMedia — Liara verification", () => {
     expect(repo.createMedia).not.toHaveBeenCalled();
   });
 
-  it("keeps the legacy Vercel path working (no verification, stored report used)", async () => {
-    providerHolder.current = {
-      name: "vercel-blob",
-      upload: vi.fn(),
-      delete: vi.fn(),
-      getUrl: () => null,
-      supportsClientUpload: true,
-      authorizeClientUpload: vi.fn(),
-    };
+  it("refuses a registration whose token does not match the filename", async () => {
+    providerHolder.current = liaraProvider();
 
-    await registerUploadedMedia({
-      filename: "Hero.PNG",
-      url: "https://store.public.blob.vercel-storage.com/media/products/1-hero.png",
-      pathname: "media/products/1-hero.png",
-      size: 512,
-    });
-
-    expect(repo.createMedia).toHaveBeenCalledWith(
-      expect.objectContaining({
-        storageKey: "media/products/1-hero.png",
-        size: 512,
-        mediaType: "image",
-        url: "https://store.public.blob.vercel-storage.com/media/products/1-hero.png",
+    await expect(
+      registerUploadedMedia({
+        filename: "other.mp4",
+        uploadToken: token(),
+        size: 1024,
       }),
-    );
+    ).rejects.toBeInstanceOf(Error);
+    expect(repo.createMedia).not.toHaveBeenCalled();
   });
 });

@@ -1,60 +1,43 @@
 /**
- * Storage provider selection — the single swap point for the whole app.
+ * The app's ONE storage provider.
  *
- * Nothing outside lib/media/storage/ imports a provider SDK, and nothing outside
- * this file decides WHICH provider is in use. Adding a provider is therefore:
- * implement `StorageProvider`, register it below, point
- * `DEFAULT_STORAGE_PROVIDER` at it. No caller changes.
+ * Nothing outside lib/media/storage/ imports a storage SDK, and nothing outside
+ * this file decides which backend is in use — so changing backends is a change
+ * to this module and the provider beside it, not a search-and-replace across
+ * the codebase.
+ *
+ * Liara Object Storage is the ONLY implementation. The previous design kept a
+ * provider registry selected by a `MEDIA_STORAGE_PROVIDER` environment
+ * variable, with Vercel Blob as the default. That switch is deliberately gone:
+ * when the variable was unset or empty the app fell back to Vercel Blob
+ * SILENTLY — no warning, no log, the UI reported success — and every upload
+ * landed in the wrong storage. There is now nothing to misconfigure.
+ *
+ * Callers keep importing from `@/lib/media/storage` and never reach for the
+ * provider module directly.
  */
 import { liaraStorage } from "@/lib/media/storage/liara";
-import { vercelBlobStorage } from "@/lib/media/storage/vercel-blob";
 import type { StorageProvider } from "@/lib/media/types";
 
-/** Keep Vercel as default until Liara is configured and production-verified. */
-export const DEFAULT_STORAGE_PROVIDER = "vercel-blob";
-export const STORAGE_PROVIDER_ENV = "MEDIA_STORAGE_PROVIDER";
-
-/** Registered providers, keyed by their `StorageProvider.name`. */
-const PROVIDERS: Readonly<Record<string, StorageProvider>> = {
-  [vercelBlobStorage.name]: vercelBlobStorage,
-  [liaraStorage.name]: liaraStorage,
-};
-
-/**
- * The storage provider the media service should use.
- *
- * Throws rather than returning a fallback: a missing registration is a coding
- * error, and silently picking another provider would write objects somewhere
- * nobody is looking.
- */
-export function getStorageProvider(
-  name: string = process.env[STORAGE_PROVIDER_ENV] || DEFAULT_STORAGE_PROVIDER,
-): StorageProvider {
-  const provider = PROVIDERS[name];
-  if (!provider) {
-    throw new Error(
-      `No storage provider registered as "${name}". Registered: ${Object.keys(PROVIDERS).join(", ")}.`,
-    );
-  }
-  return provider;
-}
+/** The provider every media operation goes through. */
+export const storageProvider: StorageProvider = liaraStorage;
 
 export {
-  BLOB_TOKEN_ENV,
-  isBlobConfigured,
-  readBlobToken,
-  vercelBlobStorage,
-} from "@/lib/media/storage/vercel-blob";
-export {
-  liaraStorage,
   createLiaraStorage,
+  createLiaraS3Client,
+  isLiaraStorageHost,
+  LIARA_UPLOAD_URL_TTL_SECONDS,
   liaraPublicUrl,
+  liaraStorage,
 } from "@/lib/media/storage/liara";
 export {
-  readLiaraConfig,
   LIARA_ENV_NAMES,
+  readLiaraConfig,
+  type LiaraConfig,
 } from "@/lib/media/storage/liara-config";
 export {
-  StorageAccessMismatchError,
   StorageNotConfiguredError,
+  type StorageProvider,
+  type StoredObject,
+  type UploadObjectInput,
 } from "@/lib/media/types";

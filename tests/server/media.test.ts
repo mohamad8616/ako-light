@@ -46,7 +46,7 @@ function body(suffix: string, overrides: Partial<Parameters<typeof createMedia>[
   return {
     filename: nameFor(suffix),
     storageKey: keyFor(suffix),
-    url: `https://store.public.blob.vercel-storage.com/${keyFor(suffix)}`,
+    url: `https://homeform-media.storage.iran.liara.site/${keyFor(suffix)}`,
     mimeType: "image/png",
     size: 1234,
     ...overrides,
