@@ -4,12 +4,35 @@ import { asLocalizedList } from "../casting";
 /**
  * Reference/override resolution, shared by every slot.
  *
- * A slot either *references* a catalog entity (`reference` mode — the displayed
- * copy/image is read off the linked row) or *overrides* it (`override` mode —
- * the slot's own columns win, and any column left NULL still falls back to the
- * linked row, so a partial override can never blank a banner out). The CTA
- * destination is ALWAYS the linked entity's canonical route: override mode
- * changes what is displayed, never where the button goes.
+ * A slot can *reference* a catalog entity (read the displayed copy/image off the
+ * linked row) or *override* it (use the slot's own columns). The CTA destination
+ * is ALWAYS the linked entity's canonical route: overriding changes what is
+ * displayed, never where the button goes.
+ *
+ * ── THE RULE: an explicit admin value always wins ───────────────────────────
+ *
+ * Each override column is independently nullable, so resolution is PER FIELD:
+ *
+ *   - the slot's own value, when it has one;
+ *   - otherwise the linked entity's value.
+ *
+ * This used to be gated on the slot's `mode` column, and that gating is what
+ * produced the "saved in the admin but the homepage shows the old image"
+ * report: a slot could sit in `reference` mode while holding an image and a
+ * paragraph the admin had uploaded and saved, and every one of them was
+ * silently discarded in favour of the linked entity. Nothing on the homepage
+ * said so, and the admin's own content was the one thing they could see was
+ * missing.
+ *
+ * Gating on the mode is also impossible to reconcile with the form, which
+ * always shows the override fields and always persists what they contain — so
+ * saving them had no effect unless a separate control was also changed. The
+ * mode remains as a record of how the slot was configured, and `resolveField`
+ * still accepts it so call sites stay explicit about which slot they resolve,
+ * but the admin's saved value is now authoritative.
+ *
+ * A field the admin deliberately CLEARED is stored as SQL NULL (the form maps
+ * "" to NULL), so clearing a field still means "use the linked entity's value".
  *
  * Internal to this directory — not re-exported from `./index`.
  */
@@ -25,16 +48,16 @@ export function projectHref(slug: string): string {
 }
 
 /**
- * A slot in `override` mode whose column is NULL falls back to the value read
- * off the linked entity. Override columns are individually nullable, so an
- * admin who only retitles a banner keeps the referenced image, and so on.
+ * The slot's own value when it has one, otherwise the linked entity's.
+ *
+ * `mode` is accepted but no longer gates the result — see the module note.
  */
 export function resolveField<T>(
-  isOverride: boolean,
+  _mode: boolean,
   override: T | null | undefined,
   reference: T,
 ): T {
-  return isOverride && override != null ? override : reference;
+  return override ?? reference;
 }
 
 /**

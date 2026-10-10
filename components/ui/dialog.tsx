@@ -102,7 +102,13 @@ function DialogContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-4 right-4"
+                // LOGICAL `end-4`, not the physical `right-4` this used to be.
+                // The header reserves room for the X with `pe-12`
+                // (padding-inline-END), so the two must agree: in RTL the inline
+                // end is the LEFT edge, and a physical `right-4` put the button
+                // on the START side — directly on top of the title, with the
+                // reserved padding stranded on the other side.
+                className="absolute top-4 end-4"
                 size="icon-sm"
               />
             }

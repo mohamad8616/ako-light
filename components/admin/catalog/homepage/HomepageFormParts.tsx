@@ -54,15 +54,11 @@ export function HomepageSlotFields({
         label={t("admin.homepage.field.enabled")}
         description={t("admin.homepage.field.enabledHint")}
       />
-      <SelectField
-        name="mode"
-        label={t("admin.homepage.field.mode")}
-        hint={t("admin.homepage.field.modeHint")}
-        options={[
-          { value: "reference", label: t("admin.homepage.mode.reference") },
-          { value: "override", label: t("admin.homepage.mode.override") },
-        ]}
-      />
+      {/* No mode selector: it no longer changes anything. Every override field
+          is optional, and whatever the admin fills in is what the public page
+          shows (see lib/repositories/homepage-features/resolve.ts). The form
+          still submits the slot's stored `mode` unchanged, so the column stays
+          meaningful as a record of how the slot was configured. */}
       <SelectField
         name={entityName}
         label={entityLabel}
@@ -73,7 +69,14 @@ export function HomepageSlotFields({
   );
 }
 
-/** The card that wraps a slot's override inputs, with the shared guidance. */
+/**
+ * The card that wraps a slot's override inputs, with the shared guidance.
+ *
+ * The fields are always rendered, and whatever they contain is what the public
+ * page shows — an explicit value wins over the linked entity's (see
+ * lib/repositories/homepage-features/resolve.ts). Clearing a field means "use
+ * the linked entity's value", which is why they are all optional.
+ */
 export function HomepageOverrideCard({
   children,
 }: {

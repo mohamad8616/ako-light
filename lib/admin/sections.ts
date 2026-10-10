@@ -22,8 +22,28 @@ import { stripLocalePrefix } from "@/lib/i18n/routing";
  *     lib/i18n/Link.tsx adds the `/en` prefix at render time.
  */
 
-/** The admin shell is RTL regardless of locale (forced in the layout). */
-export const ADMIN_SHELL_DIR = "rtl";
+/** A text direction. */
+export type AdminDir = "ltr" | "rtl";
+
+/**
+ * The admin shell's direction.
+ *
+ * RTL for EVERY locale, including the unprefixed English `/admin`. That is
+ * deliberate, not an oversight: the shared sidebar's fixed layer relies on
+ * physical left/right positioning, so an LTR shell would dock the sidebar on
+ * the left, which is not the layout this dashboard is designed around.
+ *
+ * ── The consequence this file used to get wrong ─────────────────────────────
+ *
+ * An RTL paragraph gives trailing NEUTRAL characters — a sentence's final
+ * period, a semicolon, a closing bracket — the PARAGRAPH direction. So an
+ * English description inside the RTL shell rendered with its full stop at the
+ * LEFT end, and read as though its clauses were reversed. The fix is NOT to
+ * change the shell (that would move the sidebar); it is to isolate the TEXT:
+ * see `AdminText` in components/admin/AdminText.tsx, which every admin string
+ * primitive now renders through.
+ */
+export const ADMIN_SHELL_DIR: AdminDir = "rtl";
 
 /** The dashboard route, and the only nav item that matches itself exactly. */
 export const ADMIN_DASHBOARD_HREF = "/admin";

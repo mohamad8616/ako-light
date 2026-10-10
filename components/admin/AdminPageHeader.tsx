@@ -3,6 +3,7 @@ import {
   type AdminTranslationKey,
 } from "@/lib/i18n/admin-translations";
 import { isLocale, type Locale } from "@/lib/i18n/routing";
+import { AdminText } from "@/components/admin/AdminText";
 import { cn } from "@/lib/utils";
 
 /**
@@ -41,11 +42,16 @@ export function AdminPageHeader({
       )}
     >
       <div className="space-y-1">
-        <h2 className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl">
+        <AdminText
+          as="h2"
+          className="text-foreground text-2xl font-semibold tracking-tight sm:text-3xl"
+        >
           {t[titleKey]}
-        </h2>
+        </AdminText>
         {descriptionKey ? (
-          <p className="text-muted-foreground text-sm">{t[descriptionKey]}</p>
+          <AdminText as="p" className="text-muted-foreground text-sm">
+            {t[descriptionKey]}
+          </AdminText>
         ) : null}
       </div>
       {actions ? (

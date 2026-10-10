@@ -10,7 +10,7 @@ export const homepageEn = {
   "admin.homepage.card.content": "Content",
   "admin.homepage.card.override": "Override content",
   "admin.homepage.card.overrideHint":
-    "Leave a field empty to keep the linked entity's value. Values are kept when the banner returns to reference mode.",
+    "Anything you fill in here is shown on the homepage. Leave a field empty to use the linked entity's own value.",
   "admin.homepage.field.enabled": "Enabled",
   "admin.homepage.field.enabledHint": "Render this banner on the homepage.",
   "admin.homepage.field.mode": "Content mode",
@@ -60,7 +60,7 @@ export const homepageFa = {
   "admin.homepage.card.content": "محتوا",
   "admin.homepage.card.override": "بازنویسی محتوا",
   "admin.homepage.card.overrideHint":
-    "هر فیلد را خالی بگذارید تا مقدار موجودیت مرتبط نمایش داده شود. این مقادیر هنگام بازگشت به حالت ارجاع حفظ می‌شوند.",
+    "هر چه در این بخش وارد کنید در صفحه اصلی نمایش داده می‌شود. برای استفاده از مقدار خود موجودیت مرتبط، فیلد را خالی بگذارید.",
   "admin.homepage.field.enabled": "فعال",
   "admin.homepage.field.enabledHint": "نمایش این بنر در صفحه اصلی.",
   "admin.homepage.field.mode": "حالت محتوا",

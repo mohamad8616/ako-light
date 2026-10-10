@@ -36,11 +36,17 @@ const DIALOG = read("../../../components/ui/dialog.tsx");
  * names `overflow-y-auto` to explain why it is gone). A naive slice would find
  * the words in the prose and report a false failure — so every class-list
  * assertion below runs against comment-free source.
+ *
+ * The CRLF normalisation is load-bearing on Windows: these files are checked
+ * out with `\r\n`, and `\r` is a line terminator for `.`, so `\/\/.*$` never
+ * matched and the comments survived — which is exactly why the popup assertion
+ * below had been failing on a CORRECT component.
  */
 const stripLineComments = (source: string) =>
   source
+    .replace(/\r\n/g, "\n")
     .split("\n")
-    .map((line) => line.replace(/\/\/.*$/, ""))
+    .map((line) => line.replace(/\/\/.*/, ""))
     .join("\n");
 
 const DIALOG_CODE = stripLineComments(DIALOG);
@@ -121,6 +127,35 @@ describe("DialogContent — the popup must not own the scroll", () => {
     // value must be viewport-relative so no screen size is broken by it.
     expect(popup).toMatch(/max-h-\[90d?vh\]/);
     expect(popup).not.toMatch(/h-\[\d+px\]/);
+  });
+
+  /**
+   * Pass C — the close button must be positioned with a LOGICAL inset.
+   *
+   * It used to be `absolute top-4 right-4`, while `DialogHeader` reserves room
+   * for it with `pe-12` (padding-inline-END). Those are the same side only in
+   * LTR. The admin shell is RTL, so the physical `right` is the START edge
+   * there — the X landed on top of the title and the reserved padding sat
+   * stranded on the opposite side.
+   */
+  it("positions the close button on the inline END, matching the header's pe-12", () => {
+    const header = classBlockOf(DIALOG_CODE, "dialog-header");
+    // The X is rendered INSIDE DialogContent, so slice that region explicitly:
+    // `classBlockOf("dialog-close")` would match the standalone `DialogClose`
+    // re-export near the top of the module, which carries no classes.
+    const start = DIALOG_CODE.indexOf("showCloseButton &&");
+    const end = DIALOG_CODE.indexOf("</DialogPrimitive.Close>", start);
+    const closeButton = DIALOG_CODE.slice(start, end);
+
+    expect(start, "DialogContent must still render a close button").toBeGreaterThan(-1);
+    expect(closeButton, "the X must use a logical inset").toMatch(/\bend-4\b/);
+    expect(closeButton, "a physical right-4 breaks RTL").not.toMatch(
+      /\bright-4\b/,
+    );
+    expect(
+      header,
+      "the header must reserve room on the same side",
+    ).toMatch(/\bpe-12\b/);
   });
 
   it("is a flex column so pinned children and a shrinking body can coexist", () => {

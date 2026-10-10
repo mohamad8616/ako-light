@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { AdminText } from "@/components/admin/AdminText";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { errorCodeForType} from "@/lib/admin/result";
 import { cn } from "@/lib/utils";
@@ -44,9 +45,13 @@ export function FormCard({
     >
       {title ? (
         <div className="space-y-1">
-          <h3 className="text-foreground text-sm font-semibold">{title}</h3>
+          <AdminText as="h3" className="text-foreground text-sm font-semibold">
+            {title}
+          </AdminText>
           {description ? (
-            <p className="text-muted-foreground text-xs">{description}</p>
+            <AdminText as="p" className="text-muted-foreground text-xs">
+              {description}
+            </AdminText>
           ) : null}
         </div>
       ) : null}
@@ -87,6 +92,9 @@ export function FieldRow({
       <div className="flex items-baseline justify-between gap-2">
         <Label
           htmlFor={htmlFor}
+          // Isolated so a label in one language reads correctly inside the RTL
+          // shell (see components/admin/AdminText.tsx).
+          dir="auto"
           className="text-foreground text-xs leading-none font-medium"
         >
           {label}
@@ -96,16 +104,23 @@ export function FieldRow({
             </span>
           ) : null}
         </Label>
-        {hint ??
-          (optional ? (
-            <span className="text-muted-foreground text-[11px]">
-              {t("admin.crud.optional")}
-            </span>
-          ) : null)}
+        {hint ? (
+          <AdminText className="text-muted-foreground text-[11px]">
+            {hint}
+          </AdminText>
+        ) : optional ? (
+          <AdminText className="text-muted-foreground text-[11px]">
+            {t("admin.crud.optional")}
+          </AdminText>
+        ) : null}
       </div>
       {children}
       {message ? (
-        <p role="alert" className="text-destructive text-xs font-medium">
+        <p
+          role="alert"
+          dir="auto"
+          className="text-destructive text-xs font-medium"
+        >
           {message}
         </p>
       ) : null}
