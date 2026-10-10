@@ -720,6 +720,11 @@ model CatalogueFeature {
   catalogueItemId String
   /// Section photo URL/path (moved from lib/data/homepage.ts).
   image           String
+  /// Localized paragraph blocks ({ en, fa }[]), same shape as
+  /// FlagshipOneFeature.paragraphs. NULL/[] falls back to the static
+  /// `catalogue.description` translation, so the section is never blank and
+  /// existing rows keep their copy without a data migration.
+  paragraphs      Json?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

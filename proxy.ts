@@ -93,12 +93,44 @@ export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   if (isAdminPath(pathname)) {
-    const { auth } = await import("@/lib/auth/auth");
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
-
     const prefix = localePrefixOf(pathname);
+
+    // ── WHY THIS IS WRAPPED ─────────────────────────────────────────────────
+    //
+    // `auth.api.getSession()` reaches the DATABASE. When that call fails — the
+    // log this fixes showed `ERROR [Better Auth]: INTERNAL_SERVER_ERROR Error:
+    // Connection terminated unexpectedly` followed by `APIError: Failed to get
+    // session` — the middleware THREW. A thrown middleware aborts the request
+    // BEFORE the locale rewrite below runs, so `/admin/homepage` was never
+    // rewritten to `/en/admin/homepage`, matched no route, and the browser got
+    // a 404 after the DB call had hung for minutes.
+    //
+    // That is a misdiagnosis generator: a transient database blip looked
+    // exactly like a missing page. It also did NOT reproduce on Liara, where the
+    // database connection is healthy — same code, different infrastructure,
+    // which is why this looked environment-specific for so long.
+    //
+    // An infrastructure failure is not an authorization decision, so the
+    // middleware no longer propagates it. It FAILS CLOSED: a caller whose
+    // session could not be verified is sent to the sign-in page, exactly like a
+    // signed-out visitor. Nothing is exposed by that choice — the page-level
+    // gate (`requireAdminAccess()` in app/[locale]/(admin)/layout.tsx) verifies
+    // the session again and is the real authority — and the failure mode
+    // becomes a redirect the operator can understand instead of a phantom 404.
+    let session: Awaited<
+      ReturnType<typeof import("@/lib/auth/auth").auth.api.getSession>
+    > = null;
+
+    try {
+      const { auth } = await import("@/lib/auth/auth");
+      session = await auth.api.getSession({ headers: request.headers });
+    } catch (error) {
+      console.error(
+        "[proxy] session lookup failed — failing closed to sign-in:",
+        error instanceof Error ? error.message : error,
+      );
+      console.log(error);
+    }
 
     if (!session) {
       const redirectUrl = new URL(`${prefix}/sign-in`, request.url);

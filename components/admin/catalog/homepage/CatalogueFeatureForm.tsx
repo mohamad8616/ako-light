@@ -4,12 +4,17 @@
  * The catalogue slot form — the `catalogue` row the homepage's CatalogueSection
  * reads.
  *
- * A CatalogueItem carries no image and no title override: the section's title
- * and PDF link are read straight off the referenced item, so the form only
- * chooses WHICH item the section shows and owns the section photo. There is no
- * mode toggle (nothing to override) and no override card.
+ * The section's title and PDF link are read straight off the referenced
+ * CatalogueItem, so the form chooses WHICH item the section shows, owns the
+ * section photo, and owns the section's PARAGRAPH. There is no mode toggle:
+ * every field here is either the reference or the slot's own value.
+ *
+ * The paragraph is optional. Left empty, the public section falls back to the
+ * static `catalogue.description` translation — which is exactly what every row
+ * saved before this field existed does, so nothing goes blank.
  */
 import { FormCard } from "@/components/admin/catalog/fields/form";
+import { LocalizedListField } from "@/components/admin/catalog/fields/LocalizedField";
 import { SelectField } from "@/components/admin/catalog/fields/SelectField";
 import { SwitchField } from "@/components/admin/catalog/fields/ScalarFields";
 import { ImageUpload } from "@/components/admin/ImageUpload";
@@ -47,6 +52,7 @@ export function CatalogueFeatureForm({
       // The FK is required, so an unseeded slot pre-selects the first item.
       catalogueItemId: detail?.catalogueItemId ?? catalogueItems[0]?.id ?? "",
       image: detail?.image ?? "",
+      paragraphs: detail?.paragraphs ?? [],
     },
   });
 
@@ -83,6 +89,17 @@ export function CatalogueFeatureForm({
               folder="homepage"
             />
           </div>
+        </FormCard>
+        <FormCard
+          title={t("admin.homepage.card.catalogueCopy")}
+          description={t("admin.homepage.card.catalogueCopyHint")}
+        >
+          <LocalizedListField
+            name="paragraphs"
+            label={t("admin.homepage.field.paragraphs")}
+            optional
+            textarea
+          />
         </FormCard>
       </FormProvider>
       <HomepageFormActions pending={pending} />

@@ -75,7 +75,7 @@ export default function SplitBanner({
               transition={{ duration: 1.1, ease: EASE }}
               className={`group relative mx-auto aspect-4/5 h-125.75 max-h-125.75 w-full overflow-hidden lg:aspect-3/4 lg:w-3/4 ${imageClassName ?? ""}`}
             >
-              <Image
+              <Image  
                 src={image}
                 alt={imageAlt}
                 fill

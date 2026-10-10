@@ -23,6 +23,9 @@ export const homepageEn = {
   "admin.homepage.field.catalogueItem": "Catalogue item",
   "admin.homepage.field.catalogueItemHint":
     "The section's title and download link come from this item.",
+  "admin.homepage.card.catalogueCopy": "Section paragraph",
+  "admin.homepage.card.catalogueCopyHint":
+    "Shown under the section title. Leave it empty to use the built-in default text.",
   "admin.homepage.field.ctaHint":
     "The call to action always links to this entity's public page.",
   "admin.homepage.field.kicker": "Kicker",
@@ -73,6 +76,9 @@ export const homepageFa = {
   "admin.homepage.field.catalogueItem": "ورودی کاتالوگ",
   "admin.homepage.field.catalogueItemHint":
     "عنوان و پیوند دانلود این بخش از همین ورودی خوانده می‌شود.",
+  "admin.homepage.card.catalogueCopy": "پاراگراف بخش",
+  "admin.homepage.card.catalogueCopyHint":
+    "زیر عنوان بخش نمایش داده می‌شود. اگر خالی بماند، متن پیش‌فرض داخلی استفاده می‌شود.",
   "admin.homepage.field.ctaHint":
     "دکمهٔ فراخوان همیشه به صفحهٔ عمومی این موجودیت پیوند می‌خورد.",
   "admin.homepage.field.kicker": "پیش‌عنوان",

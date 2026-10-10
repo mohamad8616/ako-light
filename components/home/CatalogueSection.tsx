@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { pick } from "@/lib/i18n/localized";
 import type { ResolvedCatalogueFeature } from "@/lib/repositories/homepage-features";
 import { Paragraph } from "@/utility/Paragraph";
 import SectionSubTitle from "@/utility/SectionSubTitle";
@@ -20,7 +21,7 @@ interface CatalogueSectionProps {
 }
 
 export default function CatalogueSection({ data }: CatalogueSectionProps) {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   if (!data || !data.enabled) return null;
 
@@ -28,6 +29,15 @@ export default function CatalogueSection({ data }: CatalogueSectionProps) {
   // CTA label is composed from the static "Download" word plus that title —
   // identical copy to before, but correct after the reference is repointed.
   const ctaText = `${t("catalogue.download")} ${data.title}`;
+
+  // The paragraph is editable in the admin panel (Homepage → Catalogue).
+  // An EMPTY list is not "no paragraph" — it means "use the built-in default
+  // text", which is what every row saved before the field existed relies on.
+  // So the fallback lives here, where the dictionary is available.
+  const paragraphs =
+    data.paragraphs.length > 0
+      ? data.paragraphs.map((paragraph) => pick(paragraph, lang))
+      : [t("catalogue.description")];
 
   return (
     <HomepageSection className="grid w-full grid-cols-1 gap-3 py-20 md:py-28 lg:grid-cols-12 lg:grid-rows-2 lg:gap-6">
@@ -51,9 +61,13 @@ export default function CatalogueSection({ data }: CatalogueSectionProps) {
           </div>
         </div>
 
-        <Paragraph className="xl:max-w-none">
-          {t("catalogue.description")}
-        </Paragraph>
+        <div className="space-y-6">
+          {paragraphs.map((paragraph, index) => (
+            <Paragraph key={index} className="xl:max-w-none">
+              {paragraph}
+            </Paragraph>
+          ))}
+        </div>
       </div>
 
       {/* Image column — small, portrait, matches the reference photo's proportions */}

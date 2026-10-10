@@ -74,11 +74,15 @@ describeDb("homepage-features repository — reads", () => {
     expect(data!.ctaHref).toBe(`/flagship/${row!.flagship.slug}`);
     expect(data!.title).toEqual(row!.flagship.name);
     expect(data!.kicker).toEqual(row!.flagship.city);
-    expect(data!.image).toBe(row!.flagship.image);
+    // An explicit value always wins (see resolve.ts): the slot's own image when
+    // it has one, otherwise the linked flagship's.
+    expect(data!.image).toBe(row!.image ?? row!.flagship.image);
 
     // henge-paris has no built-out detail page, so it contributes no copy.
     const detail = row!.flagship.detail as FlagshipDetail | null;
-    expect(data!.paragraphs).toEqual(detail ? [detail.description] : []);
+    expect(data!.paragraphs).toEqual(
+      row!.paragraphs ?? (detail ? [detail.description] : []),
+    );
   });
 
   it("resolves the project banner off its linked project in reference mode", async () => {
@@ -162,12 +166,16 @@ describeDb("homepage-features repository — reads", () => {
     expect(row, "seeded catalogue slot").not.toBeNull();
     expectKeys(
       data,
-      ["downloadHref", "enabled", "image", "title"],
+      ["downloadHref", "enabled", "image", "paragraphs", "title"],
       "ResolvedCatalogueFeature",
     );
     expect(data!.title).toBe(row!.catalogueItem.title);
     expect(data!.downloadHref).toBe(row!.catalogueItem.href);
     expect(data!.image).toBe(row!.image);
+    // The admin-editable paragraph. EMPTY is a valid answer — it means "use the
+    // built-in default text" — which is why the column is nullable and no
+    // backfill was needed.
+    expect(data!.paragraphs).toEqual(row!.paragraphs ?? []);
   });
 });
 
@@ -436,7 +444,12 @@ describeDb("homepage-features repository — writes", () => {
     await expect(
       prisma.$transaction(async (tx) => {
         await updateCatalogueFeature(
-          { enabled: false, catalogueItemId: target.id, image: "/cat.jpg" },
+          {
+            enabled: false,
+            catalogueItemId: target.id,
+            image: "/cat.jpg",
+            paragraphs: [{ en: "Edited copy", fa: "متن ویرایش‌شده" }],
+          },
           tx,
         );
 
@@ -446,6 +459,10 @@ describeDb("homepage-features repository — writes", () => {
         expect(row!.enabled).toBe(false);
         expect(row!.catalogueItemId).toBe(target.id);
         expect(row!.image).toBe("/cat.jpg");
+        // The admin-editable paragraph round-trips (the column added for it).
+        expect(row!.paragraphs).toEqual([
+          { en: "Edited copy", fa: "متن ویرایش‌شده" },
+        ]);
 
         throw new Error("intentional test rollback");
       }, TX_OPTIONS),

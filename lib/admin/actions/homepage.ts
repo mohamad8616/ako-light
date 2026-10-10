@@ -221,6 +221,7 @@ export async function updateCatalogueFeatureAction(
       enabled: parsed.data.enabled,
       catalogueItemId: parsed.data.catalogueItemId,
       image: parsed.data.image,
+      paragraphs: listToNull(parsed.data.paragraphs),
     });
 
     await deleteStorageUrls(

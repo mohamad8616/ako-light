@@ -112,6 +112,12 @@ export const catalogueFeatureFormSchema = z.object({
   /** CatalogueItem.id */
   catalogueItemId: idSchema,
   image: imageRefSchema,
+  /**
+   * The section's paragraph blocks. Optional: an empty list means "use the
+   * static `catalogue.description` translation", which is what every row saved
+   * before this field existed does.
+   */
+  paragraphs: clearableLocalizedListSchema,
 });
 
 export type FlagshipOneFeatureFormValues = z.infer<

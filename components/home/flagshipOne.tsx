@@ -1,7 +1,7 @@
 "use client";
 
-import { pick } from "@/lib/i18n/localized";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { pick } from "@/lib/i18n/localized";
 import type { ResolvedFlagshipOneFeature } from "@/lib/repositories/homepage-features";
 import PlusTextBtn from "../ui/PlusTextBtn";
 import SplitBanner from "./SplitBanner";
@@ -31,6 +31,7 @@ export default function FlagshipOne({ data }: FlagshipOneProps) {
       title={title}
       page={t("paris.page")}
       paragraphs={data.paragraphs.map((paragraph) => pick(paragraph, lang))}
+      titleTextColor="text-background"
       cta={
         <PlusTextBtn
           href={data.ctaHref}
@@ -41,4 +42,3 @@ export default function FlagshipOne({ data }: FlagshipOneProps) {
     />
   );
 }
-
