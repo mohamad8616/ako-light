@@ -12,6 +12,7 @@
     "test:clean-fixtures": "tsx scripts/clean-leaked-test-fixtures.ts",
     "media:orphans": "tsx scripts/media-orphans.ts",
     "create:owner": "tsx scripts/create-owner.ts",
+    "reset:owner-password": "tsx scripts/reset-owner-password.ts",
     "build": "prisma generate --config prisma7.config.ts && node --max-old-space-size=8192 ./node_modules/next/dist/bin/next build"
   },
   "dependencies": {
@@ -58,6 +59,11 @@
     "zarinpal-node-sdk": "^2.2.0",
     "zod": "^4.4.3",
     "zustand": "^5.0.15"
+  },
+  "pnpm": {
+    "overrides": {
+      "better-auth": "1.7.7"
+    }
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

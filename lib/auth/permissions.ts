@@ -10,18 +10,59 @@ import { adminAc, defaultStatements } from "better-auth/plugins/admin/access";
  * `authClient.admin.checkRolePermission` calls. Keep it free of server-only
  * imports (no prisma, no next/headers) so the dashboard can import it.
  *
- * Owner vs admin: this is currently the only difference between the two
- * roles, and it is deliberately inherited from better-auth's own statement
- * set rather than invented here:
- *   - `admin` → everything in better-auth's default admin statements.
- *   - `owner` → the admin statements **plus** `impersonate-admins`, i.e. only
- *               an owner may impersonate another admin. Because
- *               `ADMIN_ROLES` marks both roles as admin-level, an `admin`
- *               cannot impersonate an `owner` either.
+ * ── Owner vs admin ──────────────────────────────────────────────────────────
  *
- * The exact owner-vs-admin permission matrix for the dashboard is still to be
- * decided; this pass only locks in "owner outranks admin" and the three role
- * names. Widen the arrays below when the dashboard step defines the matrix.
+ * The two roles are admin-level (both are in `ADMIN_ROLES`, so both may enter
+ * the dashboard and read the directory), but the OWNER holds two capabilities
+ * the admin does not:
+ *
+ *   1. `user: ["set-role"]` — only an owner may change ANY role.
+ *   2. `user: ["impersonate-admins"]` — only an owner may impersonate an
+ *      admin-level account. Because `ADMIN_ROLES` marks both roles as
+ *      admin-level, an `admin` cannot impersonate an `owner` either.
+ *
+ * ── Why the admin statements are NOT taken from `adminAc` ───────────────────
+ *
+ * better-auth's `adminAc` (its default "admin" role) grants `set-role`,
+ * `delete`, `set-password` and `set-email`. Those are exactly the statements
+ * its built-in endpoints authorize on — `POST /admin/set-role` and the `role`
+ * field of `POST /admin/update-user` and `POST /admin/create-user` all require
+ * `{ user: ["set-role"] }`, and `/admin/remove-user` requires
+ * `{ user: ["delete"] }`.
+ *
+ * If the admin role kept those statements, an `admin` session could POST
+ * straight to `/api/auth/admin/set-role` and promote itself (or anyone else) to
+ * `owner` — bypassing the whole dashboard policy, since hiding a button is not
+ * authorization. The role map below is therefore the ENFORCEMENT POINT for the
+ * endpoint boundary: dropping `set-role` here makes every better-auth role-write
+ * endpoint return 403 for an admin, on the server, with no hook or middleware.
+ *
+ * Verified against better-auth 1.7.7 (`plugins/admin/routes.mjs`):
+ *
+ *   endpoint                        permission required
+ *   ------------------------------  ---------------------------------
+ *   /admin/set-role                 user: ["set-role"]
+ *   /admin/update-user (role)       user: ["set-role"]
+ *   /admin/create-user (role)       user: ["set-role"]
+ *   /admin/remove-user              user: ["delete"]
+ *   /admin/set-user-password        user: ["set-password"]
+ *   /admin/update-user (email)      user: ["set-email"]
+ *   /admin/update-user (ban fields) user: ["ban"]
+ *   /admin/ban-user, /unban-user    user: ["ban"]
+ *   /admin/list-users               user: ["list"]
+ *   /admin/get-user                 user: ["get"]
+ *   /admin/impersonate-user         user: ["impersonate"]
+ *   /admin/revoke-user-sessions     session: ["revoke"]
+ *   /admin/list-user-sessions       session: ["list"]
+ *
+ * One caveat worth knowing before the dashboard grows: better-auth does NOT
+ * compare the target's rank on these endpoints (it only blocks banning or
+ * deleting *yourself*). "An admin may moderate customers but never another
+ * admin/owner" and "an admin may not change its own role" are therefore
+ * enforced by the dashboard's own server actions
+ * (lib/admin/user-directory-permissions.ts), which re-read the target from the
+ * database. What this module guarantees is that an admin can never even reach
+ * a role write.
  */
 
 /** Canonical role names, lowest → highest privilege. */
@@ -55,13 +96,30 @@ export const userRole = ac.newRole({
   session: [],
 });
 
-/** Staff-level admin: better-auth's default admin statements. */
+/**
+ * Every admin-plugin statement EXCEPT the role-write capability.
+ *
+ * Derived from `adminAc.statements.user` (better-auth's own list) so a plugin
+ * upgrade that adds a statement is picked up automatically, then filtered down
+ * to the statements the project's admin role is allowed to hold.
+ */
+const ADMIN_USER_STATEMENTS = adminAc.statements.user.filter(
+  (statement) => statement !== "set-role",
+);
+
+/**
+ * Staff-level admin: moderate accounts, read the directory — never change a
+ * role.
+ */
 export const adminRole = ac.newRole({
-  user: [...adminAc.statements.user],
+  user: [...ADMIN_USER_STATEMENTS],
   session: [...adminAc.statements.session],
 });
 
-/** Highest-privilege role: admin statements + impersonating other admins. */
+/**
+ * Highest-privilege role: the full admin statement set (including the
+ * role-write capability an admin is denied) plus impersonating other admins.
+ */
 export const ownerRole = ac.newRole({
   user: [...adminAc.statements.user, "impersonate-admins"],
   session: [...adminAc.statements.session],

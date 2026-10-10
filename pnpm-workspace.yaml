@@ -4,3 +4,10 @@ allowBuilds:
   prisma: true
   sharp: true
   unrs-resolver: true
+
+# `package.json` declares `better-auth: ^1.6.29`, so a fresh install may resolve
+# 1.6.x while this tree has 1.7.7. The admin-endpoint authorization policy is
+# version-sensitive (see lib/auth/permissions.ts), so the major line is pinned
+# here to keep installs reproducible.
+overrides:
+  better-auth: 1.7.7

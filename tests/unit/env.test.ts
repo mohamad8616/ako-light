@@ -17,12 +17,21 @@ const VALID_MERCHANT_ID = "0f8fad5b-d9cb-469f-a165-70867728950e";
  * one describe block never trips a rule owned by another. The notification
  * channel is included deliberately — otherwise the production receipt check
  * fires alongside every merchant-id assertion.
+ *
+ * The four LIARA_* values are here for the same reason: Liara is the app's only
+ * media backend, so `checkLiaraStorage` requires them in PRODUCTION (see
+ * lib/env.ts) and would otherwise add four problems to every production-mode
+ * assertion in this file.
  */
 function validEnv(overrides: Record<string, string | undefined> = {}) {
   return {
     ZARINPAL_MERCHANT_ID: VALID_MERCHANT_ID,
     ZARINPAL_MODE: "sandbox",
     SMTP_HOST: "smtp.example.com",
+    LIARA_ENDPOINT: "https://storage.c2.liara.site",
+    LIARA_BUCKET_NAME: "test-bucket",
+    LIARA_ACCESS_KEY: "test-access-key",
+    LIARA_SECRET_KEY: "test-secret-key",
     ...overrides,
   };
 }
@@ -123,11 +132,12 @@ describe("env preflight — ZARINPAL_MODE", () => {
 });
 
 describe("env preflight — notification delivery", () => {
-  /** ZarinPal satisfied, but no receipt channel configured. */
-  const noChannel = () => ({
-    ZARINPAL_MERCHANT_ID: VALID_MERCHANT_ID,
-    ZARINPAL_MODE: "sandbox",
-  });
+  /**
+   * ZarinPal satisfied, but no receipt channel configured. Built from
+   * `validEnv()` so the Liara credentials — required in production — are
+   * present, leaving this block to exercise only the notification rule it owns.
+   */
+  const noChannel = () => validEnv({ SMTP_HOST: undefined });
 
   it("allows production startup when no receipt channel is configured", () => {
     expect(collectEnvProblems(noChannel(), "production")).toEqual([]);

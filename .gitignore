@@ -88,3 +88,6 @@ data-model.md
 *-log.txt
 vitest-results.json
 /scripts/tmp-*
+
+
+pnpm-lock.yaml

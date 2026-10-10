@@ -138,13 +138,35 @@ describeAuth("role authorization", () => {
     // Target is itself admin-level, so `impersonate-admins` is required.
     const target = await signInAsRole("admin");
 
-    const response = await authRequest<unknown>("/admin/impersonate-user", {
-      json: { userId: target.user.id },
-      jar,
-    });
+    const response = await authRequest<{ code?: string }>(
+      "/admin/impersonate-user",
+      {
+        json: { userId: target.user.id },
+        jar,
+      },
+    );
 
+    // This request is refused TWICE over, and both layers matter:
+    //
+    //   1. the rank guard in lib/auth/auth.ts answers first — an admin may only
+    //      target a STRICTLY LOWER account, so targeting another admin is 403;
+    //   2. better-auth's own `impersonate-admins` statement would refuse it too.
+    //
+    // Asserting only the permission code (as this test used to) passed while the
+    // guard was dead, so it silently stopped covering layer 1. Pin the guard's
+    // code here and check layer 2 separately below.
     expect(response.status, JSON.stringify(response.body)).toBe(403);
-    expect(JSON.stringify(response.body)).toMatch(/IMPERSONATE_ADMINS|impersonate/i);
+    expect(response.body?.code).toBe("CANNOT_TARGET_EQUAL_OR_HIGHER_ROLE");
+
+    const permission = await authRequest<{ success?: boolean }>(
+      "/admin/has-permission",
+      { json: { permissions: { user: ["impersonate-admins"] } }, jar },
+    );
+    expect(permission.status, JSON.stringify(permission.body)).toBe(200);
+    expect(
+      permission.body?.success,
+      "an admin must not hold impersonate-admins",
+    ).toBe(false);
   });
 
   it("allows an OWNER to impersonate an admin (owner-only)", async () => {

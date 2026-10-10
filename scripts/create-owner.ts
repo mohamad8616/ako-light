@@ -1,37 +1,42 @@
 /**
- * Create (or promote) an owner account.
+ * Bootstrap the FIRST owner account (Pass B).
  *
- * Creates the account with the given password and `User.role = "owner"`.
+ *   OWNER_EMAIL=you@example.com OWNER_PASSWORD='<strong passphrase>' \
+ *     pnpm create:owner
  *
- *   node_modules/.bin/tsx scripts/create-owner.ts <email> <password> [name]
- *   node_modules/.bin/tsx scripts/create-owner.ts            # uses the defaults below
+ *   pnpm create:owner you@example.com '<strong passphrase>' "Display Name"
  *
- * With no arguments the defaults are `owner@gmail.com` / `Owner123` / `Owner`.
- * Values may also come from the environment (`OWNER_EMAIL`, `OWNER_PASSWORD`,
- * `OWNER_NAME`); explicit CLI arguments win over the environment, which wins
- * over the defaults.
+ * ── WHAT CHANGED, AND WHY ───────────────────────────────────────────────────
  *
- * WHY THIS GOES THROUGH BETTER AUTH RATHER THAN A RAW INSERT
+ * This script used to default to a fixed email and password committed to this
+ * repository, so running it with no arguments minted a full-privilege account
+ * whose password anyone with repository access already knew. It also PROMOTED
+ * any existing account with the given email and OVERWROTE that account's
+ * password — one mistyped address was an account takeover. Both are gone:
  *
- * Better Auth does not store a plaintext password on `User`. It writes a hash
- * into the `Account` row for the `credential` provider (providerId
- * "credential"), and it owns the hashing parameters. A hand-written INSERT
- * would produce a row that LOOKS right and can never sign in, because the hash
- * would not match what `signInEmail` recomputes. `auth.api.signUpEmail` is the
- * only path that creates a usable credential, so it is the path used here —
- * the role is then set on the row it produced.
+ *   - the email and password must be supplied explicitly; there is no fallback;
+ *   - an email that already belongs to ANY account is a hard stop, in every
+ *     role, and nothing is promoted or reset.
  *
- * The one place this script hashes on its own is resetting the password of an
- * account that ALREADY exists (sign-up would fail on the unique email). It uses
- * better-auth's own `hashPassword` from `better-auth/crypto`, so the value it
- * writes is byte-for-byte the format `signInEmail` expects.
+ * ── WHAT IT DOES NOT DO ─────────────────────────────────────────────────────
  *
- * Idempotent: re-running ensures the role AND the password, instead of failing
- * on the unique email.
+ * It does not reset passwords and it does not promote existing accounts. Those
+ * are separate, explicitly-confirmed operations:
  *
- * NOTE: passwords typed on a shell command line end up in the shell history.
- * Prefer the environment for anything real:
- *   OWNER_PASSWORD=... node_modules/.bin/tsx scripts/create-owner.ts someone@example.com
+ *   - password recovery → scripts/reset-owner-password.ts (owner accounts only)
+ *   - additional owners → the admin UI (/admin/admins), where the app's own
+ *     rules and audit trail apply
+ *
+ * ── EXIT CODES ──────────────────────────────────────────────────────────────
+ *
+ *   0  owner created
+ *   1  refused, safely — nothing was created or modified
+ *   2  the input was missing or invalid
+ *   3  an unexpected failure (a code is printed; never a message or a secret)
+ *
+ * The supplied password is never printed, echoed back, or included in any error
+ * message. Prefer the environment over a command-line argument: a password
+ * typed on the command line also lands in your shell history.
  */
 // MUST be the FIRST import. ESM evaluates imports in declaration order, and
 // `@/lib/db/prisma` reads `process.env.DATABASE_URL` at MODULE LOAD time to
@@ -41,111 +46,84 @@
 // error. (prisma/seed.ts has the same ordering for the same reason.)
 import "dotenv/config";
 
-import { auth } from "@/lib/auth/auth";
-import { ROLES } from "@/lib/auth/permissions";
+import { bootstrapOwner } from "@/lib/auth/owner-bootstrap";
 import { prisma } from "@/lib/db/prisma";
-import { hashPassword } from "better-auth/crypto";
 
-const DEFAULT_EMAIL = "owner@gmail.com";
-const DEFAULT_PASSWORD = "Owner123";
-
-/** First CLI argument that is present and non-empty, else the fallback. */
-function arg(index: number, fallback: string): string {
-  return process.argv[index]?.trim() || fallback;
+/** First CLI argument that is present and non-empty, else the environment. */
+function fromArgsOrEnv(index: number, envName: string): string | undefined {
+  return process.argv[index]?.trim() || process.env[envName]?.trim() || undefined;
 }
 
-const EMAIL = arg(2, process.env.OWNER_EMAIL?.trim() || DEFAULT_EMAIL);
-const PASSWORD = arg(3, process.env.OWNER_PASSWORD || DEFAULT_PASSWORD);
-// Default the display name to the local part of the address ("malek@gmail.com"
-// -> "Malek") rather than to a generic "Owner".
-const NAME = arg(
-  4,
-  process.env.OWNER_NAME?.trim() ||
-    EMAIL.split("@")[0].replace(/[._-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
-);
-
-/**
- * Writes the credential hash for an existing user.
- *
- * `providerId: "credential"` + `accountId: userId` is the shape better-auth
- * looks up on sign-in. This schema has no unique index covering those two
- * columns, so the row is found first and then updated or created.
- */
-async function setCredentialPassword(userId: string, password: string) {
-  const hash = await hashPassword(password);
-  const existing = await prisma.account.findFirst({
-    where: { userId, providerId: "credential" },
-    select: { id: true },
+async function main(): Promise<number> {
+  const outcome = await bootstrapOwner({
+    email: fromArgsOrEnv(2, "OWNER_EMAIL"),
+    // NOT trimmed: leading/trailing spaces can be intentional in a passphrase,
+    // and silently stripping them would create a password the operator cannot
+    // reproduce.
+    password: process.argv[3] || process.env.OWNER_PASSWORD || undefined,
+    name: fromArgsOrEnv(4, "OWNER_NAME"),
   });
 
-  if (existing) {
-    await prisma.account.update({
-      where: { id: existing.id },
-      data: { password: hash },
-    });
-    return "updated";
+  switch (outcome.status) {
+    case "created":
+      console.log(`owner created: ${outcome.email}`);
+      console.log(
+        "Sign in and change this password if it was ever passed on a command line.",
+      );
+      return 0;
+
+    case "invalid":
+      console.error("Refusing to run — the input is not usable:");
+      for (const problem of outcome.problems) console.error(`  - ${problem}`);
+      console.error(
+        "\nNothing was created or modified. See docs/pass-B-owner-bootstrap.md.",
+      );
+      return 2;
+
+    case "refused-owner-exists":
+      console.error(
+        `Refusing to run — ${outcome.ownerCount} owner account(s) already exist.`,
+      );
+      console.error(
+        "This script only bootstraps the FIRST owner. To add another, sign in as an\n" +
+          "existing owner and use /admin/admins. To recover a lost owner password, use\n" +
+          "scripts/reset-owner-password.ts (owner accounts only).",
+      );
+      console.error("\nNothing was created or modified.");
+      return 1;
+
+    case "refused-email-exists":
+      console.error(
+        `Refusing to run — ${outcome.email} already belongs to an account with the role "${outcome.existingRole}".`,
+      );
+      console.error(
+        "This script never promotes an existing account and never resets its password:\n" +
+          "that would turn a mistyped address into an account takeover. Review the account\n" +
+          "first. If it should already be an owner, recover its password with\n" +
+          "scripts/reset-owner-password.ts. If it needs a different role, sign in as an\n" +
+          "owner and use /admin/admins.",
+      );
+      console.error("\nNothing was created or modified.");
+      return 1;
+
+    case "failed":
+      console.error(`Failed: ${outcome.message}`);
+      return 3;
   }
-
-  await prisma.account.create({
-    data: {
-      id: crypto.randomUUID(),
-      accountId: userId,
-      providerId: "credential",
-      userId,
-      password: hash,
-    },
-  });
-  return "created";
 }
 
-async function main() {
-  const existing = await prisma.user.findUnique({
-    where: { email: EMAIL },
-    select: { id: true, role: true },
-  });
-
-  if (existing) {
-    // Already present: sign-up would fail on the unique email, so ensure the
-    // role and then write the credential directly.
-    const updated = await prisma.user.update({
-      where: { id: existing.id },
-      data: { role: ROLES.owner, name: NAME },
-      select: { id: true, email: true, role: true },
-    });
-    const credential = await setCredentialPassword(existing.id, PASSWORD);
-    console.log(`existing account found — role ensured: ${JSON.stringify(updated)}`);
-    console.log(`credential password ${credential}.`);
-  } else {
-    const response = await auth.api.signUpEmail({
-      body: { email: EMAIL, password: PASSWORD, name: NAME },
-      asResponse: true,
-    });
-
-    if (response.status !== 200) {
-      const body = await response.text();
-      throw new Error(`sign-up failed (${response.status}): ${body}`);
-    }
-
-    const updated = await prisma.user.update({
-      where: { email: EMAIL },
-      data: { role: ROLES.owner },
-      select: { id: true, email: true, role: true },
-    });
-    console.log(`created owner account: ${JSON.stringify(updated)}`);
-  }
-
-  // Prove the credential actually works — a row that exists but cannot sign in
-  // is exactly the failure mode this script exists to avoid.
-  const signIn = await auth.api.signInEmail({
-    body: { email: EMAIL, password: PASSWORD },
-    asResponse: true,
-  });
-  console.log(
-    `sign-in check for ${EMAIL}:`,
-    signIn.status === 200 ? "OK" : `FAILED (${signIn.status})`,
-  );
-
-  await prisma.$disconnect();
+try {
+  process.exitCode = await main();
+} catch (error) {
+  // A code, never a message: a driver error can carry the connection string.
+  const label =
+    error && typeof error === "object" && "code" in error
+      ? String((error as { code?: unknown }).code)
+      : error instanceof Error
+        ? error.name
+        : "UnknownError";
+  console.error(`Failed unexpectedly (${label}). No secrets were printed.`);
+  process.exitCode = 3;
+} finally {
+  await prisma.$disconnect().catch(() => {});
 }
-
-void main();
