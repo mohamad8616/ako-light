@@ -725,6 +725,29 @@ model CatalogueFeature {
   /// `catalogue.description` translation, so the section is never blank and
   /// existing rows keep their copy without a data migration.
   paragraphs      Json?
+  /// Localized CTA label ({ en, fa }). NULL (or an all-empty pair) falls back to
+  /// the composed default — `t("catalogue.download") + CatalogueItem.title`.
+  ctaLabel        Json?
+  /// CTA destination override. A SINGLE string, not localized: this project
+  /// uses one shared URL per link (`CatalogueItem.href`, `Designer.href`), and
+  /// a PDF has one address regardless of the language it is described in.
+  /// NULL falls back to `CatalogueItem.href`.
+  ctaHref         String?
+  /// An UPLOADED PDF, stored in object storage. Takes precedence over
+  /// `ctaHref`, because a file the operator uploaded is more specific than a
+  /// pasted address.
+  ///
+  /// The button does NOT link straight at this URL: the object is served from
+  /// the Liara CDN, and a browser handed a `application/pdf` URL renders it
+  /// inline instead of downloading it. The public link therefore points at
+  /// /api/catalogue/cta, which streams the object with
+  /// `Content-Disposition: attachment` so the download actually starts.
+  ctaPdfUrl       String?
+  /// The original filename, so the download can be named as the operator
+  /// uploaded it (`Content-Disposition` filename). Stored separately from the
+  /// URL because the storage key is timestamped and slug-sanitized — the key is
+  /// not a presentable filename.
+  ctaPdfName      String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

@@ -26,6 +26,14 @@ export const homepageEn = {
   "admin.homepage.card.catalogueCopy": "Section paragraph",
   "admin.homepage.card.catalogueCopyHint":
     "Shown under the section title. Leave it empty to use the built-in default text.",
+  "admin.homepage.card.catalogueCta": "Call to action",
+  "admin.homepage.card.catalogueCtaHint":
+    "The button under the section. Upload a PDF and the button downloads it; a link is the alternative. Leave everything empty to keep the built-in label and the linked catalogue's own PDF.",
+  "admin.homepage.field.ctaPdf": "Catalogue PDF",
+  "admin.homepage.field.ctaLabel": "Button label",
+  "admin.homepage.field.ctaHref": "Button link",
+  "admin.homepage.field.ctaHrefHint":
+    "Used only when no PDF is uploaded. An https:// address, or a path on this site starting with /. Anything else is rejected.",
   "admin.homepage.field.ctaHint":
     "The call to action always links to this entity's public page.",
   "admin.homepage.field.kicker": "Kicker",
@@ -79,6 +87,14 @@ export const homepageFa = {
   "admin.homepage.card.catalogueCopy": "پاراگراف بخش",
   "admin.homepage.card.catalogueCopyHint":
     "زیر عنوان بخش نمایش داده می‌شود. اگر خالی بماند، متن پیش‌فرض داخلی استفاده می‌شود.",
+  "admin.homepage.card.catalogueCta": "دکمه فراخوان",
+  "admin.homepage.card.catalogueCtaHint":
+    "دکمه زیر این بخش. یک فایل PDF آپلود کنید تا دکمه همان را دانلود کند؛ پیوند، گزینهٔ جایگزین است. اگر همه خالی بمانند، برچسب پیش‌فرض و فایل PDF خود کاتالوگ استفاده می‌شود.",
+  "admin.homepage.field.ctaPdf": "فایل PDF کاتالوگ",
+  "admin.homepage.field.ctaLabel": "برچسب دکمه",
+  "admin.homepage.field.ctaHref": "پیوند دکمه",
+  "admin.homepage.field.ctaHrefHint":
+    "فقط زمانی استفاده می‌شود که فایل PDF آپلود نشده باشد. یک نشانی https:// یا مسیری از همین سایت که با / شروع شود. هر چیز دیگری رد می‌شود.",
   "admin.homepage.field.ctaHint":
     "دکمهٔ فراخوان همیشه به صفحهٔ عمومی این موجودیت پیوند می‌خورد.",
   "admin.homepage.field.kicker": "پیش‌عنوان",

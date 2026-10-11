@@ -125,7 +125,10 @@ describeDb("user-directory repository — privacy + scope", () => {
     }
   });
 
-  it("excludes owner and admin staff accounts from the directory", async () => {
+  it("lists customer, admin AND owner accounts together", async () => {
+    // The regression this pins: the directory used to be filtered to
+    // `role = 'user'`, so promoting a customer made the account VANISH from the
+    // list the operator was looking at — and owners were never listed at all.
     const customerId = await makeUser("user", "kept");
     const adminId = await makeUser("admin", "staff-admin");
     const ownerId = await makeUser("owner", "staff-owner");
@@ -134,26 +137,40 @@ describeDb("user-directory repository — privacy + scope", () => {
     const ids = rows.map((r) => r.id);
 
     expect(ids).toContain(customerId);
-    expect(ids).not.toContain(adminId);
-    expect(ids).not.toContain(ownerId);
+    expect(ids).toContain(adminId);
+    expect(ids).toContain(ownerId);
+
+    // ...and each row carries its real role, so the table can label it and the
+    // row actions can decide against it.
+    const byId = new Map(rows.map((r) => [r.id, r.role]));
+    expect(byId.get(customerId)).toBe("user");
+    expect(byId.get(adminId)).toBe("admin");
+    expect(byId.get(ownerId)).toBe("owner");
   });
 
-  it("getUserDirectoryTarget returns a customer but not a staff account", async () => {
+  it("getUserDirectoryTarget resolves EVERY role, so row actions can decide", async () => {
+    // It used to return null for staff, which meant an admin/owner row could be
+    // listed but never acted on. The authorization now lives in the ACTION
+    // (`canModerateAccount` / `canAssignRole`), which is why the lookup must be
+    // able to read any target's real role.
     const customerId = await makeUser("user", "target-cust");
     const adminId = await makeUser("admin", "target-admin");
+    const ownerId = await makeUser("owner", "target-owner");
 
-    const customer = await getUserDirectoryTarget(customerId);
-    expect(customer?.role).toBe("user");
-
-    const staff = await getUserDirectoryTarget(adminId);
-    expect(staff).toBeNull();
+    expect((await getUserDirectoryTarget(customerId))?.role).toBe("user");
+    expect((await getUserDirectoryTarget(adminId))?.role).toBe("admin");
+    expect((await getUserDirectoryTarget(ownerId))?.role).toBe("owner");
   });
 
-  it("buildDirectoryWhere restricts to customers and shapes the search", () => {
-    expect(buildDirectoryWhere()).toEqual({ role: { in: ["user"] } });
+  it("buildDirectoryWhere includes every role and shapes the search", () => {
+    const all = buildDirectoryWhere();
+    expect(all.role.in).toEqual(
+      expect.arrayContaining(["user", "admin", "owner"]),
+    );
+    expect(all.role.in).toHaveLength(3);
 
     const searched = buildDirectoryWhere("  ali  ");
-    expect(searched.role).toEqual({ in: ["user"] });
+    expect(searched.role.in).toHaveLength(3);
     expect(searched.OR).toHaveLength(2);
     // The query is trimmed before it reaches Postgres.
     expect(JSON.stringify(searched)).toContain("ali");

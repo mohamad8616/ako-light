@@ -69,6 +69,35 @@ const PlusTextBtn = (props: PlusTextBtnProps) => {
   );
 
   if (props.href !== undefined) {
+    // ── A DOWNLOAD MUST NOT GO THROUGH `Link` ────────────────────────────────
+    //
+    // The catalogue CTA can point at a same-origin route
+    // (`/api/catalogue/cta`) that re-serves the uploaded PDF with
+    // `Content-Disposition: attachment`, because a cross-origin storage URL is
+    // rendered inline by the browser instead of downloaded.
+    //
+    // That href cannot survive `Link`: it prefixes any href starting with "/"
+    // with the active locale, so the request would go to `/fa/api/...` and 404.
+    // When a download name is supplied the CTA is therefore a PLAIN anchor,
+    // which is also the only form in which the `download` attribute does
+    // anything (it is ignored for cross-origin hrefs, and this one is
+    // same-origin).
+    if (props.download) {
+      return (
+        <a
+          className={classNames}
+          {...(rest as Omit<
+            PlusTextBtnLinkProps,
+            keyof PlusTextBtnBase | "href"
+          >)}
+          href={props.href}
+          download={props.download}
+        >
+          {content}
+        </a>
+      );
+    }
+
     return (
       <Link
         href={props.href}

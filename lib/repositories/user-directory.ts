@@ -18,11 +18,16 @@
  *
  * ── Scope ────────────────────────────────────────────────────────────────────
  *
- * The directory lists CUSTOMERS (role `user`) — the accounts an operator
- * supports. `owner` accounts are excluded outright, and `admin` accounts are
- * out of scope too (staff management is the owner's `/admin/admins` screen).
- * That keeps this screen least-privilege: an operator sees customers, not the
- * staff roster.
+ * The directory lists EVERY account, whatever its role — customers, admins and
+ * owners. It used to list customers only, which meant an account disappeared
+ * from the list the instant it was promoted: an admin could not see the admin
+ * they had just created, and owners were invisible.
+ *
+ * Seeing a row is not permission to change it. Which rows may be MODIFIED is
+ * decided in lib/admin/actions/user-directory.ts by `canModerateAccount` /
+ * `canAssignRole` (self-check + strict rank), so an `admin` still cannot touch
+ * an `owner` and nobody may act on themselves. The `/admin/admins` screen
+ * remains the owner-only staff roster.
  *
  * ── Scale ────────────────────────────────────────────────────────────────────
  *
@@ -90,8 +95,27 @@ const DIRECTORY_SELECT = {
   createdAt: true,
 } as const;
 
-/** Roles this directory is allowed to show: customers only. */
-const DIRECTORY_ROLES: readonly string[] = [ROLES.user];
+/**
+ * Roles this directory SHOWS: every role the app supports.
+ *
+ * This used to be `[ROLES.user]`, which made an account vanish from the list the
+ * moment it was promoted — an admin who minted an admin could no longer see what
+ * they had created, and owners were invisible entirely. Visibility and the
+ * permission to MODIFY are separate concerns: this constant answers only "which
+ * rows may be listed".
+ *
+ * Broadening it grants no new powers. Every write goes through
+ * `lib/admin/actions/user-directory.ts`, which decides with
+ * `canModerateAccount` / `canAssignRole` (self-check + strict rank) BEFORE
+ * touching anything — so an `admin` still cannot moderate an `owner`, and no
+ * actor may act on themselves or on a peer. Those guards were already
+ * independent of this filter; this change only lets the rows be seen.
+ */
+const DIRECTORY_ROLES: readonly string[] = [
+  ROLES.user,
+  ROLES.admin,
+  ROLES.owner,
+];
 
 function mapRow(row: {
   id: string;
@@ -116,9 +140,9 @@ function mapRow(row: {
 }
 
 /**
- * Builds the `where` clause for the directory: customers only, optionally
+ * Builds the `where` clause for the directory: every role, optionally
  * narrowed by a case-insensitive name/email search. Exported for testing so the
- * role restriction and the search shape can be asserted without a database.
+ * role scope and the search shape can be asserted without a database.
  */
 export function buildDirectoryWhere(search?: string) {
   const query = search?.trim();

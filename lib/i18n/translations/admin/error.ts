@@ -9,6 +9,8 @@ export const errorEn = {
   "admin.error.unknown": "Something went wrong.",
   // Flagships & projects (dedicated-route sections)
   "admin.error.invalid": "Invalid value.",
+  "admin.error.invalidLink":
+    "Enter a full web address starting with https://, or a path on this site starting with /.",
   "admin.error.required": "This field is required.",
   "admin.error.tooLong": "This value is too long.",
   // Upload-specific codes (lib/admin/actions/upload.ts).
@@ -24,6 +26,13 @@ export const errorEn = {
   "admin.error.relationViolation": "A linked item is missing.",
   "admin.error.selfTarget": "You cannot change your own role or status.",
 
+  // Password change (Pass C.2 — app/[locale]/(admin)/admin/profile)
+  "admin.error.tooShort": "This password is too short (minimum 12 characters).",
+  "admin.error.passwordMismatch": "The two passwords do not match.",
+  "admin.error.wrongPassword": "Your current password is incorrect.",
+  "admin.error.sameAsCurrent":
+    "The new password must be different from your current one.",
+
   // Owner-only user management (app/[locale]/(admin)/admin/admins)
 } as const;
 
@@ -31,6 +40,8 @@ export const errorFa = {
   "admin.error.unknown": "مشکلی پیش آمد.",
   // فلگ‌شپ‌ها و پروژه‌ها (بخش‌های دارای مسیر اختصاصی)
   "admin.error.invalid": "مقدار نامعتبر است.",
+  "admin.error.invalidLink":
+    "یک نشانی کامل که با https:// شروع شود وارد کنید، یا مسیری از همین سایت که با / شروع شود.",
   "admin.error.required": "این فیلد الزامی است.",
   "admin.error.tooLong": "این مقدار بیش از حد طولانی است.",
   // کدهای مخصوص آپلود (lib/admin/actions/upload.ts)
@@ -46,6 +57,12 @@ export const errorFa = {
   "admin.error.relationViolation": "یک مورد مرتبط یافت نشد.",
   "admin.error.selfTarget":
     "نمی‌توانید نقش یا وضعیت حساب خودتان را تغییر دهید.",
+
+  // تغییر گذرواژه (Pass C.2 — app/[locale]/(admin)/admin/profile)
+  "admin.error.tooShort": "این گذرواژه کوتاه است (حداقل ۱۲ نویسه).",
+  "admin.error.passwordMismatch": "دو گذرواژه یکسان نیستند.",
+  "admin.error.wrongPassword": "گذرواژه فعلی شما نادرست است.",
+  "admin.error.sameAsCurrent": "گذرواژه جدید باید با گذرواژه فعلی متفاوت باشد.",
 
   // مدیریت کاربران مخصوص مالک (app/[locale]/(admin)/admin/admins)
 } as const;

@@ -18,6 +18,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { authClient } from "@/lib/auth/auth-client";
+import LocaleLink from "@/lib/i18n/Link";
 import { ROLES } from "@/lib/auth/permissions";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { Logout01Icon, UserCircle02Icon } from "@hugeicons/core-free-icons";
@@ -126,6 +127,21 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
+              {/*
+                The profile entry. The avatar/name/role above is the menu
+                TRIGGER, so it opens this list — it was never an anchor, which is
+                why the "clickable" name led nowhere. This item is the link.
+
+                `LocaleLink` adds the locale prefix at render time, so it
+                resolves to `/admin/profile` in English and `/fa/admin/profile`
+                in Persian without this component knowing the locale.
+              */}
+              <DropdownMenuItem
+                render={<LocaleLink href="/admin/profile" />}
+              >
+                <HugeiconsIcon icon={UserCircle02Icon} strokeWidth={2} />
+                {t("admin.nav.profile")}
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleSignOut}>
                 <HugeiconsIcon icon={Logout01Icon} strokeWidth={2} />
                 {t("admin.topbar.signOut")}

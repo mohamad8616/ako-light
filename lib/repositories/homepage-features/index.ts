@@ -72,6 +72,8 @@ export type { HomeCollectionFeatureWriteInput } from "./home-collection";
 
 export { getCatalogueFeature } from "./catalogue";
 export { getCatalogueFeatureAdminDetail } from "./catalogue";
+export { getCatalogueCtaPdf } from "./catalogue";
+export { CATALOGUE_CTA_DOWNLOAD_PATH } from "./catalogue";
 export { updateCatalogueFeature } from "./catalogue";
 export type { ResolvedCatalogueFeature } from "./catalogue";
 export type { CatalogueFeatureWriteInput } from "./catalogue";

@@ -36,7 +36,23 @@
  */
 import { requireAdminAccess } from "@/lib/admin/access";
 import { actionFail, actionOk, type ActionResult } from "@/lib/admin/result";
+import {
+  PDF_MAX_BYTES,
+  safePdfFilename,
+  sniffPdfType,
+} from "@/lib/media/pdf-sniff";
 import { MediaError, uploadMedia } from "@/lib/media/service";
+import { storageProvider } from "@/lib/media/storage";
+import { buildStorageKey } from "@/lib/media/validation";
+
+/**
+ * The storage folder the catalogue's CTA PDF lives under.
+ *
+ * Deliberately NOT exported: a `"use server"` module may only export async
+ * functions, and nothing outside this file needs the value — the client
+ * component imports the ACTION, not the folder name.
+ */
+const CATALOGUE_PDF_FOLDER = "catalogue";
 
 /**
  * Uploads one image through the media layer and returns its public URL.
@@ -86,6 +102,79 @@ export async function uploadImageAction(
     }
 
     console.error("[upload] media upload failed", error);
+    return actionFail("unknown");
+  }
+}
+
+/**
+ * Uploads the catalogue CTA's PDF (Pass C.4).
+ *
+ * ── Why this does not go through `uploadMedia` ──────────────────────────────
+ *
+ * The media library is deliberately IMAGE/VIDEO only: `validateMediaUpload`
+ * accepts exactly two kinds, and a `Media` row carries the fields those kinds
+ * need (dimensions, a poster). Widening that validator and that table to carry a
+ * document would change the media architecture for one field. So a PDF is
+ * stored through the SAME `storageProvider` abstraction and the SAME key
+ * builder, under its own `catalogue/` folder, and no `Media` row is created —
+ * the object is owned by the `CatalogueFeature.ctaPdfUrl` column, and
+ * `deleteStorageUrls` already derives its key from the URL for cleanup.
+ *
+ * ── What is enforced, and in what order ────────────────────────────────────
+ *
+ * `requireAdminAccess()` FIRST — this is a server function reachable by a
+ * direct POST, so the form is never the authorization.
+ *
+ * Then the size ceiling is checked BEFORE the body is buffered (a cheap
+ * `file.size` comparison must not wait on reading megabytes into memory), and
+ * the type is decided from the BYTES, never from the client's `File.type`
+ * claim. A file that merely names itself `.pdf` is refused.
+ */
+export async function uploadCataloguePdfAction(
+  formData: FormData,
+): Promise<ActionResult<{ url: string; name: string }>> {
+  await requireAdminAccess();
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    return actionFail("required");
+  }
+
+  // Cheap checks first: the ceiling and the declared type, before buffering.
+  if (file.size > PDF_MAX_BYTES) {
+    return actionFail("tooLarge");
+  }
+
+  try {
+    const bytes = await file.arrayBuffer();
+
+    // The AUTHORITATIVE type — read off the leading bytes, not asserted by the
+    // browser. `null` means "not a PDF", whatever the file was called.
+    const mimeType = sniffPdfType(new Uint8Array(bytes));
+    if (!mimeType) {
+      return actionFail("unsupportedType");
+    }
+
+    const name = safePdfFilename(file.name);
+
+    const stored = await storageProvider.upload({
+      key: buildStorageKey({
+        folder: CATALOGUE_PDF_FOLDER,
+        baseName: name,
+        extension: "pdf",
+      }),
+      bytes,
+      contentType: mimeType,
+      // Two admins uploading "catalogue.pdf" must not collide; the provider's
+      // suffix is what guarantees it, so the returned key is the one that counts.
+      addRandomSuffix: true,
+    });
+
+    // Only the URL and a presentable name travel back to the form. The storage
+    // KEY stays server-side, exactly as the image upload path does.
+    return actionOk({ url: stored.url, name });
+  } catch (error) {
+    console.error("[upload] catalogue pdf upload failed", error);
     return actionFail("unknown");
   }
 }

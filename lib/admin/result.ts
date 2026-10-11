@@ -13,6 +13,13 @@ import type { z } from "zod";
 export type AdminErrorCode =
   | "invalid"
   | "required"
+  /**
+   * A value that is not a link this site accepts — see `clearableLinkSchema`
+   * (lib/admin/schemas/common.ts). Its own code rather than the blanket
+   * `invalid`, because "Invalid value." says nothing about the expected shape
+   * (an http(s) URL or a path starting with "/").
+   */
+  | "invalidLink"
   /** A `.max()` string cap was exceeded (lib/admin/schemas/common.ts). */
   | "tooLong"
   /** An uploaded file exceeded the byte cap (lib/admin/actions/upload.ts). */
@@ -27,6 +34,17 @@ export type AdminErrorCode =
   | "unsupportedType"
   | "slugTaken"
   | "notFound"
+  /**
+   * A password did not meet the policy floor (Pass C.2 —
+   * lib/admin/schemas/profile.ts). `tooLong` already covers the ceiling.
+   */
+  | "tooShort"
+  /** The new password and its confirmation differ. */
+  | "passwordMismatch"
+  /** The supplied current password did not authenticate (better-auth). */
+  | "wrongPassword"
+  /** The "new" password is the one already in use — not a change. */
+  | "sameAsCurrent"
   /**
    * The requested order fulfillment move is not permitted by the lifecycle —
    * walking an order backwards, leaving a terminal state, or starting
@@ -73,6 +91,11 @@ export function actionFail(
 export function errorCodeForType(type: unknown): AdminErrorCode {
   if (type === "invalid_type" || type === "too_small") return "required";
   if (type === "too_big") return "tooLong";
+  // `clearableLinkSchema` names its own zod issue code, and `zodResolver` copies
+  // an issue's `code` verbatim into the react-hook-form error `type` — so the
+  // specific link message survives to the browser instead of degrading to
+  // "Invalid value." (verified against the installed resolver).
+  if (type === "invalidLink") return "invalidLink";
   return "invalid";
 }
 
@@ -101,7 +124,13 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
         ? "required"
         : issue.code === "too_big"
           ? "tooLong"
-          : "invalid";
+          : // A schema may name its OWN code so the message describes the rule
+            // rather than the blanket "Invalid value." (`clearableLinkSchema`
+            // emits `invalidLink`; the cast is needed because zod's issue-code
+            // union does not admit custom codes even though it carries them.)
+            (issue.code as string) === "invalidLink"
+            ? "invalidLink"
+            : "invalid";
     // Severity order when several issues land on ONE field path: the message
     // must describe the strongest problem. "required" beats "tooLong" beats
     // "invalid" (see the collapse test in tests/unit/admin/result.test.ts).
@@ -111,6 +140,9 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
       required: 2,
       tooLong: 1,
       invalid: 0,
+      // A malformed link is more specific than `invalid`, so it wins when both
+      // land on the same field.
+      invalidLink: 0,
       tooLarge: 0,
       notImage: 0,
       unsupportedType: 0,
@@ -120,6 +152,13 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
       relationViolation: 0,
       selfTarget: 0,
       invalidTransition: 0,
+      // Pass C.2 — produced by lib/admin/schemas/profile.ts, never by a zod
+      // issue, so they exist here only to satisfy the union (like the upload
+      // codes above). They arrive already attached to their field.
+      tooShort: 0,
+      passwordMismatch: 0,
+      wrongPassword: 0,
+      sameAsCurrent: 0,
       unknown: 0,
     };
     const field = issue.path.join(".");

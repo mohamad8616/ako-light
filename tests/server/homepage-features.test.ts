@@ -15,6 +15,7 @@ import { FeatureMode } from "@/generated/prisma/client";
 import type { FlagshipDetail } from "@/lib/data/flagships";
 import { prisma } from "@/lib/db/prisma";
 import {
+  CATALOGUE_CTA_DOWNLOAD_PATH,
   CATALOGUE_SLOT,
   FLAGSHIP_ONE_SLOT,
   HOME_COLLECTION_HREF,
@@ -166,16 +167,42 @@ describeDb("homepage-features repository — reads", () => {
     expect(row, "seeded catalogue slot").not.toBeNull();
     expectKeys(
       data,
-      ["downloadHref", "enabled", "image", "paragraphs", "title"],
+      [
+        "ctaLabel",
+        "downloadHref",
+        "downloadName",
+        "enabled",
+        "image",
+        "paragraphs",
+        "title",
+      ],
       "ResolvedCatalogueFeature",
     );
     expect(data!.title).toBe(row!.catalogueItem.title);
-    expect(data!.downloadHref).toBe(row!.catalogueItem.href);
+    // The destination PRIORITY: an uploaded pdf, then the slot's own `ctaHref`,
+    // then the linked item's PDF. The seeded row has neither override, so this
+    // must be the item's href — i.e. the pre-Pass-C.3 behaviour, unchanged.
+    //
+    // An uploaded file is the one case that is NOT its stored URL: it resolves
+    // to the same-origin download route, so the browser saves the file instead
+    // of rendering it (a cross-origin `download` attribute is ignored).
+    expect(data!.downloadHref).toBe(
+      row!.ctaPdfUrl
+        ? CATALOGUE_CTA_DOWNLOAD_PATH
+        : (row!.ctaHref ?? row!.catalogueItem.href),
+    );
+    // ...and the forced-download flag is set ONLY for an uploaded file.
+    expect(data!.downloadName).toBe(
+      row!.ctaPdfUrl ? (row!.ctaPdfName ?? null) : null,
+    );
     expect(data!.image).toBe(row!.image);
     // The admin-editable paragraph. EMPTY is a valid answer — it means "use the
     // built-in default text" — which is why the column is nullable and no
     // backfill was needed.
     expect(data!.paragraphs).toEqual(row!.paragraphs ?? []);
+    // The label override, or null to mean "compose the default in the
+    // component" (the default needs the dictionary, which is a client concern).
+    expect(data!.ctaLabel).toEqual(row!.ctaLabel ?? null);
   });
 });
 
@@ -449,6 +476,10 @@ describeDb("homepage-features repository — writes", () => {
             catalogueItemId: target.id,
             image: "/cat.jpg",
             paragraphs: [{ en: "Edited copy", fa: "متن ویرایش‌شده" }],
+            ctaLabel: { en: "Download S34", fa: "دانلود S34" },
+            ctaHref: "https://example.com/s34.pdf",
+            ctaPdfUrl: "https://cdn.example.test/media/catalogue/s34.pdf",
+            ctaPdfName: "Henge Catalogue S34-5.pdf",
           },
           tx,
         );
@@ -463,6 +494,14 @@ describeDb("homepage-features repository — writes", () => {
         expect(row!.paragraphs).toEqual([
           { en: "Edited copy", fa: "متن ویرایش‌شده" },
         ]);
+        // ...and so does the editable CTA (Pass C.3).
+        expect(row!.ctaLabel).toEqual({ en: "Download S34", fa: "دانلود S34" });
+        expect(row!.ctaHref).toBe("https://example.com/s34.pdf");
+        // ...and the uploaded pdf, with its presentable name (Pass C.4).
+        expect(row!.ctaPdfUrl).toBe(
+          "https://cdn.example.test/media/catalogue/s34.pdf",
+        );
+        expect(row!.ctaPdfName).toBe("Henge Catalogue S34-5.pdf");
 
         throw new Error("intentional test rollback");
       }, TX_OPTIONS),

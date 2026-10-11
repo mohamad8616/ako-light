@@ -7,6 +7,7 @@
  */
 export const navEn = {
   "admin.nav.dashboard": "Dashboard",
+  "admin.nav.profile": "Profile",
   "admin.nav.catalog": "Catalog",
   "admin.nav.products": "Products",
   "admin.nav.categories": "Categories",
@@ -29,6 +30,7 @@ export const navEn = {
 
 export const navFa = {
   "admin.nav.dashboard": "داشبورد",
+  "admin.nav.profile": "پروفایل",
   "admin.nav.catalog": "کاتالوگ",
   "admin.nav.products": "محصولات",
   "admin.nav.categories": "دسته‌بندی‌ها",

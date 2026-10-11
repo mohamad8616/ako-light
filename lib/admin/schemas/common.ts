@@ -78,18 +78,63 @@ export const slugSchema = z
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
 
 /**
- * A link target. The real data mixes three forms and all of them must stay
- * saveable: absolute https URLs (catalogue PDFs, designer websites),
- * root-relative paths (the designer download links), and "#" placeholders.
+ * The project's link policy, as a single predicate.
+ *
+ * The real data mixes three forms and all of them must stay saveable: absolute
+ * http(s) URLs (catalogue PDFs, designer websites), root-relative paths (the
+ * designer download links), and "#" placeholders.
+ *
+ * This is an ALLOW-LIST: `javascript:`, `data:`, `vbscript:` and anything else
+ * that is neither of the three permitted shapes is rejected by construction, so
+ * there is no block-list to bypass with casing, whitespace or an alternative
+ * encoding.
  */
+function isLinkTarget(value: string): boolean {
+  return /^https?:\/\//.test(value) || value.startsWith("/") || value === "#";
+}
+
+/** A link target — non-empty, length-capped, and matching {@link isLinkTarget}. */
 export const linkSchema = z
   .string()
   .min(1)
   .max(URL_MAX)
-  .refine(
-    (value) =>
-      /^https?:\/\//.test(value) || value.startsWith("/") || value === "#",
-  );
+  .refine(isLinkTarget);
+
+/**
+ * A CLEARABLE link target — the same policy as {@link linkSchema}, plus an empty
+ * string meaning "not configured" (fall back to the linked entity's href).
+ *
+ * ── Why this is not a plain `z.union([linkSchema, z.literal("")])` ───────────
+ *
+ * Two things made that union unhelpful in practice:
+ *
+ *   1. PASTED VALUES. A URL copied out of a browser or a PDF routinely arrives
+ *      with a leading/trailing space or newline. The union's refine is anchored
+ *      (`/^https?:\/\//`), so `" https://…"` FAILED — and the admin, who had
+ *      pasted a perfectly good address, was told the value was invalid. The
+ *      value is trimmed before it is judged, so paste padding is harmless.
+ *
+ *   2. THE MESSAGE. A union/refine failure is reported by zod as `custom`, which
+ *      the shared mapping turns into the blanket "Invalid value." That tells the
+ *      admin nothing about WHICH shape is expected. Emitting a dedicated
+ *      `invalidLink` code instead makes both halves of the contract specific:
+ *      `zodResolver` copies a zod issue's `code` straight into the react-hook-
+ *      form error `type` (verified against the installed resolver), and
+ *      `zodIssuesToFieldIssues` reads the same code server-side — so the field
+ *      says the same useful thing whether the check ran in the browser or in the
+ *      action.
+ */
+export const clearableLinkSchema = z
+  .string()
+  .trim()
+  .max(URL_MAX)
+  .superRefine((value, ctx) => {
+    // "" is the deliberate "not configured" value — fall back to the linked
+    // entity's href. The length cap above already ran, so `tooLong` still wins
+    // over `invalidLink` when a value is both long and malformed.
+    if (value === "" || isLinkTarget(value)) return;
+    ctx.addIssue({ code: "invalidLink" as "custom" });
+  });
 
 /** An image/file reference — absolute https or a root-relative path. */
 export const imageRefSchema = z

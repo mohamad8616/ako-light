@@ -1,8 +1,10 @@
 import { z } from "zod";
 import {
+  clearableLinkSchema,
   idSchema,
   imageRefSchema,
   localizedSchema,
+  NAME_MAX,
   TEXT_MAX,
 } from "./common";
 
@@ -118,6 +120,31 @@ export const catalogueFeatureFormSchema = z.object({
    * before this field existed does.
    */
   paragraphs: clearableLocalizedListSchema,
+  /**
+   * The CTA's own label, per language. An empty pair falls back to the composed
+   * default (`t("catalogue.download") + CatalogueItem.title`).
+   */
+  ctaLabel: clearableLocalizedSchema,
+  /**
+   * The CTA's destination override. A SINGLE shared URL — this project keeps one
+   * address per link (see `CatalogueItem.href`). Empty falls back to it.
+   */
+  ctaHref: clearableLinkSchema,
+  /**
+   * An UPLOADED pdf (Pass C.4). Same reference shape as an image: the absolute
+   * https URL of a stored object, or "" when not configured. Empty falls back to
+   * `ctaHref` and then to `CatalogueItem.href`.
+   *
+   * This is the FIELD the operator fills by uploading, and it outranks
+   * `ctaHref` — a file they chose is more specific than an address they pasted.
+   */
+  ctaPdfUrl: clearableImageRefSchema,
+  /**
+   * The uploaded file's presentable name, used for the download's filename.
+   * Only meaningful alongside a URL; the action nulls it whenever the URL is
+   * cleared, so the two columns can never disagree.
+   */
+  ctaPdfName: z.string().max(NAME_MAX),
 });
 
 export type FlagshipOneFeatureFormValues = z.infer<

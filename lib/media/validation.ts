@@ -17,6 +17,7 @@ import {
   sniffImageType,
 } from "@/lib/admin/image-sniff";
 import { IMAGE_MAX_BYTES, VIDEO_MAX_BYTES } from "@/lib/media/limits";
+import { PDF_EXTENSIONS } from "@/lib/media/pdf-sniff";
 import {
   VIDEO_EXTENSIONS,
   isSupportedVideoType,
@@ -77,10 +78,14 @@ export type MediaValidationResult =
 const ALLOWED_EXTENSIONS: ReadonlySet<string> = new Set([
   ...Object.values(IMAGE_EXTENSIONS),
   ...Object.values(VIDEO_EXTENSIONS),
+  // The catalogue CTA's downloadable PDF (Pass C.4). Without this the key
+  // builder would degrade a legitimate `.pdf` to `.bin`, which the browser then
+  // offers as `…bin` on download.
+  ...Object.values(PDF_EXTENSIONS),
 ]);
 
 /** A trailing media extension on an already-sanitized base name. */
-const MEDIA_EXTENSION_SUFFIX = /\.(jpe?g|png|webp|avif|mp4|webm)$/;
+const MEDIA_EXTENSION_SUFFIX = /\.(jpe?g|png|webp|avif|mp4|webm|pdf)$/;
 
 /**
  * Validates an image upload against the shared rules, in the same order the

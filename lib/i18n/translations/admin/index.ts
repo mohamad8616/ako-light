@@ -56,6 +56,7 @@ import { homepageEn, homepageFa } from "./homepage";
 import { pageEn, pageFa } from "./page";
 import { adminsEn, adminsFa } from "./admins";
 import { usersEn, usersFa } from "./users";
+import { profileEn, profileFa } from "./profile";
 
 export const adminEn = {
   ...navEn,
@@ -90,6 +91,7 @@ export const adminEn = {
   ...pageEn,
   ...adminsEn,
   ...usersEn,
+  ...profileEn,
 } as const;
 
 export const adminFa = {
@@ -125,4 +127,5 @@ export const adminFa = {
   ...pageFa,
   ...adminsFa,
   ...usersFa,
+  ...profileFa,
 } as const;

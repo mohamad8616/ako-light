@@ -14,10 +14,11 @@
  * saved before this field existed does, so nothing goes blank.
  */
 import { FormCard } from "@/components/admin/catalog/fields/form";
-import { LocalizedListField } from "@/components/admin/catalog/fields/LocalizedField";
+import { LocalizedField, LocalizedListField } from "@/components/admin/catalog/fields/LocalizedField";
 import { SelectField } from "@/components/admin/catalog/fields/SelectField";
-import { SwitchField } from "@/components/admin/catalog/fields/ScalarFields";
+import { SwitchField, TextField } from "@/components/admin/catalog/fields/ScalarFields";
 import { ImageUpload } from "@/components/admin/ImageUpload";
+import { PdfUpload } from "@/components/admin/PdfUpload";
 import { HomepageFormActions } from "@/components/admin/catalog/homepage/HomepageFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import {
@@ -28,13 +29,16 @@ import {
   type CatalogueFeatureFormValues,
 } from "@/lib/admin/schemas/homepage";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { loc, type Localized } from "@/lib/i18n/localized";
 import type { CatalogueItemAdminRow } from "@/lib/repositories/catalogue";
 import type { CatalogueFeatureWriteInput } from "@/lib/repositories/homepage-features";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormProvider, useForm } from "react-hook-form";
 
-export function CatalogueFeatureForm({
-  detail,
+/** What a cleared localized pair looks like in the form (saved as SQL NULL). */
+const CLEARED: Localized = loc("", "");
+
+export function CatalogueFeatureForm({  detail,
   catalogueItems,
 }: {
   /** The saved slot, or null when the row does not exist yet. */
@@ -53,6 +57,10 @@ export function CatalogueFeatureForm({
       catalogueItemId: detail?.catalogueItemId ?? catalogueItems[0]?.id ?? "",
       image: detail?.image ?? "",
       paragraphs: detail?.paragraphs ?? [],
+      ctaLabel: detail?.ctaLabel ?? CLEARED,
+      ctaHref: detail?.ctaHref ?? "",
+      ctaPdfUrl: detail?.ctaPdfUrl ?? "",
+      ctaPdfName: detail?.ctaPdfName ?? "",
     },
   });
 
@@ -100,6 +108,34 @@ export function CatalogueFeatureForm({
             optional
             textarea
           />
+        </FormCard>
+        <FormCard
+          title={t("admin.homepage.card.catalogueCta")}
+          description={t("admin.homepage.card.catalogueCtaHint")}
+        >
+          <div className="space-y-5">
+            {/* The PDF is FIRST because it is the destination of record: an
+                uploaded file outranks a pasted link (see the repository's
+                resolution order). */}
+            <PdfUpload
+              urlName="ctaPdfUrl"
+              nameName="ctaPdfName"
+              label={t("admin.homepage.field.ctaPdf")}
+              hint={t("admin.upload.pdfDownloadHint")}
+            />
+            <LocalizedField
+              name="ctaLabel"
+              label={t("admin.homepage.field.ctaLabel")}
+              optional
+            />
+            <TextField
+              name="ctaHref"
+              label={t("admin.homepage.field.ctaHref")}
+              hint={t("admin.homepage.field.ctaHrefHint")}
+              optional
+              placeholder="https://example.com/file.pdf  ·  /catalogue/s34-5"
+            />
+          </div>
         </FormCard>
       </FormProvider>
       <HomepageFormActions pending={pending} />

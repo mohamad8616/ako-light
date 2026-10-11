@@ -28,7 +28,14 @@ export default function CatalogueSection({ data }: CatalogueSectionProps) {
   // The title and the PDF href belong to the referenced CatalogueItem, so the
   // CTA label is composed from the static "Download" word plus that title —
   // identical copy to before, but correct after the reference is repointed.
-  const ctaText = `${t("catalogue.download")} ${data.title}`;
+  //
+  // An admin-configured label (Homepage → Catalogue → CTA) takes precedence,
+  // per language. `pick` supplies the project's own fallback, so a missing
+  // Persian half reads the English one rather than rendering blank.
+  const ctaText =
+    data.ctaLabel && pick(data.ctaLabel, lang).trim().length > 0
+      ? pick(data.ctaLabel, lang)
+      : `${t("catalogue.download")} ${data.title}`;
 
   // The paragraph is editable in the admin panel (Homepage → Catalogue).
   // An EMPTY list is not "no paragraph" — it means "use the built-in default
@@ -105,6 +112,11 @@ export default function CatalogueSection({ data }: CatalogueSectionProps) {
           text={ctaText}
           textColor="text-background font-medium"
           href={data.downloadHref}
+          // Non-null ONLY when the destination is an uploaded PDF. It switches
+          // the CTA to a plain anchor carrying `download`, which is both what
+          // makes the browser save the file and what keeps the same-origin
+          // download route from being locale-prefixed into a 404.
+          download={data.downloadName ?? undefined}
           aria-label={t("catalogue.downloadAria").replace(
             "{title}",
             data.title,

@@ -150,11 +150,44 @@ describe("homepage slot schemas", () => {
       enabled: true,
       catalogueItemId: "s34-5",
       image: "/images/catalogue.jpg",
+      // The admin-editable section paragraph. An EMPTY list is a valid answer —
+      // it means "use the built-in default text" — which is what every row saved
+      // before the field existed carries.
+      paragraphs: [],
+      // The editable CTA. Empty means "not configured": the label falls back to
+      // the composed default and the link to CatalogueItem.href.
+      ctaLabel: { en: "", fa: "" },
+      ctaHref: "",
+      // Pass C.4 — the uploaded PDF and its presentable name.
+      ctaPdfUrl: "",
+      ctaPdfName: "",
     };
     expect(catalogueFeatureFormSchema.safeParse(valid).success).toBe(true);
     expect(
       catalogueFeatureFormSchema.safeParse({ ...valid, catalogueItemId: "" })
         .success,
+    ).toBe(false);
+    // Localized copy round-trips.
+    expect(
+      catalogueFeatureFormSchema.safeParse({
+        ...valid,
+        paragraphs: [{ en: "Copy", fa: "متن" }],
+      }).success,
+    ).toBe(true);
+    // A configured CTA round-trips...
+    expect(
+      catalogueFeatureFormSchema.safeParse({
+        ...valid,
+        ctaLabel: { en: "Download S34", fa: "دانلود S34" },
+        ctaHref: "https://example.com/s34.pdf",
+      }).success,
+    ).toBe(true);
+    // ...and an unsafe scheme is refused by the SAME schema the action uses.
+    expect(
+      catalogueFeatureFormSchema.safeParse({
+        ...valid,
+        ctaHref: "javascript:alert(1)",
+      }).success,
     ).toBe(false);
   });
 });

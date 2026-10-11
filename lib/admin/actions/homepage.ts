@@ -217,16 +217,35 @@ export async function updateCatalogueFeatureAction(
     const previous = await getCatalogueFeatureAdminDetail();
     const beforeUrls = previous?.image ? [previous.image] : [];
 
+    // The uploaded PDF is the destination of record; a name without a URL is
+    // meaningless, so the two columns are written together or not at all.
+    const ctaPdfUrl = emptyToNull(parsed.data.ctaPdfUrl);
+    const ctaPdfName = ctaPdfUrl
+      ? emptyToNull(parsed.data.ctaPdfName)
+      : null;
+
     await updateCatalogueFeature({
       enabled: parsed.data.enabled,
       catalogueItemId: parsed.data.catalogueItemId,
       image: parsed.data.image,
       paragraphs: listToNull(parsed.data.paragraphs),
+      // An all-empty pair is "not configured" (SQL NULL), which is what makes
+      // the default label come back. `emptyToNull` does the same for the URLs.
+      ctaLabel: clearedToNull(parsed.data.ctaLabel),
+      ctaHref: emptyToNull(parsed.data.ctaHref),
+      ctaPdfUrl,
+      ctaPdfName,
     });
 
-    await deleteStorageUrls(
-      removedUrls(beforeUrls, [parsed.data.image]),
-    );
+    // Sweep the objects this edit DROPPED: a replaced section photo, and a
+    // replaced or removed CTA pdf. `removedUrls` is order-insensitive and only
+    // reports values that are genuinely gone, so a save that keeps either file
+    // deletes nothing.
+    await deleteStorageUrls([
+      ...removedUrls(beforeUrls, [parsed.data.image]),
+      ...removedUrls([previous?.ctaPdfUrl], [ctaPdfUrl]),
+    ]);
+
     revalidateCatalog("homepage");
     return actionOk(undefined);
   } catch (error) {

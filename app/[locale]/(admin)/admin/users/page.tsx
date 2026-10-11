@@ -19,7 +19,9 @@ import { notFound } from "next/navigation";
  * authority in the server action (lib/admin/actions/user-directory.ts), so a
  * forged request from an admin is refused regardless of what the UI showed.
  *
- * Only customers (role `user`) are listed — see lib/repositories/user-directory.
+ * Every role is listed — customers, admins and owners (see
+ * lib/repositories/user-directory). Row ACTIONS are still decided server-side by
+ * the rank rules, so seeing an owner here does not mean being able to change it.
  *
  * ── Search & pagination (server-side) ────────────────────────────────────────
  *
