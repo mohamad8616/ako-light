@@ -61,6 +61,40 @@ export const homepageEn = {
   "admin.homepage.slot.catalogue.description":
     "The catalogue download section.",
 
+  // Pass D.1 — the hero and the video section. Both are standalone content with
+  // no linked entity, so their cards read as "is it overridden, and with what".
+  "admin.homepage.slot.hero": "Hero",
+  "admin.homepage.slot.hero.description":
+    "The full-screen video hero at the top of the homepage.",
+  "admin.homepage.slot.video": "Video section",
+  "admin.homepage.slot.video.description":
+    "The full-width video section further down the homepage.",
+  "admin.homepage.card.heroMedia": "Media",
+  "admin.homepage.card.heroMediaHint":
+    "Leave either field empty to keep the built-in video and poster.",
+  "admin.homepage.card.heroCopy": "Headline",
+  "admin.homepage.card.heroCopyHint":
+    "Leave a field empty to keep the built-in text for that line.",
+  "admin.homepage.card.heroCta": "Button",
+  "admin.homepage.card.heroCtaHint":
+    "Leave a field empty to keep the built-in label and destination.",
+  "admin.homepage.field.heroVideo": "Hero video",
+  "admin.homepage.field.heroVideoHint":
+    "Replaces the built-in hero video. Leave empty to use it.",
+  "admin.homepage.field.heroPoster": "Poster image",
+  "admin.homepage.field.heroPosterHint":
+    "Shown before the video loads. Leave empty to use the built-in poster.",
+  "admin.homepage.field.firstLine": "First line",
+  "admin.homepage.field.secondLine": "Second line",
+  "admin.homepage.field.heroLineHint":
+    "Both languages are needed, or leave the whole field empty for the built-in text.",
+  "admin.homepage.field.videoUrl": "Section video",
+  "admin.homepage.field.videoUrlHint":
+    "Replaces the built-in section video. Leave empty to use it.",
+  "admin.homepage.card.videoMedia": "Video",
+  "admin.homepage.card.videoMediaHint":
+    "The section's layout, placeholder text and playback behaviour are unchanged.",
+
   // Page-content sections (app/[locale]/(admin)/admin/about + .../s34) — the
   // prose sections of the About and S34 pages (myPlan.md Part D). Card titles
   // are addressed by section key so a form reads its own row's label.
@@ -119,6 +153,39 @@ export const homepageFa = {
     "بنر مستقل با پیوند به فهرست مجموعه‌ها.",
   "admin.homepage.slot.catalogue": "بخش کاتالوگ",
   "admin.homepage.slot.catalogue.description": "بخش دانلود کاتالوگ.",
+
+  // پاس D.1 — هیرو و بخش ویدیو
+  "admin.homepage.slot.hero": "هیرو",
+  "admin.homepage.slot.hero.description":
+    "ویدیوی تمام‌صفحهٔ ابتدای صفحه اصلی.",
+  "admin.homepage.slot.video": "بخش ویدیو",
+  "admin.homepage.slot.video.description":
+    "بخش ویدیوی تمام‌عرض در ادامهٔ صفحه اصلی.",
+  "admin.homepage.card.heroMedia": "رسانه",
+  "admin.homepage.card.heroMediaHint":
+    "هر فیلدی را خالی بگذارید، ویدیو و پوستر داخلی حفظ می‌شود.",
+  "admin.homepage.card.heroCopy": "تیتر",
+  "admin.homepage.card.heroCopyHint":
+    "هر خط را خالی بگذارید، متن داخلی همان خط حفظ می‌شود.",
+  "admin.homepage.card.heroCta": "دکمه",
+  "admin.homepage.card.heroCtaHint":
+    "هر فیلدی را خالی بگذارید، برچسب و مقصد داخلی حفظ می‌شود.",
+  "admin.homepage.field.heroVideo": "ویدیوی هیرو",
+  "admin.homepage.field.heroVideoHint":
+    "جایگزین ویدیوی داخلی هیرو می‌شود. برای استفاده از آن، خالی بگذارید.",
+  "admin.homepage.field.heroPoster": "تصویر پوستر",
+  "admin.homepage.field.heroPosterHint":
+    "پیش از بارگذاری ویدیو نمایش داده می‌شود. برای استفاده از پوستر داخلی خالی بگذارید.",
+  "admin.homepage.field.firstLine": "خط اول",
+  "admin.homepage.field.secondLine": "خط دوم",
+  "admin.homepage.field.heroLineHint":
+    "هر دو زبان لازم است؛ یا کل فیلد را خالی بگذارید تا متن داخلی بماند.",
+  "admin.homepage.field.videoUrl": "ویدیوی بخش",
+  "admin.homepage.field.videoUrlHint":
+    "جایگزین ویدیوی داخلی بخش می‌شود. برای استفاده از آن، خالی بگذارید.",
+  "admin.homepage.card.videoMedia": "ویدیو",
+  "admin.homepage.card.videoMediaHint":
+    "چیدمان، متن جانگهدار و رفتار پخش این بخش تغییری نمی‌کند.",
 
   // بخش‌های محتوایی صفحه‌ها (admin/about و admin/s34) — بخش‌های متنی صفحه‌های
   // درباره ما و اس ۳۴ (myPlan.md بخش D). عنوان هر کارت با کلید بخش خوانده می‌شود.

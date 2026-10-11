@@ -2,15 +2,17 @@ import { cache } from "react";
 import { FeatureMode } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import type { Localized } from "@/lib/i18n/localized";
-import { asLocalized } from "../casting";
+import { asLocalized, asOptionalLocalized } from "../casting";
 import { flagshipHref, projectHref } from "./resolve";
 import {
   CATALOGUE_SLOT,
   FLAGSHIP_ONE_SLOT,
+  HERO_SLOT,
   HOME_COLLECTION_HREF,
   HOME_COLLECTION_SLOT,
   PROJECT_BANNER_SLOT,
   PROJECT_DARK_BACKGROUND_SLOT,
+  VIDEO_SLOT,
   type HomepageFeatureSlot,
 } from "./slots";
 
@@ -45,30 +47,51 @@ export type HomepageFeatureOverview = {
  */
 export const getHomepageFeaturesOverview = cache(
   async (): Promise<HomepageFeatureOverview[]> => {
-    const [flagshipOne, catalogue, homeCollection, projectBanner, dark] =
-      await Promise.all([
-        prisma.flagshipOneFeature.findUnique({
-          where: { id: FLAGSHIP_ONE_SLOT },
-          include: { flagship: { select: { slug: true, name: true } } },
-        }),
-        prisma.catalogueFeature.findUnique({
-          where: { id: CATALOGUE_SLOT },
-          include: { catalogueItem: { select: { title: true, href: true } } },
-        }),
-        prisma.homeCollectionFeature.findUnique({
-          where: { id: HOME_COLLECTION_SLOT },
-        }),
-        prisma.projectBannerFeature.findUnique({
-          where: { id: PROJECT_BANNER_SLOT },
-          include: { project: { select: { slug: true, name: true } } },
-        }),
-        prisma.projectDarkBackgroundFeature.findUnique({
-          where: { id: PROJECT_DARK_BACKGROUND_SLOT },
-          include: { project: { select: { slug: true, name: true } } },
-        }),
-      ]);
+    const [
+      hero,
+      flagshipOne,
+      video,
+      catalogue,
+      homeCollection,
+      projectBanner,
+      dark,
+    ] = await Promise.all([
+      prisma.heroFeature.findUnique({ where: { id: HERO_SLOT } }),
+      prisma.flagshipOneFeature.findUnique({
+        where: { id: FLAGSHIP_ONE_SLOT },
+        include: { flagship: { select: { slug: true, name: true } } },
+      }),
+      prisma.videoFeature.findUnique({ where: { id: VIDEO_SLOT } }),
+      prisma.catalogueFeature.findUnique({
+        where: { id: CATALOGUE_SLOT },
+        include: { catalogueItem: { select: { title: true, href: true } } },
+      }),
+      prisma.homeCollectionFeature.findUnique({
+        where: { id: HOME_COLLECTION_SLOT },
+      }),
+      prisma.projectBannerFeature.findUnique({
+        where: { id: PROJECT_BANNER_SLOT },
+        include: { project: { select: { slug: true, name: true } } },
+      }),
+      prisma.projectDarkBackgroundFeature.findUnique({
+        where: { id: PROJECT_DARK_BACKGROUND_SLOT },
+        include: { project: { select: { slug: true, name: true } } },
+      }),
+    ]);
 
     return [
+      {
+        id: HERO_SLOT,
+        enabled: hero?.enabled ?? false,
+        mode: null,
+        configured: hero != null,
+        // The hero has no linked entity, so the card summarises the operator's
+        // own override: the h1 line when they set one, otherwise nothing —
+        // the "not configured" badge already says the built-in copy is in use.
+        entityLabel: hero ? asOptionalLocalized(hero.firstLine) ?? null : null,
+        entityHref: hero?.ctaHref ?? null,
+        updatedAt: hero?.updatedAt.toISOString() ?? null,
+      },
       {
         id: FLAGSHIP_ONE_SLOT,
         enabled: flagshipOne?.enabled ?? false,
@@ -77,6 +100,17 @@ export const getHomepageFeaturesOverview = cache(
         entityLabel: flagshipOne ? asLocalized(flagshipOne.flagship.name) : null,
         entityHref: flagshipOne ? flagshipHref(flagshipOne.flagship.slug) : null,
         updatedAt: flagshipOne?.updatedAt.toISOString() ?? null,
+      },
+      {
+        id: VIDEO_SLOT,
+        enabled: video?.enabled ?? false,
+        mode: null,
+        configured: video != null,
+        // A video has no name to show — the URL IS the identifying content, and
+        // the card renders it in the same monospace slot as the other hrefs.
+        entityLabel: null,
+        entityHref: video?.videoUrl ?? null,
+        updatedAt: video?.updatedAt.toISOString() ?? null,
       },
       {
         id: CATALOGUE_SLOT,

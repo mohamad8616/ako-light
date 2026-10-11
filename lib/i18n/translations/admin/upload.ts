@@ -25,6 +25,17 @@ export const uploadEn = {
   "admin.upload.pdfDownloadHint":
     "The button downloads this file. Leave it empty to use the button link, or the catalogue's own PDF.",
 
+  // The VIDEO flavour of the same field (Pass D.1) — the hero video and the
+  // video section. Its own keys for the same reason the PDF has its own: a
+  // video is not an image, and being told an "image" was uploaded (or reading
+  // the 5 MB image ceiling) is actively misleading.
+  "admin.upload.pickVideo": "Upload video",
+  "admin.upload.videoDone": "Video uploaded",
+  "admin.upload.videoEmpty": "No video",
+  "admin.upload.videoHint": "MP4 or WebM · up to 200 MB",
+  // Shown in the preview box when the URL is set but will not load.
+  "admin.upload.previewUnavailable": "Preview unavailable",
+
   // Media library (app/[locale]/(admin)/admin/media + components/admin/media/*)
 } as const;
 
@@ -45,6 +56,13 @@ export const uploadFa = {
   "admin.upload.pdfHint": "PDF · حداکثر ۵ مگابایت",
   "admin.upload.pdfDownloadHint":
     "دکمه همین فایل را دانلود می‌کند. اگر خالی بماند، پیوند دکمه یا فایل PDF خود کاتالوگ استفاده می‌شود.",
+
+  // نسخهٔ ویدیویی همان فیلد (پاس D.1) — ویدیوی هیرو و بخش ویدیو
+  "admin.upload.pickVideo": "آپلود ویدیو",
+  "admin.upload.videoDone": "ویدیو آپلود شد",
+  "admin.upload.videoEmpty": "بدون ویدیو",
+  "admin.upload.videoHint": "MP4 یا WebM · حداکثر ۲۰۰ مگابایت",
+  "admin.upload.previewUnavailable": "پیش‌نمایش در دسترس نیست",
 
   // کتابخانه رسانه (app/[locale]/(admin)/admin/media و components/admin/media/*)
 } as const;

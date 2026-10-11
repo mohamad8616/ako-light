@@ -31,7 +31,9 @@ export const HOMEPAGE_HREF = "/admin/homepage";
 
 /** Every slot key = the row's id in prisma/seed.ts. */
 export const HOMEPAGE_SLOT_KEYS = [
+  "hero",
   "flagship-one",
+  "video",
   "catalogue",
   "home-collection",
   "project-banner",
@@ -48,9 +50,17 @@ export interface HomepageSlotMeta {
 }
 
 export const HOMEPAGE_SLOT_META: Record<HomepageSlotKey, HomepageSlotMeta> = {
+  hero: {
+    labelKey: "admin.homepage.slot.hero",
+    descriptionKey: "admin.homepage.slot.hero.description",
+  },
   "flagship-one": {
     labelKey: "admin.homepage.slot.flagship-one",
     descriptionKey: "admin.homepage.slot.flagship-one.description",
+  },
+  video: {
+    labelKey: "admin.homepage.slot.video",
+    descriptionKey: "admin.homepage.slot.video.description",
   },
   catalogue: {
     labelKey: "admin.homepage.slot.catalogue",

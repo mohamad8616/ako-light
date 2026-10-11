@@ -757,6 +757,59 @@ model CatalogueFeature {
   @@map("catalogue_feature")
 }
 
+/// Homepage hero — components/home/HeroSection.tsx (Pass D.1).
+///
+/// Standalone content like HomeCollectionFeature: the hero references no
+/// catalog entity, so there is no FK and no reference/override mode. It is
+/// also the ONLY slot whose every field is nullable, and that is the point:
+/// the hero's copy currently comes from the `hero.*` dictionary keys and its
+/// media from the static `/videos/hero.mp4` + `/videos/hero-poster.jpg` assets.
+/// NULL therefore means "use that built-in default", so this table changes
+/// nothing until an operator deliberately overrides a field — no backfill, and
+/// a missing row renders the hero exactly as it always did.
+model HeroFeature {
+  /// Singleton slot key ("hero").
+  id         String   @id
+  enabled    Boolean  @default(true)
+  /// Override video URL/path (storage URL or a path under /public).
+  videoUrl   String?
+  /// Override poster image — the frame painted before the video loads.
+  posterUrl  String?
+  /// Localized { en, fa } — the h1 line.
+  firstLine  Json?
+  /// Localized { en, fa } — the h2 line.
+  secondLine Json?
+  /// Localized { en, fa } — the CTA button label.
+  ctaLabel   Json?
+  /// CTA destination. A SINGLE string, not localized — this project keeps one
+  /// address per link (see CatalogueFeature.ctaHref). NULL falls back to the
+  /// component's own default (`/catalogue`).
+  ctaHref    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("hero_feature")
+}
+
+/// Homepage video section — components/home/VideoSection.tsx (Pass D.1).
+///
+/// The section's ONLY configurable content is its video: the placeholder copy
+/// (`video.brand`) stays a dictionary string and the layout/animation are
+/// untouched. `videoUrl` is nullable so NULL keeps the built-in
+/// `/videos/afterhenge.mp4`, and no backfill is needed.
+model VideoFeature {
+  /// Singleton slot key ("video").
+  id        String   @id
+  enabled   Boolean  @default(true)
+  /// Override video URL/path (storage URL or a path under /public).
+  videoUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("video_feature")
+}
+
+
 // ---------------------------------------------------------------------------
 // About & S34 Page Sections (myPlan.md — Part B).
 //

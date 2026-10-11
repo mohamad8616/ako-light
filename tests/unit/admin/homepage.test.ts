@@ -17,14 +17,31 @@ import { describe, expect, it } from "vitest";
  */
 describe("homepage slot registry", () => {
   it("knows every slot exactly once", () => {
-    expect(HOMEPAGE_SLOT_KEYS).toHaveLength(5);
+    // Seven since Pass D.1 added the hero and the video section.
+    expect(HOMEPAGE_SLOT_KEYS).toHaveLength(7);
     expect(new Set(HOMEPAGE_SLOT_KEYS).size).toBe(HOMEPAGE_SLOT_KEYS.length);
     expect([...HOMEPAGE_SLOT_KEYS].sort()).toEqual(Object.keys(HOMEPAGE_SLOT_META).sort());
+  });
+
+  it("lists the slots in the order the homepage renders them", () => {
+    // The hub reads top-to-bottom like the page it configures, so the registry
+    // order is a contract, not an accident.
+    expect([...HOMEPAGE_SLOT_KEYS]).toEqual([
+      "hero",
+      "flagship-one",
+      "video",
+      "catalogue",
+      "home-collection",
+      "project-banner",
+      "project-dark-background",
+    ]);
   });
 
   it("recognises a slot route segment and rejects anything else", () => {
     expect(isHomepageSlot("flagship-one")).toBe(true);
     expect(isHomepageSlot("catalogue")).toBe(true);
+    expect(isHomepageSlot("hero")).toBe(true);
+    expect(isHomepageSlot("video")).toBe(true);
     expect(isHomepageSlot("new")).toBe(false);
     expect(isHomepageSlot("")).toBe(false);
   });

@@ -22,6 +22,12 @@ type HeroSectionTextProps = {
   firstLineLocalized?: Localized;
   /** Bilingual text for the second line, resolved reactively. */
   secondLineLocalized?: Localized;
+  /**
+   * Where the button goes. Defaults to `/catalogue`, which is what every
+   * existing caller relied on — the hero makes it configurable (Pass D.1)
+   * without changing what the other two callers render.
+   */
+  href?: string;
 };
 
 export default function HeroSectionText({
@@ -33,6 +39,7 @@ export default function HeroSectionText({
   btn: btnProp,
   firstLineLocalized,
   secondLineLocalized,
+  href = "/catalogue",
 }: HeroSectionTextProps) {
   const { lang, t } = useLanguage();
 
@@ -77,7 +84,7 @@ export default function HeroSectionText({
           {secondLine}
         </motion.h2>
       </div>
-      {btn && <PlusTextBtn text={btn} href="/catalogue" className="mt-5" />}
+      {btn && <PlusTextBtn text={btn} href={href} className="mt-5" />}
 
       {/* Scroll indicator */}
       <ScrollIndicator />

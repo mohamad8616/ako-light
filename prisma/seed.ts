@@ -556,6 +556,25 @@ async function seedHomepageFeatures(): Promise<void> {
     },
     update: {},
   });
+
+  // Pass D.1 — the hero and the video section. Both are created with NO
+  // overrides at all, and that is the point: NULL means "use the component's
+  // built-in asset and dictionary copy", so these rows change nothing about
+  // what the homepage renders. They exist so the admin hub lists both sections
+  // as configured (and so the per-slot edit route has a row to upsert into),
+  // exactly like the five banners above. `update` is empty for the same reason:
+  // re-seeding must never clobber content edited in the dashboard.
+  await prisma.heroFeature.upsert({
+    where: { id: "hero" },
+    create: { id: "hero" },
+    update: {},
+  });
+
+  await prisma.videoFeature.upsert({
+    where: { id: "video" },
+    create: { id: "video" },
+    update: {},
+  });
 }
 
 /**
@@ -719,6 +738,8 @@ async function main(): Promise<void> {
     ["project_dark_bg_feature", () => prisma.projectDarkBackgroundFeature.count()],
     ["home_collection_feature", () => prisma.homeCollectionFeature.count()],
     ["catalogue_feature", () => prisma.catalogueFeature.count()],
+    ["hero_feature", () => prisma.heroFeature.count()],
+    ["video_feature", () => prisma.videoFeature.count()],
     ["about_page_section", () => prisma.aboutPageSection.count()],
     ["s34_page_section", () => prisma.s34PageSection.count()],
     ["site_settings", () => prisma.siteSettings.count()],

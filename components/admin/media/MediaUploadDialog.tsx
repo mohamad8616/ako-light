@@ -12,18 +12,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  registerDirectUploadAction,
-  uploadMediaAction,
-} from "@/lib/admin/actions/media";
 import { ADMIN_SHELL_DIR } from "@/lib/admin/sections";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import {
-  DIRECT_UPLOAD_THRESHOLD_BYTES,
-  IMAGE_MAX_BYTES,
-  VIDEO_MAX_BYTES,
-} from "@/lib/media/limits";
-import { uploadDirectToStorage } from "@/lib/media/storage/client";
+import { maxBytesFor, uploadMediaFile } from "@/lib/media/upload-client";
 import { Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
@@ -31,6 +22,12 @@ import { toast } from "sonner";
 
 /**
  * Uploading a file into the media library.
+ *
+ * The upload itself — which path a file takes, how each path authorises, and
+ * how a failure is mapped to a code — lives in `lib/media/upload-client.ts`,
+ * which the admin's media FIELDS use too (Pass D.1). This component owns only
+ * the dialog around it: the file picker, the metadata inputs, the progress
+ * feedback and the library refresh.
  *
  * Small files go through `uploadMediaAction` — the Pass 13.5A server action —
  * and NOT through a fresh fetch to storage. That action already owns the whole
@@ -40,25 +37,13 @@ import { toast } from "sonner";
  * stored object if the row write fails. Re-implementing any of that here would
  * be a second, drifting copy of the security-critical path.
  *
- * Large files and videos take the direct path instead (see the size decision in
- * `handleSubmit`), because a Server Action buffers the whole payload in memory.
+ * Large files and videos take the direct path instead, because a Server Action
+ * buffers the whole payload in memory.
  */
 
 /** The types the shared validator accepts; also the file picker's filter. */
 const ACCEPT =
   "image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm";
-
-/** True when the file is (claimed to be) a video. */
-const isVideoFile = (file: File) => file.type.startsWith("video/");
-
-/**
- * The ceiling for a file, chosen by its claimed kind.
- *
- * Only a UX guard: the server re-checks the real byte length, and on the direct
- * path the PROVIDER enforces the limit on the wire.
- */
-const maxBytesFor = (file: File) =>
-  isVideoFile(file) ? VIDEO_MAX_BYTES : IMAGE_MAX_BYTES;
 
 /** Mirrors `TEXT_MAX` in lib/admin/schemas/common.ts, the server's own cap. */
 const METADATA_MAX = 2000;
@@ -139,97 +124,46 @@ export function MediaUploadDialog({
     setError(null);
 
     /**
-     * TWO PATHS, ONE DECISION.
+     * ONE call, TWO paths — the decision lives in `uploadMediaFile`.
      *
-     * Small images keep the existing Server Action flow, unchanged. Anything
-     * large — and every video — goes straight from the browser to the provider,
-     * because a Server Action buffers the whole payload in memory on the Next
-     * server, which is exactly the bottleneck this pass exists to remove.
+     * Small images keep the existing Server Action flow; anything large — and
+     * every video — goes straight from the browser to the provider, because a
+     * Server Action buffers the whole payload in memory on the Next server,
+     * which is exactly the bottleneck that path removes. The switch is a SIZE,
+     * not a type: a 5 MB image still travels the old way, and a video is not
+     * worth a second code path just because it is small.
      *
-     * The switch is a SIZE, not a type: a 5 MB image still travels the old way,
-     * and a video is not worth a second code path just because it is small.
+     * The helper never throws, so there is no catch here — an unexpected
+     * failure comes back as the `unknown` code, which is the same message a
+     * server-side storage failure produces.
      */
-    const useDirectUpload =
-      isVideoFile(file) || file.size > DIRECT_UPLOAD_THRESHOLD_BYTES;
+    const outcome = await uploadMediaFile(file, {
+      alt,
+      title,
+      onProgress: setProgress,
+      onPhase: setPhase,
+    });
 
-    try {
-      if (useDirectUpload) {
-        // Step 1 — the browser transfers the bytes itself. Progress comes from
-        // the provider's own callback, so the admin sees a real percentage
-        // rather than an indeterminate spinner.
-        setPhase("uploading");
-        setProgress(0);
-
-        const uploaded = await uploadDirectToStorage({
-          file,
-          onProgress: setProgress,
-        });
-
-        // Step 2 — an authorised action turns the object into a Media row.
-        // Re-authorised independently: the token that allowed the upload came
-        // from a different route, so this one cannot assume it.
-        setPhase("saving");
-        const registered = await registerDirectUploadAction({
-          filename: file.name,
-          uploadToken: uploaded.uploadToken ?? "",
-          size: uploaded.size,
-        });
-
-        if (registered.ok) {
-          toast.success(t("admin.upload.done"));
-          reset();
-          onOpenChange(false);
-          router.refresh();
-          return;
-        }
-
-        const directCode = registered.issues[0]?.code ?? registered.formError;
-        setError(t(`admin.error.${directCode}`));
-        toast.error(t(`admin.error.${directCode}`));
-        return;
-      }
-
-      // Small-file path: unchanged.
-      const payload = new FormData();
-      payload.set("file", file);
-      payload.set("alt", alt);
-      payload.set("title", title);
-
-      const result = await uploadMediaAction(payload);
-
-      if (result.ok) {
-        toast.success(t("admin.upload.done"));
-        reset();
-        onOpenChange(false);
-        // The action already revalidated the section; this guarantees the grid
-        // the admin is looking at re-renders with the new tile.
-        router.refresh();
-        return;
-      }
-
+    if (outcome.ok) {
+      toast.success(t("admin.upload.done"));
+      reset();
+      onOpenChange(false);
+      // The action already revalidated the section; this guarantees the grid
+      // the admin is looking at re-renders with the new tile.
+      router.refresh();
+    } else {
       // Structured code -> the shared translated message, exactly like every
-      // other admin failure. The first field issue wins when there is one,
-      // because a bad alt text is more actionable than the generic envelope.
-      const code = result.issues[0]?.code ?? result.formError;
-      const message = t(`admin.error.${code}`);
+      // other admin failure.
+      const message = t(`admin.error.${outcome.code}`);
       setError(message);
       toast.error(message);
-    } catch (error) {
-      // The action rethrows unknown errors on purpose; the server log carries
-      // the stack while the admin sees something actionable. A DIRECT-upload
-      // failure never reaches the server, so this is its only chance to report
-      // anything — it collapses to the generic message, the same treatment a
-      // server-side storage failure gets.
-      console.error("[media] direct upload failed", error);
-      setError(t("admin.error.unknown"));
-      toast.error(t("admin.error.unknown"));
-    } finally {
-      setPending(false);
-      // Progress only ever describes the run that just finished; leaving it set
-      // would show a stale bar next to a fresh file picker.
-      setPhase("idle");
-      setProgress(null);
     }
+
+    setPending(false);
+    // Progress only ever describes the run that just finished; leaving it set
+    // would show a stale bar next to a fresh file picker.
+    setPhase("idle");
+    setProgress(null);
   };
 
   return (

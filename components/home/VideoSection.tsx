@@ -1,11 +1,28 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import type { ResolvedVideoFeature } from "@/lib/repositories/homepage-features";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import HomepageSection, { EASE } from "../../utility/HomepageSection";
 
-export default function VideoSection() {
+/** The shipped asset, used until an operator uploads a replacement. */
+const DEFAULT_VIDEO = "/videos/afterhenge.mp4";
+
+/**
+ * The homepage video section (Pass D.1).
+ *
+ * The ONLY thing the slot configures is the video. The placeholder copy
+ * (`video.brand`), the layout, the scroll-triggered loading and the
+ * play/pause-on-visibility behaviour are not content and are unchanged — an
+ * empty slot renders exactly what this component always rendered.
+ */
+export default function VideoSection({
+  data,
+}: {
+  /** Server-resolved slot data; `null` renders the built-in section. */
+  data: ResolvedVideoFeature | null;
+}) {
   const { t } = useLanguage();
   const sectionRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -39,6 +56,9 @@ export default function VideoSection() {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  // `enabled: false` hides the section, like every other slot.
+  if (data && !data.enabled) return null;
 
   return (
     <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
@@ -75,7 +95,7 @@ export default function VideoSection() {
               onPause={() => setIsPlaying(false)}
               className="h-full w-full object-cover"
             >
-              <source src="/videos/afterhenge.mp4" type="video/mp4" />
+              <source src={data?.videoUrl ?? DEFAULT_VIDEO} type="video/mp4" />
             </video>
           )}
         </div>

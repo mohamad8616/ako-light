@@ -10,9 +10,11 @@ import { getProductCategories } from "@/lib/repositories/product-categories";
 import {
   getCatalogueFeature,
   getFlagshipOneFeature,
+  getHeroFeature,
   getHomeCollectionFeature,
   getProjectBannerFeature,
   getProjectDarkBackgroundFeature,
+  getVideoFeature,
 } from "@/lib/repositories/homepage-features";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
@@ -41,14 +43,18 @@ export default async function HomePage() {
   // lib/repositories/homepage-features.ts) — one parallel round of reads.
   const [
     productCategories,
+    hero,
     flagshipOne,
+    video,
     catalogue,
     homeCollection,
     projectBanner,
     projectDarkBackground,
   ] = await Promise.all([
     getProductCategories(),
+    getHeroFeature(),
     getFlagshipOneFeature(),
+    getVideoFeature(),
     getCatalogueFeature(),
     getHomeCollectionFeature(),
     getProjectBannerFeature(),
@@ -86,10 +92,10 @@ export default async function HomePage() {
   });
   return (
     <main className="font-noora bg-background-secondary w-full space-y-18 lg:space-y-60">
-      <HeroSection />
+      <HeroSection data={hero} />
       <ImageGalleryCarousel purpose="link" category={productCategory} />
       <FlagshipOne data={flagshipOne} />
-      <VideoSection />
+      <VideoSection data={video} />
       <CatalogueSection data={catalogue} />
       <HomeCollectionBanner data={homeCollection} />
       <ProjectBanner data={projectBanner} />

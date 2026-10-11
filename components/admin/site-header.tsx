@@ -1,12 +1,14 @@
 "use client"
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider"
+import { AdminHeaderNav } from "@/components/admin/AdminHeaderNav"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 
 /**
  * Admin shell header — chrome only. The page body owns its own headings; this
- * bar carries the sidebar trigger and the shell title.
+ * bar carries the sidebar trigger, the shell title, and the compact navigation
+ * added in Pass D.1 (public-site link + language switcher).
  */
 export function SiteHeader() {
   const { t } = useLanguage()
@@ -21,6 +23,7 @@ export function SiteHeader() {
         <h1 className="text-base font-medium lg:text-lg">
           {t("admin.header.title")}
         </h1>
+        <AdminHeaderNav />
       </div>
     </header>
   );

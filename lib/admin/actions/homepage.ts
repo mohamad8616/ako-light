@@ -27,27 +27,35 @@ import { toActionResult } from "@/lib/admin/result-server";
 import {
   catalogueFeatureFormSchema,
   flagshipOneFeatureFormSchema,
+  heroFeatureFormSchema,
   homeCollectionFeatureFormSchema,
   projectBannerFeatureFormSchema,
   projectDarkBackgroundFeatureFormSchema,
+  videoFeatureFormSchema,
   type CatalogueFeatureFormValues,
   type FlagshipOneFeatureFormValues,
+  type HeroFeatureFormValues,
   type HomeCollectionFeatureFormValues,
   type ProjectBannerFeatureFormValues,
   type ProjectDarkBackgroundFeatureFormValues,
+  type VideoFeatureFormValues,
 } from "@/lib/admin/schemas/homepage";
 import type { Localized } from "@/lib/i18n/localized";
 import {
   getCatalogueFeatureAdminDetail,
   getFlagshipOneFeatureAdminDetail,
+  getHeroFeatureAdminDetail,
   getHomeCollectionFeatureAdminDetail,
   getProjectBannerFeatureAdminDetail,
   getProjectDarkBackgroundFeatureAdminDetail,
+  getVideoFeatureAdminDetail,
   updateCatalogueFeature,
   updateFlagshipOneFeature,
+  updateHeroFeature,
   updateHomeCollectionFeature,
   updateProjectBannerFeature,
   updateProjectDarkBackgroundFeature,
+  updateVideoFeature,
 } from "@/lib/repositories/homepage-features";
 
 /**
@@ -245,6 +253,94 @@ export async function updateCatalogueFeatureAction(
       ...removedUrls(beforeUrls, [parsed.data.image]),
       ...removedUrls([previous?.ctaPdfUrl], [ctaPdfUrl]),
     ]);
+
+    revalidateCatalog("homepage");
+    return actionOk(undefined);
+  } catch (error) {
+    return toActionResult(error);
+  }
+}
+
+/**
+ * Saves the hero (Pass D.1).
+ *
+ * ── Every field is an OVERRIDE, and clearing one is how you undo it ─────────
+ *
+ * The hero's content was never in the database: the copy is `hero.*`
+ * dictionary strings, the media are static `/videos/*` assets, and the CTA
+ * target is the component's own `/catalogue` default. So `""` / an empty pair
+ * here means "go back to that built-in", which is mapped to SQL NULL — the same
+ * contract the catalogue paragraph and CTA label already use. A save that
+ * changes nothing therefore writes nothing but the row's existence and cannot
+ * blank the hero.
+ */
+export async function updateHeroFeatureAction(
+  input: HeroFeatureFormValues,
+): Promise<ActionResult<undefined>> {
+  await requireAdminAccess();
+
+  const parsed = heroFeatureFormSchema.safeParse(input);
+  if (!parsed.success) {
+    return actionFail("invalid", zodIssuesToFieldIssues(parsed.error));
+  }
+
+  try {
+    const previous = await getHeroFeatureAdminDetail();
+
+    const videoUrl = emptyToNull(parsed.data.videoUrl);
+    const posterUrl = emptyToNull(parsed.data.posterUrl);
+
+    await updateHeroFeature({
+      enabled: parsed.data.enabled,
+      videoUrl,
+      posterUrl,
+      firstLine: clearedToNull(parsed.data.firstLine),
+      secondLine: clearedToNull(parsed.data.secondLine),
+      ctaLabel: clearedToNull(parsed.data.ctaLabel),
+      ctaHref: emptyToNull(parsed.data.ctaHref),
+    });
+
+    // Sweep the objects this edit DROPPED. In practice this is a no-op — every
+    // hero asset is a media-library object (an upload registers a Media row, and
+    // the picker only ever returns one), and `deleteStorageUrls` deliberately
+    // refuses to delete a media-owned key. It is kept for the same reason every
+    // sibling slot keeps it: one safety net on the single shared path, rather
+    // than each action reasoning about whether its own fields can be ours.
+    await deleteStorageUrls([
+      ...removedUrls([previous?.videoUrl], [videoUrl]),
+      ...removedUrls([previous?.posterUrl], [posterUrl]),
+    ]);
+
+    revalidateCatalog("homepage");
+    return actionOk(undefined);
+  } catch (error) {
+    return toActionResult(error);
+  }
+}
+
+/**
+ * Saves the video section (Pass D.1).
+ *
+ * One field, and `""` means "use the built-in `/videos/afterhenge.mp4`" — so an
+ * operator can always get back to the shipped asset without editing source.
+ */
+export async function updateVideoFeatureAction(
+  input: VideoFeatureFormValues,
+): Promise<ActionResult<undefined>> {
+  await requireAdminAccess();
+
+  const parsed = videoFeatureFormSchema.safeParse(input);
+  if (!parsed.success) {
+    return actionFail("invalid", zodIssuesToFieldIssues(parsed.error));
+  }
+
+  try {
+    const previous = await getVideoFeatureAdminDetail();
+    const videoUrl = emptyToNull(parsed.data.videoUrl);
+
+    await updateVideoFeature({ enabled: parsed.data.enabled, videoUrl });
+
+    await deleteStorageUrls(removedUrls([previous?.videoUrl], [videoUrl]));
 
     revalidateCatalog("homepage");
     return actionOk(undefined);

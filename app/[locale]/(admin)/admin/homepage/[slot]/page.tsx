@@ -2,9 +2,11 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { BackLink } from "@/components/admin/catalog/BackLink";
 import { CatalogueFeatureForm } from "@/components/admin/catalog/homepage/CatalogueFeatureForm";
 import { FlagshipOneFeatureForm } from "@/components/admin/catalog/homepage/FlagshipOneFeatureForm";
+import { HeroFeatureForm } from "@/components/admin/catalog/homepage/HeroFeatureForm";
 import { HomeCollectionFeatureForm } from "@/components/admin/catalog/homepage/HomeCollectionFeatureForm";
 import { ProjectBannerFeatureForm } from "@/components/admin/catalog/homepage/ProjectBannerFeatureForm";
 import { ProjectDarkBackgroundFeatureForm } from "@/components/admin/catalog/homepage/ProjectDarkBackgroundFeatureForm";
+import { VideoFeatureForm } from "@/components/admin/catalog/homepage/VideoFeatureForm";
 import {
   HOMEPAGE_HREF,
   HOMEPAGE_SLOT_META,
@@ -18,9 +20,11 @@ import { getFlagshipAdminRows } from "@/lib/repositories/flagships";
 import {
   getCatalogueFeatureAdminDetail,
   getFlagshipOneFeatureAdminDetail,
+  getHeroFeatureAdminDetail,
   getHomeCollectionFeatureAdminDetail,
   getProjectBannerFeatureAdminDetail,
   getProjectDarkBackgroundFeatureAdminDetail,
+  getVideoFeatureAdminDetail,
 } from "@/lib/repositories/homepage-features";
 import { getProjectAdminRows } from "@/lib/repositories/projects";
 import { notFound } from "next/navigation";
@@ -73,6 +77,15 @@ export default async function HomepageSlotPage({
 /** The slot's saved values plus whatever its entity picker lists. */
 async function renderSlotForm(slot: HomepageSlotKey) {
   switch (slot) {
+    case "hero": {
+      // No picker source: the hero references no catalog entity.
+      const detail = await getHeroFeatureAdminDetail();
+      return <HeroFeatureForm detail={detail} />;
+    }
+    case "video": {
+      const detail = await getVideoFeatureAdminDetail();
+      return <VideoFeatureForm detail={detail} />;
+    }
     case "flagship-one": {
       const [detail, flagships] = await Promise.all([
         getFlagshipOneFeatureAdminDetail(),

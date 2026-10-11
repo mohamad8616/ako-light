@@ -18,10 +18,12 @@ import {
   CATALOGUE_CTA_DOWNLOAD_PATH,
   CATALOGUE_SLOT,
   FLAGSHIP_ONE_SLOT,
+  HERO_SLOT,
   HOME_COLLECTION_HREF,
   HOME_COLLECTION_SLOT,
   PROJECT_BANNER_SLOT,
   PROJECT_DARK_BACKGROUND_SLOT,
+  VIDEO_SLOT,
   getCatalogueFeature,
   getFlagshipOneFeature,
   getFlagshipOneFeatureAdminDetail,
@@ -304,8 +306,12 @@ describeDb("homepage-features repository — override mode & admin DTOs", () => 
   it("overview lists every slot in homepage render order, fully serializable", async () => {
     const rows = await getHomepageFeaturesOverview();
 
+    // Seven since Pass D.1 added the hero and the video section, and the order
+    // is the order the public page renders them.
     expect(rows.map((row) => row.id)).toEqual([
+      HERO_SLOT,
       FLAGSHIP_ONE_SLOT,
+      VIDEO_SLOT,
       CATALOGUE_SLOT,
       HOME_COLLECTION_SLOT,
       PROJECT_BANNER_SLOT,
@@ -326,10 +332,32 @@ describeDb("homepage-features repository — override mode & admin DTOs", () => 
         ],
         `overview ${row.id}`,
       );
-      expect(row.configured, `${row.id} seeded`).toBe(true);
-      // ISO strings, not Date objects: the DTO crosses to client components.
-      expect(typeof row.updatedAt, `${row.id} updatedAt`).toBe("string");
+      if (row.configured) {
+        // ISO strings, not Date objects: the DTO crosses to client components.
+        expect(typeof row.updatedAt, `${row.id} updatedAt`).toBe("string");
+      } else {
+        // A missing singleton row is a supported state — the component then
+        // renders its built-in content — and it must report `null`, not throw.
+        expect(row.updatedAt, `${row.id} updatedAt`).toBeNull();
+      }
     }
+
+    // The five banners this project has always seeded are always configured.
+    for (const id of [
+      FLAGSHIP_ONE_SLOT,
+      CATALOGUE_SLOT,
+      HOME_COLLECTION_SLOT,
+      PROJECT_BANNER_SLOT,
+      PROJECT_DARK_BACKGROUND_SLOT,
+    ]) {
+      expect(rows.find((row) => row.id === id)!.configured, `${id} seeded`).toBe(
+        true,
+      );
+    }
+
+    // Pass D.1 slots have no linked entity, so they never report a mode.
+    expect(rows.find((row) => row.id === HERO_SLOT)!.mode).toBeNull();
+    expect(rows.find((row) => row.id === VIDEO_SLOT)!.mode).toBeNull();
 
     const collection = rows.find((row) => row.id === HOME_COLLECTION_SLOT)!;
     expect(collection.mode, "standalone slot has no mode").toBeNull();
@@ -341,7 +369,11 @@ describeDb("homepage-features repository — override mode & admin DTOs", () => 
     expect(catalogue.mode, "catalogue slot has no mode").toBeNull();
 
     for (const row of rows.filter(
-      (r) => r.id !== HOME_COLLECTION_SLOT && r.id !== CATALOGUE_SLOT,
+      (r) =>
+        r.id !== HOME_COLLECTION_SLOT &&
+        r.id !== CATALOGUE_SLOT &&
+        r.id !== HERO_SLOT &&
+        r.id !== VIDEO_SLOT,
     )) {
       expect(row.mode, `${row.id} mode`).toBe(FeatureMode.reference);
       expect(row.entityHref, `${row.id} href`).toBeTypeOf("string");

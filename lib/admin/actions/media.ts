@@ -46,6 +46,7 @@ import {
   uploadMedia,
   type MediaErrorCode,
 } from "@/lib/media/service";
+import type { MediaKind } from "@/lib/media/library";
 
 /** What an upload reports back to the caller. */
 export interface MediaUploadResult {
@@ -147,6 +148,12 @@ export interface MediaPickerItem {
   filename: string;
   alt: string | null;
   title: string | null;
+  /**
+   * The tile's kind (Pass D.1). The picker renders a video tile as a `<video>`
+   * element rather than through `next/image` — an `<img>` pointed at an `.mp4`
+   * is a broken image, which is what a video used to look like in this dialog.
+   */
+  mediaType: MediaKind;
 }
 
 /** Page size for the picker dialog; smaller than the library grid on purpose. */
@@ -166,6 +173,8 @@ const PICKER_PAGE_SIZE = 24;
 export async function listMediaForPickerAction(input: {
   search?: string;
   page?: number;
+  /** Restrict the chooser to one kind; omit for "all". */
+  mediaType?: MediaKind;
 }): Promise<ActionResult<{ items: MediaPickerItem[]; total: number; page: number }>> {
   await requireAdminAccess();
 
@@ -175,6 +184,7 @@ export async function listMediaForPickerAction(input: {
   try {
     const { rows, total } = await listMediaPage({
       search,
+      mediaType: input.mediaType,
       sort: "newest",
       limit: PICKER_PAGE_SIZE,
       offset: (page - 1) * PICKER_PAGE_SIZE,
@@ -187,6 +197,7 @@ export async function listMediaForPickerAction(input: {
         filename: row.filename,
         alt: row.alt,
         title: row.title,
+        mediaType: row.mediaType,
       })),
       total,
       page,

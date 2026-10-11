@@ -16,6 +16,7 @@ import {
   type MediaPickerItem,
 } from "@/lib/admin/actions/media";
 import { ADMIN_SHELL_DIR } from "@/lib/admin/sections";
+import type { MediaKind } from "@/lib/media/library";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import { ImageOff, Search } from "lucide-react";
@@ -40,12 +41,20 @@ export function MediaPickerDialog({
   onOpenChange,
   onSelect,
   selectedId,
+  mediaType,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelect: (item: MediaPickerItem) => void;
   /** Highlighted as already chosen. */
   selectedId?: string | null;
+  /**
+   * Restrict the chooser to one kind (Pass D.1) — a video field must not offer
+   * stills. Filtering happens in the DATABASE, through the same `listMediaPage`
+   * the library uses, so paging and the total stay correct; a client-side
+   * filter over one page would show a grid that lies about what exists.
+   */
+  mediaType?: MediaKind;
 }) {
   const { t } = useLanguage();
   const [items, setItems] = React.useState<MediaPickerItem[]>([]);
@@ -59,7 +68,11 @@ export function MediaPickerDialog({
       setLoading(true);
       setError(null);
       try {
-        const result = await listMediaForPickerAction({ search, page: 1 });
+        const result = await listMediaForPickerAction({
+          search,
+          page: 1,
+          mediaType,
+        });
         if (result.ok) {
           setItems(result.data.items);
           setLoaded(true);
@@ -72,7 +85,7 @@ export function MediaPickerDialog({
         setLoading(false);
       }
     },
-    [t],
+    [mediaType, t],
   );
 
   // ONE effect covers both cases — the initial load when the dialog opens and
@@ -162,13 +175,32 @@ export function MediaPickerDialog({
                     )}
                   >
                     <span className="bg-muted relative block aspect-square overflow-hidden rounded-lg">
-                      <Image
-                        src={item.url}
-                        alt={item.alt || item.title || item.filename}
-                        fill
-                        sizes="(max-width: 640px) 33vw, 16vw"
-                        className="object-cover"
-                      />
+                      {/*
+                        A video tile renders the VIDEO, not an `<img>`: an
+                        `<img src="…mp4">` is a broken image, which is exactly
+                        what a video used to look like in this dialog. The same
+                        choice MediaCard makes, and for the same reason —
+                        `preload="metadata"` paints the first frame with no
+                        transcoding and no poster generation.
+                      */}
+                      {item.mediaType === "video" ? (
+                        <video
+                          src={item.url}
+                          muted
+                          playsInline
+                          preload="metadata"
+                          aria-label={item.alt || item.title || item.filename}
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Image
+                          src={item.url}
+                          alt={item.alt || item.title || item.filename}
+                          fill
+                          sizes="(max-width: 640px) 33vw, 16vw"
+                          className="object-cover"
+                        />
+                      )}
                     </span>
                     <span className="mt-1 block truncate text-[11px]">
                       {item.filename}

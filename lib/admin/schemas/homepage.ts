@@ -54,6 +54,25 @@ export const clearableImageRefSchema = z.union([
 /** The `enabled` switch every slot carries. */
 const enabledSchema = z.boolean();
 
+/**
+ * A clearable MEDIA reference — an image OR a video.
+ *
+ * Named for its original use, and reused verbatim for the hero's video and
+ * poster (Pass D.1) rather than growing a parallel `clearableVideoRefSchema`:
+ * the rule is "absolute http(s) URL, or a root-relative path", which is exactly
+ * the same policy for both kinds, and a second copy of it would be a second
+ * thing to keep in step. `""` still means "not configured".
+ *
+ * The policy is deliberately NOT "must be our storage host": the project's
+ * image fields have always accepted any https URL (a designer's own site, a
+ * seeded external asset), and the only place that needed a trusted-host check
+ * is the catalogue PDF PROXY route, which re-serves the bytes and therefore
+ * refuses any host that is not `isLiaraStorageHost`. A `<video src>` renders
+ * the URL directly, so it carries no more authority than an `<img src>` and
+ * inherits exactly the same rule as every other media field.
+ */
+const clearableMediaRefSchema = clearableImageRefSchema;
+
 /** How a slot derives its displayed content (mirrors `FeatureMode`). */
 const featureModeSchema = z.enum(["reference", "override"]);
 
@@ -147,6 +166,49 @@ export const catalogueFeatureFormSchema = z.object({
   ctaPdfName: z.string().max(NAME_MAX),
 });
 
+/**
+ * The hero (Pass D.1) — components/home/HeroSection.tsx.
+ *
+ * The hero references no catalog entity, so every field is an OVERRIDE of
+ * something the component already renders: the two headline lines and the CTA
+ * label come from the `hero.*` dictionary keys, the media from the static
+ * `/videos/hero.mp4` + `/videos/hero-poster.jpg` assets, and the CTA target
+ * from the component's own `/catalogue` default. All of them are clearable, and
+ * clearing means "keep using that built-in" — which is why an untouched hero
+ * form saves nothing and changes nothing.
+ */
+export const heroFeatureFormSchema = z.object({
+  enabled: enabledSchema,
+  /** Override hero video. Empty = the built-in `/videos/hero.mp4`. */
+  videoUrl: clearableMediaRefSchema,
+  /** Override poster frame. Empty = the built-in `/videos/hero-poster.jpg`. */
+  posterUrl: clearableMediaRefSchema,
+  /** The h1 line. An empty pair = `t("hero.collection")`. */
+  firstLine: clearableLocalizedSchema,
+  /** The h2 line. An empty pair = `t("hero.ritualGravity")`. */
+  secondLine: clearableLocalizedSchema,
+  /** The CTA button label. An empty pair = `t("hero.readMore")`. */
+  ctaLabel: clearableLocalizedSchema,
+  /**
+   * The CTA destination. Validated by the project's safe-link allow-list
+   * (`clearableLinkSchema`), NOT by the media-ref rule: a button goes to a page,
+   * so a root-relative route is the normal case. Empty = `/catalogue`.
+   */
+  ctaHref: clearableLinkSchema,
+});
+
+/**
+ * The video section (Pass D.1) — components/home/VideoSection.tsx.
+ *
+ * Its only configurable content is the video: the placeholder copy, layout,
+ * scroll-triggered loading and play/pause behaviour are untouched. Empty
+ * `videoUrl` = the built-in `/videos/afterhenge.mp4`.
+ */
+export const videoFeatureFormSchema = z.object({
+  enabled: enabledSchema,
+  videoUrl: clearableMediaRefSchema,
+});
+
 export type FlagshipOneFeatureFormValues = z.infer<
   typeof flagshipOneFeatureFormSchema
 >;
@@ -162,3 +224,5 @@ export type HomeCollectionFeatureFormValues = z.infer<
 export type CatalogueFeatureFormValues = z.infer<
   typeof catalogueFeatureFormSchema
 >;
+export type HeroFeatureFormValues = z.infer<typeof heroFeatureFormSchema>;
+export type VideoFeatureFormValues = z.infer<typeof videoFeatureFormSchema>;

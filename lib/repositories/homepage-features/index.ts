@@ -27,12 +27,14 @@
  *
  *   ./slots                  slot key constants + HomepageFeatureSlot
  *   ./resolve                reference/override helpers (internal)
+ *   ./hero                   the hero (Pass D.1)
  *   ./flagship-one           the flagship banner
  *   ./project-banner         the H Istra project banner
  *   ./project-dark-background the Vocla 2026 banner
+ *   ./video                  the video section (Pass D.1)
  *   ./home-collection        the standalone collections banner
  *   ./catalogue              the catalogue/PDF section
- *   ./overview               the admin hub summary (reads all five)
+ *   ./overview               the admin hub summary (reads all seven)
  *
  * Importers keep the same specifier they always used
  * (`@/lib/repositories/homepage-features`); only the internals moved. The
@@ -43,8 +45,22 @@ export { PROJECT_BANNER_SLOT } from "./slots";
 export { PROJECT_DARK_BACKGROUND_SLOT } from "./slots";
 export { HOME_COLLECTION_SLOT } from "./slots";
 export { CATALOGUE_SLOT } from "./slots";
+export { HERO_SLOT } from "./slots";
+export { VIDEO_SLOT } from "./slots";
 export { HOME_COLLECTION_HREF } from "./slots";
 export type { HomepageFeatureSlot } from "./slots";
+
+export { getHeroFeature } from "./hero";
+export { getHeroFeatureAdminDetail } from "./hero";
+export { updateHeroFeature } from "./hero";
+export type { ResolvedHeroFeature } from "./hero";
+export type { HeroFeatureWriteInput } from "./hero";
+
+export { getVideoFeature } from "./video";
+export { getVideoFeatureAdminDetail } from "./video";
+export { updateVideoFeature } from "./video";
+export type { ResolvedVideoFeature } from "./video";
+export type { VideoFeatureWriteInput } from "./video";
 
 export { getFlagshipOneFeature } from "./flagship-one";
 export { getFlagshipOneFeatureAdminDetail } from "./flagship-one";
