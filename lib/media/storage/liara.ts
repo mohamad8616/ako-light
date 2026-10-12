@@ -57,9 +57,14 @@ export function liaraPublicUrl(
   key: string,
   endpoint: string,
   bucket: string,
+  publicUrl?: string,
 ): string {
   const base = new URL(endpoint);
   const encodedKey = key.split("/").map(encodeURIComponent).join("/");
+  if (publicUrl) {
+    const publicBase = new URL(publicUrl);
+    return `${publicBase.origin}/${encodedKey}`;
+  }
   const port = base.port ? `:${base.port}` : "";
   // Liara serves an object at BOTH shapes — verified against the live cluster:
   // `host/bucket/key` and `bucket.host/key` each answer `404 NoSuchKey` for a
@@ -113,7 +118,12 @@ export function createLiaraStorage(
       );
       return {
         key,
-        url: liaraPublicUrl(key, settings.endpoint, settings.bucket),
+        url: liaraPublicUrl(
+          key,
+          settings.endpoint,
+          settings.bucket,
+          settings.publicUrl,
+        ),
       };
     },
 
@@ -130,7 +140,12 @@ export function createLiaraStorage(
     getUrl(key: string): string | null {
       try {
         const settings = config();
-        return liaraPublicUrl(key, settings.endpoint, settings.bucket);
+        return liaraPublicUrl(
+          key,
+          settings.endpoint,
+          settings.bucket,
+          settings.publicUrl,
+        );
       } catch {
         return null;
       }
@@ -191,7 +206,12 @@ export function createLiaraStorage(
         );
       return {
         key: input.key,
-        url: liaraPublicUrl(input.key, settings.endpoint, settings.bucket),
+        url: liaraPublicUrl(
+          input.key,
+          settings.endpoint,
+          settings.bucket,
+          settings.publicUrl,
+        ),
         size: head.ContentLength,
         contentType: head.ContentType,
       };

@@ -109,6 +109,22 @@ describe("readLiaraConfig", () => {
       readLiaraConfig(env({ LIARA_ENDPOINT: "https://x.test/" })).endpoint,
     ).toBe("https://x.test");
   });
+
+  it("normalizes the optional public custom domain", () => {
+    expect(
+      readLiaraConfig(env({ LIARA_PUBLIC_URL: "https://media.example.com/" }))
+        .publicUrl,
+    ).toBe("https://media.example.com");
+  });
+
+  it("requires the public custom domain to be an HTTPS origin", () => {
+    expect(() =>
+      readLiaraConfig(env({ LIARA_PUBLIC_URL: "http://media.example.com" })),
+    ).toThrow(/LIARA_PUBLIC_URL must be an HTTPS origin/);
+    expect(() =>
+      readLiaraConfig(env({ LIARA_PUBLIC_URL: "https://media.example.com/path" })),
+    ).toThrow(/LIARA_PUBLIC_URL must be an HTTPS origin/);
+  });
 });
 
 describe("liaraPublicUrl", () => {
@@ -140,6 +156,17 @@ describe("liaraPublicUrl", () => {
     expect(isLiaraStorageHost("storage.iran.liara.site.evil.com")).toBe(false);
   });
 
+  it("uses an explicitly configured custom public domain", () => {
+    expect(
+      liaraPublicUrl(
+        "media/library/clip.mp4",
+        CONFIG.endpoint,
+        CONFIG.bucket,
+        "https://media.karentagseal.ir",
+      ),
+    ).toBe("https://media.karentagseal.ir/media/library/clip.mp4");
+  });
+
   it("uses the path-style URL for a non-Liara/custom endpoint", () => {
     expect(
       liaraPublicUrl("media/a.png", "https://minio.internal:9000", "bucket"),
@@ -155,6 +182,25 @@ describe("liaraPublicUrl", () => {
 
 describe("Liara upload", () => {
   beforeEach(() => vi.clearAllMocks());
+
+  it("uses the custom public hostname for URLs returned after direct upload", async () => {
+    const client = fakeClient({ ContentLength: 1024, ContentType: "video/mp4" });
+    const provider = createLiaraStorage({
+      config: () => ({ ...CONFIG, publicUrl: "https://media.karentagseal.ir" }),
+      client: () => client as never,
+      presign: presignMock as never,
+    });
+    const result = await provider.verifyClientUpload!({
+      key: "media/library/clip.mp4",
+      contentType: "video/mp4",
+      maximumSizeInBytes: 2048,
+      reportedSize: 1024,
+    });
+
+    expect(result.url).toBe(
+      "https://media.karentagseal.ir/media/library/clip.mp4",
+    );
+  });
 
   it("puts the object under the generated key and returns a derived URL", async () => {
     const client = fakeClient();

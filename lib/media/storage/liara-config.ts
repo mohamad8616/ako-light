@@ -14,11 +14,15 @@ export const LIARA_ENV_NAMES = [
   "LIARA_SECRET_KEY",
 ] as const;
 
+/** Optional HTTPS custom domain for public object URLs. */
+export const LIARA_PUBLIC_URL = "LIARA_PUBLIC_URL";
+
 export interface LiaraConfig {
   endpoint: string;
   bucket: string;
   accessKeyId: string;
   secretAccessKey: string;
+  publicUrl?: string;
 }
 
 export function readLiaraConfig(
@@ -27,6 +31,7 @@ export function readLiaraConfig(
   const [endpoint, bucket, accessKeyId, secretAccessKey] = LIARA_ENV_NAMES.map(
     (name) => env[name]?.trim(),
   );
+  const publicUrl = env[LIARA_PUBLIC_URL]?.trim();
   if (!endpoint || !bucket || !accessKeyId || !secretAccessKey) {
     throw new StorageNotConfiguredError(
       `Liara storage requires ${LIARA_ENV_NAMES.join(", ")}.`,
@@ -44,10 +49,34 @@ export function readLiaraConfig(
       cause,
     });
   }
+  let normalizedPublicUrl: string | undefined;
+  if (publicUrl) {
+    try {
+      const parsedPublicUrl = new URL(publicUrl);
+      if (parsedPublicUrl.protocol !== "https:") {
+        throw new Error("unsupported protocol");
+      }
+      if (
+        parsedPublicUrl.pathname !== "/" ||
+        parsedPublicUrl.search ||
+        parsedPublicUrl.hash
+      ) {
+        throw new Error("public URL must not include a path, query, or hash");
+      }
+      normalizedPublicUrl = `${parsedPublicUrl.protocol}//${parsedPublicUrl.host}`;
+    } catch (cause) {
+      throw new Error(
+        "LIARA_PUBLIC_URL must be an HTTPS origin such as https://media.example.com.",
+        { cause },
+      );
+    }
+  }
+
   return {
     endpoint: endpoint.replace(/\/$/, ""),
     bucket,
     accessKeyId,
     secretAccessKey,
+    ...(normalizedPublicUrl ? { publicUrl: normalizedPublicUrl } : {}),
   };
 }

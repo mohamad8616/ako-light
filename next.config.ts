@@ -51,7 +51,11 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "**.liara.site", pathname: "/**" },
       { protocol: "https", hostname: "*.liara.space", pathname: "/**" },
       { protocol: "https", hostname: "**.liara.space", pathname: "/**" },
-
+      {
+        protocol: "https",
+        hostname: "media.karentagseal.ir",
+        pathname: "/**",
+      },
       {
         protocol: "https",
         hostname: "www.henge07.com",
