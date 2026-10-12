@@ -321,8 +321,9 @@ export async function updateHeroFeatureAction(
 /**
  * Saves the video section (Pass D.1).
  *
- * One field, and `""` means "use the built-in `/videos/afterhenge.mp4`" — so an
- * operator can always get back to the shipped asset without editing source.
+ * One field, and `""` means "no video": the stock fallback asset was deleted by
+ * the operator (Pass D.1 follow-up), so clearing the field hides the section
+ * rather than restoring a shipped film.
  */
 export async function updateVideoFeatureAction(
   input: VideoFeatureFormValues,

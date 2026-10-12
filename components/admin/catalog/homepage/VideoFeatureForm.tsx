@@ -9,7 +9,9 @@
  * content. The video is the only thing an operator would want to change without
  * editing source, so it is the only thing this form exposes.
  *
- * Empty means "keep the built-in `/videos/afterhenge.mp4`", so clearing the
+ * Empty means "no video", and the section is then hidden: the stock fallback
+ * asset was deleted by the operator (Pass D.1 follow-up), so clearing the field
+ * cannot restore a shipped film.
  * field is a supported way back to the shipped asset.
  */
 import { FormCard } from "@/components/admin/catalog/fields/form";
@@ -34,7 +36,7 @@ export function VideoFeatureForm({
   detail: VideoFeatureWriteInput | null;
 }) {
   const { t } = useLanguage();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
 
   const form = useForm<VideoFeatureFormValues>({
     resolver: zodResolver(videoFeatureFormSchema),
@@ -44,12 +46,16 @@ export function VideoFeatureForm({
     },
   });
 
-  const onSubmit = form.handleSubmit(async (values) => {
-    const result = await run(() => updateVideoFeatureAction(values), {
-      successMessage: t("admin.table.saved"),
-    });
-    if (result && !result.ok) applyFieldIssues(form, result);
-  });
+  const onSubmit = form.handleSubmit(
+    async (values) => {
+      const result = await run(() => updateVideoFeatureAction(values), {
+        successMessage: t("admin.table.saved"),
+      });
+      if (result && !result.ok) applyFieldIssues(form, result);
+    },
+    // A blocked submit must SAY so — see useCrudSubmit#notifyInvalid.
+    notifyInvalid,
+  );
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">

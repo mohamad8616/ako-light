@@ -78,5 +78,20 @@ export function useCrudSubmit() {
     [t],
   );
 
-  return { run, pending, applyFieldIssues, router, t };
+  /**
+   * Pass to `form.handleSubmit(onValid, notifyInvalid)`.
+   *
+   * react-hook-form renders the field errors but does NOT call the action when
+   * the BROWSER's own validation fails — so without this the operator sees a
+   * button that did nothing at all: no request, no pending state, no toast,
+   * indistinguishable from a broken form. Pass D.1 hit exactly that (a
+   * half-filled localized pair blocked the hero's Save), and the hook's own
+   * documented contract is "toast on success and on failure (never a silent
+   * failure)" — a blocked submit is a failure.
+   */
+  const notifyInvalid = React.useCallback((): void => {
+    toast.error(t("admin.crud.checkFields"));
+  }, [t]);
+
+  return { run, pending, applyFieldIssues, notifyInvalid, router, t };
 }

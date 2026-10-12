@@ -6,21 +6,24 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import HomepageSection, { EASE } from "../../utility/HomepageSection";
 
-/** The shipped asset, used until an operator uploads a replacement. */
-const DEFAULT_VIDEO = "/videos/afterhenge.mp4";
-
 /**
  * The homepage video section (Pass D.1).
  *
  * The ONLY thing the slot configures is the video. The placeholder copy
  * (`video.brand`), the layout, the scroll-triggered loading and the
- * play/pause-on-visibility behaviour are not content and are unchanged — an
- * empty slot renders exactly what this component always rendered.
+ * play/pause-on-visibility behaviour are not content and are unchanged.
+ *
+ * There is deliberately NO built-in video any more: the shipped
+ * `/videos/afterhenge.mp4` was removed by the operator (Pass D.1 follow-up), so
+ * an unset `videoUrl` means the section has nothing to render and it renders
+ * NOTHING — a permanently empty aspect-video box with the brand placeholder
+ * over it would look broken, which is worse than the section simply not being
+ * on the page until a video is chosen.
  */
 export default function VideoSection({
   data,
 }: {
-  /** Server-resolved slot data; `null` renders the built-in section. */
+  /** Server-resolved slot data; `null` renders nothing. */
   data: ResolvedVideoFeature | null;
 }) {
   const { t } = useLanguage();
@@ -60,6 +63,10 @@ export default function VideoSection({
   // `enabled: false` hides the section, like every other slot.
   if (data && !data.enabled) return null;
 
+  // No video configured → nothing to show. See the header note.
+  const src = data?.videoUrl ?? null;
+  if (!src) return null;
+
   return (
     <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
       {/* One width system: the section's own fluid gutters. No nested
@@ -95,7 +102,7 @@ export default function VideoSection({
               onPause={() => setIsPlaying(false)}
               className="h-full w-full object-cover"
             >
-              <source src={data?.videoUrl ?? DEFAULT_VIDEO} type="video/mp4" />
+              <source src={src} type="video/mp4" />
             </video>
           )}
         </div>

@@ -20,6 +20,18 @@ export type AdminErrorCode =
    * (an http(s) URL or a path starting with "/").
    */
   | "invalidLink"
+  /**
+   * A localized field is HALF filled — one language set, the other empty.
+   *
+   * Its own code for the same reason `invalidLink` has one: the blanket
+   * "Invalid value." tells the operator nothing, and this is the mistake they
+   * actually make. The rule is both-or-neither, because `pick()` returns the
+   * empty string (not the English fallback) for a half that is `""`, so saving
+   * one half would render a BLANK headline in the other language.
+   *
+   * Pass D.1 — see `clearableLocalizedSchema` (lib/admin/schemas/homepage.ts).
+   */
+  | "localizedPair"
   /** A `.max()` string cap was exceeded (lib/admin/schemas/common.ts). */
   | "tooLong"
   /** An uploaded file exceeded the byte cap (lib/admin/actions/upload.ts). */
@@ -88,14 +100,32 @@ export function actionFail(
  * so a field shows the identical message whether validation failed locally or
  * in the action.
  */
+/**
+ * The codes a SCHEMA may name on its own zod issue.
+ *
+ * `zodResolver` copies an issue's `code` verbatim into the react-hook-form
+ * error `type`, and `zodIssuesToFieldIssues` reads the same code server-side —
+ * so a schema that names its own code gets the specific message in BOTH halves
+ * of the contract, with neither half knowing about the other.
+ */
+const SCHEMA_NAMED_CODES = ["invalidLink", "localizedPair"] as const;
+
+function schemaNamedCode(code: string): AdminErrorCode | null {
+  return (SCHEMA_NAMED_CODES as readonly string[]).includes(code)
+    ? (code as AdminErrorCode)
+    : null;
+}
+
 export function errorCodeForType(type: unknown): AdminErrorCode {
   if (type === "invalid_type" || type === "too_small") return "required";
   if (type === "too_big") return "tooLong";
-  // `clearableLinkSchema` names its own zod issue code, and `zodResolver` copies
-  // an issue's `code` verbatim into the react-hook-form error `type` — so the
-  // specific link message survives to the browser instead of degrading to
-  // "Invalid value." (verified against the installed resolver).
-  if (type === "invalidLink") return "invalidLink";
+  // `clearableLinkSchema` / `clearableLocalizedSchema` name their own zod issue
+  // codes, and `zodResolver` copies an issue's `code` verbatim into the
+  // react-hook-form error `type` — so the specific message survives to the
+  // browser instead of degrading to "Invalid value." (verified against the
+  // installed resolver).
+  const named = typeof type === "string" ? schemaNamedCode(type) : null;
+  if (named) return named;
   return "invalid";
 }
 
@@ -126,11 +156,10 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
           ? "tooLong"
           : // A schema may name its OWN code so the message describes the rule
             // rather than the blanket "Invalid value." (`clearableLinkSchema`
-            // emits `invalidLink`; the cast is needed because zod's issue-code
+            // emits `invalidLink`, `clearableLocalizedSchema` emits
+            // `localizedPair`; the cast is needed because zod's issue-code
             // union does not admit custom codes even though it carries them.)
-            (issue.code as string) === "invalidLink"
-            ? "invalidLink"
-            : "invalid";
+            (schemaNamedCode(issue.code as string) ?? "invalid");
     // Severity order when several issues land on ONE field path: the message
     // must describe the strongest problem. "required" beats "tooLong" beats
     // "invalid" (see the collapse test in tests/unit/admin/result.test.ts).
@@ -143,6 +172,8 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
       // A malformed link is more specific than `invalid`, so it wins when both
       // land on the same field.
       invalidLink: 0,
+      // Same idea: "fill in both languages" beats the blanket "Invalid value."
+      localizedPair: 0,
       tooLarge: 0,
       notImage: 0,
       unsupportedType: 0,

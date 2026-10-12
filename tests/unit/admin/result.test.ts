@@ -67,6 +67,9 @@ describe("errorCodeForType", () => {
     expect(errorCodeForType("invalid_format")).toBe("invalid");
     expect(errorCodeForType("custom")).toBe("invalid");
     expect(errorCodeForType(undefined)).toBe("invalid");
+    // A schema that names its own code keeps its specific message (Pass D.1).
+    expect(errorCodeForType("invalidLink")).toBe("invalidLink");
+    expect(errorCodeForType("localizedPair")).toBe("localizedPair");
   });
 });
 

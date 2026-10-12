@@ -68,9 +68,9 @@ describe("mediaPreviewState", () => {
   });
 
   it("does not confuse a root-relative asset with a failure", () => {
-    expect(mediaPreviewState("/videos/hero-poster.jpg", null)).toEqual({
+    expect(mediaPreviewState("/media/legacy-poster.jpg", null)).toEqual({
       kind: "media",
-      url: "/videos/hero-poster.jpg",
+      url: "/media/legacy-poster.jpg",
     });
   });
 });

@@ -7,13 +7,16 @@ import { useEffect, useRef, useState } from "react";
 import HeroSectionText from "../ui/HeroSectionText";
 
 /**
- * The built-in hero assets. They are what renders until an operator uploads a
- * replacement, so the section is never dependent on the database to paint —
- * a missing slot row and a cleared field both land here.
+ * The hero's own button destination; the slot can override it.
+ *
+ * There is deliberately NO built-in video or poster any more. The shipped
+ * `/videos/hero.mp4` + `/videos/hero-poster.jpg` assets were removed by the
+ * operator (Pass D.1 follow-up) — `hero.mp4` was ALSO the hero video for /about
+ * and /s34, which now read this slot's video instead — so "no override" means
+ * "no video", not "the stock film". The section keeps its black background and
+ * full-screen layout, so an unconfigured hero is a black hero with its copy,
+ * never a broken element.
  */
-const DEFAULT_VIDEO = "/videos/hero.mp4";
-const DEFAULT_POSTER = "/videos/hero-poster.jpg";
-/** The component's own button destination; the slot can override it. */
 const DEFAULT_CTA_HREF = "/catalogue";
 
 /**
@@ -52,10 +55,7 @@ export default function HeroSection({
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black">
-      <Video
-        src={data?.videoUrl ?? DEFAULT_VIDEO}
-        poster={data?.posterUrl ?? DEFAULT_POSTER}
-      />
+      <Video src={data?.videoUrl ?? null} poster={data?.posterUrl ?? null} />
 
       <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/10 to-black/35" />
 
@@ -70,7 +70,7 @@ export default function HeroSection({
   );
 }
 
-function Video({ src, poster }: { src: string; poster: string }) {
+function Video({ src, poster }: { src: string | null; poster: string | null }) {
   const ref = useRef<HTMLVideoElement>(null);
   /**
    * Starts `false` on BOTH the server and the client.
@@ -123,11 +123,13 @@ function Video({ src, poster }: { src: string; poster: string }) {
       loop
       playsInline
       preload="metadata"
-      poster={poster}
+      // Absent rather than "" — an empty poster attribute makes the browser
+      // request the page URL as an image.
+      poster={poster ?? undefined}
       aria-hidden="true"
       className="absolute inset-0 h-full w-full object-cover"
     >
-      {shouldLoad && <source src={src} type="video/mp4" />}
+      {shouldLoad && src ? <source src={src} type="video/mp4" /> : null}
     </video>
   );
 }

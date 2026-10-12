@@ -15,8 +15,10 @@ import { HERO_SLOT } from "./slots";
  *
  * The hero is the one section whose content was NEVER in the database: its two
  * lines and its button label are `hero.*` dictionary strings, and its media are
- * the static `/videos/hero.mp4` + `/videos/hero-poster.jpg` assets. So NULL
- * here does not mean "missing" — it means "use the built-in default", exactly
+ * the static `/videos/hero.mp4` + `/videos/hero-poster.jpg` assets, which the
+ * operator has since DELETED (so NULL now means "no media", not "the stock
+ * film" — the CTA target and the dictionary copy are the only defaults left).
+ * NULL here does not mean "missing" — it means "use the built-in default", exactly
  * like the catalogue paragraph's empty list. That is what lets this table be
  * added with no backfill: an empty table renders the hero precisely as it was.
  *

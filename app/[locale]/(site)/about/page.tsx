@@ -6,6 +6,7 @@ import ProjectsSections from "@/components/ProjectsSections";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import { getAboutGalleryImages } from "@/lib/data/about";
 import { getAboutPageContent } from "@/lib/repositories/about-page";
+import { getHeroFeature } from "@/lib/repositories/homepage-features";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
@@ -50,7 +51,14 @@ export default async function AboutPage({
   // myPlan.md Part C — section copy now comes from AboutPageSection rows
   // (seeded from the former translation keys, admin-editable); `t` above is
   // kept for the SEO/JSON-LD metadata only, which is page chrome.
-  const content = await getAboutPageContent();
+  //
+  // Pass D.1 follow-up: the hero FILM comes from the homepage hero slot too
+  // (the stock /videos/hero.mp4 was removed), so /about plays whatever the
+  // operator uploaded for the hero — one film, one place to change it.
+  const [content, hero] = await Promise.all([
+    getAboutPageContent(),
+    getHeroFeature(),
+  ]);
 
   const jsonLdData = [
     webPageJsonLd(
@@ -64,7 +72,7 @@ export default async function AboutPage({
     <>
       <JsonLdRenderer data={jsonLdData} />
       <main className="bg-background-secondary w-full space-y-5 sm:space-y-10 md:space-y-12 lg:space-y-14">
-        <AboutHero content={content.hero} />
+        <AboutHero content={content.hero} videoSrc={hero?.videoUrl ?? null} />
         <AboutHeroVideo content={content.subtitle} />
         <BrandStory content={content.brandStory} />
         <ImageGalleryCarousel

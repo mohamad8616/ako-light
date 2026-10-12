@@ -5,6 +5,7 @@ import S34Hero from "@/components/s34/S34Hero";
 import Secuence from "@/components/s34/Secuence";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import { getS34GalleryImages } from "@/lib/data/s34";
+import { getHeroFeature } from "@/lib/repositories/homepage-features";
 import { getS34PageContent } from "@/lib/repositories/s34-page";
 import { translations } from "@/lib/i18n/translations";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
@@ -50,7 +51,14 @@ export default async function S34Page({
   // myPlan.md Part C — section copy now comes from S34PageSection rows
   // (seeded from the former translation keys, admin-editable); `t` above is
   // kept for the SEO/JSON-LD metadata only, which is page chrome.
-  const content = await getS34PageContent();
+  //
+  // Pass D.1 follow-up: the hero FILM comes from the homepage hero slot too
+  // (the stock /videos/hero.mp4 was removed), so /s34 plays whatever the
+  // operator uploaded for the hero — one film, one place to change it.
+  const [content, hero] = await Promise.all([
+    getS34PageContent(),
+    getHeroFeature(),
+  ]);
 
   const jsonLdData = [
     webPageJsonLd(
@@ -66,7 +74,7 @@ export default async function S34Page({
     <>
       <JsonLdRenderer data={jsonLdData} />
       <main className="bg-background-secondary w-full space-y-48">
-        <S34Hero content={content.hero} />
+        <S34Hero content={content.hero} videoSrc={hero?.videoUrl ?? null} />
         <S34Concept content={content.concept} />
         <Secuence content={content.gallery} />
         <ImageGalleryCarousel

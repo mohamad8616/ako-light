@@ -12,7 +12,16 @@ type HeroVideoProps = {
   firstLineKey?: string;
   secondLineKey?: string;
   btnKey?: string;
-  videoSrc: string;
+  /**
+   * The hero's video — the still frame behind the copy AND the film the modal
+   * plays.
+   *
+   * OPTIONAL since Pass D.1's follow-up: /about and /s34 no longer ship a stock
+   * film of their own; they take this slot's video, and "no video chosen" is a
+   * real state. With none, the hero keeps its black background and its copy and
+   * simply has no film to play — the section never becomes a broken element.
+   */
+  videoSrc?: string;
   /** Poster image shown in the hero. Falls back to the first video frame
    *  (`video.poster` or `<video>` `preload="metadata"`) if not provided. */
   posterSrc?: string;
@@ -58,9 +67,10 @@ export default function HeroVideo({
   };
 
   // Any click over the hero opens the player, EXCEPT on real interactive
-  // elements (the "play" PlusTextBtn link).
+  // elements (the "play" PlusTextBtn link) — and except when there is no film
+  // to play, in which case a modal would open onto nothing.
   const handleSectionClick = (e: React.MouseEvent<HTMLElement>) => {
-    if (open) return;
+    if (open || !videoSrc) return;
     if ((e.target as HTMLElement).closest("a, button")) return;
     setOpen(true);
   };
@@ -86,7 +96,7 @@ export default function HeroVideo({
             sizes="100vw"
             className="object-cover"
           />
-        ) : (
+        ) : videoSrc ? (
           // Fallback: muted, paused video as a still poster frame.
           <video
             muted
@@ -96,7 +106,7 @@ export default function HeroVideo({
           >
             <source src={videoSrc} type="video/mp4" />
           </video>
-        )}
+        ) : null}
 
         {/* Decorative gradient — makes the hero text legible on top of the
             poster. `pointer-events-none` so clicks pass through to the
@@ -123,12 +133,15 @@ export default function HeroVideo({
       </section>
 
       {/* Standalone fullscreen video player — owns the portal to <body>,
-          scroll lock, close button, Escape handling and playback state. */}
-      <VideoModal
-        open={open}
-        videoSrc={videoSrc}
-        onClose={() => setOpen(false)}
-      />
+          scroll lock, close button, Escape handling and playback state.
+          Only mounted when there is a film to play. */}
+      {videoSrc ? (
+        <VideoModal
+          open={open}
+          videoSrc={videoSrc}
+          onClose={() => setOpen(false)}
+        />
+      ) : null}
     </>
   );
 }

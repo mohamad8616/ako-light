@@ -32,10 +32,28 @@ import {
 /** An override pair the admin can also clear: both filled, or both empty. */
 export const clearableLocalizedSchema = z
   .object({ en: z.string().max(TEXT_MAX), fa: z.string().max(TEXT_MAX) })
-  // A half-translated pair is a mistake, not a partial override: each empty
-  // half carries its own issue so the field shows the translated "required".
-  .refine((value) => !(value.en === "" && value.fa !== ""), { path: ["en"] })
-  .refine((value) => !(value.fa === "" && value.en !== ""), { path: ["fa"] });
+  .superRefine((value, ctx) => {
+    /*
+      Half a pair is a mistake, not a partial override.
+      
+      `pick()` resolves a language with `value[lang] ?? value.en`, and an empty
+      string is NOT nullish — so a pair saved as { en: "X", fa: "" } renders a
+      BLANK line on the Persian page rather than falling back to English. Both
+      halves or neither is therefore the only safe rule.
+
+      The issue lands on the half that is MISSING (so the operator sees it next
+      to the input they still have to fill) and carries its own code, so the
+      field says "fill in both languages" instead of the blanket "Invalid
+      value." that a bare refine produces — which is what made a blocked Save
+      look like a dead button.
+    */
+    if (value.en === "" && value.fa !== "") {
+      ctx.addIssue({ code: "localizedPair" as "custom", path: ["en"] });
+    }
+    if (value.fa === "" && value.en !== "") {
+      ctx.addIssue({ code: "localizedPair" as "custom", path: ["fa"] });
+    }
+  });
 
 /**
  * `Localized[]` override (paragraphs): rows are added and removed, and an empty
@@ -171,17 +189,21 @@ export const catalogueFeatureFormSchema = z.object({
  *
  * The hero references no catalog entity, so every field is an OVERRIDE of
  * something the component already renders: the two headline lines and the CTA
- * label come from the `hero.*` dictionary keys, the media from the static
- * `/videos/hero.mp4` + `/videos/hero-poster.jpg` assets, and the CTA target
- * from the component's own `/catalogue` default. All of them are clearable, and
- * clearing means "keep using that built-in" — which is why an untouched hero
- * form saves nothing and changes nothing.
+ * label come from the `hero.*` dictionary keys, and the CTA target from the
+ * component's own `/catalogue` default. All of them are clearable, and clearing
+ * means "keep using that built-in" — which is why an untouched hero form saves
+ * nothing and changes nothing.
+ *
+ * The MEDIA is the exception: the shipped `/videos/hero.mp4` +
+ * `/videos/hero-poster.jpg` assets were deleted by the operator (Pass D.1
+ * follow-up), so an empty `videoUrl`/`posterUrl` now means "no video / no
+ * poster" rather than "the stock film".
  */
 export const heroFeatureFormSchema = z.object({
   enabled: enabledSchema,
-  /** Override hero video. Empty = the built-in `/videos/hero.mp4`. */
+  /** Hero video. Empty = no video (there is no stock film any more). */
   videoUrl: clearableMediaRefSchema,
-  /** Override poster frame. Empty = the built-in `/videos/hero-poster.jpg`. */
+  /** Poster frame. Empty = no poster. */
   posterUrl: clearableMediaRefSchema,
   /** The h1 line. An empty pair = `t("hero.collection")`. */
   firstLine: clearableLocalizedSchema,
@@ -201,8 +223,9 @@ export const heroFeatureFormSchema = z.object({
  * The video section (Pass D.1) — components/home/VideoSection.tsx.
  *
  * Its only configurable content is the video: the placeholder copy, layout,
- * scroll-triggered loading and play/pause behaviour are untouched. Empty
- * `videoUrl` = the built-in `/videos/afterhenge.mp4`.
+ * scroll-triggered loading and play/pause behaviour are untouched. An empty
+ * `videoUrl` means NO video — the stock `/videos/afterhenge.mp4` was deleted by
+ * the operator (Pass D.1 follow-up) — and the section is then not rendered.
  */
 export const videoFeatureFormSchema = z.object({
   enabled: enabledSchema,

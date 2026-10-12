@@ -29,6 +29,10 @@ export const crudEn = {
   "admin.crud.slugWarning": "Changing the slug can affect existing links.",
   "admin.crud.deleteCascadeCount":
     "This will also remove {count} related items.",
+  // Shown when the BROWSER's own validation stops a submit (Pass D.1). Without
+  // it the button simply did nothing: no request, no pending state, no toast —
+  // indistinguishable from a broken form.
+  "admin.crud.checkFields": "Check the highlighted fields, then save again.",
 
   // Image upload (components/admin/ImageUpload.tsx + actions/upload.ts)
 } as const;
@@ -58,6 +62,8 @@ export const crudFa = {
     "تغییر اسلاگ می‌تواند روی لینک‌های موجود تأثیر بگذارد.",
   "admin.crud.deleteCascadeCount":
     "با این کار {count} مورد مرتبط هم حذف می‌شود.",
+  "admin.crud.checkFields":
+    "فیلدهای مشخص‌شده را بررسی کنید و دوباره ذخیره کنید.",
 
   // آپلود تصویر (components/admin/ImageUpload.tsx و actions/upload.ts)
 } as const;

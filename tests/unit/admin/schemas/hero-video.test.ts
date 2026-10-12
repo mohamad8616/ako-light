@@ -36,7 +36,7 @@ describe("heroFeatureFormSchema", () => {
     const parsed = heroFeatureFormSchema.safeParse({
       enabled: true,
       videoUrl: "https://bucket.liara.space/media/homepage/hero.mp4",
-      posterUrl: "/videos/hero-poster.jpg",
+      posterUrl: "/media/legacy-poster.jpg",
       firstLine: { en: "2026 Collection", fa: "کلکسیون ۲۰۲۶" },
       secondLine: { en: "Ritual Gravity", fa: "ریچوال گرویتی" },
       ctaLabel: { en: "Read more", fa: "بیشتر بخوانید" },
@@ -47,14 +47,32 @@ describe("heroFeatureFormSchema", () => {
 
   it("requires both languages in a localized field, or neither", () => {
     // A half-translated pair is a mistake, not a partial override: rendering it
-    // would show English to a Persian visitor for that one line.
+    // would show a BLANK line to a visitor in the missing language, because
+    // `pick()` returns the empty string rather than falling back to English.
     const parsed = heroFeatureFormSchema.safeParse({
       ...clearedHero,
       firstLine: { en: "Only English", fa: "" },
     });
     expect(parsed.success).toBe(false);
     if (!parsed.success) {
+      // The issue lands on the half that is MISSING, and carries its own code so
+      // the field can say "fill in both languages" instead of the blanket
+      // "Invalid value." — which is what made a blocked Save look like a dead
+      // button (Pass D.1).
       expect(parsed.error.issues[0]?.path).toEqual(["firstLine", "fa"]);
+      expect(parsed.error.issues[0]?.code).toBe("localizedPair");
+    }
+  });
+
+  it("puts the issue on the EN half when only Persian is filled", () => {
+    const parsed = heroFeatureFormSchema.safeParse({
+      ...clearedHero,
+      secondLine: { en: "", fa: "فقط فارسی" },
+    });
+    expect(parsed.success).toBe(false);
+    if (!parsed.success) {
+      expect(parsed.error.issues[0]?.path).toEqual(["secondLine", "en"]);
+      expect(parsed.error.issues[0]?.code).toBe("localizedPair");
     }
   });
 
@@ -152,7 +170,7 @@ describe("videoFeatureFormSchema", () => {
   it("accepts a stored URL and a public path", () => {
     for (const videoUrl of [
       "https://bucket.liara.space/media/homepage/afterhenge.mp4",
-      "/videos/afterhenge.mp4",
+      "/media/legacy-video.mp4",
     ]) {
       expect(videoFeatureFormSchema.safeParse({ enabled: true, videoUrl }).success)
         .toBe(true);

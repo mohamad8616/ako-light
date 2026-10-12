@@ -11,6 +11,11 @@ export const errorEn = {
   "admin.error.invalid": "Invalid value.",
   "admin.error.invalidLink":
     "Enter a full web address starting with https://, or a path on this site starting with /.",
+  // A localized field with only one language filled (Pass D.1). Says what to DO,
+  // because the alternative — "Invalid value." under the other input — is what
+  // made a blocked Save look like a broken button.
+  "admin.error.localizedPair":
+    "Fill in both languages, or leave both empty to keep the built-in text.",
   "admin.error.required": "This field is required.",
   "admin.error.tooLong": "This value is too long.",
   // Upload-specific codes (lib/admin/actions/upload.ts).
@@ -42,6 +47,8 @@ export const errorFa = {
   "admin.error.invalid": "مقدار نامعتبر است.",
   "admin.error.invalidLink":
     "یک نشانی کامل که با https:// شروع شود وارد کنید، یا مسیری از همین سایت که با / شروع شود.",
+  "admin.error.localizedPair":
+    "هر دو زبان را پر کنید، یا هر دو را خالی بگذارید تا متن پیش‌فرض باقی بماند.",
   "admin.error.required": "این فیلد الزامی است.",
   "admin.error.tooLong": "این مقدار بیش از حد طولانی است.",
   // کدهای مخصوص آپلود (lib/admin/actions/upload.ts)

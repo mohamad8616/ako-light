@@ -71,7 +71,7 @@ export const homepageEn = {
     "The full-width video section further down the homepage.",
   "admin.homepage.card.heroMedia": "Media",
   "admin.homepage.card.heroMediaHint":
-    "Leave either field empty to keep the built-in video and poster.",
+    "There is no built-in hero video: whatever you upload here is what the homepage plays.",
   "admin.homepage.card.heroCopy": "Headline",
   "admin.homepage.card.heroCopyHint":
     "Leave a field empty to keep the built-in text for that line.",
@@ -80,20 +80,20 @@ export const homepageEn = {
     "Leave a field empty to keep the built-in label and destination.",
   "admin.homepage.field.heroVideo": "Hero video",
   "admin.homepage.field.heroVideoHint":
-    "Replaces the built-in hero video. Leave empty to use it.",
+    "Shown on the homepage hero, and on the About and S34 heroes. Leave empty for no video.",
   "admin.homepage.field.heroPoster": "Poster image",
   "admin.homepage.field.heroPosterHint":
-    "Shown before the video loads. Leave empty to use the built-in poster.",
+    "Shown before the video loads. Leave empty for no poster.",
   "admin.homepage.field.firstLine": "First line",
   "admin.homepage.field.secondLine": "Second line",
   "admin.homepage.field.heroLineHint":
     "Both languages are needed, or leave the whole field empty for the built-in text.",
   "admin.homepage.field.videoUrl": "Section video",
   "admin.homepage.field.videoUrlHint":
-    "Replaces the built-in section video. Leave empty to use it.",
+    "There is no built-in video. Leave empty and the section is not shown.",
   "admin.homepage.card.videoMedia": "Video",
   "admin.homepage.card.videoMediaHint":
-    "The section's layout, placeholder text and playback behaviour are unchanged.",
+    "The section's layout, placeholder text and playback behaviour are unchanged. With no video the section is hidden.",
 
   // Page-content sections (app/[locale]/(admin)/admin/about + .../s34) — the
   // prose sections of the About and S34 pages (myPlan.md Part D). Card titles
@@ -163,7 +163,7 @@ export const homepageFa = {
     "بخش ویدیوی تمام‌عرض در ادامهٔ صفحه اصلی.",
   "admin.homepage.card.heroMedia": "رسانه",
   "admin.homepage.card.heroMediaHint":
-    "هر فیلدی را خالی بگذارید، ویدیو و پوستر داخلی حفظ می‌شود.",
+    "ویدیوی داخلی وجود ندارد؛ هر فایلی که اینجا آپلود کنید همان در صفحه اصلی پخش می‌شود.",
   "admin.homepage.card.heroCopy": "تیتر",
   "admin.homepage.card.heroCopyHint":
     "هر خط را خالی بگذارید، متن داخلی همان خط حفظ می‌شود.",
@@ -172,20 +172,20 @@ export const homepageFa = {
     "هر فیلدی را خالی بگذارید، برچسب و مقصد داخلی حفظ می‌شود.",
   "admin.homepage.field.heroVideo": "ویدیوی هیرو",
   "admin.homepage.field.heroVideoHint":
-    "جایگزین ویدیوی داخلی هیرو می‌شود. برای استفاده از آن، خالی بگذارید.",
+    "در هیروی صفحه اصلی و همچنین هیروی صفحات درباره ما و S34 نمایش داده می‌شود. برای نبود ویدیو خالی بگذارید.",
   "admin.homepage.field.heroPoster": "تصویر پوستر",
   "admin.homepage.field.heroPosterHint":
-    "پیش از بارگذاری ویدیو نمایش داده می‌شود. برای استفاده از پوستر داخلی خالی بگذارید.",
+    "پیش از بارگذاری ویدیو نمایش داده می‌شود. برای نبود پوستر خالی بگذارید.",
   "admin.homepage.field.firstLine": "خط اول",
   "admin.homepage.field.secondLine": "خط دوم",
   "admin.homepage.field.heroLineHint":
     "هر دو زبان لازم است؛ یا کل فیلد را خالی بگذارید تا متن داخلی بماند.",
   "admin.homepage.field.videoUrl": "ویدیوی بخش",
   "admin.homepage.field.videoUrlHint":
-    "جایگزین ویدیوی داخلی بخش می‌شود. برای استفاده از آن، خالی بگذارید.",
+    "ویدیوی داخلی وجود ندارد. اگر خالی بماند، این بخش نمایش داده نمی‌شود.",
   "admin.homepage.card.videoMedia": "ویدیو",
   "admin.homepage.card.videoMediaHint":
-    "چیدمان، متن جانگهدار و رفتار پخش این بخش تغییری نمی‌کند.",
+    "چیدمان، متن جانگهدار و رفتار پخش این بخش تغییری نمی‌کند. بدون ویدیو، این بخش پنهان می‌ماند.",
 
   // بخش‌های محتوایی صفحه‌ها (admin/about و admin/s34) — بخش‌های متنی صفحه‌های
   // درباره ما و اس ۳۴ (myPlan.md بخش D). عنوان هر کارت با کلید بخش خوانده می‌شود.

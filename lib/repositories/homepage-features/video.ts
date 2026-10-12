@@ -12,7 +12,9 @@ import { VIDEO_SLOT } from "./slots";
  * was added only where the component already had something an operator would
  * want to change without editing source.
  *
- * `videoUrl` is nullable and NULL means "use the built-in `/videos/afterhenge.mp4`",
+ * `videoUrl` is nullable, and since the operator DELETED the stock
+ * `/videos/afterhenge.mp4` (Pass D.1 follow-up) NULL means "no video" — the
+ * section renders nothing rather than falling back to a shipped film.
  * which is why this table needs no backfill: an empty table renders the section
  * exactly as it always did.
  */

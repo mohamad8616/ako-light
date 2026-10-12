@@ -250,7 +250,7 @@ describeDb("Pass D.1 — hero and video slots", () => {
     const outcome = await updateHeroFeatureAction({
       enabled: true,
       videoUrl: "https://bucket.liara.space/media/homepage/hero.mp4",
-      posterUrl: "/videos/hero-poster.jpg",
+      posterUrl: "/media/legacy-poster.jpg",
       firstLine: { en: "2026 Collection", fa: "کلکسیون ۲۰۲۶" },
       secondLine: { en: "Ritual Gravity", fa: "ریچوال گرویتی" },
       ctaLabel: { en: "Read more", fa: "بیشتر بخوانید" },
@@ -276,7 +276,7 @@ describeDb("Pass D.1 — hero and video slots", () => {
     expect(resolved!.videoUrl).toBe(
       "https://bucket.liara.space/media/homepage/hero.mp4",
     );
-    expect(resolved!.posterUrl).toBe("/videos/hero-poster.jpg");
+    expect(resolved!.posterUrl).toBe("/media/legacy-poster.jpg");
     expect(resolved!.ctaHref).toBe("/catalogue");
   });
 
@@ -399,7 +399,8 @@ describeDb("Pass D.1 — hero and video slots", () => {
     const outcome = await updateVideoFeatureAction({ enabled: true, videoUrl: "" });
     expect(outcome.ok, JSON.stringify(outcome)).toBe(true);
 
-    // NULL means "use /videos/afterhenge.mp4" — the component owns that default.
+    // NULL means "no video" — the stock fallback asset was deleted by the
+    // operator, so the component renders nothing for this section.
     expect((await readVideo())!.videoUrl).toBeNull();
     expect((await getVideoFeature())!.videoUrl).toBeNull();
   });
@@ -410,7 +411,7 @@ describeDb("Pass D.1 — hero and video slots", () => {
 
     await updateVideoFeatureAction({
       enabled: true,
-      videoUrl: "/videos/afterhenge.mp4",
+      videoUrl: "/media/legacy-video.mp4",
     });
 
     for (const videoUrl of ["javascript:alert(1)", "not a url"]) {
@@ -421,6 +422,6 @@ describeDb("Pass D.1 — hero and video slots", () => {
       }
     }
 
-    expect((await readVideo())!.videoUrl).toBe("/videos/afterhenge.mp4");
+    expect((await readVideo())!.videoUrl).toBe("/media/legacy-video.mp4");
   });
 });
