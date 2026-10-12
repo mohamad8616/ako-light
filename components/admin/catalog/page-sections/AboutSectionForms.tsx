@@ -16,6 +16,7 @@
  * lib/data/about.ts (not translation content).
  */
 import { FormCard } from "@/components/admin/catalog/fields/form";
+import { MediaField } from "@/components/admin/MediaField";
 import {
   LocalizedField,
   LocalizedListField,
@@ -165,6 +166,13 @@ export function AboutBrandStorySectionForm({
               rows={4}
               addLabel={t("admin.crud.add")}
             />
+            <MediaField
+              name="block1Image"
+              label={t("admin.page.field.block1Image")}
+              kind="image"
+              folder="about"
+              required
+            />
             <LocalizedField
               name="block1Alt"
               label={t("admin.page.field.block1Alt")}
@@ -176,6 +184,13 @@ export function AboutBrandStorySectionForm({
               textarea
               rows={4}
               addLabel={t("admin.crud.add")}
+            />
+            <MediaField
+              name="block2Image"
+              label={t("admin.page.field.block2Image")}
+              kind="image"
+              folder="about"
+              required
             />
             <LocalizedField
               name="block2Alt"

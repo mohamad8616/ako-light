@@ -4,6 +4,7 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import type { ResolvedVideoFeature } from "@/lib/repositories/homepage-features";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { Play } from "lucide-react";
 import HomepageSection, { EASE } from "../../utility/HomepageSection";
 
 /**
@@ -36,6 +37,7 @@ export default function VideoSection({
   // Becomes true once the video reports it's actually playing, so we
   // know it's safe to fade the "HOME FORM" placeholder out.
   const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackFailed, setPlaybackFailed] = useState(false);
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -45,10 +47,10 @@ export default function VideoSection({
       ([entry]) => {
         if (entry.isIntersecting) {
           setShouldLoad(true);
-          videoRef.current?.play().catch(() => {
-            // Autoplay can be blocked in rare cases (e.g. low-power mode);
-            // the placeholder just stays visible until the user interacts.
-          });
+          const video = videoRef.current;
+          if (video) {
+            video.play().catch(() => setPlaybackFailed(true));
+          }
         } else {
           videoRef.current?.pause();
         }
@@ -66,6 +68,12 @@ export default function VideoSection({
   // No video configured → nothing to show. See the header note.
   const src = data?.videoUrl ?? null;
   if (!src) return null;
+
+  const playVideo = () => {
+    setPlaybackFailed(false);
+    setShouldLoad(true);
+    videoRef.current?.play().catch(() => setPlaybackFailed(true));
+  };
 
   return (
     <HomepageSection className="bg-background-secondary w-full py-20 md:py-28">
@@ -98,12 +106,31 @@ export default function VideoSection({
               loop
               playsInline
               preload="none"
-              onPlaying={() => setIsPlaying(true)}
+              controls
+              onPlaying={() => {
+                setIsPlaying(true);
+                setPlaybackFailed(false);
+              }}
               onPause={() => setIsPlaying(false)}
+              onError={() => setPlaybackFailed(true)}
               className="h-full w-full object-cover"
             >
               <source src={src} />
             </video>
+          )}
+
+          {!isPlaying && playbackFailed && (
+            <button
+              type="button"
+              onClick={playVideo}
+              className="absolute inset-0 z-20 flex items-center justify-center bg-black/40 text-white"
+              aria-label={t("video.player")}
+            >
+              <span className="flex items-center gap-3 rounded-full border-white/70 px-5 py-3 text-sm uppercase tracking-widest">
+                <Play aria-hidden="true" className="size-4" />
+                {t("video.player")}
+              </span>
+            </button>
           )}
         </div>
       </div>

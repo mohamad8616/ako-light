@@ -19,6 +19,7 @@ import { cache } from "react";
 import { prisma } from "@/lib/db/prisma";
 import { loc, type Localized } from "@/lib/i18n/localized";
 import { aboutEn, aboutFa } from "@/lib/i18n/translations/about";
+import { aboutImages } from "@/lib/data/about";
 import { asJsonInput } from "./casting";
 
 /** Every `/about` section row key — one row per rendered section. */
@@ -48,6 +49,9 @@ export type AboutSubtitleContent = {
 /** components/about/BrandStory.tsx — title + intro grid + two image blocks. */
 export type AboutBrandStoryContent = {
   title: Localized;
+  /** Image URLs for the two brand-story image blocks. */
+  block1Image: string;
+  block2Image: string;
   /** `about.brandStory.intro1..4` — the four-column intro grid. */
   paragraphs: Localized[];
   /** `about.brandStory.block1Alt`. */
@@ -117,6 +121,8 @@ export const DEFAULT_ABOUT_PAGE_CONTENT: AboutPageContent = {
   },
   brandStory: {
     title: pair("about.brandStory.title"),
+    block1Image: aboutImages.brandStoryBlock1,
+    block2Image: aboutImages.brandStoryBlock2,
     paragraphs: [
       pair("about.brandStory.intro1"),
       pair("about.brandStory.intro2"),

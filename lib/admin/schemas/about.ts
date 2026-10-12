@@ -32,12 +32,13 @@ export const aboutSubtitleSectionSchema = z.object({
 });
 
 /**
- * components/about/BrandStory.tsx — title, the intro grid, and both image
- * blocks (alt text + paragraphs). The images themselves stay in
- * lib/data/about.ts; only their localized copy is editable here.
+ * components/about/BrandStory.tsx — title, the intro grid, both editable image
+ * URLs, and the image blocks' alt text + paragraphs.
  */
 export const aboutBrandStorySectionSchema = z.object({
   title: localizedSchema,
+  block1Image: z.string().trim().min(1).max(2048),
+  block2Image: z.string().trim().min(1).max(2048),
   paragraphs: z.array(localizedSchema),
   block1Alt: localizedSchema,
   block1Paragraphs: z.array(localizedSchema),

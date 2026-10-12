@@ -102,17 +102,14 @@ function Video({ src, poster }: { src: string | null; poster: string | null }) {
       return () => clearTimeout(id);
     }
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setShouldLoad(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "200px" },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
+    const onFirstFrame = () => setShouldLoad(true);
+    if (typeof requestAnimationFrame === "undefined") {
+      const id = setTimeout(onFirstFrame, 0);
+      return () => clearTimeout(id);
+    }
+
+    const frame = requestAnimationFrame(onFirstFrame);
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   return (

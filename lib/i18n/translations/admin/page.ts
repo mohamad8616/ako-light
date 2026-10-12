@@ -23,6 +23,8 @@ export const pageEn = {
   "admin.page.field.paragraphs": "Paragraphs",
   "admin.page.field.paragraphsHint":
     "Ordered list — reorder with the arrows, remove with ×. Every row needs both languages.",
+  "admin.page.field.block1Image": "Block 1 image",
+  "admin.page.field.block2Image": "Block 2 image",
   "admin.page.field.block1Alt": "Block 1 image alt text",
   "admin.page.field.block1Paragraphs": "Block 1 paragraphs",
   "admin.page.field.block2Alt": "Block 2 image alt text",
@@ -51,6 +53,8 @@ export const pageFa = {
   "admin.page.field.paragraphs": "پاراگراف‌ها",
   "admin.page.field.paragraphsHint":
     "فهرست مرتب — با فلش‌ها جابه‌جا و با × حذف کنید. هر ردیف به هر دو زبان نیاز دارد.",
+  "admin.page.field.block1Image": "تصویر بلوک ۱",
+  "admin.page.field.block2Image": "تصویر بلوک ۲",
   "admin.page.field.block1Alt": "متن جانشین تصویر بلوک ۱",
   "admin.page.field.block1Paragraphs": "پاراگراف‌های بلوک ۱",
   "admin.page.field.block2Alt": "متن جانشین تصویر بلوک ۲",

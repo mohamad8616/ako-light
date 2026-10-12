@@ -27,6 +27,8 @@ const aboutHero = { firstLine: PAIR, secondLine: PAIR };
 const aboutSubtitle = { paragraph: PAIR };
 const aboutBrandStory = {
   title: PAIR,
+  block1Image: "https://example.com/block-1.jpg",
+  block2Image: "https://example.com/block-2.jpg",
   paragraphs: [PAIR, PAIR],
   block1Alt: PAIR,
   block1Paragraphs: [PAIR],
