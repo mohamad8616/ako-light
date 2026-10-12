@@ -3,8 +3,8 @@
 /**
  * The S34-page section forms (myPlan.md Part D) — one per `S34PageSection` row.
  *
- * Two shapes only: the hero (title + subtitle) and the shared
- * kicker-over-paragraphs shape that concept, gallery and harmony all use, so the
+ * The hero text, its independent background video, and the shared kicker-over-
+ * paragraphs shape that concept, gallery and harmony all use, so the
  * kicker form takes the section key and renders the right card title from it.
  * Each form is independent (own react-hook-form + save button) because the
  * sections are independent rows.
@@ -19,6 +19,7 @@ import {
   LocalizedField,
   LocalizedListField,
 } from "@/components/admin/catalog/fields/LocalizedField";
+import { PageHeroMediaForm } from "@/components/admin/catalog/homepage/PageHeroMediaForm";
 import { SectionFormActions } from "@/components/admin/catalog/page-sections/SectionFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { updateS34PageSectionAction } from "@/lib/admin/actions/s34";
@@ -48,7 +49,11 @@ export function S34HeroSectionForm({ content }: { content: S34HeroContent }) {
 
   const onSubmit = form.handleSubmit(async (values) => {
     const result = await run(
-      () => updateS34PageSectionAction("heroSection", values),
+      () =>
+        updateS34PageSectionAction("heroSection", {
+          title: values.title,
+          subtitle: values.subtitle,
+        }),
       { successMessage: t("admin.table.saved") },
     );
     if (result && !result.ok) applyFieldIssues(form, result);
@@ -57,16 +62,16 @@ export function S34HeroSectionForm({ content }: { content: S34HeroContent }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <FormProvider {...form}>
-        <FormCard title={t("admin.page.s34.section.heroSection")}>
+        <FormCard title={t("admin.page.about.section.heroSection")}>
           <div className="space-y-5">
             <LocalizedField
               name="title"
-              label={t("admin.page.field.title")}
+              label={t("admin.page.field.firstLine")}
               required
             />
             <LocalizedField
               name="subtitle"
-              label={t("admin.page.field.subtitle")}
+              label={t("admin.page.field.secondLine")}
               required
             />
           </div>
@@ -77,10 +82,14 @@ export function S34HeroSectionForm({ content }: { content: S34HeroContent }) {
   );
 }
 
-/**
- * The concept / gallery / harmony sections: a kicker heading over a repeatable
- * paragraph list. `sectionKey` picks the row to save and the card's title.
- */
+export function S34HeroMediaSectionForm({
+  content,
+}: {
+  content: { videoUrl: string | null };
+}) {
+  return <PageHeroMediaForm page="s34" detail={content} />;
+}
+
 export function S34KickerSectionForm({
   sectionKey,
   content,

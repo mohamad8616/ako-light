@@ -21,6 +21,8 @@ import { toActionResult } from "@/lib/admin/result-server";
 import { s34SectionSchemas } from "@/lib/admin/schemas/s34";
 import type { S34SectionKey } from "@/lib/repositories/s34-page";
 import { updateS34PageSection } from "@/lib/repositories/s34-page";
+import { updatePageHeroMediaAction } from "./homepage";
+import { z } from "zod";
 
 /** The registry is the single place that decides which keys are valid. */
 function isS34SectionKey(value: string): value is S34SectionKey {
@@ -36,6 +38,16 @@ export async function updateS34PageSectionAction(
   input: unknown,
 ): Promise<ActionResult<undefined>> {
   await requireAdminAccess();
+
+  if (sectionKey === "heroMediaSection") {
+    const parsedMedia = z
+      .object({ videoUrl: z.string().trim().max(2048).or(z.literal("")) })
+      .safeParse(input);
+    if (!parsedMedia.success) {
+      return actionFail("invalid", zodIssuesToFieldIssues(parsedMedia.error));
+    }
+    return updatePageHeroMediaAction("s34", parsedMedia.data);
+  }
 
   if (!isS34SectionKey(sectionKey)) {
     return actionFail("notFound");

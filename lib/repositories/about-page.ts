@@ -228,3 +228,4 @@ export async function updateAboutPageSection<K extends AboutSectionKey>(
     update: { content: asJsonInput(content) },
   });
 }
+

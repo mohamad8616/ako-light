@@ -27,6 +27,10 @@ import {
   type AboutSectionKey,
 } from "@/lib/repositories/about-page";
 import {
+  ABOUT_HERO_MEDIA_SLOT,
+  S34_HERO_MEDIA_SLOT,
+} from "@/lib/repositories/homepage-features/hero";
+import {
   DEFAULT_S34_PAGE_CONTENT,
   type S34SectionKey,
 } from "@/lib/repositories/s34-page";
@@ -567,6 +571,21 @@ async function seedHomepageFeatures(): Promise<void> {
   await prisma.heroFeature.upsert({
     where: { id: "hero" },
     create: { id: "hero" },
+    update: {},
+  });
+
+  // The /about and /s34 hero films live in this same table as extra singleton
+  // rows — one background video per page, each edited from its own admin form.
+  // Created empty (and not updated on re-seed) for exactly the reason above.
+  await prisma.heroFeature.upsert({
+    where: { id: ABOUT_HERO_MEDIA_SLOT },
+    create: { id: ABOUT_HERO_MEDIA_SLOT },
+    update: {},
+  });
+
+  await prisma.heroFeature.upsert({
+    where: { id: S34_HERO_MEDIA_SLOT },
+    create: { id: S34_HERO_MEDIA_SLOT },
     update: {},
   });
 

@@ -5,17 +5,11 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { pick } from "@/lib/i18n/localized";
 import type { AboutHeroContent } from "@/lib/repositories/about-page";
 
-// Server-fetched hero copy (myPlan.md Part C): the page resolves the
-// AboutPageSection "heroSection" row and passes it down, so the headline lines
-// come from the database instead of t("about.hero.*"). The play button label
-// is UI chrome and stays in the translation dictionary (Part A classification).
-//
-// Pass D.1 follow-up: the hero FILM is no longer a stock file in /public. The
-// page reads the homepage hero slot and passes its video down, so /about shows
-// whatever the operator uploaded — the same film as the homepage hero.
+// The headline lines are fetched from AboutPageSection and the looping
+// background video is configured independently from the homepage hero.
 interface AboutHeroProps {
   content: AboutHeroContent;
-  /** The homepage hero slot's video, or null when none is configured. */
+  /** About page's independent looping hero background video. */
   videoSrc?: string | null;
 }
 

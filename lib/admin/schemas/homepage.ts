@@ -89,7 +89,7 @@ const enabledSchema = z.boolean();
  * the URL directly, so it carries no more authority than an `<img src>` and
  * inherits exactly the same rule as every other media field.
  */
-const clearableMediaRefSchema = clearableImageRefSchema;
+export const clearableMediaRefSchema = clearableImageRefSchema;
 
 /** How a slot derives its displayed content (mirrors `FeatureMode`). */
 const featureModeSchema = z.enum(["reference", "override"]);

@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { type Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import type { Localized } from "@/lib/i18n/localized";
 import {
@@ -7,6 +7,23 @@ import {
   asNullableJsonInput,
 } from "../casting";
 import { HERO_SLOT } from "./slots";
+
+export const ABOUT_HERO_MEDIA_SLOT = "about-hero-media";
+export const S34_HERO_MEDIA_SLOT = "s34-hero-media";
+
+/** One of the two page hero media slots this repository can address. */
+export type PageHeroMediaSlot = "about" | "s34";
+
+/**
+ * The /about and /s34 hero video slots.
+ *
+ * They live in `hero_feature` (see `HERO_*` below) as extra SINGLETON rows —
+ * keyed `about-hero-media` / `s34-hero-media` — so each page owns its own
+ * background film without a second table: they carry ONLY `videoUrl`, and the
+ * empty text/media columns are the same NULL = "nothing configured" the
+ * homepage hero uses.
+ */
+export type PageHeroMediaWriteInput = { videoUrl: string | null };
 
 /**
  * The homepage hero — components/home/HeroSection.tsx (Pass D.1).
@@ -59,6 +76,36 @@ export type HeroFeatureWriteInput = {
 };
 
 /** The hero the public page renders; `null` when the slot was never saved. */
+export const getPageHeroMedia = cache(
+  async (page: PageHeroMediaSlot): Promise<PageHeroMediaWriteInput> => {
+    const id = page === "about" ? ABOUT_HERO_MEDIA_SLOT : S34_HERO_MEDIA_SLOT;
+    const row = await prisma.heroFeature.findUnique({ where: { id } });
+    return { videoUrl: row?.videoUrl ?? null };
+  },
+);
+
+export const updatePageHeroMedia = async (
+  page: PageHeroMediaSlot,
+  videoUrl: string | null,
+  db: Prisma.TransactionClient = prisma,
+): Promise<void> => {
+  const id = page === "about" ? ABOUT_HERO_MEDIA_SLOT : S34_HERO_MEDIA_SLOT;
+  await db.heroFeature.upsert({
+    where: { id },
+    create: {
+      id,
+      enabled: true,
+      videoUrl,
+      posterUrl: null,
+      firstLine: Prisma.DbNull,
+      secondLine: Prisma.DbNull,
+      ctaLabel: Prisma.DbNull,
+      ctaHref: null,
+    },
+    update: { videoUrl },
+  });
+};
+
 export const getHeroFeature = cache(
   async (): Promise<ResolvedHeroFeature | null> => {
     const row = await prisma.heroFeature.findUnique({

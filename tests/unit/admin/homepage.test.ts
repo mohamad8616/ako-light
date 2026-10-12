@@ -17,8 +17,8 @@ import { describe, expect, it } from "vitest";
  */
 describe("homepage slot registry", () => {
   it("knows every slot exactly once", () => {
-    // Seven since Pass D.1 added the hero and the video section.
-    expect(HOMEPAGE_SLOT_KEYS).toHaveLength(7);
+    // Page-specific hero media slots keep the homepage, About, and S34 videos independent.
+    expect(HOMEPAGE_SLOT_KEYS).toHaveLength(9);
     expect(new Set(HOMEPAGE_SLOT_KEYS).size).toBe(HOMEPAGE_SLOT_KEYS.length);
     expect([...HOMEPAGE_SLOT_KEYS].sort()).toEqual(Object.keys(HOMEPAGE_SLOT_META).sort());
   });
@@ -28,6 +28,8 @@ describe("homepage slot registry", () => {
     // order is a contract, not an accident.
     expect([...HOMEPAGE_SLOT_KEYS]).toEqual([
       "hero",
+      "hero-about",
+      "hero-s34",
       "flagship-one",
       "video",
       "catalogue",

@@ -24,6 +24,8 @@ import {
   type ActionResult,
 } from "@/lib/admin/result";
 import { toActionResult } from "@/lib/admin/result-server";
+import { clearableMediaRefSchema } from "@/lib/admin/schemas/homepage";
+import { z } from "zod";
 import {
   catalogueFeatureFormSchema,
   flagshipOneFeatureFormSchema,
@@ -45,6 +47,8 @@ import {
   getCatalogueFeatureAdminDetail,
   getFlagshipOneFeatureAdminDetail,
   getHeroFeatureAdminDetail,
+  getPageHeroMedia,
+  updatePageHeroMedia,
   getHomeCollectionFeatureAdminDetail,
   getProjectBannerFeatureAdminDetail,
   getProjectDarkBackgroundFeatureAdminDetail,
@@ -274,6 +278,29 @@ export async function updateCatalogueFeatureAction(
  * changes nothing therefore writes nothing but the row's existence and cannot
  * blank the hero.
  */
+export async function updatePageHeroMediaAction(
+  page: "about" | "s34",
+  input: { videoUrl: string },
+): Promise<ActionResult<undefined>> {
+  await requireAdminAccess();
+
+  const parsed = z.object({ videoUrl: clearableMediaRefSchema }).safeParse(input);
+  if (!parsed.success) {
+    return actionFail("invalid", zodIssuesToFieldIssues(parsed.error));
+  }
+
+  try {
+    const previous = await getPageHeroMedia(page);
+    const videoUrl = emptyToNull(parsed.data.videoUrl);
+    await updatePageHeroMedia(page, videoUrl);
+    await deleteStorageUrls(removedUrls([previous.videoUrl], [videoUrl]));
+    revalidateCatalog(page === "about" ? "about" : "s34");
+    return actionOk(undefined);
+  } catch (error) {
+    return toActionResult(error);
+  }
+}
+
 export async function updateHeroFeatureAction(
   input: HeroFeatureFormValues,
 ): Promise<ActionResult<undefined>> {

@@ -53,6 +53,7 @@ export type { HomepageFeatureSlot } from "./slots";
 export { getHeroFeature } from "./hero";
 export { getHeroFeatureAdminDetail } from "./hero";
 export { updateHeroFeature } from "./hero";
+export { getPageHeroMedia, updatePageHeroMedia } from "./hero";
 export type { ResolvedHeroFeature } from "./hero";
 export type { HeroFeatureWriteInput } from "./hero";
 

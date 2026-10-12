@@ -2,11 +2,13 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import {
   AboutBrandStorySectionForm,
   AboutEleganceSectionForm,
+  AboutHeroMediaSectionForm,
   AboutHeroSectionForm,
   AboutSubtitleSectionForm,
 } from "@/components/admin/catalog/page-sections/AboutSectionForms";
 import { isLocale } from "@/lib/i18n/routing";
 import { getAboutPageContent } from "@/lib/repositories/about-page";
+import { getPageHeroMedia } from "@/lib/repositories/homepage-features";
 import { notFound } from "next/navigation";
 
 /**
@@ -29,7 +31,10 @@ export default async function AboutAdminPage({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const content = await getAboutPageContent();
+  const [content, heroMedia] = await Promise.all([
+    getAboutPageContent(),
+    getPageHeroMedia("about"),
+  ]);
 
   return (
     <div className="@container/main flex flex-1 flex-col">
@@ -40,6 +45,7 @@ export default async function AboutAdminPage({
           descriptionKey="admin.section.about.description"
         />
         <AboutHeroSectionForm content={content.hero} />
+        <AboutHeroMediaSectionForm content={heroMedia} />
         <AboutSubtitleSectionForm content={content.subtitle} />
         <AboutBrandStorySectionForm content={content.brandStory} />
         <AboutEleganceSectionForm content={content.elegance} />

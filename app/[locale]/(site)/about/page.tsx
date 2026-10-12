@@ -1,15 +1,15 @@
-﻿import AboutHero from "@/components/about/AboutHero";
+﻿﻿import AboutHero from "@/components/about/AboutHero";
 import AboutHeroVideo from "@/components/about/AboutHeroVideo";
 import BrandStory from "@/components/about/BrandStory";
 import EleganceSection from "@/components/about/EleganceSection";
 import ProjectsSections from "@/components/ProjectsSections";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import { getAboutGalleryImages } from "@/lib/data/about";
-import { getAboutPageContent } from "@/lib/repositories/about-page";
-import { getHeroFeature } from "@/lib/repositories/homepage-features";
 import { translations } from "@/lib/i18n/translations";
-import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
+import { getAboutPageContent } from "@/lib/repositories/about-page";
+import { getPageHeroMedia } from "@/lib/repositories/homepage-features";
 import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
+import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import { absoluteUrl, webPageJsonLd } from "@/lib/seo/structuredData";
 import type { Metadata } from "next";
 
@@ -52,12 +52,9 @@ export default async function AboutPage({
   // (seeded from the former translation keys, admin-editable); `t` above is
   // kept for the SEO/JSON-LD metadata only, which is page chrome.
   //
-  // Pass D.1 follow-up: the hero FILM comes from the homepage hero slot too
-  // (the stock /videos/hero.mp4 was removed), so /about plays whatever the
-  // operator uploaded for the hero — one film, one place to change it.
-  const [content, hero] = await Promise.all([
+  const [content, heroMedia] = await Promise.all([
     getAboutPageContent(),
-    getHeroFeature(),
+    getPageHeroMedia("about"),
   ]);
 
   const jsonLdData = [
@@ -72,7 +69,7 @@ export default async function AboutPage({
     <>
       <JsonLdRenderer data={jsonLdData} />
       <main className="bg-background-secondary w-full space-y-5 sm:space-y-10 md:space-y-12 lg:space-y-14">
-        <AboutHero content={content.hero} videoSrc={hero?.videoUrl ?? null} />
+        <AboutHero content={content.hero} videoSrc={heroMedia.videoUrl} />
         <AboutHeroVideo content={content.subtitle} />
         <BrandStory content={content.brandStory} />
         <ImageGalleryCarousel

@@ -25,6 +25,8 @@ import { toActionResult } from "@/lib/admin/result-server";
 import { aboutSectionSchemas } from "@/lib/admin/schemas/about";
 import type { AboutSectionKey } from "@/lib/repositories/about-page";
 import { updateAboutPageSection } from "@/lib/repositories/about-page";
+import { updatePageHeroMediaAction } from "./homepage";
+import { z } from "zod";
 
 /** The registry is the single place that decides which keys are valid. */
 function isAboutSectionKey(value: string): value is AboutSectionKey {
@@ -40,6 +42,16 @@ export async function updateAboutPageSectionAction(
   input: unknown,
 ): Promise<ActionResult<undefined>> {
   await requireAdminAccess();
+
+  if (sectionKey === "heroMediaSection") {
+    const parsedMedia = z
+      .object({ videoUrl: z.string().trim().max(2048).or(z.literal("")) })
+      .safeParse(input);
+    if (!parsedMedia.success) {
+      return actionFail("invalid", zodIssuesToFieldIssues(parsedMedia.error));
+    }
+    return updatePageHeroMediaAction("about", parsedMedia.data);
+  }
 
   if (!isAboutSectionKey(sectionKey)) {
     return actionFail("notFound");

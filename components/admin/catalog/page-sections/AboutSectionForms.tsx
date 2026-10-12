@@ -17,6 +17,7 @@
  */
 import { FormCard } from "@/components/admin/catalog/fields/form";
 import { MediaField } from "@/components/admin/MediaField";
+import { PageHeroMediaForm } from "@/components/admin/catalog/homepage/PageHeroMediaForm";
 import {
   LocalizedField,
   LocalizedListField,
@@ -86,6 +87,14 @@ export function AboutHeroSectionForm({
       <SectionFormActions pending={pending} />
     </form>
   );
+}
+
+export function AboutHeroMediaSectionForm({
+  content,
+}: {
+  content: { videoUrl: string | null };
+}) {
+  return <PageHeroMediaForm page="about" detail={content} />;
 }
 
 /** components/about/AboutHeroVideo.tsx — the paragraph under the hero. */

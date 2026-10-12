@@ -3,6 +3,7 @@ import { BackLink } from "@/components/admin/catalog/BackLink";
 import { CatalogueFeatureForm } from "@/components/admin/catalog/homepage/CatalogueFeatureForm";
 import { FlagshipOneFeatureForm } from "@/components/admin/catalog/homepage/FlagshipOneFeatureForm";
 import { HeroFeatureForm } from "@/components/admin/catalog/homepage/HeroFeatureForm";
+import { PageHeroMediaForm } from "@/components/admin/catalog/homepage/PageHeroMediaForm";
 import { HomeCollectionFeatureForm } from "@/components/admin/catalog/homepage/HomeCollectionFeatureForm";
 import { ProjectBannerFeatureForm } from "@/components/admin/catalog/homepage/ProjectBannerFeatureForm";
 import { ProjectDarkBackgroundFeatureForm } from "@/components/admin/catalog/homepage/ProjectDarkBackgroundFeatureForm";
@@ -21,6 +22,7 @@ import {
   getCatalogueFeatureAdminDetail,
   getFlagshipOneFeatureAdminDetail,
   getHeroFeatureAdminDetail,
+  getPageHeroMedia,
   getHomeCollectionFeatureAdminDetail,
   getProjectBannerFeatureAdminDetail,
   getProjectDarkBackgroundFeatureAdminDetail,
@@ -81,6 +83,14 @@ async function renderSlotForm(slot: HomepageSlotKey) {
       // No picker source: the hero references no catalog entity.
       const detail = await getHeroFeatureAdminDetail();
       return <HeroFeatureForm detail={detail} />;
+    }
+    case "hero-about": {
+      const detail = await getPageHeroMedia("about");
+      return <PageHeroMediaForm page="about" detail={detail} />;
+    }
+    case "hero-s34": {
+      const detail = await getPageHeroMedia("s34");
+      return <PageHeroMediaForm page="s34" detail={detail} />;
     }
     case "video": {
       const detail = await getVideoFeatureAdminDetail();

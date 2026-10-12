@@ -6,11 +6,13 @@
  * in `lib/i18n/admin-translations.ts`; add admin-only keys here, not there.
  */
 export const pageEn = {
-  "admin.page.about.section.heroSection": "Hero",
+  "admin.page.about.section.heroSection": "Hero copy",
+  "admin.page.about.section.heroMediaSection": "Hero background video",
   "admin.page.about.section.subtitleSection": "Subtitle",
   "admin.page.about.section.brandStorySection": "Brand story",
   "admin.page.about.section.eleganceSection": "Elegance",
-  "admin.page.s34.section.heroSection": "Hero",
+  "admin.page.s34.section.heroSection": "Hero copy",
+  "admin.page.s34.section.heroMediaSection": "Hero background video",
   "admin.page.s34.section.conceptSection": "Concept",
   "admin.page.s34.section.gallerySection": "Gallery",
   "admin.page.s34.section.harmonySection": "Harmony",
@@ -36,11 +38,13 @@ export const pageEn = {
 } as const;
 
 export const pageFa = {
-  "admin.page.about.section.heroSection": "بخش هیرو",
+  "admin.page.about.section.heroSection": "متن هیرو",
+  "admin.page.about.section.heroMediaSection": "ویدیوی پس‌زمینه هیرو",
   "admin.page.about.section.subtitleSection": "زیرعنوان",
   "admin.page.about.section.brandStorySection": "داستان برند",
   "admin.page.about.section.eleganceSection": "شکوه و ظرافت",
-  "admin.page.s34.section.heroSection": "بخش هیرو",
+  "admin.page.s34.section.heroSection": "متن هیرو",
+  "admin.page.s34.section.heroMediaSection": "ویدیوی پس‌زمینه هیرو",
   "admin.page.s34.section.conceptSection": "مفهوم",
   "admin.page.s34.section.gallerySection": "گالری",
   "admin.page.s34.section.harmonySection": "هماهنگی",

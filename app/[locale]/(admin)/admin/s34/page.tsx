@@ -1,10 +1,12 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import {
+  S34HeroMediaSectionForm,
   S34HeroSectionForm,
   S34KickerSectionForm,
 } from "@/components/admin/catalog/page-sections/S34SectionForms";
 import { isLocale } from "@/lib/i18n/routing";
 import { getS34PageContent } from "@/lib/repositories/s34-page";
+import { getPageHeroMedia } from "@/lib/repositories/homepage-features";
 import { notFound } from "next/navigation";
 
 /**
@@ -28,7 +30,10 @@ export default async function S34AdminPage({
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
-  const content = await getS34PageContent();
+  const [content, heroMedia] = await Promise.all([
+    getS34PageContent(),
+    getPageHeroMedia("s34"),
+  ]);
 
   return (
     <div className="@container/main flex flex-1 flex-col">
@@ -39,6 +44,7 @@ export default async function S34AdminPage({
           descriptionKey="admin.section.s34.description"
         />
         <S34HeroSectionForm content={content.hero} />
+        <S34HeroMediaSectionForm content={heroMedia} />
         <S34KickerSectionForm
           sectionKey="conceptSection"
           content={content.concept}
