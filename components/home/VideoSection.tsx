@@ -102,7 +102,7 @@ export default function VideoSection({
               onPause={() => setIsPlaying(false)}
               className="h-full w-full object-cover"
             >
-              <source src={src} type="video/mp4" />
+              <source src={src} />
             </video>
           )}
         </div>

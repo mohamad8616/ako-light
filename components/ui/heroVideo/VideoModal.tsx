@@ -125,7 +125,7 @@ export default function VideoModal({
             onClick={(e) => e.stopPropagation()}
             className="h-full w-full object-cover"
           >
-            <source src={videoSrc} type="video/mp4" />
+            <source src={videoSrc} />
           </video>
 
           {/* Close — pinned to the viewport's top-right, always visible. */}

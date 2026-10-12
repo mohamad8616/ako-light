@@ -104,7 +104,7 @@ export default function HeroVideo({
             preload="metadata"
             className="absolute inset-0 h-full w-full object-cover"
           >
-            <source src={videoSrc} type="video/mp4" />
+            <source src={videoSrc} />
           </video>
         ) : null}
 

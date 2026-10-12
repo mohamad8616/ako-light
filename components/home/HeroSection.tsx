@@ -129,7 +129,7 @@ function Video({ src, poster }: { src: string | null; poster: string | null }) {
       aria-hidden="true"
       className="absolute inset-0 h-full w-full object-cover"
     >
-      {shouldLoad && src ? <source src={src} type="video/mp4" /> : null}
+      {shouldLoad && src ? <source src={src} /> : null}
     </video>
   );
 }
