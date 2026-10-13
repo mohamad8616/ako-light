@@ -222,14 +222,17 @@ export const heroFeatureFormSchema = z.object({
 /**
  * The video section (Pass D.1) — components/home/VideoSection.tsx.
  *
- * Its only configurable content is the video: the placeholder copy, layout,
- * scroll-triggered loading and play/pause behaviour are untouched. An empty
- * `videoUrl` means NO video — the stock `/videos/afterhenge.mp4` was deleted by
- * the operator (Pass D.1 follow-up) — and the section is then not rendered.
+ * Its configurable content is the media: the video and the poster frame painted
+ * before it starts. The placeholder copy, layout, scroll-triggered loading and
+ * play/pause behaviour are untouched. An empty `videoUrl` means NO video — the
+ * stock `/videos/afterhenge.mp4` was deleted by the operator (Pass D.1
+ * follow-up) — and the section is then not rendered. An empty `posterUrl`
+ * leaves the section's own placeholder copy in place until the video plays.
  */
 export const videoFeatureFormSchema = z.object({
   enabled: enabledSchema,
   videoUrl: clearableMediaRefSchema,
+  posterUrl: clearableMediaRefSchema,
 });
 
 export type FlagshipOneFeatureFormValues = z.infer<

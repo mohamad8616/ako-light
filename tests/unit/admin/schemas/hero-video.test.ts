@@ -159,12 +159,26 @@ describe("heroFeatureFormSchema", () => {
 });
 
 describe("videoFeatureFormSchema", () => {
-  it("accepts a cleared video — the built-in asset stays", () => {
+  /** A video submission with both media fields cleared. */
+  const clearedVideo = { enabled: true, videoUrl: "", posterUrl: "" };
+
+  it("accepts a cleared video — the section then shows nothing", () => {
+    const parsed = videoFeatureFormSchema.safeParse(clearedVideo);
+    expect(parsed.success, JSON.stringify(parsed.error?.issues)).toBe(true);
+  });
+
+  it("carries a poster alongside the video", () => {
     const parsed = videoFeatureFormSchema.safeParse({
-      enabled: true,
-      videoUrl: "",
+      ...clearedVideo,
+      videoUrl: "https://bucket.liara.space/media/homepage/afterhenge.mp4",
+      posterUrl: "https://bucket.liara.space/media/homepage/frame.jpg",
     });
     expect(parsed.success, JSON.stringify(parsed.error?.issues)).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.posterUrl).toBe(
+        "https://bucket.liara.space/media/homepage/frame.jpg",
+      );
+    }
   });
 
   it("accepts a stored URL and a public path", () => {
@@ -172,8 +186,9 @@ describe("videoFeatureFormSchema", () => {
       "https://bucket.liara.space/media/homepage/afterhenge.mp4",
       "/media/legacy-video.mp4",
     ]) {
-      expect(videoFeatureFormSchema.safeParse({ enabled: true, videoUrl }).success)
-        .toBe(true);
+      expect(
+        videoFeatureFormSchema.safeParse({ ...clearedVideo, videoUrl }).success,
+      ).toBe(true);
     }
   });
 
@@ -184,8 +199,17 @@ describe("videoFeatureFormSchema", () => {
       "not a url",
     ]) {
       expect(
-        videoFeatureFormSchema.safeParse({ enabled: true, videoUrl }).success,
+        videoFeatureFormSchema.safeParse({ ...clearedVideo, videoUrl }).success,
         videoUrl,
+      ).toBe(false);
+    }
+  });
+
+  it("rejects a malformed poster on its own", () => {
+    for (const posterUrl of ["javascript:alert(1)", "not a url"]) {
+      expect(
+        videoFeatureFormSchema.safeParse({ ...clearedVideo, posterUrl }).success,
+        posterUrl,
       ).toBe(false);
     }
   });

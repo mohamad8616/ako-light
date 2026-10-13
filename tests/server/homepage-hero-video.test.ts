@@ -83,6 +83,7 @@ type VideoRow = {
   id: string;
   enabled: boolean;
   videoUrl: string | null;
+  posterUrl: string | null;
 };
 
 let heroSnapshot: HeroRow | null = null;
@@ -224,7 +225,7 @@ describeDb("Pass D.1 — hero and video slots", () => {
 
   it("refuses an UNAUTHENTICATED video save", async () => {
     await expect(
-      updateVideoFeatureAction({ enabled: true, videoUrl: "" }),
+      updateVideoFeatureAction({ enabled: true, videoUrl: "", posterUrl: "" }),
     ).rejects.toThrow();
     expect(await readVideo()).toBeNull();
   });
@@ -234,7 +235,7 @@ describeDb("Pass D.1 — hero and video slots", () => {
     state.cookieHeader = customer.cookie;
 
     await expect(
-      updateVideoFeatureAction({ enabled: true, videoUrl: "" }),
+      updateVideoFeatureAction({ enabled: true, videoUrl: "", posterUrl: "" }),
     ).rejects.toThrow();
     expect(await readVideo()).toBeNull();
   });
@@ -379,11 +380,59 @@ describeDb("Pass D.1 — hero and video slots", () => {
     state.cookieHeader = admin.cookie;
 
     const url = "https://bucket.liara.space/media/homepage/afterhenge.mp4";
-    const outcome = await updateVideoFeatureAction({ enabled: true, videoUrl: url });
+    const outcome = await updateVideoFeatureAction({
+      enabled: true,
+      videoUrl: url,
+      posterUrl: "",
+    });
     expect(outcome.ok, JSON.stringify(outcome)).toBe(true);
 
     expect((await readVideo())!.videoUrl).toBe(url);
     expect((await getVideoFeature())!.videoUrl).toBe(url);
+  });
+
+  it("lets an ADMIN set the section's POSTER, and the public read returns it", async () => {
+    const admin = await accountWithSession("admin");
+    state.cookieHeader = admin.cookie;
+
+    const video = "https://bucket.liara.space/media/homepage/afterhenge.mp4";
+    const poster = "https://bucket.liara.space/media/homepage/frame.jpg";
+    const outcome = await updateVideoFeatureAction({
+      enabled: true,
+      videoUrl: video,
+      posterUrl: poster,
+    });
+    expect(outcome.ok, JSON.stringify(outcome)).toBe(true);
+
+    // Both lands in the row…
+    expect((await readVideo())!.posterUrl).toBe(poster);
+    // …and both cross the server boundary to the component, which is what
+    // makes the poster a preloader frame rather than just a stored string.
+    const resolved = (await getVideoFeature())!;
+    expect(resolved.videoUrl).toBe(video);
+    expect(resolved.posterUrl).toBe(poster);
+  });
+
+  it("clears the poster back to the placeholder-only section", async () => {
+    const admin = await accountWithSession("admin");
+    state.cookieHeader = admin.cookie;
+
+    await updateVideoFeatureAction({
+      enabled: true,
+      videoUrl: "https://bucket.liara.space/media/homepage/x.mp4",
+      posterUrl: "https://bucket.liara.space/media/homepage/frame.jpg",
+    });
+    expect((await getVideoFeature())!.posterUrl).not.toBeNull();
+
+    const outcome = await updateVideoFeatureAction({
+      enabled: true,
+      videoUrl: "https://bucket.liara.space/media/homepage/x.mp4",
+      posterUrl: "",
+    });
+    expect(outcome.ok, JSON.stringify(outcome)).toBe(true);
+
+    expect((await readVideo())!.posterUrl).toBeNull();
+    expect((await getVideoFeature())!.posterUrl).toBeNull();
   });
 
   it("clears the video back to the built-in asset", async () => {
@@ -393,10 +442,11 @@ describeDb("Pass D.1 — hero and video slots", () => {
     await updateVideoFeatureAction({
       enabled: true,
       videoUrl: "https://bucket.liara.space/media/homepage/x.mp4",
+      posterUrl: "",
     });
     expect((await getVideoFeature())!.videoUrl).not.toBeNull();
 
-    const outcome = await updateVideoFeatureAction({ enabled: true, videoUrl: "" });
+    const outcome = await updateVideoFeatureAction({ enabled: true, videoUrl: "", posterUrl: "" });
     expect(outcome.ok, JSON.stringify(outcome)).toBe(true);
 
     // NULL means "no video" — the stock fallback asset was deleted by the
@@ -412,10 +462,15 @@ describeDb("Pass D.1 — hero and video slots", () => {
     await updateVideoFeatureAction({
       enabled: true,
       videoUrl: "/media/legacy-video.mp4",
+      posterUrl: "",
     });
 
     for (const videoUrl of ["javascript:alert(1)", "not a url"]) {
-      const outcome = await updateVideoFeatureAction({ enabled: true, videoUrl });
+      const outcome = await updateVideoFeatureAction({
+        enabled: true,
+        videoUrl,
+        posterUrl: "",
+      });
       expect(outcome.ok, videoUrl).toBe(false);
       if (!outcome.ok) {
         expect(outcome.issues.map((i) => i.field), videoUrl).toContain("videoUrl");

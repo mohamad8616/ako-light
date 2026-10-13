@@ -43,6 +43,7 @@ export function VideoFeatureForm({
     values: {
       enabled: detail?.enabled ?? true,
       videoUrl: detail?.videoUrl ?? "",
+      posterUrl: detail?.posterUrl ?? "",
     },
   });
 
@@ -60,22 +61,38 @@ export function VideoFeatureForm({
   return (
     <form onSubmit={onSubmit} className="space-y-6">
       <FormProvider {...form}>
+        <FormCard title={t("admin.homepage.card.content")}>
+          <SwitchField
+            name="enabled"
+            label={t("admin.homepage.field.enabled")}
+            description={t("admin.homepage.field.enabledHint")}
+          />
+        </FormCard>
+
         <FormCard
           title={t("admin.homepage.card.videoMedia")}
           description={t("admin.homepage.card.videoMediaHint")}
         >
           <div className="space-y-5">
-            <SwitchField
-              name="enabled"
-              label={t("admin.homepage.field.enabled")}
-              description={t("admin.homepage.field.enabledHint")}
-            />
             <MediaField
               name="videoUrl"
               kind="video"
               folder="homepage"
               label={t("admin.homepage.field.videoUrl")}
               hint={t("admin.homepage.field.videoUrlHint")}
+            />
+            {/*
+              The poster is a PRELOADER: it is the frame painted while the
+              video buffers. It sits directly under the video it belongs to,
+              exactly as it does on the hero, so the two fields read as one
+              pair rather than as unrelated settings.
+            */}
+            <MediaField
+              name="posterUrl"
+              kind="image"
+              folder="homepage"
+              label={t("admin.homepage.field.videoPoster")}
+              hint={t("admin.homepage.field.videoPosterHint")}
             />
           </div>
         </FormCard>

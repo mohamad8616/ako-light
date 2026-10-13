@@ -24,7 +24,12 @@ vi.mock("@/lib/media/storage", async (importOriginal) => {
   };
 });
 
-const repo = vi.hoisted(() => ({ createMedia: vi.fn() }));
+const repo = vi.hoisted(() => ({
+  createMedia: vi.fn(),
+  // The duplicate guard. `undefined` (falsy) = "not already uploaded", which is
+  // what every case in this file expects.
+  findMediaByFilenameAndSize: vi.fn(),
+}));
 const references = vi.hoisted(() => ({ findMediaReferences: vi.fn() }));
 vi.mock("@/lib/repositories/media", () => ({
   ...repo,
@@ -204,6 +209,33 @@ describe("registerUploadedMedia — Liara verification", () => {
         url: "https://homeform-media.storage.iran.liara.site/media/library/1-clip.mp4",
       }),
     );
+  });
+
+  it("refuses a duplicate and DELETES the object the browser just stored", async () => {
+    // On the direct path the bytes are already in the store by the time the
+    // registration runs, so refusing here must also remove them — otherwise
+    // every refused re-upload leaks an object nothing references.
+    repo.findMediaByFilenameAndSize.mockResolvedValue({
+      id: "already-here",
+      filename: "clip.mp4",
+      size: 1024,
+    });
+    // `providerHolder.current` is typed `unknown` (it is swapped between
+    // cases), so take a typed alias to spy on. It is the SAME object the
+    // `storageProvider` getter returns, so the service sees this spy.
+    const provider = providerHolder.current as ReturnType<typeof liaraProvider>;
+    const remove = vi.spyOn(provider, "delete").mockResolvedValue(undefined);
+
+    await expect(
+      registerUploadedMedia({
+        filename: "clip.mp4",
+        uploadToken: token(),
+        size: 1024,
+      }),
+    ).rejects.toMatchObject({ code: "duplicate" });
+
+    expect(repo.createMedia).not.toHaveBeenCalled();
+    expect(remove).toHaveBeenCalledWith(["media/library/1-clip.mp4"]);
   });
 
   it("refuses a registration with no signed authorization", async () => {

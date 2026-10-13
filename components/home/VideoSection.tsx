@@ -10,9 +10,11 @@ import HomepageSection, { EASE } from "../../utility/HomepageSection";
 /**
  * The homepage video section (Pass D.1).
  *
- * The ONLY thing the slot configures is the video. The placeholder copy
- * (`video.brand`), the layout, the scroll-triggered loading and the
- * play/pause-on-visibility behaviour are not content and are unchanged.
+ * What the slot configures is the section's MEDIA: the video and the poster
+ * frame painted before it starts. The placeholder copy (`video.brand`), the
+ * layout, the scroll-triggered loading and the play/pause-on-visibility
+ * behaviour are not content and are unchanged — an unset slot renders exactly
+ * what this component always rendered.
  *
  * There is deliberately NO built-in video any more: the shipped
  * `/videos/afterhenge.mp4` was removed by the operator (Pass D.1 follow-up), so
@@ -20,6 +22,14 @@ import HomepageSection, { EASE } from "../../utility/HomepageSection";
  * NOTHING — a permanently empty aspect-video box with the brand placeholder
  * over it would look broken, which is worse than the section simply not being
  * on the page until a video is chosen.
+ *
+ * ── The poster ───────────────────────────────────────────────────────────────
+ *
+ * The poster is a PRELOADER: it is the frame the visitor sees while the video
+ * buffers. An operator who supplies one has already decided what that frame
+ * should be, so the `HOME FORM` caption is dropped when a poster is set —
+ * otherwise it would just sit on top of their image. With no poster the caption
+ * behaves exactly as before.
  */
 export default function VideoSection({
   data,
@@ -35,7 +45,7 @@ export default function VideoSection({
   // triggers the (possibly large) video source to actually start loading.
   const [shouldLoad, setShouldLoad] = useState(false);
   // Becomes true once the video reports it's actually playing, so we
-  // know it's safe to fade the "HOME FORM" placeholder out.
+  // know it's safe to fade the placeholder out.
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackFailed, setPlaybackFailed] = useState(false);
 
@@ -69,6 +79,13 @@ export default function VideoSection({
   const src = data?.videoUrl ?? null;
   if (!src) return null;
 
+  /**
+   * The preloader frame. NULL means "no poster", which is NOT the same as an
+   * empty attribute: `poster=""` makes the browser request the page URL as an
+   * image, so absence is spelled `undefined`.
+   */
+  const poster = data?.posterUrl ?? undefined;
+
   const playVideo = () => {
     setPlaybackFailed(false);
     setShouldLoad(true);
@@ -81,9 +98,10 @@ export default function VideoSection({
           container — the video uses the full fluid width on large screens. */}
       <div ref={sectionRef} className="relative">
         <div className="bg-background relative aspect-video w-full overflow-hidden">
-          {/* Placeholder shown until the video is actually playing */}
+          {/* Placeholder shown until the video is actually playing. Skipped
+              when a poster was supplied — the poster IS the pre-frame. */}
           <AnimatePresence>
-            {!isPlaying && (
+            {!isPlaying && !poster && (
               <motion.div
                 initial={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -106,6 +124,7 @@ export default function VideoSection({
               loop
               playsInline
               preload="none"
+              poster={poster}
               controls
               onPlaying={() => {
                 setIsPlaying(true);

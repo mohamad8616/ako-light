@@ -69,7 +69,11 @@ export default async function AboutPage({
     <>
       <JsonLdRenderer data={jsonLdData} />
       <main className="bg-background-secondary w-full space-y-5 sm:space-y-10 md:space-y-12 lg:space-y-14">
-        <AboutHero content={content.hero} videoSrc={heroMedia.videoUrl} />
+        <AboutHero
+          content={content.hero}
+          videoSrc={heroMedia.videoUrl}
+          posterSrc={heroMedia.posterUrl}
+        />
         <AboutHeroVideo content={content.subtitle} />
         <BrandStory content={content.brandStory} />
         <ImageGalleryCarousel

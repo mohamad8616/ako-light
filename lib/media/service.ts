@@ -39,6 +39,7 @@ import { VIDEO_EXTENSIONS } from "@/lib/media/video-sniff";
 import {
   createMedia,
   deleteMedia,
+  findMediaByFilenameAndSize,
   getMedia,
   updateMediaMetadata,
   type MediaRow,
@@ -59,6 +60,11 @@ export type MediaErrorCode =
   | "notFound"
   /** The object is still pointed at by catalog/order rows — see `removeMedia`. */
   | "inUse"
+  /**
+   * The SAME file is already in the library — see `findMediaByFilenameAndSize`.
+   * Refused BEFORE anything is stored, so a mistaken re-upload costs nothing.
+   */
+  | "duplicate"
   | "storageNotConfigured"
   | "storageFailed";
 
@@ -108,6 +114,23 @@ export async function uploadMedia(input: UploadMediaInput): Promise<MediaRow> {
   }
 
   const { mimeType, extension, size, baseName, mediaType } = validated.value;
+
+  // ── Duplicate guard ────────────────────────────────────────────────────────
+  // Refused BEFORE a single byte reaches storage: the library already holds a
+  // row with this filename AND this exact size, so the operator is almost
+  // certainly about to store the same file a second time. Renaming the file is
+  // the documented way past this, and the message says so.
+  const alreadyThere = await findMediaByFilenameAndSize(input.filename, size);
+  if (alreadyThere) {
+    console.warn(
+      `[media] refusing duplicate upload: ${input.filename} (${size} bytes) already exists as ${alreadyThere.id}`,
+    );
+    throw new MediaError(
+      "duplicate",
+      `Media ${input.filename} (${size} bytes) already exists as ${alreadyThere.id}`,
+    );
+  }
+
   const key = buildStorageKey({
     folder: input.folder,
     baseName,
@@ -320,6 +343,27 @@ export async function registerUploadedMedia(
   }
   if (!verifiedUrl)
     throw new MediaError("unsupportedType", "Missing verified media URL");
+
+  // ── Duplicate guard (direct upload) ────────────────────────────────────────
+  // The browser has ALREADY put the bytes in the store by the time this runs,
+  // so unlike `uploadMedia` there is something to clean up: the object would
+  // otherwise sit there referenced by nobody. Same rule as the server-action
+  // path — filename + size identify the same file, and renaming it is the
+  // operator's escape hatch.
+  const alreadyThere = await findMediaByFilenameAndSize(
+    input.filename,
+    verifiedSize,
+  );
+  if (alreadyThere) {
+    console.warn(
+      `[media] refusing duplicate upload: ${input.filename} (${verifiedSize} bytes) already exists as ${alreadyThere.id}`,
+    );
+    await bestEffortDelete([verified.key]);
+    throw new MediaError(
+      "duplicate",
+      `Media ${input.filename} (${verifiedSize} bytes) already exists as ${alreadyThere.id}`,
+    );
+  }
 
   return createMedia({
     filename: input.filename,

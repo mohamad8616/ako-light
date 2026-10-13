@@ -280,11 +280,13 @@ export async function updateCatalogueFeatureAction(
  */
 export async function updatePageHeroMediaAction(
   page: "about" | "s34",
-  input: { videoUrl: string },
+  input: { videoUrl: string; posterUrl: string },
 ): Promise<ActionResult<undefined>> {
   await requireAdminAccess();
 
-  const parsed = z.object({ videoUrl: clearableMediaRefSchema }).safeParse(input);
+  const parsed = z
+    .object({ videoUrl: clearableMediaRefSchema, posterUrl: clearableMediaRefSchema })
+    .safeParse(input);
   if (!parsed.success) {
     return actionFail("invalid", zodIssuesToFieldIssues(parsed.error));
   }
@@ -292,8 +294,12 @@ export async function updatePageHeroMediaAction(
   try {
     const previous = await getPageHeroMedia(page);
     const videoUrl = emptyToNull(parsed.data.videoUrl);
-    await updatePageHeroMedia(page, videoUrl);
-    await deleteStorageUrls(removedUrls([previous.videoUrl], [videoUrl]));
+    const posterUrl = emptyToNull(parsed.data.posterUrl);
+    await updatePageHeroMedia(page, { videoUrl, posterUrl });
+    await deleteStorageUrls([
+      ...removedUrls([previous.videoUrl], [videoUrl]),
+      ...removedUrls([previous.posterUrl], [posterUrl]),
+    ]);
     revalidateCatalog(page === "about" ? "about" : "s34");
     return actionOk(undefined);
   } catch (error) {
@@ -365,10 +371,14 @@ export async function updateVideoFeatureAction(
   try {
     const previous = await getVideoFeatureAdminDetail();
     const videoUrl = emptyToNull(parsed.data.videoUrl);
+    const posterUrl = emptyToNull(parsed.data.posterUrl);
 
-    await updateVideoFeature({ enabled: parsed.data.enabled, videoUrl });
+    await updateVideoFeature({ enabled: parsed.data.enabled, videoUrl, posterUrl });
 
-    await deleteStorageUrls(removedUrls([previous?.videoUrl], [videoUrl]));
+    await deleteStorageUrls([
+      ...removedUrls([previous?.videoUrl], [videoUrl]),
+      ...removedUrls([previous?.posterUrl], [posterUrl]),
+    ]);
 
     revalidateCatalog("homepage");
     return actionOk(undefined);

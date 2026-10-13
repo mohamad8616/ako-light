@@ -319,3 +319,31 @@ export async function findMediaIdsByUrl(
   for (const row of rows) byUrl.set(row.url, row.id);
   return byUrl;
 }
+
+/**
+ * An existing asset that IS the same file, or null when there is none.
+ *
+ * The duplicate check the upload path runs BEFORE storing a byte. Filename and
+ * size are the pair it matches: together they identify the file an operator is
+ * holding far more tightly than either alone, and both are already known on
+ * every path (the server action has the bytes, the direct upload has the
+ * filename and size in its authorization). A deliberately RENAMED file is
+ * therefore still accepted — which is exactly the escape hatch the message
+ * offers ("…or change the name and upload it again").
+ *
+ * The OLDEST match wins, so the operator is pointed at the copy that has been
+ * in the library longest.
+ */
+export async function findMediaByFilenameAndSize(
+  filename: string,
+  size: number,
+  db: Prisma.TransactionClient = prisma,
+): Promise<Pick<MediaRow, "id" | "filename" | "size"> | null> {
+  if (!filename || !Number.isFinite(size) || size <= 0) return null;
+
+  return db.media.findFirst({
+    where: { filename, size },
+    select: { id: true, filename: true, size: true },
+    orderBy: { createdAt: "asc" },
+  });
+}

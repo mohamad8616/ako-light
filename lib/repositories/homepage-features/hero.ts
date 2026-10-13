@@ -23,7 +23,11 @@ export type PageHeroMediaSlot = "about" | "s34";
  * empty text/media columns are the same NULL = "nothing configured" the
  * homepage hero uses.
  */
-export type PageHeroMediaWriteInput = { videoUrl: string | null };
+export type PageHeroMediaWriteInput = {
+  videoUrl: string | null;
+  /** The preloader frame for that page's hero video. NULL = the video's own first frame. */
+  posterUrl: string | null;
+};
 
 /**
  * The homepage hero — components/home/HeroSection.tsx (Pass D.1).
@@ -80,13 +84,13 @@ export const getPageHeroMedia = cache(
   async (page: PageHeroMediaSlot): Promise<PageHeroMediaWriteInput> => {
     const id = page === "about" ? ABOUT_HERO_MEDIA_SLOT : S34_HERO_MEDIA_SLOT;
     const row = await prisma.heroFeature.findUnique({ where: { id } });
-    return { videoUrl: row?.videoUrl ?? null };
+    return { videoUrl: row?.videoUrl ?? null, posterUrl: row?.posterUrl ?? null };
   },
 );
 
 export const updatePageHeroMedia = async (
   page: PageHeroMediaSlot,
-  videoUrl: string | null,
+  media: { videoUrl: string | null; posterUrl: string | null },
   db: Prisma.TransactionClient = prisma,
 ): Promise<void> => {
   const id = page === "about" ? ABOUT_HERO_MEDIA_SLOT : S34_HERO_MEDIA_SLOT;
@@ -95,14 +99,14 @@ export const updatePageHeroMedia = async (
     create: {
       id,
       enabled: true,
-      videoUrl,
-      posterUrl: null,
+      videoUrl: media.videoUrl,
+      posterUrl: media.posterUrl,
       firstLine: Prisma.DbNull,
       secondLine: Prisma.DbNull,
       ctaLabel: Prisma.DbNull,
       ctaHref: null,
     },
-    update: { videoUrl },
+    update: { videoUrl: media.videoUrl, posterUrl: media.posterUrl },
   });
 };
 

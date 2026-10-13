@@ -71,7 +71,11 @@ export default async function S34Page({
     <>
       <JsonLdRenderer data={jsonLdData} />
       <main className="bg-background-secondary w-full space-y-48">
-        <S34Hero content={content.hero} videoSrc={heroMedia.videoUrl} />
+        <S34Hero
+          content={content.hero}
+          videoSrc={heroMedia.videoUrl}
+          posterSrc={heroMedia.posterUrl}
+        />
         <S34Concept content={content.concept} />
         <Secuence content={content.gallery} />
         <ImageGalleryCarousel

@@ -6,28 +6,37 @@ import { VIDEO_SLOT } from "./slots";
 /**
  * The homepage video section — components/home/VideoSection.tsx (Pass D.1).
  *
- * The section's ONLY configurable content is its video. Its placeholder copy
- * (`video.brand`) stays a dictionary string, and its layout, scroll-triggered
- * loading and play/pause behaviour are untouched by this slot — a form field
- * was added only where the component already had something an operator would
- * want to change without editing source.
+ * The section's configurable content is its media: the video and the poster
+ * frame painted before it starts. Its placeholder copy (`video.brand`) stays a
+ * dictionary string, and its layout, scroll-triggered loading and play/pause
+ * behaviour are untouched by this slot — a form field was added only where the
+ * component already had something an operator would want to change without
+ * editing source.
  *
  * `videoUrl` is nullable, and since the operator DELETED the stock
  * `/videos/afterhenge.mp4` (Pass D.1 follow-up) NULL means "no video" — the
  * section renders nothing rather than falling back to a shipped film.
- * which is why this table needs no backfill: an empty table renders the section
- * exactly as it always did.
+ * `posterUrl` is the frame shown while that video starts; NULL keeps the
+ * original behaviour, where the `video.brand` placeholder sits there until the
+ * video is actually playing. Both are nullable, which is why this table needs
+ * no backfill: an empty table renders the section exactly as it always did.
  */
 export type ResolvedVideoFeature = {
   enabled: boolean;
-  /** Absolute storage URL, or a path under /public. NULL = built-in asset. */
+  /** Absolute storage URL, or a path under /public. NULL = nothing to play. */
   videoUrl: string | null;
+  /**
+   * Frame shown before the video plays. NULL = the section's own placeholder
+   * copy stays visible until the video starts.
+   */
+  posterUrl: string | null;
 };
 
 /** The video section as the admin form submits it. */
 export type VideoFeatureWriteInput = {
   enabled: boolean;
   videoUrl: string | null;
+  posterUrl: string | null;
 };
 
 /** The section the public page renders; `null` when never saved. */
@@ -38,7 +47,7 @@ export const getVideoFeature = cache(
     });
     if (!row) return null;
 
-    return { enabled: row.enabled, videoUrl: row.videoUrl };
+    return { enabled: row.enabled, videoUrl: row.videoUrl, posterUrl: row.posterUrl };
   },
 );
 
@@ -50,7 +59,11 @@ export const getVideoFeatureAdminDetail = cache(
     });
     if (!row) return null;
 
-    return { enabled: row.enabled, videoUrl: row.videoUrl };
+    return {
+      enabled: row.enabled,
+      videoUrl: row.videoUrl,
+      posterUrl: row.posterUrl,
+    };
   },
 );
 
@@ -59,7 +72,11 @@ export const updateVideoFeature = async (
   input: VideoFeatureWriteInput,
   db: Prisma.TransactionClient = prisma,
 ): Promise<void> => {
-  const data = { enabled: input.enabled, videoUrl: input.videoUrl };
+  const data = {
+    enabled: input.enabled,
+    videoUrl: input.videoUrl,
+    posterUrl: input.posterUrl,
+  };
 
   await db.videoFeature.upsert({
     where: { id: VIDEO_SLOT },

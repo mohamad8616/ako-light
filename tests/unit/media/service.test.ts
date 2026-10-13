@@ -34,6 +34,9 @@ const repo = vi.hoisted(() => ({
   listMedia: vi.fn(),
   listMediaPage: vi.fn(),
   DEFAULT_MEDIA_PAGE_SIZE: 50,
+  // The duplicate guard. Defaults to `undefined` (falsy = "not a duplicate"),
+  // so every existing case behaves exactly as before.
+  findMediaByFilenameAndSize: vi.fn(),
 }));
 
 /** The reference check the delete guard consults. */
@@ -116,6 +119,31 @@ describe("uploadMedia", () => {
 
     expect(provider.upload).not.toHaveBeenCalled();
     expect(repo.createMedia).not.toHaveBeenCalled();
+  });
+
+  it("refuses a file the library already holds, BEFORE storing anything", async () => {
+    // Same filename AND same byte size — the pair that identifies "this file
+    // is already uploaded". The guard runs ahead of storage on purpose, so a
+    // mistaken re-upload costs nothing.
+    repo.findMediaByFilenameAndSize.mockResolvedValue({
+      id: "already-here",
+      filename: "Hero.PNG",
+      size: PNG().byteLength,
+    });
+
+    await expect(uploadMedia(uploadInput())).rejects.toMatchObject({
+      code: "duplicate",
+    });
+
+    expect(provider.upload).not.toHaveBeenCalled();
+    expect(repo.createMedia).not.toHaveBeenCalled();
+  });
+
+  it("accepts the same NAME at a different size — a different file", async () => {
+    repo.findMediaByFilenameAndSize.mockResolvedValue(null);
+
+    await expect(uploadMedia(uploadInput())).resolves.toMatchObject({ id: "m1" });
+    expect(provider.upload).toHaveBeenCalledTimes(1);
   });
 
   it("maps a transport failure to storageFailed and persists nothing", async () => {

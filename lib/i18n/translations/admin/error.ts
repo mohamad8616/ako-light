@@ -28,6 +28,8 @@ export const errorEn = {
     "That fulfillment change is not allowed for this order's current state.",
   "admin.error.inUse":
     "This media item is currently in use and cannot be deleted.",
+  "admin.error.duplicate":
+    "This file seems to be uploaded before, check media before, or change the name and upload it again",
   "admin.error.relationViolation": "A linked item is missing.",
   "admin.error.selfTarget": "You cannot change your own role or status.",
 
@@ -61,6 +63,8 @@ export const errorFa = {
     "این تغییر وضعیت برای سفارش در وضعیت فعلی مجاز نیست.",
   "admin.error.inUse":
     "این رسانه در حال استفاده است و حذف نمی‌شود.",
+  "admin.error.duplicate":
+    "به نظر می‌رسد این فایل قبلاً آپلود شده است. ابتدا کتابخانه رسانه را بررسی کنید، یا نام فایل را تغییر دهید و دوباره آپلود کنید.",
   "admin.error.relationViolation": "یک مورد مرتبط یافت نشد.",
   "admin.error.selfTarget":
     "نمی‌توانید نقش یا وضعیت حساب خودتان را تغییر دهید.",

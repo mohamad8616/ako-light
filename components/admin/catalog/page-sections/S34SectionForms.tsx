@@ -85,7 +85,7 @@ export function S34HeroSectionForm({ content }: { content: S34HeroContent }) {
 export function S34HeroMediaSectionForm({
   content,
 }: {
-  content: { videoUrl: string | null };
+  content: { videoUrl: string | null; posterUrl: string | null };
 }) {
   return <PageHeroMediaForm page="s34" detail={content} />;
 }

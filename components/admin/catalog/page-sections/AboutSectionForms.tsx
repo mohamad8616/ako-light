@@ -92,7 +92,7 @@ export function AboutHeroSectionForm({
 export function AboutHeroMediaSectionForm({
   content,
 }: {
-  content: { videoUrl: string | null };
+  content: { videoUrl: string | null; posterUrl: string | null };
 }) {
   return <PageHeroMediaForm page="about" detail={content} />;
 }

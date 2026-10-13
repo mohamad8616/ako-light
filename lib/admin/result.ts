@@ -69,6 +69,13 @@ export type AdminErrorCode =
    * lib/repositories/media-references.ts).
    */
   | "inUse"
+  /**
+   * The very same file is already in the media library (lib/media/service.ts
+   * `uploadMedia` / `registerUploadedMedia`). A polite refusal, not an error:
+   * the operator is told to look for the copy they already have, or to rename
+   * this one and upload it again.
+   */
+  | "duplicate"
   | "relationViolation"
   | "selfTarget"
   | "unknown";
@@ -180,6 +187,10 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
       slugTaken: 0,
       notFound: 0,
       inUse: 0,
+      // Produced by the media service, never by a zod issue — it exists here to
+      // satisfy the union. Severity 0 like its neighbours: it is a refusal to
+      // store, not a ranking between two messages on the same field.
+      duplicate: 0,
       relationViolation: 0,
       selfTarget: 0,
       invalidTransition: 0,

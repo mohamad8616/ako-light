@@ -147,6 +147,30 @@ html.scroll-locked body {
   display: none; /* Chrome/Safari */
 }
 
+/*
+ * Admin sidebar nav — a VISIBLE, thin scrollbar.
+ *
+ * `.no-scrollbar` (which the shared SidebarContent carries) hides the bar
+ * entirely, so a nav list taller than the viewport scrolled but looked like it
+ * simply stopped. Declared AFTER `.no-scrollbar` so it wins the same-specificity
+ * tie, and only applied to the sidebar's own list.
+ */
+.admin-nav-scroll {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: var(--sidebar-border) transparent; /* Firefox */
+}
+.admin-nav-scroll::-webkit-scrollbar {
+  display: block; /* overrides .no-scrollbar's `display: none` */
+  width: 6px; /* Chrome/Safari */
+}
+.admin-nav-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.admin-nav-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--sidebar-border);
+  border-radius: 9999px;
+}
+
 /* thumbnails rail in the lightbox — its own thin, dark scrollbar */
 .lightbox-rail {
   scrollbar-width: thin; /* Firefox */

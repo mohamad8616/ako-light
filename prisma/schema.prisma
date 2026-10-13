@@ -793,16 +793,21 @@ model HeroFeature {
 
 /// Homepage video section — components/home/VideoSection.tsx (Pass D.1).
 ///
-/// The section's ONLY configurable content is its video: the placeholder copy
+/// The section's only configurable content is its media: the video and the
+/// poster frame painted before it starts. The placeholder copy
 /// (`video.brand`) stays a dictionary string and the layout/animation are
-/// untouched. `videoUrl` is nullable so NULL keeps the built-in
-/// `/videos/afterhenge.mp4`, and no backfill is needed.
+/// untouched. `videoUrl` is nullable so NULL leaves the section with nothing to
+/// play (it renders nothing), and no backfill is needed.
 model VideoFeature {
   /// Singleton slot key ("video").
   id        String   @id
   enabled   Boolean  @default(true)
   /// Override video URL/path (storage URL or a path under /public).
   videoUrl  String?
+  /// Frame shown before the video plays — a preloader poster, as on the hero.
+  /// NULL = the section's own placeholder copy stays visible until the video
+  /// starts, which is the original behaviour.
+  posterUrl String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

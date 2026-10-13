@@ -78,10 +78,28 @@ export function AdminHeaderNav() {
                 locale === "en" ? "admin.header.lang.en" : "admin.header.lang.fa",
               )}
               className={cn(
-                "focus-visible:ring-ring px-2 py-1 text-[11px] font-medium uppercase transition-colors outline-none focus-visible:ring-2",
+                "focus-visible:ring-ring cursor-pointer px-2 py-1 text-[11px] font-medium uppercase transition-colors outline-none focus-visible:ring-2",
+                /*
+                  The admin shell is DARK: `bg-background` resolves to #171719
+                  (see app/globals.css `@theme inline`), which is the colour the
+                  header itself is painted in. A selected chip filled with
+                  `bg-background` is therefore invisible as a fill, and the old
+                  `text-foreground` (#0a0a0a) label on it was black-on-black —
+                  the reported "black background with black text".
+
+                  So the two states are INVERSE, and light-on-dark is the rule
+                  the rest of the shell already follows (dark shell, light cards):
+
+                    selected   -> a light chip (`bg-background-secondary`,
+                                  #f0efec) with dark ink (`text-background`), so
+                                  the active language is the most prominent
+                                  thing in the group;
+                    unselected -> no fill at all, just light ink at reduced
+                                  opacity, which is the exact opposite.
+                */
                 active
-                  ? "bg-background text-foreground"
-                  : "text-background/70 hover:text-background",
+                ? "text-background-secondary bg-background"
+                  : "bg-background-secondary text-background/50"
               )}
             >
               {locale}

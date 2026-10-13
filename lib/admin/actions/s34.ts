@@ -41,7 +41,10 @@ export async function updateS34PageSectionAction(
 
   if (sectionKey === "heroMediaSection") {
     const parsedMedia = z
-      .object({ videoUrl: z.string().trim().max(2048).or(z.literal("")) })
+      .object({
+        videoUrl: z.string().trim().max(2048).or(z.literal("")),
+        posterUrl: z.string().trim().max(2048).or(z.literal("")).default(""),
+      })
       .safeParse(input);
     if (!parsedMedia.success) {
       return actionFail("invalid", zodIssuesToFieldIssues(parsedMedia.error));
