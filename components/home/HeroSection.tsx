@@ -53,8 +53,23 @@ export default function HeroSection({
     : t("hero.ritualGravity");
   const btn = data?.ctaLabel ? pick(data.ctaLabel, lang) : t("hero.readMore");
 
+  /*
+    `h-[100svh]`, not `h-screen`.
+
+    `h-screen` is `100vh`, which on a phone is the viewport with the browser
+    chrome RETRACTED — so while the address bar is showing, the hero's bottom
+    edge sits BELOW the visible area and everything anchored to it (the scroll
+    indicator, the last line of copy) is off-screen until the visitor scrolls.
+
+    `svh` is the SMALL viewport height: the size with the chrome expanded. It is
+    the one unit that is guaranteed to fit at every moment, so the whole hero —
+    copy, button and the scroll indicator at its bottom edge — is visible the
+    instant the page opens, with no scrolling. `dvh` would also fit, but it
+    CHANGES as the address bar hides and shows, which resizes the hero (and the
+    video inside it) mid-scroll; `svh` is stable.
+  */
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-black">
+    <section className="relative h-[100svh] w-full overflow-hidden bg-black">
       <Video src={data?.videoUrl ?? null} poster={data?.posterUrl ?? null} />
 
       <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/10 to-black/35" />

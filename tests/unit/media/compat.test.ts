@@ -28,6 +28,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { imageRefSchema } from "@/lib/admin/schemas/common";
 import { storageKeyFromUrl } from "@/lib/admin/storage-cleanup";
 import { IMAGE_EXTENSIONS, MAX_UPLOAD_BYTES } from "@/lib/admin/image-sniff";
+import { isLiaraStorageHost } from "@/lib/media/storage/liara";
 import {
   buildStorageKey,
   MAX_UPLOAD_BYTES as MEDIA_MAX_UPLOAD_BYTES,
@@ -75,6 +76,30 @@ describe("media output is a drop-in for the existing image fields", () => {
 });
 
 describe("the URL sweep recognises exactly our own objects", () => {
+  it("isLiaraStorageHost accepts the Liara cluster AND the configured public domain", () => {
+    // Two hosts are "ours", and both are needed:
+    //   - the Liara cluster, where the bucket lives;
+    //   - the CONFIGURED PUBLIC DOMAIN, which is the shape the app itself
+    //     writes once LIARA_PUBLIC_URL is set.
+    // The second one is what the suffix list can never enumerate, and dropping
+    // it silently broke object cleanup, the catalogue PDF proxy and the admin's
+    // Remove button all at once.
+    expect(isLiaraStorageHost("homeform-media.storage.iran.liara.site")).toBe(
+      true,
+    );
+    expect(isLiaraStorageHost("storage.c2.liara.site")).toBe(true);
+
+    process.env.LIARA_PUBLIC_URL = "https://media.karentagseal.ir";
+    expect(isLiaraStorageHost("media.karentagseal.ir")).toBe(true);
+    // A DIFFERENT custom domain is still not ours.
+    expect(isLiaraStorageHost("media.someone-else.ir")).toBe(false);
+    // Nor is a lookalike that merely CONTAINS our host.
+    expect(isLiaraStorageHost("media.karentagseal.ir.evil.com")).toBe(false);
+
+    delete process.env.LIARA_PUBLIC_URL;
+    expect(isLiaraStorageHost("media.karentagseal.ir")).toBe(false);
+  });
+
   it("media keys live under media/", () => {
     for (const folder of ["products", "designers", "uploads", undefined]) {
       const key = buildStorageKey({

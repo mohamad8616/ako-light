@@ -2,6 +2,7 @@
 // no hooks, so it can render as a server component too.
 
 const ScrollIndicator = () => {
+  
   return (
     <div className="absolute bottom-0 left-8 z-10 h-10 w-px overflow-hidden bg-white/15 md:h-12">
       <span className="scroll-indicator-bar block h-full w-full bg-white" />

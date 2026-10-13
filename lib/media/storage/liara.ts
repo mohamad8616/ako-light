@@ -13,6 +13,7 @@
 
 import {
   readLiaraConfig,
+  readLiaraPublicHost,
   type LiaraConfig,
 } from "@/lib/media/storage/liara-config";
 import {
@@ -45,12 +46,34 @@ export const LIARA_UPLOAD_URL_TTL_SECONDS = 5 * 60;
  */
 const LIARA_HOST_SUFFIXES = ["liara.ir", "liara.site", "liara.space"] as const;
 
-/** True when a hostname belongs to Liara's storage cluster. */
+/**
+ * True when a hostname belongs to this app's object storage.
+ *
+ * Two things count, and BOTH are needed:
+ *
+ *   1. a Liara cluster host (`…liara.site`, `…liara.space`, `…liara.ir`), which
+ *      is where the bucket lives; and
+ *   2. the CONFIGURED PUBLIC DOMAIN (`LIARA_PUBLIC_URL`), because a custom
+ *      domain is a first-class deployment — `media.<their domain>` serves the
+ *      same bucket, and the suffix list can never enumerate it.
+ *
+ * Missing (2) is not theoretical: when this project moved its public URLs to a
+ * custom domain, every URL the app itself wrote stopped passing this check, so
+ * object cleanup silently deleted nothing and the catalogue's PDF proxy refused
+ * to serve the file it had just stored. Both are read as "not ours".
+ */
 export function isLiaraStorageHost(hostname: string): boolean {
   const host = hostname.toLowerCase();
-  return LIARA_HOST_SUFFIXES.some(
-    (suffix) => host === suffix || host.endsWith(`.${suffix}`),
-  );
+  if (
+    LIARA_HOST_SUFFIXES.some(
+      (suffix) => host === suffix || host.endsWith(`.${suffix}`),
+    )
+  ) {
+    return true;
+  }
+
+  const publicHost = readLiaraPublicHost();
+  return publicHost !== null && host === publicHost;
 }
 
 export function liaraPublicUrl(

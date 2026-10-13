@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/db/prisma";
 import { storageProvider } from "@/lib/media/storage";
-import { readLiaraConfig } from "@/lib/media/storage/liara-config";
+import {
+  readLiaraConfig,
+  readLiaraPublicHost,
+} from "@/lib/media/storage/liara-config";
 import { MEDIA_KEY_PREFIX } from "@/lib/media/validation";
 
 /**
@@ -76,6 +79,19 @@ export function storageKeyFromUrl(
     if (parsed.pathname.startsWith(prefix)) {
       rawKey = parsed.pathname.slice(prefix.length);
     }
+  } else if (host === readLiaraPublicHost()) {
+    /*
+      A CUSTOM PUBLIC DOMAIN (`LIARA_PUBLIC_URL`, e.g. `media.example.ir`) serves
+      the same bucket path-style, and it is the shape this app actually WRITES
+      once one is configured.
+
+      Without this branch every URL the app itself stored failed the ownership
+      test, so `deleteStorageUrls` silently deleted nothing and each replaced
+      image or video leaked its object. The `media/` prefix check below still
+      applies, so this widens WHICH host we recognise, never which keys we will
+      delete.
+    */
+    rawKey = parsed.pathname.replace(/^\//, "");
   }
   if (!rawKey) return null;
 

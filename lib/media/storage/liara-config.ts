@@ -80,3 +80,36 @@ export function readLiaraConfig(
     ...(normalizedPublicUrl ? { publicUrl: normalizedPublicUrl } : {}),
   };
 }
+
+/**
+ * The hostname of the configured PUBLIC url, or `null` when it is unset or is
+ * not a usable HTTPS origin.
+ *
+ * ── Why this is separate from `readLiaraConfig` ──────────────────────────────
+ *
+ * The ownership checks — "is this URL one of OUR objects?" — run on READ paths
+ * (rendering a catalogue download, deleting a file an admin just removed), where
+ * the storage credentials may legitimately be absent. A missing secret must not
+ * make our own objects unrecognisable, so this reads only `LIARA_PUBLIC_URL` and
+ * never throws.
+ *
+ * It exists because a custom domain is a first-class deployment: `media.<their
+ * domain>` serves the same bucket as `<bucket>.<endpoint>`, and every
+ * "is this ours" decision — object cleanup, the PDF proxy route, the admin's
+ * Remove button — has to agree on that. The validation mirrors
+ * `readLiaraConfig`'s so the two can never disagree about what a valid public
+ * URL is.
+ */
+export function readLiaraPublicHost(
+  env: NodeJS.ProcessEnv = process.env,
+): string | null {
+  const raw = env[LIARA_PUBLIC_URL]?.trim();
+  if (!raw) return null;
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "https:") return null;
+    return parsed.hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+}

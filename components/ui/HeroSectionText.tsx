@@ -57,7 +57,7 @@ export default function HeroSectionText({
   const btn = btnKey ? t(btnKey) : (btnProp ?? "");
 
   return (
-    <HomepageSection className="absolute inset-x-0 bottom-0 z-10 pb-16 md:pb-20 lg:pb-24">
+    <HomepageSection className="absolute inset-x-0 bottom-8 sm:bottom-0 z-10 pb-16 md:pb-20 lg:pb-24">
       <div className="">
         <motion.h1
           initial={{ y: "110%" }}

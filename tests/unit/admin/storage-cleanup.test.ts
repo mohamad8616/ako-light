@@ -41,6 +41,8 @@ const BUCKET = "homeform-media";
 const SUBDOMAIN = `https://${BUCKET}.storage.iran.liara.site`;
 /** The path-style shape, which Liara also serves. */
 const PATH_STYLE = `${ENDPOINT}/${BUCKET}`;
+/** A custom public domain (`LIARA_PUBLIC_URL`) serving the same bucket. */
+const CUSTOM_DOMAIN = "https://media.example.ir";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -49,6 +51,7 @@ beforeEach(() => {
   process.env.LIARA_BUCKET_NAME = BUCKET;
   process.env.LIARA_ACCESS_KEY = "access-key";
   process.env.LIARA_SECRET_KEY = "secret-key";
+  delete process.env.LIARA_PUBLIC_URL;
 });
 
 describe("storageKeyFromUrl", () => {
@@ -62,6 +65,29 @@ describe("storageKeyFromUrl", () => {
     expect(storageKeyFromUrl(`${PATH_STYLE}/media/library/1-hero.png`)).toBe(
       "media/library/1-hero.png",
     );
+  });
+
+  it("reads the key out of a URL on the CONFIGURED PUBLIC DOMAIN", () => {
+    // The shape the app actually writes once a custom domain is set. Missing
+    // this branch made every self-written URL fail the ownership test, so
+    // cleanup deleted nothing and each replaced image leaked its object.
+    process.env.LIARA_PUBLIC_URL = CUSTOM_DOMAIN;
+    expect(
+      storageKeyFromUrl(`${CUSTOM_DOMAIN}/media/library/1-hero.png`),
+    ).toBe("media/library/1-hero.png");
+  });
+
+  it("still refuses a key outside media/ on the public domain", () => {
+    // The public-domain branch widens WHICH host is ours, never WHICH keys we
+    // will delete — the `media/` prefix rule is unchanged.
+    process.env.LIARA_PUBLIC_URL = CUSTOM_DOMAIN;
+    expect(storageKeyFromUrl(`${CUSTOM_DOMAIN}/admin/products/a.png`)).toBeNull();
+  });
+
+  it("does not treat the public domain as ours when it is not configured", () => {
+    expect(
+      storageKeyFromUrl(`${CUSTOM_DOMAIN}/media/library/1-hero.png`),
+    ).toBeNull();
   });
 
   it("decodes percent-escapes back into the stored key", () => {

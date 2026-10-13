@@ -7,19 +7,19 @@ import { VIDEO_SLOT } from "./slots";
  * The homepage video section — components/home/VideoSection.tsx (Pass D.1).
  *
  * The section's configurable content is its media: the video and the poster
- * frame painted before it starts. Its placeholder copy (`video.brand`) stays a
- * dictionary string, and its layout, scroll-triggered loading and play/pause
- * behaviour are untouched by this slot — a form field was added only where the
- * component already had something an operator would want to change without
- * editing source.
+ * frame painted before it starts. Its placeholder copy (`video.akoLighting`, the
+ * brand name) stays a dictionary string, and its layout and
+ * play/pause-on-visibility behaviour are untouched by this slot — a form field
+ * was added only where the component already had something an operator would
+ * want to change without editing source.
  *
  * `videoUrl` is nullable, and since the operator DELETED the stock
  * `/videos/afterhenge.mp4` (Pass D.1 follow-up) NULL means "no video" — the
  * section renders nothing rather than falling back to a shipped film.
  * `posterUrl` is the frame shown while that video starts; NULL keeps the
- * original behaviour, where the `video.brand` placeholder sits there until the
- * video is actually playing. Both are nullable, which is why this table needs
- * no backfill: an empty table renders the section exactly as it always did.
+ * original behaviour, where the brand placeholder sits there until the video is
+ * actually playing. Both are nullable, which is why this table needs no
+ * backfill: an empty table renders the section exactly as it always did.
  */
 export type ResolvedVideoFeature = {
   enabled: boolean;

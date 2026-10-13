@@ -23,7 +23,10 @@ export default function PictureHero({
   nameLocalized,
 }: PictureHeroProps) {
   return (
-    <section className="relative flex h-screen w-full items-end bg-black">
+    // `100svh`, not `h-screen` — see components/home/HeroSection.tsx. A shared
+    // `HeroSectionText` puts the scroll indicator at the hero's bottom edge, so
+    // a `100vh` hero on a phone hides it behind the browser chrome.
+    <section className="relative flex h-[100svh] w-full items-end bg-black">
       <Image
         src={image}
         alt={nameProp ?? ""}

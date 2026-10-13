@@ -69,7 +69,7 @@ export default function HeroVideo({
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
-        className="relative h-screen w-full overflow-hidden bg-black"
+        className="relative h-[100svh] w-full overflow-hidden bg-black"
       >
         {posterSrc ? (
           <Image

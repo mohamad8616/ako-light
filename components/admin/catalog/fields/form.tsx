@@ -148,7 +148,7 @@ export function ListRow({
   const message = useFieldMessage(error);
 
   return (
-    <li className="border-border bg-background/40 hover:border-ring/40 space-y-2 rounded-lg border p-3 transition-colors">
+    <li className="border-border bg-#f2e8cf hover:border-ring/40 space-y-2 rounded-lg border p-3 transition-colors">
       <div className="flex items-center justify-between gap-2">
         <span className="text-muted-foreground text-[11px] font-medium tabular-nums">
           {index + 1}
