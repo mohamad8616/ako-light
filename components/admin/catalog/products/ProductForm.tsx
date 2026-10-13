@@ -54,7 +54,7 @@ export function ProductForm({
 }) {
   const { t, lang } = useLanguage();
   const router = useRouter();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
   const [confirming, setConfirming] = React.useState(false);
   const isEdit = Boolean(detail);
 
@@ -104,39 +104,44 @@ export function ProductForm({
   }));
   const moreInfo = useWatch({ control: form.control, name: "moreInfo" });
 
-  const onSubmit = form.handleSubmit(async (raw) => {
-    // Empty localized pairs and blank alt text normalize to null so the
-    // schema's non-empty rules never see a meaningless "" that blocks save.
-    const values = {
-      ...raw,
-      moreInfo:
-        raw.moreInfo && (raw.moreInfo.en.trim() || raw.moreInfo.fa.trim())
-          ? raw.moreInfo
-          : null,
-      images: raw.images.map((image) => ({ ...image, alt: image.alt || null })),
-    };
+  const onSubmit = form.handleSubmit(
+    async (raw) => {
+      // Empty localized pairs and blank alt text normalize to null so the
+      // schema's non-empty rules never see a meaningless "" that blocks save.
+      const values = {
+        ...raw,
+        moreInfo:
+          raw.moreInfo && (raw.moreInfo.en.trim() || raw.moreInfo.fa.trim())
+            ? raw.moreInfo
+            : null,
+        images: raw.images.map((image) => ({ ...image, alt: image.alt || null })),
+      };
 
-    const result = await run(
-      () =>
-        detail
-          ? updateProductAction(detail.id, values)
-          : createProductAction(values),
-      {
-        successMessage: detail
-          ? t("admin.table.saved")
-          : t("admin.crud.created"),
-        onSuccess: (id) => {
-          if (!detail && id) {
-            router.push(getLocalizedPath(`/admin/products/${id}`, lang));
-            return;
-          }
-          // Edit saved inside the modal: close it, revealing the list again.
-          if (detail) closeModal?.();
+      const result = await run(
+        () =>
+          detail
+            ? updateProductAction(detail.id, values)
+            : createProductAction(values),
+        {
+          successMessage: detail
+            ? t("admin.table.saved")
+            : t("admin.crud.created"),
+          onSuccess: (id) => {
+            if (!detail && id) {
+              router.push(getLocalizedPath(`/admin/products/${id}`, lang));
+              return;
+            }
+            // Edit saved inside the modal: close it, revealing the list again.
+            if (detail) closeModal?.();
+          },
         },
-      },
-    );
-    if (result && !result.ok) applyFieldIssues(form, result);
-  });
+      );
+      if (result && !result.ok) applyFieldIssues(form, result);
+    },
+    // A rejected submit (a required image cleared, an invalid URL) must SAY so —
+    // see useCrudSubmit#notifyInvalid.
+    notifyInvalid,
+  );
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">

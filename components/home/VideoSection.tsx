@@ -123,9 +123,9 @@ export default function VideoSection({
               muted
               loop
               playsInline
-              preload="none"
+              preload="metadata"
               poster={poster}
-              controls
+
               onPlaying={() => {
                 setIsPlaying(true);
                 setPlaybackFailed(false);

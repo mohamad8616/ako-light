@@ -41,6 +41,7 @@ import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as React from "react";
 import { FormProvider, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 /**
  * The designers list screen — same DataTable pattern as categories, create/edit
@@ -210,17 +211,23 @@ function DesignerDialog({
         },
   });
 
-  const handleSubmit = form.handleSubmit(async (raw) => {
-    setPending(true);
-    try {
-      const saved = await onSave(raw);
-      if (saved) onClose();
-    } catch {
-      // handled by run()
-    } finally {
-      setPending(false);
-    }
-  });
+  const handleSubmit = form.handleSubmit(
+    async (raw) => {
+      setPending(true);
+      try {
+        const saved = await onSave(raw);
+        if (saved) onClose();
+      } catch {
+        // handled by run()
+      } finally {
+        setPending(false);
+      }
+    },
+    // A rejected submit (a cleared required image) must SAY so — see
+    // useCrudSubmit#notifyInvalid. This dialog does not use that hook (it keeps
+    // its own `pending`), so it raises the same toast itself.
+    () => toast.error(t("admin.crud.checkFields")),
+  );
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

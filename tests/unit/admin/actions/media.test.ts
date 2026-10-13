@@ -27,6 +27,23 @@ const service = vi.hoisted(() => ({
   removeMedia: vi.fn(),
 }));
 
+const repo = vi.hoisted(() => ({ findMediaIdsByUrl: vi.fn() }));
+const cleanup = vi.hoisted(() => ({ deleteStorageUrls: vi.fn() }));
+
+vi.mock("@/lib/repositories/media", () => ({
+  ...repo,
+  getMedia: vi.fn(),
+  getMediaByStorageKey: vi.fn(),
+  countMedia: vi.fn(),
+  listMedia: vi.fn(),
+  listMediaPage: vi.fn(),
+  DEFAULT_MEDIA_PAGE_SIZE: 50,
+}));
+
+vi.mock("@/lib/admin/storage-cleanup", () => ({
+  deleteStorageUrls: cleanup.deleteStorageUrls,
+}));
+
 vi.mock("@/lib/auth/auth", () => ({
   auth: { api: { getSession: mockGetSession } },
 }));
@@ -66,6 +83,7 @@ vi.mock("@/lib/media/service", () => {
 
 import {
   destroyMediaAction,
+  removeMediaUrlAction,
   updateMediaMetadataAction,
   uploadMediaAction,
 } from "@/lib/admin/actions/media";
@@ -295,5 +313,116 @@ describe("media actions — error mapping", () => {
       issues: [],
     });
     expect(toActionResultMock).toHaveBeenCalledWith(dbError);
+  });
+});
+
+/**
+ * Pass D.1 follow-up — removing the FILE behind a media field's Remove button.
+ *
+ * The button must do what it says, but ONLY for a file that is ours to delete:
+ * an absolute http(s) URL on a Liara storage host. Everything else is refused
+ * before a single storage call, because deleting through a caller-supplied
+ * string is the kind of thing that ends up reaching for files it should not.
+ */
+describe("removeMediaUrlAction — what may be deleted", () => {
+  /** Sign in as `role` (same contract as the authorization suite's helper). */
+  function signedInAs(role: string) {
+    mockGetSession.mockResolvedValue({ user: { role } });
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    headersMock.mockResolvedValue(new Headers());
+    redirectMock.mockImplementation(((url: string) => {
+      const error = new Error(`NEXT_REDIRECT:${url}`) as Error & { digest: string };
+      error.digest = `NEXT_REDIRECT;replace;${url};307;`;
+      throw error;
+    }) as never);
+    service.removeMedia.mockResolvedValue(undefined);
+    cleanup.deleteStorageUrls.mockResolvedValue(undefined);
+    repo.findMediaIdsByUrl.mockResolvedValue(new Map());
+  });
+
+  it("requires ADMIN, like every other media action", async () => {
+    signedInAs("user");
+
+    await expect(
+      removeMediaUrlAction({ url: STORED_URL }),
+    ).rejects.toThrow(`NEXT_REDIRECT:${DENIED_URL}`);
+    expect(service.removeMedia).not.toHaveBeenCalled();
+    expect(cleanup.deleteStorageUrls).not.toHaveBeenCalled();
+  });
+
+  it("refuses a URL that is not absolute http(s)", async () => {
+    signedInAs("admin");
+
+    for (const url of [
+      "/media/products/1-a.png",
+      "media/products/1-a.png",
+      "javascript:alert(1)",
+      "",
+    ]) {
+      const result = await removeMediaUrlAction({ url });
+      expect(result.ok, url).toBe(false);
+      if (!result.ok) expect(result.formError).toBe("invalidLink");
+    }
+    expect(service.removeMedia).not.toHaveBeenCalled();
+    expect(cleanup.deleteStorageUrls).not.toHaveBeenCalled();
+  });
+
+  it("refuses a URL on a host that is not ours", async () => {
+    signedInAs("admin");
+
+    const result = await removeMediaUrlAction({
+      url: "https://example.com/someone-elses-file.png",
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.formError).toBe("unsupportedType");
+
+    // Nothing may even be looked up for a foreign host.
+    expect(repo.findMediaIdsByUrl).not.toHaveBeenCalled();
+    expect(service.removeMedia).not.toHaveBeenCalled();
+    expect(cleanup.deleteStorageUrls).not.toHaveBeenCalled();
+  });
+
+  it("deletes through the guarded service when a Media row owns the URL", async () => {
+    signedInAs("admin");
+    repo.findMediaIdsByUrl.mockResolvedValue(new Map([[STORED_URL, "m1"]]));
+
+    const result = await removeMediaUrlAction({ url: STORED_URL });
+
+    expect(result.ok).toBe(true);
+    expect(repo.findMediaIdsByUrl).toHaveBeenCalledWith([STORED_URL]);
+    // The ROW goes first (that is what runs the reference guard), so a file
+    // another entity still points at cannot be pulled out from under it.
+    expect(service.removeMedia).toHaveBeenCalledWith("m1");
+    expect(cleanup.deleteStorageUrls).not.toHaveBeenCalled();
+    expect(revalidatePathMock).toHaveBeenCalled();
+  });
+
+  it("deletes the OBJECT alone when there is no Media row", async () => {
+    // The catalogue CTA's PDF: a real object under our key prefix, but not a
+    // Media row — so the direct-delete branch has to handle it.
+    signedInAs("admin");
+    repo.findMediaIdsByUrl.mockResolvedValue(new Map());
+
+    const result = await removeMediaUrlAction({ url: STORED_URL });
+
+    expect(result.ok).toBe(true);
+    expect(service.removeMedia).not.toHaveBeenCalled();
+    expect(cleanup.deleteStorageUrls).toHaveBeenCalledWith([STORED_URL]);
+  });
+
+  it("surfaces `inUse` rather than deleting a file something still references", async () => {
+    signedInAs("admin");
+    repo.findMediaIdsByUrl.mockResolvedValue(new Map([[STORED_URL, "m1"]]));
+    service.removeMedia.mockRejectedValueOnce(new MediaError("inUse"));
+
+    const result = await removeMediaUrlAction({ url: STORED_URL });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.formError).toBe("inUse");
+    // The refused delete must not fall through to the raw object path.
+    expect(cleanup.deleteStorageUrls).not.toHaveBeenCalled();
   });
 });

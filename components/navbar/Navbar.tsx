@@ -221,12 +221,12 @@ export default function Navbar({
                   <>
                     {/* Order history is per-account, so it only appears to a
                         signed-in visitor. */}
-                    <Link
+                    {/* <Link
                       href="/orders"
                       className="text-background-secondary cursor-pointer text-sm font-medium transition-all duration-300 hover:opacity-70"
                     >
                       {t("orders.title")}
-                    </Link>
+                    </Link> */}
                     <button
                       type="button"
                       onClick={handleSignOut}

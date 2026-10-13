@@ -26,7 +26,7 @@ export function PageHeroMediaForm({
   detail: PageHeroMediaWriteInput;
 }) {
   const { t } = useLanguage();
-  const { run, pending } = useCrudSubmit();
+  const { run, pending, notifyInvalid } = useCrudSubmit();
   const form = useForm<{ videoUrl: string; posterUrl: string }>({
     resolver: zodResolver(pageHeroMediaSchema),
     values: {
@@ -35,11 +35,15 @@ export function PageHeroMediaForm({
     },
   });
 
-  const onSubmit = form.handleSubmit(async (values) => {
-    await run(() => updatePageHeroMediaAction(page, values), {
-      successMessage: t("admin.table.saved"),
-    });
-  });
+  const onSubmit = form.handleSubmit(
+    async (values) => {
+      await run(() => updatePageHeroMediaAction(page, values), {
+        successMessage: t("admin.table.saved"),
+      });
+    },
+    // A rejected submit must SAY so — see useCrudSubmit#notifyInvalid.
+    notifyInvalid,
+  );
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">

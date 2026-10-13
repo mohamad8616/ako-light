@@ -31,12 +31,14 @@ import {
   type AdminErrorCode,
 } from "@/lib/admin/result";
 import { toActionResult } from "@/lib/admin/result-server";
+import { deleteStorageUrls } from "@/lib/admin/storage-cleanup";
 import {
   directUploadRegistrationSchema,
   mediaMetadataFormSchema,
   type DirectUploadRegistrationInput,
   type MediaMetadataFormInput,
 } from "@/lib/admin/schemas/media";
+import { isLiaraStorageHost } from "@/lib/media/storage/liara";
 import {
   listMediaPage,
   MediaError,
@@ -47,6 +49,8 @@ import {
   type MediaErrorCode,
 } from "@/lib/media/service";
 import type { MediaKind } from "@/lib/media/library";
+import { findMediaIdsByUrl } from "@/lib/repositories/media";
+import { z } from "zod";
 
 /** What an upload reports back to the caller. */
 export interface MediaUploadResult {
@@ -281,6 +285,88 @@ export async function destroyMediaAction(
 
   try {
     await removeMedia(id);
+    revalidateCatalog("media");
+    return actionOk(undefined);
+  } catch (error) {
+    return toMediaActionResult(error);
+  }
+}
+
+/**
+ * Removes the FILE behind a media field's "Remove" button (Pass D.1 follow-up).
+ *
+ * ── Why this exists alongside the save-path sweep ───────────────────────────
+ *
+ * The field's Remove button used to only blank the value, so the operator had
+ * to know that the object itself was deleted LATER, on the next save (every
+ * slot/catalog action does sweep it — see `removedUrls` + `deleteStorageUrls`).
+ * Clicking "Remove" and seeing the file still sitting in the media library read
+ * as "the button does nothing", which is exactly how it was reported.
+ *
+ * Now the button means what it says: it clears the field AND removes the object,
+ * subject to the SAME reference guard the library's own delete uses, so a file
+ * another product still points at cannot be pulled out from under it.
+ *
+ * ── What is and is not deletable ────────────────────────────────────────────
+ *
+ *   - a URL on OUR storage host with a Media row → `removeMedia(id)`, which
+ *     refuses with `inUse` when anything still references it;
+ *   - a URL on OUR storage host with NO Media row (the catalogue CTA's PDF, a
+ *     legacy object) → a direct object delete through `deleteStorageUrls`,
+ *     which re-derives the key and re-checks that it is ours;
+ *   - any other host → refused. An external URL is not ours to delete, and the
+ *     field clearing already handles the operator's intent.
+ *
+ * The caller clears the form value FIRST (optimistically), so a refused delete
+ * still leaves the field cleared — the operator is told with `inUse` and the
+ * file stays in the library, which is the safe outcome.
+ */
+export async function removeMediaUrlAction(input: {
+  url: string;
+}): Promise<ActionResult<undefined>> {
+  await requireAdminAccess();
+
+  const parsed = z
+    .object({
+      url: z
+        .string()
+        .min(1)
+        .max(2048)
+        // Absolute http(s) ONLY: a root-relative path is not a storage object,
+        // and the host check below needs a hostname to test.
+        .refine((value) => /^https?:\/\//.test(value)),
+    })
+    .safeParse(input);
+  if (!parsed.success) {
+    // A shape failure here can only be a corrupted value — the operator never
+    // types this URL, it comes from the field they clicked Remove on. The link
+    // code is the closest existing message to "that is not a usable address".
+    return actionFail("invalidLink");
+  }
+
+  let hostname: string;
+  try {
+    hostname = new URL(parsed.data.url).hostname;
+  } catch {
+    return actionFail("invalidLink");
+  }
+  if (!isLiaraStorageHost(hostname)) {
+    return actionFail("unsupportedType");
+  }
+
+  try {
+    const byUrl = await findMediaIdsByUrl([parsed.data.url]);
+    const id = byUrl.get(parsed.data.url);
+
+    if (id) {
+      // The library path: guarded, and the row goes before the object.
+      await removeMedia(id);
+    } else {
+      // No row — only the object. `deleteStorageUrls` re-derives the key and
+      // refuses anything that is media-owned or outside our host.
+      await deleteStorageUrls([parsed.data.url]);
+    }
+
     revalidateCatalog("media");
     return actionOk(undefined);
   } catch (error) {

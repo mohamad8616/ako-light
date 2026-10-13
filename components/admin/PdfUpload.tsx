@@ -25,6 +25,7 @@ import {
   type FieldIssue,
 } from "@/components/admin/catalog/fields/form";
 import { Button } from "@/components/ui/button";
+import { removeMediaUrlAction } from "@/lib/admin/actions/media";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { uploadCataloguePdfAction } from "@/lib/admin/actions/upload";
 import { useFormContext } from "react-hook-form";
@@ -55,6 +56,8 @@ export function PdfUpload({
 
   const inputRef = React.useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = React.useState(false);
+  /** True while the stored object is being deleted behind the Remove button. */
+  const [removing, setRemoving] = React.useState(false);
 
   const handleFile = React.useCallback(
     async (file: File | undefined) => {
@@ -94,10 +97,35 @@ export function PdfUpload({
     [nameName, setValue, t, urlName],
   );
 
-  const clear = React.useCallback(() => {
+  /**
+   * Clear BOTH fields, then delete the object.
+   *
+   * Same shape as `MediaField`'s remove: the fields clear first so the control
+   * is never half-applied, then the object goes. A PDF has no Media row, so
+   * `removeMediaUrlAction` takes its direct-delete branch — the catalogue key
+   * lives under `media/catalogue/`, which the cleanup helper accepts.
+   */
+  const clear = React.useCallback(async () => {
+    const removed = url;
     setValue(urlName, "", { shouldValidate: true, shouldDirty: true });
     setValue(nameName, "", { shouldValidate: true, shouldDirty: true });
-  }, [nameName, setValue, urlName]);
+
+    if (!removed) return;
+
+    setRemoving(true);
+    try {
+      const result = await removeMediaUrlAction({ url: removed });
+      if (result.ok) {
+        toast.success(t("admin.upload.removed"));
+      } else {
+        toast.error(t(`admin.error.${result.formError}`));
+      }
+    } catch {
+      toast.error(t("admin.error.unknown"));
+    } finally {
+      setRemoving(false);
+    }
+  }, [nameName, setValue, t, url, urlName]);
 
   const error = formState.errors[urlName] as FieldIssue;
 
@@ -147,15 +175,16 @@ export function PdfUpload({
             >
               {t("admin.crud.view")}
             </a>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="text-destructive hover:bg-destructive/10"
-              onClick={clear}
-            >
-              {t("admin.upload.remove")}
-            </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="text-destructive hover:bg-destructive/10"
+          disabled={uploading || removing}
+          onClick={() => void clear()}
+        >
+          {removing ? t("admin.upload.removing") : t("admin.upload.remove")}
+        </Button>
           </>
         ) : (
           <span className="text-muted-foreground text-xs">

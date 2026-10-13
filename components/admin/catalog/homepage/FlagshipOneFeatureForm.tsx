@@ -52,7 +52,7 @@ export function FlagshipOneFeatureForm({
   flagships: FlagshipAdminRow[];
 }) {
   const { t, lang } = useLanguage();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
 
   const form = useForm<FlagshipOneFeatureFormValues>({
     resolver: zodResolver(flagshipOneFeatureFormSchema),
@@ -71,12 +71,16 @@ export function FlagshipOneFeatureForm({
     },
   });
 
-  const onSubmit = form.handleSubmit(async (values) => {
-    const result = await run(() => updateFlagshipOneFeatureAction(values), {
-      successMessage: t("admin.table.saved"),
-    });
-    if (result && !result.ok) applyFieldIssues(form, result);
-  });
+  const onSubmit = form.handleSubmit(
+    async (values) => {
+      const result = await run(() => updateFlagshipOneFeatureAction(values), {
+        successMessage: t("admin.table.saved"),
+      });
+      if (result && !result.ok) applyFieldIssues(form, result);
+    },
+    // A rejected submit must SAY so — see useCrudSubmit#notifyInvalid.
+    notifyInvalid,
+  );
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">

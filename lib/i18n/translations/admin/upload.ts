@@ -9,6 +9,10 @@ export const uploadEn = {
   "admin.upload.pick": "Upload image",
   "admin.upload.fromLibrary": "Select from library",
   "admin.upload.remove": "Remove",
+  // What "Remove" does: the field clears AND the stored object is deleted. The
+  // pending label covers the object delete, which is the part that takes time.
+  "admin.upload.removing": "Removing…",
+  "admin.upload.removed": "Removed",
   "admin.upload.uploading": "Uploading…",
   "admin.upload.done": "Image uploaded",
   "admin.upload.empty": "No image",
@@ -43,6 +47,9 @@ export const uploadFa = {
   "admin.upload.pick": "آپلود تصویر",
   "admin.upload.fromLibrary": "انتخاب از کتابخانه",
   "admin.upload.remove": "حذف",
+  // دکمهٔ «حذف» هم فیلد را پاک می‌کند و هم فایل ذخیره‌شده را از انبار حذف می‌کند.
+  "admin.upload.removing": "در حال حذف…",
+  "admin.upload.removed": "حذف شد",
   "admin.upload.uploading": "در حال آپلود…",
   "admin.upload.done": "تصویر آپلود شد",
   "admin.upload.empty": "بدون تصویر",

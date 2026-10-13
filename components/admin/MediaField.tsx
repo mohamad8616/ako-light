@@ -3,6 +3,7 @@
 import { FieldRow, type FieldIssue } from "@/components/admin/catalog/fields/form";
 import { MediaPickerDialog } from "@/components/admin/settings/MediaPickerField";
 import { Button } from "@/components/ui/button";
+import { removeMediaUrlAction } from "@/lib/admin/actions/media";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import type { MediaKind } from "@/lib/media/library";
 import { mediaPreviewState } from "@/lib/media/preview";
@@ -111,6 +112,8 @@ export function MediaField({
   /** The reusable Media picker — "select existing", not "upload again". */
   const [pickerOpen, setPickerOpen] = React.useState(false);
   const [uploading, setUploading] = React.useState(false);
+  /** True while the stored object is being deleted behind the Remove button. */
+  const [removing, setRemoving] = React.useState(false);
   /** 0–100 while the browser transfers bytes directly to the provider. */
   const [progress, setProgress] = React.useState<number | null>(null);
   /** The URL that failed to load — NOT a boolean, see the header note. */
@@ -181,6 +184,45 @@ export function MediaField({
   );
 
   const error = errorAtPath(formState.errors, name);
+
+  /**
+   * "Remove" = clear the field AND delete the object it pointed at.
+   *
+   * The order matters: the field is cleared FIRST so the control is responsive
+   * and the value can never be half-applied, then the object is removed. The
+   * delete is guarded the same way the library's own delete is, so a file still
+   * referenced elsewhere is refused — in which case the field is already clear
+   * (the intended edit) and only the toast explains that the file is still in
+   * the library, which is the safe outcome.
+   *
+   * It is also why the button does not need a confirm of its own: the one
+   * destructive case it can hit is already refused by the reference guard, and
+   * the object is one the operator just chose in this very field.
+   */
+  const handleRemove = React.useCallback(async () => {
+    const removed = value;
+    // `""` is the kit's "not configured" value; it maps to SQL NULL on save.
+    setValue(name, "", { shouldValidate: true, shouldDirty: true });
+
+    // Nothing was selected → nothing to delete, and nothing to report.
+    if (!removed) return;
+
+    setRemoving(true);
+    try {
+      const result = await removeMediaUrlAction({ url: removed });
+      if (result.ok) {
+        toast.success(t("admin.upload.removed"));
+      } else {
+        // Structured code → the shared translated message. `inUse` is the
+        // interesting one: it means something else still points at this file.
+        toast.error(t(`admin.error.${result.formError}`));
+      }
+    } catch {
+      toast.error(t("admin.error.unknown"));
+    } finally {
+      setRemoving(false);
+    }
+  }, [name, setRemoving, setValue, t, value]);
 
   const control = (
     <>
@@ -260,15 +302,10 @@ export function MediaField({
                 variant="ghost"
                 size="sm"
                 className="text-destructive hover:bg-destructive/10"
-                disabled={disabled || uploading}
-                onClick={() =>
-                  setValue(name, "", {
-                    shouldValidate: true,
-                    shouldDirty: true,
-                  })
-                }
+                disabled={disabled || uploading || removing}
+                onClick={() => void handleRemove()}
               >
-                {t("admin.upload.remove")}
+                {removing ? t("admin.upload.removing") : t("admin.upload.remove")}
               </Button>
             ) : null}
           </div>

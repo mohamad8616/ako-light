@@ -57,7 +57,7 @@ export function FlagshipForm({
 }) {
   const { t, lang } = useLanguage();
   const router = useRouter();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
   const [confirming, setConfirming] = React.useState(false);
   const isEdit = Boolean(id && detail);
 
@@ -75,23 +75,30 @@ export function FlagshipForm({
 
   const hasDetail = useWatch({ control: form.control, name: "detail" }) != null;
 
-  const onSubmit = form.handleSubmit(async (values) => {
-    const result = await run(
-      () =>
-        id ? updateFlagshipAction(id, values) : createFlagshipAction(values),
-      {
-        successMessage: isEdit
-          ? t("admin.table.saved")
-          : t("admin.crud.created"),
-        onSuccess: (newId) => {
-          if (!id && newId) {
-            router.push(getLocalizedPath(`/admin/flagships/${newId}`, lang));
-          }
+  const onSubmit = form.handleSubmit(
+    async (values) => {
+      const result = await run(
+        () =>
+          id
+            ? updateFlagshipAction(id, values)
+            : createFlagshipAction(values),
+        {
+          successMessage: isEdit
+            ? t("admin.table.saved")
+            : t("admin.crud.created"),
+          onSuccess: (newId) => {
+            if (!id && newId) {
+              router.push(getLocalizedPath(`/admin/flagships/${newId}`, lang));
+            }
+          },
         },
-      },
-    );
-    if (result && !result.ok) applyFieldIssues(form, result);
-  });
+      );
+      if (result && !result.ok) applyFieldIssues(form, result);
+    },
+    // A rejected submit (a required image cleared, an invalid URL) must SAY so —
+    // see useCrudSubmit#notifyInvalid.
+    notifyInvalid,
+  );
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">

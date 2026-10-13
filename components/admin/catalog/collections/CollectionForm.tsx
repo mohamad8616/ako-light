@@ -47,7 +47,7 @@ export function CollectionForm({
 }) {
   const { t, lang } = useLanguage();
   const router = useRouter();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
   const [confirming, setConfirming] = React.useState(false);
   const isEdit = Boolean(id && detail);
 
@@ -67,10 +67,11 @@ export function CollectionForm({
     },
   });
 
-  const onSubmit = form.handleSubmit(async (values) => {
-    const result = await run(
-      () =>
-        id ? updateCollectionAction(id, values) : createCollectionAction(values),
+  const onSubmit = form.handleSubmit(
+    async (values) => {
+      const result = await run(
+        () =>
+          id ? updateCollectionAction(id, values) : createCollectionAction(values),
       {
         successMessage: isEdit
           ? t("admin.table.saved")
@@ -83,7 +84,11 @@ export function CollectionForm({
       },
     );
     if (result && !result.ok) applyFieldIssues(form, result);
-  });
+    },
+    // A rejected submit (a required image cleared, an invalid URL) must SAY so —
+    // see useCrudSubmit#notifyInvalid.
+    notifyInvalid,
+  );
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">

@@ -47,7 +47,7 @@ export function CatalogueFeatureForm({  detail,
   catalogueItems: CatalogueItemAdminRow[];
 }) {
   const { t } = useLanguage();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
 
   const form = useForm<CatalogueFeatureFormValues>({
     resolver: zodResolver(catalogueFeatureFormSchema),
@@ -64,12 +64,16 @@ export function CatalogueFeatureForm({  detail,
     },
   });
 
-  const onSubmit = form.handleSubmit(async (values) => {
-    const result = await run(() => updateCatalogueFeatureAction(values), {
-      successMessage: t("admin.table.saved"),
-    });
-    if (result && !result.ok) applyFieldIssues(form, result);
-  });
+  const onSubmit = form.handleSubmit(
+    async (values) => {
+      const result = await run(() => updateCatalogueFeatureAction(values), {
+        successMessage: t("admin.table.saved"),
+      });
+      if (result && !result.ok) applyFieldIssues(form, result);
+    },
+    // A rejected submit must SAY so — see useCrudSubmit#notifyInvalid.
+    notifyInvalid,
+  );
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">

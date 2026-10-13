@@ -106,16 +106,16 @@ describe("AdminHeaderNav — wiring", () => {
   });
 
   it("INVERTS the two states, because the shell it sits on is dark", () => {
-    // `bg-background` is #171719 — the very colour the header is painted in
-    // (see `@theme inline` in app/globals.css). A selected chip filled with the
-    // same token is therefore invisible, and the old `text-foreground` label on
-    // it was black-on-black. The selected state must carry the LIGHT chip with
-    // dark ink, and the unselected one be the inverse.
-    expect(nav).toContain("bg-background-secondary text-background");
-    expect(nav).not.toContain("bg-background text-foreground");
-    // The unselected label is light ink, never the dark `text-background`.
-    expect(nav).toContain("text-background-secondary/70");
-    expect(nav).not.toContain("text-background/70");
+    // `bg-background` is #171719 and `bg-background-secondary` is #f0efec (see
+    // `@theme inline` in app/globals.css), so the two states are a dark chip
+    // and a light chip carrying each other's ink. The pairing is what makes
+    // both labels readable: a state that kept its own chip colour as ink would
+    // be black-on-black or cream-on-cream.
+    expect(nav).toContain('"text-background-secondary bg-background"');
+    expect(nav).toContain('"bg-background-secondary text-background/50"');
+    // Neither state may fall back to the themed ink, which is what made the
+    // selected label invisible against its own chip.
+    expect(nav).not.toContain("text-foreground");
   });
 
   it("uses logical alignment so it mirrors with the RTL shell", () => {

@@ -46,7 +46,7 @@ export function ProjectDarkBackgroundFeatureForm({
   projects: ProjectAdminRow[];
 }) {
   const { t, lang } = useLanguage();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
 
   const form = useForm<ProjectDarkBackgroundFeatureFormValues>({
     resolver: zodResolver(projectDarkBackgroundFeatureFormSchema),
@@ -60,13 +60,17 @@ export function ProjectDarkBackgroundFeatureForm({
     },
   });
 
-  const onSubmit = form.handleSubmit(async (values) => {
-    const result = await run(
-      () => updateProjectDarkBackgroundFeatureAction(values),
-      { successMessage: t("admin.table.saved") },
-    );
-    if (result && !result.ok) applyFieldIssues(form, result);
-  });
+  const onSubmit = form.handleSubmit(
+    async (values) => {
+      const result = await run(
+        () => updateProjectDarkBackgroundFeatureAction(values),
+        { successMessage: t("admin.table.saved") },
+      );
+      if (result && !result.ok) applyFieldIssues(form, result);
+    },
+    // A rejected submit must SAY so — see useCrudSubmit#notifyInvalid.
+    notifyInvalid,
+  );
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">

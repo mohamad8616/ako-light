@@ -33,7 +33,7 @@ export function HomeCollectionFeatureForm({
   detail: HomeCollectionFeatureWriteInput | null;
 }) {
   const { t } = useLanguage();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
 
   const form = useForm<HomeCollectionFeatureFormValues>({
     resolver: zodResolver(homeCollectionFeatureFormSchema),
@@ -45,12 +45,16 @@ export function HomeCollectionFeatureForm({
     },
   });
 
-  const onSubmit = form.handleSubmit(async (values) => {
-    const result = await run(() => updateHomeCollectionFeatureAction(values), {
-      successMessage: t("admin.table.saved"),
-    });
-    if (result && !result.ok) applyFieldIssues(form, result);
-  });
+  const onSubmit = form.handleSubmit(
+    async (values) => {
+      const result = await run(() => updateHomeCollectionFeatureAction(values), {
+        successMessage: t("admin.table.saved"),
+      });
+      if (result && !result.ok) applyFieldIssues(form, result);
+    },
+    // A rejected submit must SAY so — see useCrudSubmit#notifyInvalid.
+    notifyInvalid,
+  );
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
