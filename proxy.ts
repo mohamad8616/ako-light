@@ -1,4 +1,5 @@
 import { ADMIN_ROLES } from "@/lib/auth/permissions";
+import { siteBlocked } from "@/lib/seo/config";
 import { NextResponse, type NextRequest } from "next/server";
 
 const LOCALE_PREFIX = /^\/(en|fa)(?=\/|$)/;
@@ -89,7 +90,25 @@ export function shouldBypassAuth(pathAndQuery: string): boolean {
   );
 }
 
-export async function proxy(request: NextRequest) {
+/**
+ * Site-under-construction wrapper. When SITE_BLOCKED is on, every response the
+ * proxy produces — page rewrites, the sign-in/role redirects, pass-throughs —
+ * carries `X-Robots-Tag: noindex, nofollow`, so no route can be indexed even
+ * if a crawler reaches it before robots.txt propagates. The same flag drives
+ * robots.ts, the sitemap and the root-layout robots meta (lib/seo/config.ts).
+ *
+ * Setting it here instead of inside handleProxyRequest covers all four of its
+ * return paths in one place.
+ */
+export async function proxy(request: NextRequest): Promise<NextResponse> {
+  const response = await handleProxyRequest(request);
+  if (siteBlocked) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+  return response;
+}
+
+async function handleProxyRequest(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
   if (isAdminPath(pathname)) {

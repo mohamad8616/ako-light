@@ -6,7 +6,7 @@ import { getFlagshipsWithDetail } from "@/lib/repositories/flagships";
 import { getMaterials } from "@/lib/repositories/materials";
 import { getProductCategories } from "@/lib/repositories/product-categories";
 import { getProjects } from "@/lib/repositories/projects";
-import { siteUrl } from "@/lib/seo/config";
+import { siteBlocked, siteUrl } from "@/lib/seo/config";
 
 const SITEMAP_LOCALES: Locale[] = locales;
 
@@ -47,6 +47,14 @@ function localizedEntry(path: string, locale: Locale): MetadataRoute.Sitemap[num
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Site under construction: advertise nothing. Crawlers are already kept away
+  // by robots.ts (`Disallow: /`), and an empty sitemap makes the blocked state
+  // true for the rare consumer that fetches it directly. Never touches the
+  // database either, so it cannot hang a cold container.
+  if (siteBlocked) {
+    return [];
+  }
+
   const [
     collections,
     productCategories,

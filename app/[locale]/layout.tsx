@@ -14,7 +14,12 @@ import {
 import { shellTranslations } from "@/lib/i18n/shell-translations";
 import { translations } from "@/lib/i18n/translations";
 import { getSiteSettings } from "@/lib/repositories/site-settings";
-import { siteName, siteUrl } from "@/lib/seo/config";
+import {
+  blockedRobots,
+  siteBlocked,
+  siteName,
+  siteUrl,
+} from "@/lib/seo/config";
 import {
   jsonLdScript,
   organizationJsonLd,
@@ -182,6 +187,12 @@ export async function generateMetadata({
     twitter: {
       card: "summary_large_image",
     },
+    // Site under construction: noindex, nofollow on EVERY page. Child metadata
+    // merges over this field by field, so pages that set no `robots` of their
+    // own (all public pages) inherit the block; the pages that do set it —
+    // /search, /orders via buildLocalizedMetadata — are already noindex and
+    // stay so. Lifted by the SITE_BLOCKED flag in lib/seo/config.ts.
+    ...(siteBlocked ? { robots: blockedRobots } : {}),
   };
 }
 

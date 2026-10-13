@@ -29,6 +29,26 @@ export const siteUrl: string = normalizeSiteUrl(rawSiteUrl);
 export const siteName = "Home Form";
 
 /**
+ * Site-under-construction switch. `"true"` (any casing) blocks crawlers
+ * (`Disallow: /` in robots.txt), empties the sitemap, and noindexes every page
+ * (root-layout robots meta + an `X-Robots-Tag` header in proxy.ts). Unset or
+ * any other value = fully public.
+ *
+ * This constant is the ONLY derivation point: read the state through
+ * `siteBlocked` everywhere else. Server-only — nothing in the browser needs it,
+ * so it must NOT get a NEXT_PUBLIC_ prefix. Set it in the Liara env console
+ * and redeploy to flip the whole block on or off.
+ */
+export const siteBlocked: boolean =
+  (process.env.SITE_BLOCKED ?? "").trim().toLowerCase() === "true";
+
+/**
+ * Robots directives applied everywhere while `siteBlocked` is on. The matching
+ * HTTP header value (proxy.ts) is the string form: "noindex, nofollow".
+ */
+export const blockedRobots = { index: false, follow: false } as const;
+
+/**
  * Re-exported, NOT redefined. `lib/i18n/routing.ts` owns the locale model;
  * a second `defaultLocale = "fa"` used to live here and was a genuine second
  * source of truth for the exact thing this pass inverts.
