@@ -614,7 +614,11 @@ async function seedAboutPageSections(): Promise<void> {
     ["heroSection", 0, DEFAULT_ABOUT_PAGE_CONTENT.hero],
     ["subtitleSection", 1, DEFAULT_ABOUT_PAGE_CONTENT.subtitle],
     ["brandStorySection", 2, DEFAULT_ABOUT_PAGE_CONTENT.brandStory],
-    ["eleganceSection", 3, DEFAULT_ABOUT_PAGE_CONTENT.elegance],
+    // The gallery photos seed from lib/data/about.ts's placeholder list; once
+    // an admin saves the section the stored list wins (same empty-`update`
+    // rule as every section above).
+    ["gallerySection", 3, DEFAULT_ABOUT_PAGE_CONTENT.gallery],
+    ["eleganceSection", 4, DEFAULT_ABOUT_PAGE_CONTENT.elegance],
   ];
 
   for (const [sectionKey, sortOrder, content] of rows) {

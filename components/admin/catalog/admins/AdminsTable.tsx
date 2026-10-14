@@ -279,7 +279,7 @@ export function AdminsTable({
         open={pendingRole !== null}
         onOpenChange={(open) => !open && !pending && setPendingRole(null)}
       >
-        <DialogContent dir={ADMIN_SHELL_DIR} className="sm:max-w-md">
+        <DialogContent data-admin-shell="" dir={ADMIN_SHELL_DIR} className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{t("admin.admins.confirm.title")}</DialogTitle>
             <DialogDescription>

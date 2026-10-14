@@ -12,7 +12,6 @@ export const projectEn = {
   "admin.project.card.content": "Story",
   "admin.project.card.media": "Media",
   "admin.project.card.products": "Products used",
-  "admin.project.field.i18nKey": "i18n key",
   "admin.project.field.location": "Location",
   "admin.project.field.paragraph": "Intro paragraph",
   "admin.project.field.moreDescription": "More description",
@@ -20,6 +19,11 @@ export const projectEn = {
   "admin.project.field.creditsHint":
     "Each entry is either a plain string or a localized pair.",
   "admin.project.field.portfolioImages": "Portfolio images",
+  "admin.project.field.portfolioImagesHint":
+    "The gallery under the story. Order is the display order.",
+  "admin.project.field.image": "Main image",
+  "admin.project.field.imageHint":
+    "The full-width image at the top of the project page.",
   "admin.project.field.productsUsed": "Products used",
   "admin.project.field.productsUsedHint":
     "Ordered list — reorder with the arrows, remove with ×.",
@@ -36,7 +40,6 @@ export const projectFa = {
   "admin.project.card.content": "روایت",
   "admin.project.card.media": "رسانه",
   "admin.project.card.products": "محصولات استفاده‌شده",
-  "admin.project.field.i18nKey": "کلید i18n",
   "admin.project.field.location": "موقعیت",
   "admin.project.field.paragraph": "پاراگراف معرفی",
   "admin.project.field.moreDescription": "توضیحات بیشتر",
@@ -44,6 +47,11 @@ export const projectFa = {
   "admin.project.field.creditsHint":
     "هر مورد می‌تواند متن ساده یا جفت محلی‌سازی‌شده باشد.",
   "admin.project.field.portfolioImages": "تصاویر نمونه‌کار",
+  "admin.project.field.portfolioImagesHint":
+    "گالری زیر روایت. ترتیب همان ترتیب نمایش است.",
+  "admin.project.field.image": "تصویر اصلی",
+  "admin.project.field.imageHint":
+    "تصویر تمام‌عرض بالای صفحه پروژه.",
   "admin.project.field.productsUsed": "محصولات استفاده‌شده",
   "admin.project.field.productsUsedHint":
     "فهرست مرتب — با فلش‌ها جابه‌جا و با × حذف کنید.",

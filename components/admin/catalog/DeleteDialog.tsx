@@ -55,7 +55,7 @@ export function DeleteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent dir={ADMIN_SHELL_DIR} className="sm:max-w-md">
+      <DialogContent data-admin-shell="" dir={ADMIN_SHELL_DIR} className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold">
             {title ?? t("admin.crud.deleteTitle")}

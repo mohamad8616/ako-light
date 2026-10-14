@@ -409,7 +409,6 @@ describeDb("slug history — recorded by the real admin update actions", () => {
 
       const result = await updateProjectAction(id, {
         slug: newSlug,
-        i18nKey: `projects.act-${s}`,
         name: PAIR,
         location: "Tehran",
         year: "2026",
@@ -427,6 +426,13 @@ describeDb("slug history — recorded by the real admin update actions", () => {
       expect(
         (await prisma.project.findUniqueOrThrow({ where: { id } })).slug,
       ).toBe(newSlug);
+
+      // The form no longer carries `i18nKey`, so the action has to PRESERVE the
+      // row's existing value — not blank it, and not invent a new one on an
+      // update (`withI18nKey` in lib/admin/actions/projects.ts).
+      expect(
+        (await prisma.project.findUniqueOrThrow({ where: { id } })).i18nKey,
+      ).toBe(`projects.act-${s}`);
       const history = await prisma.slugHistory.findMany({
         where: { entityId: id, modelType: "project" },
       });

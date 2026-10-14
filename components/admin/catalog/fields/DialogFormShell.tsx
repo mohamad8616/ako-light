@@ -67,6 +67,7 @@ export function DialogFormShell<TValues extends FieldValues>({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
+        data-admin-shell=""
         dir={ADMIN_SHELL_DIR}
         className={wide ? "sm:max-w-2xl" : "sm:max-w-lg"}
       >

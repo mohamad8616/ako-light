@@ -100,6 +100,19 @@ describe("MediaField — the shared image/video field", () => {
     // second pick of one file is a silent no-op.
     expect(mediaField).toContain("event.target.value = \"\"");
   });
+
+  it("deletes the stored object when the field is OPTIONAL", () => {
+    expect(mediaField).toContain("removeMediaUrlAction({ url: removed })");
+  });
+
+  it("does NOT delete the object when the field is REQUIRED", () => {
+    // A cleared required field can never be saved — the schema is `.min(1)` —
+    // so deleting the object would destroy a file the database still points at,
+    // breaking the live page with no way back. The clear is the whole edit; the
+    // owning action's sweep deletes the file once a replacement is saved.
+    expect(mediaField).toContain("if (required) {");
+    expect(mediaField).toContain("admin.upload.clearedRequired");
+  });
 });
 
 describe("ImageUpload — now a wrapper, so every existing form inherits the fix", () => {

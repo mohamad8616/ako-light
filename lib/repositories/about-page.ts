@@ -19,7 +19,7 @@ import { cache } from "react";
 import { prisma } from "@/lib/db/prisma";
 import { loc, type Localized } from "@/lib/i18n/localized";
 import { aboutEn, aboutFa } from "@/lib/i18n/translations/about";
-import { aboutImages } from "@/lib/data/about";
+import { aboutImages, getAboutGalleryImages } from "@/lib/data/about";
 import { asJsonInput } from "./casting";
 
 /** Every `/about` section row key — one row per rendered section. */
@@ -27,6 +27,7 @@ export const ABOUT_SECTION_KEYS = [
   "heroSection",
   "subtitleSection",
   "brandStorySection",
+  "gallerySection",
   "eleganceSection",
 ] as const;
 export type AboutSectionKey = (typeof ABOUT_SECTION_KEYS)[number];
@@ -64,6 +65,20 @@ export type AboutBrandStoryContent = {
   block2Paragraph: Localized;
 };
 
+/**
+ * components/ui/imageGalleryCarousel (rendered between BrandStory and Elegance)
+ * — the ordered photo list, chosen one by one in the dashboard.
+ *
+ * The photos are NOT related to any project / product / collection: this row
+ * owns the list outright, which is exactly why it is a page section and not a
+ * relation. Order is the render order, and the list may hold ANY number of
+ * entries (including none — the carousel renders nothing rather than an empty
+ * frame; see ImageGalleryCarousel's `itemCount === 0` guard).
+ */
+export type AboutGalleryContent = {
+  images: string[];
+};
+
 /** components/about/EleganceSection.tsx — title + `about.elegance.p1..p3`. */
 export type AboutEleganceContent = {
   title: Localized;
@@ -75,6 +90,7 @@ export type AboutPageContent = {
   hero: AboutHeroContent;
   subtitle: AboutSubtitleContent;
   brandStory: AboutBrandStoryContent;
+  gallery: AboutGalleryContent;
   elegance: AboutEleganceContent;
 };
 
@@ -87,6 +103,7 @@ export interface AboutSectionContentMap {
   heroSection: AboutHeroContent;
   subtitleSection: AboutSubtitleContent;
   brandStorySection: AboutBrandStoryContent;
+  gallerySection: AboutGalleryContent;
   eleganceSection: AboutEleganceContent;
 }
 
@@ -98,7 +115,8 @@ const ABOUT_SECTION_ORDER: Record<AboutSectionKey, number> = {
   heroSection: 0,
   subtitleSection: 1,
   brandStorySection: 2,
-  eleganceSection: 3,
+  gallerySection: 3,
+  eleganceSection: 4,
 };
 
 // ---------------------------------------------------------------------------
@@ -136,6 +154,15 @@ export const DEFAULT_ABOUT_PAGE_CONTENT: AboutPageContent = {
     ],
     block2Alt: pair("about.brandStory.block2Alt"),
     block2Paragraph: pair("about.brandStory.block2.p1"),
+  },
+  gallery: {
+    // Image URLs are NOT translation content (see lib/data/about.ts), so the
+    // seeded photo list comes from there. A missing row falls back to it, which
+    // is what keeps a fresh database's /about gallery populated; once an admin
+    // saves the section the stored list wins outright, including an empty one
+    // (`resolveSection` spreads the row over the default, and the row always
+    // carries `images`).
+    images: getAboutGalleryImages(),
   },
   elegance: {
     title: pair("about.elegance.title"),
@@ -188,6 +215,11 @@ export const getAboutPageContent = cache(
         rows,
         "brandStorySection",
         DEFAULT_ABOUT_PAGE_CONTENT.brandStory,
+      ),
+      gallery: resolveSection(
+        rows,
+        "gallerySection",
+        DEFAULT_ABOUT_PAGE_CONTENT.gallery,
       ),
       elegance: resolveSection(
         rows,

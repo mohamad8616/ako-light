@@ -2,6 +2,7 @@ import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import {
   AboutBrandStorySectionForm,
   AboutEleganceSectionForm,
+  AboutGallerySectionForm,
   AboutHeroMediaSectionForm,
   AboutHeroSectionForm,
   AboutSubtitleSectionForm,
@@ -48,6 +49,7 @@ export default async function AboutAdminPage({
         <AboutHeroMediaSectionForm content={heroMedia} />
         <AboutSubtitleSectionForm content={content.subtitle} />
         <AboutBrandStorySectionForm content={content.brandStory} />
+        <AboutGallerySectionForm content={content.gallery} />
         <AboutEleganceSectionForm content={content.elegance} />
       </div>
     </div>

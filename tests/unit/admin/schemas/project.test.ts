@@ -4,7 +4,6 @@ import { projectFormSchema } from "@/lib/admin/schemas/project";
 describe("projectFormSchema", () => {
   const validInput = {
     slug: "h-istra",
-    i18nKey: "projects.hIstra",
     name: { en: "H Istra", fa: "اچ ایستر" },
     location: "Istra, Croatia",
     year: "2026",
@@ -38,17 +37,19 @@ describe("projectFormSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects missing i18nKey", () => {
-    const input = { ...validInput };
-    delete (input as Record<string, unknown>).i18nKey;
-    const result = projectFormSchema.safeParse(input);
-    expect(result.success).toBe(false);
-  });
-
-  it("rejects empty i18nKey", () => {
-    const input = { ...validInput, i18nKey: "" };
-    const result = projectFormSchema.safeParse(input);
-    expect(result.success).toBe(false);
+  it("does not take an i18nKey — the server owns it", () => {
+    // `i18nKey` is a leftover from the dictionary era and nothing reads it, so
+    // the form stopped asking. A client that still sends one must not be able to
+    // set it either: zod strips the unknown key, which is what keeps the value
+    // server-owned (`withI18nKey` in lib/admin/actions/projects.ts).
+    const result = projectFormSchema.safeParse({
+      ...validInput,
+      i18nKey: "projects.injected",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data).not.toHaveProperty("i18nKey");
+    }
   });
 
   it("rejects missing name", () => {
@@ -154,6 +155,44 @@ describe("projectFormSchema", () => {
     const input = { ...validInput, portfolioImages: ["invalid"] };
     const result = projectFormSchema.safeParse(input);
     expect(result.success).toBe(false);
+  });
+
+  it("drops a blank gallery row — a photo row added but not yet filled", () => {
+    // `ImageListField` appends "" when the operator clicks "add". That row is
+    // not a photo yet, so it must neither block the save nor reach the database.
+    const input = {
+      ...validInput,
+      portfolioImages: ["/images/a.jpg", "", "/images/b.jpg"],
+    };
+    const result = projectFormSchema.safeParse(input);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.portfolioImages).toEqual([
+        "/images/a.jpg",
+        "/images/b.jpg",
+      ]);
+    }
+  });
+
+  it("accepts an EMPTY gallery — the list is unbounded in both directions", () => {
+    const result = projectFormSchema.safeParse({
+      ...validInput,
+      portfolioImages: [],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("still reports a malformed gallery entry on its own row", () => {
+    // The blank-row tolerance must not swallow a genuine typo: the transform
+    // runs AFTER the URL check, so the issue keeps its `portfolioImages.N` path.
+    const result = projectFormSchema.safeParse({
+      ...validInput,
+      portfolioImages: ["/images/a.jpg", "not-a-url"],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.path.join(".")).toBe("portfolioImages.1");
+    }
   });
 
   it("rejects negative sortOrder", () => {

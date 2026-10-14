@@ -1,10 +1,9 @@
-﻿﻿import AboutHero from "@/components/about/AboutHero";
+﻿import AboutHero from "@/components/about/AboutHero";
 import AboutHeroVideo from "@/components/about/AboutHeroVideo";
 import BrandStory from "@/components/about/BrandStory";
 import EleganceSection from "@/components/about/EleganceSection";
 import ProjectsSections from "@/components/ProjectsSections";
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
-import { getAboutGalleryImages } from "@/lib/data/about";
 import { translations } from "@/lib/i18n/translations";
 import { getAboutPageContent } from "@/lib/repositories/about-page";
 import { getPageHeroMedia } from "@/lib/repositories/homepage-features";
@@ -38,7 +37,6 @@ export async function generateMetadata({
     jsonLd: jsonLdData,
   });
 }
-const images = getAboutGalleryImages();
 export default async function AboutPage({
   params,
 }: {
@@ -52,6 +50,9 @@ export default async function AboutPage({
   // (seeded from the former translation keys, admin-editable); `t` above is
   // kept for the SEO/JSON-LD metadata only, which is page chrome.
   //
+  // The gallery is ALSO a section row now: the admin picks the photos in
+  // /admin/about and the carousel renders exactly that list, in order, at any
+  // count. The seeded placeholder list is only the missing-row fallback.
   const [content, heroMedia] = await Promise.all([
     getAboutPageContent(),
     getPageHeroMedia("about"),
@@ -80,7 +81,7 @@ export default async function AboutPage({
           circle={true}
           multiWidth={true}
           mobileColumn={true}
-          images={images}
+          images={content.gallery.images}
         />
         <EleganceSection content={content.elegance} />
         <ProjectsSections />

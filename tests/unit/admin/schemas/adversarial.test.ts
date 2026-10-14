@@ -55,7 +55,6 @@ const baseProduct = {
 
 const baseProject = {
   slug: "test-project",
-  i18nKey: "projects.test",
   name: { en: "Test", fa: "تست" },
   location: "Somewhere",
   year: "2026",

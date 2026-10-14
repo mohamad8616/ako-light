@@ -66,6 +66,8 @@ export default async function AdminLayout({
       <DirectionProvider dir={dir}>
         <SidebarProvider
           dir={dir}
+          /* Marks the shell for the field-tint rules in app/globals.css. */
+          data-admin-shell=""
           style={
             {
               "--sidebar-width": "calc(var(--spacing) * 72)",

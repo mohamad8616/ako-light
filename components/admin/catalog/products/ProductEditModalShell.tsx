@@ -59,7 +59,7 @@ export function ProductEditModalShell({
   return (
     <ProductModalCloseContext.Provider value={onClose}>
       <Dialog open onOpenChange={onClose}>
-        <DialogContent dir={ADMIN_SHELL_DIR} className="sm:max-w-3xl">
+        <DialogContent data-admin-shell="" dir={ADMIN_SHELL_DIR} className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
           </DialogHeader>

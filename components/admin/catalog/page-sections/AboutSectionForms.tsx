@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * The four About-page section forms (myPlan.md Part D) — one per
+ * The five About-page section forms (myPlan.md Part D) — one per
  * `AboutPageSection` row, each rendering that section's own shape: the hero's
  * two headline lines, the subtitle paragraph, the brand-story block copy, the
- * elegance paragraphs.
+ * gallery photo list, the elegance paragraphs.
  *
  * Every form is independent (its own react-hook-form instance and save button)
  * because the sections are independent rows the public page renders in order —
@@ -16,6 +16,7 @@
  * lib/data/about.ts (not translation content).
  */
 import { FormCard } from "@/components/admin/catalog/fields/form";
+import { ImageListField } from "@/components/admin/ImageUpload";
 import { MediaField } from "@/components/admin/MediaField";
 import { PageHeroMediaForm } from "@/components/admin/catalog/homepage/PageHeroMediaForm";
 import {
@@ -28,10 +29,12 @@ import { updateAboutPageSectionAction } from "@/lib/admin/actions/about";
 import {
   aboutBrandStorySectionSchema,
   aboutEleganceSectionSchema,
+  aboutGallerySectionSchema,
   aboutHeroSectionSchema,
   aboutSubtitleSectionSchema,
   type AboutBrandStorySectionFormValues,
   type AboutEleganceSectionFormValues,
+  type AboutGallerySectionFormValues,
   type AboutHeroSectionFormValues,
   type AboutSubtitleSectionFormValues,
 } from "@/lib/admin/schemas/about";
@@ -39,6 +42,7 @@ import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import type {
   AboutBrandStoryContent,
   AboutEleganceContent,
+  AboutGalleryContent,
   AboutHeroContent,
   AboutSubtitleContent,
 } from "@/lib/repositories/about-page";
@@ -52,7 +56,7 @@ export function AboutHeroSectionForm({
   content: AboutHeroContent;
 }) {
   const { t } = useLanguage();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
   const form = useForm<AboutHeroSectionFormValues>({
     resolver: zodResolver(aboutHeroSectionSchema),
     values: content,
@@ -64,7 +68,7 @@ export function AboutHeroSectionForm({
       { successMessage: t("admin.table.saved") },
     );
     if (result && !result.ok) applyFieldIssues(form, result);
-  });
+  }, notifyInvalid);
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -104,7 +108,7 @@ export function AboutSubtitleSectionForm({
   content: AboutSubtitleContent;
 }) {
   const { t } = useLanguage();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
   const form = useForm<AboutSubtitleSectionFormValues>({
     resolver: zodResolver(aboutSubtitleSectionSchema),
     values: content,
@@ -116,7 +120,7 @@ export function AboutSubtitleSectionForm({
       { successMessage: t("admin.table.saved") },
     );
     if (result && !result.ok) applyFieldIssues(form, result);
-  });
+  }, notifyInvalid);
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -143,7 +147,7 @@ export function AboutBrandStorySectionForm({
   content: AboutBrandStoryContent;
 }) {
   const { t } = useLanguage();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
   const form = useForm<AboutBrandStorySectionFormValues>({
     resolver: zodResolver(aboutBrandStorySectionSchema),
     values: content,
@@ -155,7 +159,7 @@ export function AboutBrandStorySectionForm({
       { successMessage: t("admin.table.saved") },
     );
     if (result && !result.ok) applyFieldIssues(form, result);
-  });
+  }, notifyInvalid);
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -228,7 +232,7 @@ export function AboutEleganceSectionForm({
   content: AboutEleganceContent;
 }) {
   const { t } = useLanguage();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
   const form = useForm<AboutEleganceSectionFormValues>({
     resolver: zodResolver(aboutEleganceSectionSchema),
     values: content,
@@ -240,7 +244,7 @@ export function AboutEleganceSectionForm({
       { successMessage: t("admin.table.saved") },
     );
     if (result && !result.ok) applyFieldIssues(form, result);
-  });
+  }, notifyInvalid);
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -261,6 +265,61 @@ export function AboutEleganceSectionForm({
               addLabel={t("admin.crud.add")}
             />
           </div>
+        </FormCard>
+      </FormProvider>
+      <SectionFormActions pending={pending} />
+    </form>
+  );
+}
+
+/**
+ * components/ui/imageGalleryCarousel on `/about` — the ordered photo list.
+ *
+ * `ImageListField` gives every photo a row of its own: upload a file or pick one
+ * from the library, reorder with the arrows, remove with ×. It writes a plain
+ * `string[]`, which is exactly the stored shape, so the rows need no schema
+ * special-casing.
+ *
+ * The photos belong to NO project, product or collection — this row owns the
+ * list outright, which is why it is a page section and not a relation. The count
+ * is deliberately unbounded: the carousel renders whatever is stored, in order,
+ * and an empty list simply renders nothing (`itemCount === 0` guard in the
+ * carousel) rather than an empty frame.
+ *
+ * A row the operator has added but not filled yet holds `""`; the schema drops
+ * those after the URL check, so "+ add" followed by Save is a no-op.
+ */
+export function AboutGallerySectionForm({
+  content,
+}: {
+  content: AboutGalleryContent;
+}) {
+  const { t } = useLanguage();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
+  const form = useForm<AboutGallerySectionFormValues>({
+    resolver: zodResolver(aboutGallerySectionSchema),
+    values: content,
+  });
+
+  const onSubmit = form.handleSubmit(async (values) => {
+    const result = await run(
+      () => updateAboutPageSectionAction("gallerySection", values),
+      { successMessage: t("admin.table.saved") },
+    );
+    if (result && !result.ok) applyFieldIssues(form, result);
+  }, notifyInvalid);
+
+  return (
+    <form onSubmit={onSubmit} className="space-y-4">
+      <FormProvider {...form}>
+        <FormCard title={t("admin.page.about.section.gallerySection")}>
+          <ImageListField
+            name="images"
+            label={t("admin.page.field.galleryImages")}
+            hint={t("admin.page.field.galleryImagesHint")}
+            folder="about"
+            addLabel={t("admin.crud.add")}
+          />
         </FormCard>
       </FormProvider>
       <SectionFormActions pending={pending} />

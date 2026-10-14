@@ -171,6 +171,32 @@ html.scroll-locked body {
   border-radius: 9999px;
 }
 
+/*
+ * Admin text fields — tinted by the DIRECTION of the text they hold.
+ *
+ * The dashboard edits bilingual content side by side, and the two halves are
+ * easy to confuse at a glance. CREAM marks an LTR field (English copy, URLs,
+ * codes, hex colours); LIME marks an RTL field (Persian copy, and anything that
+ * inherits the shell's own RTL, which is every field that does not say `dir`).
+ *
+ * Scoped to `[data-admin-shell]`: the admin layout's wrapper plus every admin
+ * dialog shell, whose popups portal OUT of that wrapper. The public site's
+ * search box sets `dir` too, and is deliberately not in scope.
+ *
+ * UNLAYERED on purpose — it has to beat the `bg-input/20` that the Input and
+ * Textarea primitives apply, which lives in Tailwind's `utilities` layer, and an
+ * unlayered rule outranks every layer. A call site that genuinely needs a
+ * different fill can still win with `bg-*!`.
+ */
+[data-admin-shell] [data-slot="input"][dir="ltr"],
+[data-admin-shell] [data-slot="textarea"][dir="ltr"] {
+  background-color: #fbf8cc;
+}
+[data-admin-shell] [data-slot="input"]:not([dir="ltr"]),
+[data-admin-shell] [data-slot="textarea"]:not([dir="ltr"]) {
+  background-color: #ecf39e;
+}
+
 /* thumbnails rail in the lightbox — its own thin, dark scrollbar */
 .lightbox-rail {
   scrollbar-width: thin; /* Firefox */

@@ -105,7 +105,7 @@ export function MediaDetailsDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent dir={ADMIN_SHELL_DIR} className="sm:max-w-lg">
+        <DialogContent data-admin-shell="" dir={ADMIN_SHELL_DIR} className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">
               {t("admin.media.detailsTitle")}

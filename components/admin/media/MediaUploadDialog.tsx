@@ -168,7 +168,7 @@ export function MediaUploadDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent dir={ADMIN_SHELL_DIR} className="sm:max-w-md">
+      <DialogContent data-admin-shell="" dir={ADMIN_SHELL_DIR} className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold">
             {t("admin.media.uploadTitle")}

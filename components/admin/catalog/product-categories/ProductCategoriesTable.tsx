@@ -216,7 +216,7 @@ function CategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent data-admin-shell="" className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? t("admin.product.edit") : t("admin.product.new")}

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   aboutSectionSchemas,
   aboutEleganceSectionSchema,
+  aboutGallerySectionSchema,
   aboutHeroSectionSchema,
 } from "@/lib/admin/schemas/about";
 import {
@@ -36,15 +37,17 @@ const aboutBrandStory = {
   block2Paragraph: PAIR,
 };
 const aboutElegance = { title: PAIR, paragraphs: [PAIR] };
+const aboutGallery = { images: ["https://example.com/gallery-1.jpg"] };
 const s34Hero = { title: PAIR, subtitle: PAIR };
 const s34Kicker = { kicker: PAIR, paragraphs: [PAIR] };
 
 describe("page section schemas — about", () => {
-  it("registers exactly the four AboutPageSection rows", () => {
+  it("registers exactly the five AboutPageSection rows", () => {
     expect(Object.keys(aboutSectionSchemas)).toEqual([
       "heroSection",
       "subtitleSection",
       "brandStorySection",
+      "gallerySection",
       "eleganceSection",
     ]);
   });
@@ -54,6 +57,7 @@ describe("page section schemas — about", () => {
       heroSection: aboutHero,
       subtitleSection: aboutSubtitle,
       brandStorySection: aboutBrandStory,
+      gallerySection: aboutGallery,
       eleganceSection: aboutElegance,
     };
 
@@ -103,6 +107,51 @@ describe("page section schemas — about", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0]?.code).toBe("too_big");
+    }
+  });
+});
+
+describe("page section schemas — about gallery", () => {
+  it("accepts any number of photos, in the order given", () => {
+    const result = aboutGallerySectionSchema.safeParse({
+      images: [
+        "https://example.com/a.jpg",
+        "https://example.com/b.jpg",
+        "/images/c.jpg",
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an EMPTY list — that is how the gallery is taken off the page", () => {
+    expect(aboutGallerySectionSchema.safeParse({ images: [] }).success).toBe(
+      true,
+    );
+  });
+
+  it("drops a blank row — a photo row added but not yet filled is not an error", () => {
+    // `ImageListField` appends "" when the operator clicks "add". That row is
+    // simply not a photo yet, so it must neither block the save nor reach the
+    // database.
+    const result = aboutGallerySectionSchema.safeParse({
+      images: ["https://example.com/a.jpg", "", "/images/c.jpg"],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.images).toEqual([
+        "https://example.com/a.jpg",
+        "/images/c.jpg",
+      ]);
+    }
+  });
+
+  it("rejects an entry that is not an https URL or root-relative path", () => {
+    const result = aboutGallerySectionSchema.safeParse({
+      images: ["not-a-url"],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.path.join(".")).toBe("images.0");
     }
   });
 });

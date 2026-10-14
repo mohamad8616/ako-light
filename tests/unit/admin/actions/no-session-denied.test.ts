@@ -260,7 +260,6 @@ const flagshipInput = {
 
 const projectInput = {
   slug: "some-project",
-  i18nKey: "projects.some",
   name: PAIR,
   location: "Somewhere",
   year: "2026",

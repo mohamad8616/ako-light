@@ -13,6 +13,10 @@ export const uploadEn = {
   // pending label covers the object delete, which is the part that takes time.
   "admin.upload.removing": "Removing…",
   "admin.upload.removed": "Removed",
+  // A REQUIRED field is the exception: clearing it cannot be saved, so the file
+  // is deliberately left in place rather than deleted under the live page.
+  "admin.upload.clearedRequired":
+    "Cleared. Choose a replacement before saving — this image is required.",
   "admin.upload.uploading": "Uploading…",
   "admin.upload.done": "Image uploaded",
   "admin.upload.empty": "No image",
@@ -50,6 +54,10 @@ export const uploadFa = {
   // دکمهٔ «حذف» هم فیلد را پاک می‌کند و هم فایل ذخیره‌شده را از انبار حذف می‌کند.
   "admin.upload.removing": "در حال حذف…",
   "admin.upload.removed": "حذف شد",
+  // فیلد الزامی استثناست: پاک‌کردن آن ذخیره نمی‌شود، پس فایل عمداً دست‌نخورده
+  // می‌ماند تا زیر صفحهٔ زنده حذف نشود.
+  "admin.upload.clearedRequired":
+    "پاک شد. پیش از ذخیره یک تصویر جانشین انتخاب کنید — این تصویر الزامی است.",
   "admin.upload.uploading": "در حال آپلود…",
   "admin.upload.done": "تصویر آپلود شد",
   "admin.upload.empty": "بدون تصویر",

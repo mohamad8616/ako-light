@@ -186,7 +186,7 @@ export function MediaField({
   const error = errorAtPath(formState.errors, name);
 
   /**
-   * "Remove" = clear the field AND delete the object it pointed at.
+   * "Remove" = clear the field, and delete the object it pointed at.
    *
    * The order matters: the field is cleared FIRST so the control is responsive
    * and the value can never be half-applied, then the object is removed. The
@@ -195,9 +195,15 @@ export function MediaField({
    * (the intended edit) and only the toast explains that the file is still in
    * the library, which is the safe outcome.
    *
-   * It is also why the button does not need a confirm of its own: the one
-   * destructive case it can hit is already refused by the reference guard, and
-   * the object is one the operator just chose in this very field.
+   * ── A REQUIRED field stops after the clear ─────────────────────────────────
+   *
+   * `imageRefSchema` is `.min(1)`, so a cleared required field can NEVER be
+   * saved: the form refuses to submit until a replacement is chosen. Deleting
+   * the object at that moment would therefore destroy a file the database still
+   * points at — the live page goes broken and, if the operator navigates away,
+   * there is no way back. So on a required field the clear is the whole edit and
+   * the object is left alone; the owning action's `removedUrls` sweep deletes it
+   * once a replacement is actually saved.
    */
   const handleRemove = React.useCallback(async () => {
     const removed = value;
@@ -206,6 +212,11 @@ export function MediaField({
 
     // Nothing was selected → nothing to delete, and nothing to report.
     if (!removed) return;
+
+    if (required) {
+      toast.message(t("admin.upload.clearedRequired"));
+      return;
+    }
 
     setRemoving(true);
     try {
@@ -222,7 +233,7 @@ export function MediaField({
     } finally {
       setRemoving(false);
     }
-  }, [name, setRemoving, setValue, t, value]);
+  }, [name, required, setRemoving, setValue, t, value]);
 
   const control = (
     <>

@@ -10,6 +10,7 @@ export const pageEn = {
   "admin.page.about.section.heroMediaSection": "Hero background video",
   "admin.page.about.section.subtitleSection": "Subtitle",
   "admin.page.about.section.brandStorySection": "Brand story",
+  "admin.page.about.section.gallerySection": "Image gallery",
   "admin.page.about.section.eleganceSection": "Elegance",
   "admin.page.s34.section.heroSection": "Hero copy",
   "admin.page.s34.section.heroMediaSection": "Hero background video",
@@ -31,6 +32,9 @@ export const pageEn = {
   "admin.page.field.block1Paragraphs": "Block 1 paragraphs",
   "admin.page.field.block2Alt": "Block 2 image alt text",
   "admin.page.field.block2Paragraph": "Block 2 paragraph",
+  "admin.page.field.galleryImages": "Gallery photos",
+  "admin.page.field.galleryImagesHint":
+    "The photos the /about image gallery shows, top to bottom. Upload or pick from the library; reorder with the arrows. Any number is fine — an empty list hides the gallery.",
 
   // The remaining codes of the shared action contract (lib/admin/result.ts).
   // `tooLong` is produced by the `.max()` caps in lib/admin/schemas/common.ts:
@@ -42,6 +46,7 @@ export const pageFa = {
   "admin.page.about.section.heroMediaSection": "ویدیوی پس‌زمینه هیرو",
   "admin.page.about.section.subtitleSection": "زیرعنوان",
   "admin.page.about.section.brandStorySection": "داستان برند",
+  "admin.page.about.section.gallerySection": "گالری تصاویر",
   "admin.page.about.section.eleganceSection": "شکوه و ظرافت",
   "admin.page.s34.section.heroSection": "متن هیرو",
   "admin.page.s34.section.heroMediaSection": "ویدیوی پس‌زمینه هیرو",
@@ -63,6 +68,9 @@ export const pageFa = {
   "admin.page.field.block1Paragraphs": "پاراگراف‌های بلوک ۱",
   "admin.page.field.block2Alt": "متن جانشین تصویر بلوک ۲",
   "admin.page.field.block2Paragraph": "پاراگراف بلوک ۲",
+  "admin.page.field.galleryImages": "تصاویر گالری",
+  "admin.page.field.galleryImagesHint":
+    "تصاویری که گالری صفحه درباره ما نشان می‌دهد، به ترتیب. آپلود کنید یا از کتابخانه انتخاب کنید؛ با فلش‌ها جابه‌جا کنید. هر تعدادی مجاز است — فهرست خالی گالری را پنهان می‌کند.",
 
   // کدهای باقی‌ماندهٔ قرارداد مشترک اکشن‌ها (lib/admin/result.ts)
   // کد «tooLong» از سقف‌های `.max()` در lib/admin/schemas/common.ts می‌آید.

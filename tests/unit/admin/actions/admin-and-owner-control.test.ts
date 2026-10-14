@@ -148,7 +148,6 @@ const designerInput = {
 
 const projectInput = {
   slug: "some-project",
-  i18nKey: "projects.some",
   name: PAIR,
   location: "Somewhere",
   year: "2026",
@@ -172,6 +171,11 @@ const homeCollectionInput = {
 const aboutSectionInput = {
   firstLine: PAIR,
   secondLine: PAIR,
+};
+
+/** A valid `gallerySection` payload — proves the key dispatch accepts it too. */
+const aboutGalleryInput = {
+  images: ["https://example.com/gallery-1.jpg"],
 };
 
 describe("admin authorization — positive controls (ADMIN and OWNER pass)", () => {
@@ -224,6 +228,9 @@ describe("admin authorization — positive controls (ADMIN and OWNER pass)", () 
     await expect(
       updateAboutPageSectionAction("heroSection", aboutSectionInput),
     ).resolves.toEqual({ ok: true, data: undefined });
+    await expect(
+      updateAboutPageSectionAction("gallerySection", aboutGalleryInput),
+    ).resolves.toEqual({ ok: true, data: undefined });
 
     // An allowed call must never redirect and must reach the repository.
     expect(redirectMock).not.toHaveBeenCalled();
@@ -233,7 +240,7 @@ describe("admin authorization — positive controls (ADMIN and OWNER pass)", () 
     expect(repoMocks.createProject.mock.calls).toHaveLength(1);
     expect(repoMocks.updateOrderFulfillmentStatus.mock.calls).toHaveLength(1);
     expect(repoMocks.updateHomeCollectionFeature.mock.calls).toHaveLength(1);
-    expect(repoMocks.updateAboutPageSection.mock.calls).toHaveLength(1);
+    expect(repoMocks.updateAboutPageSection.mock.calls).toHaveLength(2);
   }
 
   it("an ADMIN session passes requireAdminAccess on every representative action", async () => {

@@ -6,10 +6,7 @@ import {
   LocalizedField,
   LocalizedListField,
 } from "@/components/admin/catalog/fields/LocalizedField";
-import {
-  MixedListField,
-  StringListField,
-} from "@/components/admin/catalog/fields/ListFields";
+import { MixedListField } from "@/components/admin/catalog/fields/ListFields";
 import { ProductsUsedField } from "@/components/admin/catalog/fields/ProductsUsedField";
 import {
   NumberField,
@@ -17,6 +14,7 @@ import {
 } from "@/components/admin/catalog/fields/ScalarFields";
 import { SlugField } from "@/components/admin/catalog/fields/SlugField";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
+import { ImageListField, ImageUpload } from "@/components/admin/ImageUpload";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   createProjectAction,
@@ -42,6 +40,13 @@ import * as React from "react";
  * The full project form — a dedicated page because of its three array fields
  * plus the many-to-many product relation. Same zod schema the action re-runs.
  *
+ * BOTH images use the SHARED media field (`ImageUpload` for the hero still,
+ * `ImageListField` for the gallery), exactly like the product and about forms:
+ * upload a file or pick one from the library, see a preview, remove with ×. They
+ * were plain URL text inputs before, which meant the one thing an operator
+ * actually wants to do with a photo — put a new one there — could only be done by
+ * uploading elsewhere and pasting a link.
+ *
  * The product relation reuses the SAME kit pattern Product's image manager
  * established for "a list of related rows inside one form": one ordered row
  * per entry with reorder/remove controls plus an add-select.
@@ -61,7 +66,7 @@ export function ProjectForm({
 }) {
   const { t, lang } = useLanguage();
   const router = useRouter();
-  const { run, pending, applyFieldIssues } = useCrudSubmit();
+  const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
   const [confirming, setConfirming] = React.useState(false);
   const isEdit = Boolean(id && detail);
 
@@ -69,7 +74,6 @@ export function ProjectForm({
     resolver: zodResolver(projectFormSchema),
     values: detail ?? {
       slug: "",
-      i18nKey: "",
       name: { en: "", fa: "" },
       location: "",
       year: "",
@@ -99,7 +103,7 @@ export function ProjectForm({
       },
     );
     if (result && !result.ok) applyFieldIssues(form, result);
-  });
+  }, notifyInvalid);
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -119,13 +123,6 @@ export function ProjectForm({
               required
             />
             <TextField
-              name="i18nKey"
-              label={t("admin.project.field.i18nKey")}
-              required
-              placeholder="projects.hIstra"
-              mono
-            />
-            <TextField
               name="location"
               label={t("admin.project.field.location")}
               required
@@ -136,13 +133,6 @@ export function ProjectForm({
               required
               dir="ltr"
               placeholder="2026"
-            />
-            <TextField
-              name="image"
-              label={t("admin.designer.field.image")}
-              required
-              placeholder="https://..."
-              mono
             />
             <NumberField
               name="sortOrder"
@@ -181,11 +171,22 @@ export function ProjectForm({
         </FormCard>
 
         <FormCard title={t("admin.project.card.media")}>
-          <StringListField
-            name="portfolioImages"
-            label={t("admin.project.field.portfolioImages")}
-            placeholder="https://..."
-          />
+          <div className="space-y-5">
+            <ImageUpload
+              name="image"
+              label={t("admin.project.field.image")}
+              hint={t("admin.project.field.imageHint")}
+              folder="projects"
+              required
+            />
+            <ImageListField
+              name="portfolioImages"
+              label={t("admin.project.field.portfolioImages")}
+              hint={t("admin.project.field.portfolioImagesHint")}
+              folder="projects"
+              addLabel={t("admin.crud.add")}
+            />
+          </div>
         </FormCard>
 
         <FormCard title={t("admin.project.card.products")}>

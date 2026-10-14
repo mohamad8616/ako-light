@@ -100,7 +100,7 @@ export function MediaPickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent dir={ADMIN_SHELL_DIR} className="sm:max-w-3xl">
+      <DialogContent data-admin-shell="" dir={ADMIN_SHELL_DIR} className="sm:max-w-3xl">
         <DialogHeader>
           <DialogTitle className="text-base font-semibold">
             {t("admin.settings.pickerTitle")}

@@ -155,14 +155,27 @@ const page = async ({ params }: PageProps) => {
             circle={true}
             images={project.portfolioImages}
           />
-          <ProjectTextImageSection
-            image={project.portfolioImages[0]}
-            text={project.moreDescription[0]}
-          />
-          <ProjectFullImageSection
-            image={project.portfolioImages[1]}
-            caption={project.moreDescription[1]}
-          />
+          {/*
+            Both sections are anchored to a POSITION in the gallery, so they are
+            skipped when that slot has no photo. The gallery is operator-editable
+            and the list can now be emptied from the dashboard, and `next/image`
+            THROWS on a missing `src` — an unguarded index turned a removed photo
+            into a 500 for the whole project page. The caption falls back to ""
+            so a project with fewer paragraphs than images still renders its
+            picture (`pick("")` is a legal, empty string).
+          */}
+          {project.portfolioImages[0] ? (
+            <ProjectTextImageSection
+              image={project.portfolioImages[0]}
+              text={project.moreDescription[0] ?? ""}
+            />
+          ) : null}
+          {project.portfolioImages[1] ? (
+            <ProjectFullImageSection
+              image={project.portfolioImages[1]}
+              caption={project.moreDescription[1] ?? ""}
+            />
+          ) : null}
           <ProductsInCollectionSection
             categories={groupedCategories}
             titleKey="projects.productsUsed"
