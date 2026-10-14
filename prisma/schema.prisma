@@ -406,8 +406,20 @@ model Project {
   /// Localized[] — two extra description paragraphs.
   moreDescription Json
   /// (Localized | string)[] — mixed entries are valid in the source data.
+  /// Legacy rows may still hold plain strings; the admin read widens them into
+  /// `{ en, fa }` pairs (`creditsAsPairs`) and the next save persists pairs.
   credits         Json
   portfolioImages String[]
+  /// The text+image section under the gallery. NULL = fall back to
+  /// `portfolioImages[0]` / `moreDescription[0]`, which is what every row
+  /// rendered before these columns existed — hence no backfill.
+  textImageUrl    String?
+  /// Localized { en, fa } — the section's paragraph. NULL = `moreDescription[0]`.
+  textImageText   Json?
+  /// The full-width image section. NULL = fall back to `portfolioImages[1]`.
+  fullImageUrl    String?
+  /// Localized { en, fa } — the section's caption. NULL = `moreDescription[1]`.
+  fullImageCaption Json?
   /// Display position (matches the order of projects).
   sortOrder       Int      @default(0)
   createdAt       DateTime @default(now())

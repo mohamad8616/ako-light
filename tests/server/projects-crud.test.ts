@@ -28,6 +28,10 @@ const makeProjectInput = (overrides: Partial<ProjectWriteInput> = {}): ProjectWr
   moreDescription: [{ en: "More 1", fa: "بیشتر 1" }],
   credits: [{ en: "Credit 1", fa: "اعتبار 1" }],
   portfolioImages: ["/portfolio1.jpg"],
+  textImageUrl: "",
+  textImageText: { en: "", fa: "" },
+  fullImageUrl: "",
+  fullImageCaption: { en: "", fa: "" },
   sortOrder: 0,
   productIds: [],
   ...overrides,
@@ -58,6 +62,13 @@ describeDb("projects repository — write", () => {
         expect(row!.moreDescription).toEqual(input.moreDescription);
         expect(row!.credits).toEqual(input.credits);
         expect(row!.portfolioImages).toEqual(input.portfolioImages);
+        // The form's "not configured" sentinels ("", empty pair) must land as
+        // real SQL NULL, or the section would render an empty override instead
+        // of falling back to the gallery position.
+        expect(row!.textImageUrl).toBeNull();
+        expect(row!.textImageText).toBeNull();
+        expect(row!.fullImageUrl).toBeNull();
+        expect(row!.fullImageCaption).toBeNull();
         expect(row!.sortOrder).toBe(input.sortOrder);
         throw new Error("intentional test rollback");
       },

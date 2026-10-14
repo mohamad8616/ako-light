@@ -404,6 +404,10 @@ describeDb("slug history — recorded by the real admin update actions", () => {
           moreDescription: [],
           credits: [],
           portfolioImages: [],
+          textImageUrl: "",
+          textImageText: { en: "", fa: "" },
+          fullImageUrl: "",
+          fullImageCaption: { en: "", fa: "" },
         },
       });
 
@@ -418,6 +422,10 @@ describeDb("slug history — recorded by the real admin update actions", () => {
         moreDescription: [],
         credits: [],
         portfolioImages: [],
+        textImageUrl: "",
+        textImageText: { en: "", fa: "" },
+        fullImageUrl: "",
+        fullImageCaption: { en: "", fa: "" },
         sortOrder: 0,
         productIds: [],
       });

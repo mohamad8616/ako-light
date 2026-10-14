@@ -18,8 +18,15 @@ export default function ProjectInfoSection({ project }: { project: Project }) {
   return (
     <HomepageSection className="bg-background-secondary flex lg:min-h-[150vh] min-h-screen flex-col py-20 md:py-28">
       <div className="grid grid-cols-1 gap-12 lg:grid-cols-[2fr_1fr] lg:gap-16">
+        {/*
+          `min-w-0` on both columns: a grid item defaults to `min-width: auto`,
+          so it refuses to shrink below its widest unbreakable word — one long
+          pasted token would widen the 2fr column, then the grid, then the page
+          into a horizontal scrollbar. `Paragraph`'s own `break-words` only
+          gets a chance to wrap once the box is allowed to shrink.
+        */}
         {/* Left column */}
-        <div className="space-y-6 lg:space-y-10">
+        <div className="min-w-0 space-y-6 lg:space-y-10">
           {/* Breadcrumb */}
           <nav className="font-din flex flex-wrap items-center gap-2 text-xs font-medium tracking-tighter text-stone-500 uppercase">
             <Link
@@ -46,7 +53,7 @@ export default function ProjectInfoSection({ project }: { project: Project }) {
         </div>
 
         {/* Right column */}
-        <div className="flex flex-col gap-10">
+        <div className="flex min-w-0 flex-col gap-10">
           <div>
             <span
               className={cn(
@@ -60,7 +67,12 @@ export default function ProjectInfoSection({ project }: { project: Project }) {
               {project.credits.map((credit, idx) => (
                 <p
                   key={idx}
-                  className={cn(lang === "fa" ? "font-noora" : "font-din")}
+                  // Same guard as `Paragraph`: a credit is operator-entered, so
+                  // a long unbreakable token must wrap rather than widen the page.
+                  className={cn(
+                    "min-w-0 break-words",
+                    lang === "fa" ? "font-noora" : "font-din",
+                  )}
                 >
                   {pick(credit, lang)}
                 </p>
@@ -71,7 +83,7 @@ export default function ProjectInfoSection({ project }: { project: Project }) {
       </div>
 
       {/* Bottom atmospheric paragraph */}
-      <div className="mt-auto lg:max-w-2/5 max-w-3/5">
+      <div className="mt-auto w-full min-w-0 max-w-3/5 lg:max-w-2/5">
         <Paragraph>{projectParagraph}</Paragraph>
       </div>
     </HomepageSection>

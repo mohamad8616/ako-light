@@ -24,7 +24,7 @@ import {
   type ActionResult,
 } from "@/lib/admin/result";
 import { toActionResult } from "@/lib/admin/result-server";
-import { clearableMediaRefSchema } from "@/lib/admin/schemas/homepage";
+import { clearableMediaRefSchema } from "@/lib/admin/schemas/common";
 import { z } from "zod";
 import {
   catalogueFeatureFormSchema,

@@ -3,7 +3,7 @@
  *
  * The existing happy-path tests cover valid input; this file deliberately
  * throws malformed / adversarial payloads at the two schemas that use
- * unions and mixed arrays (product images + project credits) and asserts:
+ * unions and arrays (product images + project credits) and asserts:
  *   1. validation fails (no false positives);
  *   2. the zod issues map through `zodIssuesToFieldIssues` to structured
  *      field issues (`required` | `tooLong` | `invalid`) — never throws, never
@@ -20,7 +20,7 @@
 import { describe, expect, it } from "vitest";
 import { productFormSchema, productImageSchema } from "@/lib/admin/schemas/product";
 import { projectFormSchema } from "@/lib/admin/schemas/project";
-import { CREDIT_MAX, TEXT_MAX, URL_MAX } from "@/lib/admin/schemas/common";
+import { TEXT_MAX, URL_MAX } from "@/lib/admin/schemas/common";
 import { zodIssuesToFieldIssues } from "@/lib/admin/result";
 
 /**
@@ -64,6 +64,10 @@ const baseProject = {
   moreDescription: [],
   credits: [],
   portfolioImages: [],
+  textImageUrl: "",
+  textImageText: { en: "", fa: "" },
+  fullImageUrl: "",
+  fullImageCaption: { en: "", fa: "" },
   sortOrder: 0,
   productIds: [],
 };
@@ -160,7 +164,7 @@ describe("productFormSchema.images array — adversarial", () => {
   });
 });
 
-describe("projectFormSchema.credits array (mixedLocalizedSchema) — adversarial", () => {
+describe("projectFormSchema.credits array (localizedListSchema) — adversarial", () => {
   it("rejects credits as string instead of array", () => {
     const issues = mapFailure(projectFormSchema, { ...baseProject, credits: "not-an-array" });
     expect(issues.some((i) => i.field === "credits" && i.code === "required")).toBe(true);
@@ -171,24 +175,31 @@ describe("projectFormSchema.credits array (mixedLocalizedSchema) — adversarial
     expect(issues.some((i) => i.field === "credits" && i.code === "required")).toBe(true);
   });
 
-  it("rejects array containing a number (not Localized, not string)", () => {
+  it("rejects array containing a number (must be a Localized pair)", () => {
     const issues = mapFailure(projectFormSchema, { ...baseProject, credits: [42] });
-    expect(issues.some((i) => i.field === "credits.0" && i.code === "invalid")).toBe(true);
+    expect(issues.some((i) => i.field === "credits.0" && i.code === "required")).toBe(true);
   });
 
   it("rejects array containing an object that is not Localized", () => {
-    const parsed = projectFormSchema.safeParse({ ...baseProject, credits: [{ foo: "bar" }] });
-    expect(parsed.success).toBe(false);
-    if (!parsed.success) {
-      // Union failure: neither Localized nor string branch matches.
-      // Zod v4 produces code "invalid_union" with path ["credits", 0].
-      expect(parsed.error.issues.some((i) => i.path[0] === "credits" && i.path[1] === 0 && i.code === "invalid_union")).toBe(true);
-    }
+    const issues = mapFailure(projectFormSchema, { ...baseProject, credits: [{ foo: "bar" }] });
+    // Both halves are missing, so each gets its own issue on its own path.
+    expect(issues.some((i) => i.field === "credits.0.en" && i.code === "required")).toBe(true);
+    expect(issues.some((i) => i.field === "credits.0.fa" && i.code === "required")).toBe(true);
   });
 
-  it("rejects array containing an empty string (min 1)", () => {
+  it("rejects array containing an empty string (a plain string is no longer a credit)", () => {
+    // Credits used to accept a plain string shared across both languages. The
+    // form now edits every credit as a pair, so a string is a shape error.
     const issues = mapFailure(projectFormSchema, { ...baseProject, credits: [""] });
     expect(issues.some((i) => i.field === "credits.0" && i.code === "required")).toBe(true);
+  });
+
+  it("rejects a plain-string credit — the shape is gone, not just discouraged", () => {
+    const issues = mapFailure(projectFormSchema, {
+      ...baseProject,
+      credits: ["Plain credit"],
+    });
+    expect(issues.some((i) => i.field === "credits.0")).toBe(true);
   });
 
   it("rejects array containing a half-translated Localized pair", () => {
@@ -196,21 +207,18 @@ describe("projectFormSchema.credits array (mixedLocalizedSchema) — adversarial
     expect(issues.some((i) => i.field === "credits.0.fa" && i.code === "required")).toBe(true);
   });
 
-  it("accepts mixed valid entries: Localized + plain string", () => {
-    const result = projectFormSchema.safeParse({ ...baseProject, credits: [{ en: "A", fa: "ب" }, "Plain credit"] });
+  it("accepts a complete Localized pair", () => {
+    const result = projectFormSchema.safeParse({
+      ...baseProject,
+      credits: [{ en: "A", fa: "ب" }],
+    });
     expect(result.success).toBe(true);
   });
 
-  it("rejects oversized plain string credit (bounded by CREDIT_MAX)", () => {
-    const huge = "Credit " + "a".repeat(10_000);
-    const issues = mapFailure(projectFormSchema, { ...baseProject, credits: [huge] });
-    expect(issues.some((i) => i.field === "credits.0" && i.code === "tooLong")).toBe(true);
-  });
-
-  it("accepts a plain-string credit exactly at CREDIT_MAX", () => {
-    const atCap = "c".repeat(CREDIT_MAX);
-    const result = projectFormSchema.safeParse({ ...baseProject, credits: [atCap] });
-    expect(result.success).toBe(true);
+  it("accepts an EMPTY credits list — a project may have no credits", () => {
+    expect(
+      projectFormSchema.safeParse({ ...baseProject, credits: [] }).success,
+    ).toBe(true);
   });
 
   it("rejects oversized Localized pair credit (bounded by TEXT_MAX per half)", () => {

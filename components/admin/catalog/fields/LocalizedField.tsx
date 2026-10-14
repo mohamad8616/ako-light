@@ -12,6 +12,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { useFieldArray, useFormContext } from "react-hook-form";
 
 /**
+ * The EN/FA tint of every localized text control in the admin panel.
+ *
+ * Color is the direction cue the operator asked for: the pale-yellow half is
+ * where ENGLISH text goes (the LTR control), the pale-green half is where
+ * PERSIAN text goes (the RTL control) — regardless of which locale the admin
+ * shell is being viewed in.
+ */
+const EN_FIELD_CLASS = "bg-[#fbf8cc]";
+const FA_FIELD_CLASS = "bg-[#ecf39e]";
+
+/**
  * A paired {en, fa} control for one localized jsonb value.
  *
  * The FA input carries dir="rtl" explicitly: the admin shell is RTL, but under
@@ -44,12 +55,14 @@ export function LocalizedField({
   const enMessage = useFieldMessage(error?.en);
   const faMessage = useFieldMessage(error?.fa);
 
-  const control = (path: string, dir: "ltr" | "rtl") =>
-    textarea ? (
-      <Textarea dir={dir} rows={rows} {...register(path)} />
+  const control = (path: string, dir: "ltr" | "rtl") => {
+    const tint = dir === "ltr" ? EN_FIELD_CLASS : FA_FIELD_CLASS;
+    return textarea ? (
+      <Textarea dir={dir} rows={rows} className={tint} {...register(path)} />
     ) : (
-      <Input dir={dir} {...register(path)} />
+      <Input dir={dir} className={tint} {...register(path)} />
     );
+  };
 
   return (
     <FieldRow
@@ -140,19 +153,29 @@ export function LocalizedListField({
                 <>
                   <Textarea
                     dir="ltr"
+                    className={EN_FIELD_CLASS}
                     rows={rows}
                     {...register(`${name}.${index}.en`)}
                   />
                   <Textarea
                     dir="rtl"
+                    className={FA_FIELD_CLASS}
                     rows={rows}
                     {...register(`${name}.${index}.fa`)}
                   />
                 </>
               ) : (
                 <>
-                  <Input dir="ltr" {...register(`${name}.${index}.en`)} />
-                  <Input dir="rtl" {...register(`${name}.${index}.fa`)} />
+                  <Input
+                    dir="ltr"
+                    className={EN_FIELD_CLASS}
+                    {...register(`${name}.${index}.en`)}
+                  />
+                  <Input
+                    dir="rtl"
+                    className={FA_FIELD_CLASS}
+                    {...register(`${name}.${index}.fa`)}
+                  />
                 </>
               )}
             </div>

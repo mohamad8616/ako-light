@@ -11,8 +11,12 @@ describe("projectFormSchema", () => {
     description: { en: "Description", fa: "توضیحات" },
     paragraph: { en: "Paragraph", fa: "پاراگراف" },
     moreDescription: [{ en: "More 1", fa: "بیشتر 1" }, { en: "More 2", fa: "بیشتر 2" }],
-    credits: [{ en: "Credit 1", fa: "اعتبار 1" }, "Plain string credit"],
+    credits: [{ en: "Credit 1", fa: "اعتبار 1" }, { en: "Credit 2", fa: "اعتبار 2" }],
     portfolioImages: ["/images/portfolio1.jpg", "/images/portfolio2.jpg"],
+    textImageUrl: "",
+    textImageText: { en: "", fa: "" },
+    fullImageUrl: "",
+    fullImageCaption: { en: "", fa: "" },
     sortOrder: 0,
     productIds: ["pendant-light", "sofa"],
   };
@@ -138,10 +142,70 @@ describe("projectFormSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("accepts credits with mixed localized and plain strings", () => {
-    const input = { ...validInput, credits: [{ en: "Credit", fa: "اعتبار" }, "Plain string"] };
+  it("accepts credits as complete EN/FA pairs", () => {
+    const input = { ...validInput, credits: [{ en: "Credit", fa: "اعتبار" }] };
     const result = projectFormSchema.safeParse(input);
     expect(result.success).toBe(true);
+  });
+
+  it("rejects a plain-string credit — the form always edits a pair", () => {
+    // Credits used to allow a bare string shared across both languages. The
+    // admin now shows two inputs per line, and the repository widens a legacy
+    // string into a pair on READ, so the write shape is pairs only.
+    const input = { ...validInput, credits: ["Plain string"] };
+    const result = projectFormSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a half-translated credit pair", () => {
+    const input = { ...validInput, credits: [{ en: "Credit", fa: "" }] };
+    const result = projectFormSchema.safeParse(input);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.path.join(".")).toBe("credits.0.fa");
+    }
+  });
+
+  it("accepts an EMPTY credits list", () => {
+    const input = { ...validInput, credits: [] };
+    expect(projectFormSchema.safeParse(input).success).toBe(true);
+  });
+
+  it("accepts cleared portfolio-section overrides — empty means 'use the fallback'", () => {
+    const result = projectFormSchema.safeParse({
+      ...validInput,
+      textImageUrl: "",
+      textImageText: { en: "", fa: "" },
+      fullImageUrl: "",
+      fullImageCaption: { en: "", fa: "" },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a filled portfolio-section override", () => {
+    const result = projectFormSchema.safeParse({
+      ...validInput,
+      textImageUrl: "/images/section.jpg",
+      textImageText: { en: "Text", fa: "متن" },
+      fullImageUrl: "https://example.com/wide.jpg",
+      fullImageCaption: { en: "Caption", fa: "توضیح" },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a half-translated section caption", () => {
+    // Both halves or neither — a half pair would render a BLANK line on the
+    // Persian page rather than falling back to English.
+    const result = projectFormSchema.safeParse({
+      ...validInput,
+      fullImageCaption: { en: "Caption", fa: "" },
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0]?.path.join(".")).toBe(
+        "fullImageCaption.fa",
+      );
+    }
   });
 
   it("rejects missing portfolioImages", () => {

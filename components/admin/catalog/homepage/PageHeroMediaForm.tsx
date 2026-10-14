@@ -5,7 +5,7 @@ import { HomepageFormActions } from "@/components/admin/catalog/homepage/Homepag
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { MediaField } from "@/components/admin/MediaField";
 import { updatePageHeroMediaAction } from "@/lib/admin/actions/homepage";
-import { clearableMediaRefSchema } from "@/lib/admin/schemas/homepage";
+import { clearableMediaRefSchema } from "@/lib/admin/schemas/common";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import type { PageHeroMediaWriteInput } from "@/lib/repositories/homepage-features/hero";
 import { zodResolver } from "@hookform/resolvers/zod";

@@ -16,6 +16,8 @@ import {
   asLocalized,
   asLocalizedList,
   asMixedLocalizedList,
+  asNullableJsonInput,
+  asOptionalLocalized,
 } from "./casting";
 import { mapProductRow, productInclude } from "./products";
 
@@ -32,7 +34,77 @@ export type ProjectRow = Prisma.ProjectGetPayload<{
   include: typeof projectInclude;
 }>;
 
-function mapProjectRow(row: ProjectRow): Project {
+/**
+ * The text+image section under the gallery, already RESOLVED for rendering.
+ *
+ * `text` is `Localized | string` because it can come from either source: an
+ * explicit override (always a pair) or the legacy `moreDescription` list.
+ */
+export type ResolvedTextImageSection = {
+  image: string;
+  text: Localized | string;
+};
+
+/** The full-width image section under the gallery, already RESOLVED. */
+export type ResolvedFullImageSection = {
+  image: string;
+  caption: Localized | string;
+};
+
+/**
+ * A project as the PUBLIC pages read it: {@link Project} plus the two portfolio
+ * sections resolved.
+ *
+ * They are resolved HERE rather than in the page so the override-then-fallback
+ * rule lives in one place, and so the page stays a straight render. `null` means
+ * there is nothing to show — neither an override nor a fallback photo — and the
+ * section is skipped.
+ */
+export type ProjectDetail = Project & {
+  textImageSection: ResolvedTextImageSection | null;
+  fullImageSection: ResolvedFullImageSection | null;
+};
+
+/**
+ * The two sections under the gallery, resolved from their override columns.
+ *
+ * Each section's photo and copy resolve INDEPENDENTLY: an explicit admin value
+ * wins, and a NULL column falls back to the position the page used before these
+ * columns existed (`portfolioImages[0]`/`[1]` with `moreDescription[0]`/`[1]`).
+ * That is what makes the columns need no backfill — an untouched project renders
+ * byte-for-byte what it always did.
+ *
+ * A section with NO photo (no override and no photo at that gallery position) is
+ * `null` and the page renders nothing: `next/image` throws on a missing `src`.
+ * The copy falls back to `""` rather than `undefined` because `pick(undefined)`
+ * throws, while `pick("")` is a legal empty string.
+ */
+function resolvePortfolioSections(row: ProjectRow): {
+  textImageSection: ResolvedTextImageSection | null;
+  fullImageSection: ResolvedFullImageSection | null;
+} {
+  const paragraphs = asLocalizedList(row.moreDescription);
+  const textImage = row.textImageUrl ?? row.portfolioImages[0] ?? null;
+  const fullImage = row.fullImageUrl ?? row.portfolioImages[1] ?? null;
+
+  return {
+    textImageSection: textImage
+      ? {
+          image: textImage,
+          text: asOptionalLocalized(row.textImageText) ?? paragraphs[0] ?? "",
+        }
+      : null,
+    fullImageSection: fullImage
+      ? {
+          image: fullImage,
+          caption:
+            asOptionalLocalized(row.fullImageCaption) ?? paragraphs[1] ?? "",
+        }
+      : null,
+  };
+}
+
+function mapProjectRow(row: ProjectRow): ProjectDetail {
   return {
     id: row.id,
     i18nKey: row.i18nKey,
@@ -48,6 +120,7 @@ function mapProjectRow(row: ProjectRow): Project {
     productsUsed: row.productsUsed.map((link) =>
       mapProductRow(link.product),
     ),
+    ...resolvePortfolioSections(row),
   };
 }
 
@@ -60,7 +133,7 @@ function mapProjectRow(row: ProjectRow): Project {
  * `id` fallback).
  */
 export const getProject = cache(
-  async (slug: string): Promise<Project | null> => {
+  async (slug: string): Promise<ProjectDetail | null> => {
     const bySlug = await prisma.project.findUnique({
       where: { slug },
       include: projectInclude,
@@ -81,13 +154,13 @@ export const getProject = cache(
  * call sites can keep their existing call shape (`await getProjectById(id)`).
  */
 export const getProjectById = cache(
-  async (id: string): Promise<Project | null> => getProject(id),
+  async (id: string): Promise<ProjectDetail | null> => getProject(id),
 );
 
 /**
  * Every project in the curated source-array order (`Project.sortOrder`).
  */
-export const getProjects = cache(async (): Promise<Project[]> => {
+export const getProjects = cache(async (): Promise<ProjectDetail[]> => {
   const rows = await prisma.project.findMany({
     include: projectInclude,
     orderBy: { sortOrder: "asc" },
@@ -96,7 +169,43 @@ export const getProjects = cache(async (): Promise<Project[]> => {
   return rows.map(mapProjectRow);
 });
 
-/** A project row as the admin form submits it (mirrors `projectFormSchema`). */
+/** `""` is the form's "not configured" value for an override column → SQL NULL. */
+const emptyToNull = (value: string): string | null =>
+  value === "" ? null : value;
+
+/**
+ * `{ en: "", fa: "" }` is the form's "cleared" pair → SQL NULL.
+ *
+ * `clearableLocalizedSchema` guarantees a pair is either complete or entirely
+ * empty, so this is the only "not configured" spelling that can reach here.
+ */
+const emptyPairToNull = (value: Localized): Localized | null =>
+  value.en === "" && value.fa === "" ? null : value;
+
+/**
+ * Legacy `Project.credits` rows may hold plain strings (shared across both
+ * languages). The form edits every credit as an EN/FA pair, and a plain string
+ * cannot host `credits.0.en`, so the ADMIN read widens a legacy string into
+ * `{ en: s, fa: s }` — the next save then persists a real pair.
+ *
+ * The PUBLIC read stays permissive (`asMixedLocalizedList`): `pick()` renders
+ * either representation, so a row nobody re-saves keeps working untouched.
+ */
+function creditsAsPairs(value: unknown): Localized[] {
+  return asMixedLocalizedList(value).map((credit) =>
+    typeof credit === "string" ? { en: credit, fa: credit } : credit,
+  );
+}
+
+/**
+ * A project row as the admin form submits it (mirrors `projectFormSchema`).
+ *
+ * The two portfolio-section overrides are spelled the way a react-hook-form
+ * input yields them — `""` for a URL, an empty pair for a localized value — and
+ * `createProject`/`updateProject` turn those into SQL NULL. That keeps the
+ * form's `values` and this type structurally identical, which is what lets
+ * `getProjectAdminDetail` feed the form directly.
+ */
 export type ProjectWriteInput = {
   slug: string;
   /** Translation key prefix, e.g. "projects.hIstra". */
@@ -109,9 +218,17 @@ export type ProjectWriteInput = {
   description: Localized;
   paragraph: Localized;
   moreDescription: Localized[];
-  /** Mixed entries are valid in the source data. */
-  credits: (Localized | string)[];
+  /** Always EN/FA pairs; the admin read widens legacy plain strings. */
+  credits: Localized[];
   portfolioImages: string[];
+  /** "" = no override → `portfolioImages[0]`. */
+  textImageUrl: string;
+  /** An empty pair = no override → `moreDescription[0]`. */
+  textImageText: Localized;
+  /** "" = no override → `portfolioImages[1]`. */
+  fullImageUrl: string;
+  /** An empty pair = no override → `moreDescription[1]`. */
+  fullImageCaption: Localized;
   sortOrder: number;
   /** Product ids in display order; synced with the join table on save. */
   productIds: string[];
@@ -157,6 +274,10 @@ export const getProjectAdminRows = cache(
  * One project as the admin form edits it: every column plus the ORDERED
  * `productIds` read off the join table, which is the list the form's
  * ProductsUsedField writes back on save.
+ *
+ * Every "not configured" value is spelled the way the FORM holds it — `""` for
+ * an override URL and an empty pair for a localized one — because this object is
+ * the form's initial `values`. The write path converts them back to NULL.
  */
 export const getProjectAdminDetail = cache(
   async (id: string): Promise<ProjectWriteInput | null> => {
@@ -181,8 +302,19 @@ export const getProjectAdminDetail = cache(
       description: asLocalized(row.description),
       paragraph: asLocalized(row.paragraph),
       moreDescription: asLocalizedList(row.moreDescription),
-      credits: asMixedLocalizedList(row.credits),
+      // Legacy plain strings become real pairs here — see `creditsAsPairs`.
+      credits: creditsAsPairs(row.credits),
       portfolioImages: row.portfolioImages,
+      textImageUrl: row.textImageUrl ?? "",
+      textImageText: asOptionalLocalized(row.textImageText) ?? {
+        en: "",
+        fa: "",
+      },
+      fullImageUrl: row.fullImageUrl ?? "",
+      fullImageCaption: asOptionalLocalized(row.fullImageCaption) ?? {
+        en: "",
+        fa: "",
+      },
       sortOrder: row.sortOrder,
       productIds: row.productsUsed.map((link) => link.productId),
     };
@@ -211,6 +343,12 @@ export const createProject = async (
         moreDescription: asJsonInput(input.moreDescription),
         credits: asJsonInput(input.credits),
         portfolioImages: input.portfolioImages,
+        textImageUrl: emptyToNull(input.textImageUrl),
+        textImageText: asNullableJsonInput(emptyPairToNull(input.textImageText)),
+        fullImageUrl: emptyToNull(input.fullImageUrl),
+        fullImageCaption: asNullableJsonInput(
+          emptyPairToNull(input.fullImageCaption),
+        ),
         sortOrder: input.sortOrder,
       },
     });
@@ -252,6 +390,12 @@ export const updateProject = async (
         moreDescription: asJsonInput(input.moreDescription),
         credits: asJsonInput(input.credits),
         portfolioImages: input.portfolioImages,
+        textImageUrl: emptyToNull(input.textImageUrl),
+        textImageText: asNullableJsonInput(emptyPairToNull(input.textImageText)),
+        fullImageUrl: emptyToNull(input.fullImageUrl),
+        fullImageCaption: asNullableJsonInput(
+          emptyPairToNull(input.fullImageCaption),
+        ),
         sortOrder: input.sortOrder,
       },
     });

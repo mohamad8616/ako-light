@@ -6,7 +6,6 @@ import {
   LocalizedField,
   LocalizedListField,
 } from "@/components/admin/catalog/fields/LocalizedField";
-import { MixedListField } from "@/components/admin/catalog/fields/ListFields";
 import { ProductsUsedField } from "@/components/admin/catalog/fields/ProductsUsedField";
 import {
   NumberField,
@@ -37,21 +36,26 @@ import { FormProvider, useForm } from "react-hook-form";
 import * as React from "react";
 
 /**
- * The full project form — a dedicated page because of its three array fields
- * plus the many-to-many product relation. Same zod schema the action re-runs.
+ * The full project form — a dedicated page because of its array fields plus the
+ * many-to-many product relation. Same zod schema the action re-runs.
  *
- * BOTH images use the SHARED media field (`ImageUpload` for the hero still,
- * `ImageListField` for the gallery), exactly like the product and about forms:
- * upload a file or pick one from the library, see a preview, remove with ×. They
- * were plain URL text inputs before, which meant the one thing an operator
- * actually wants to do with a photo — put a new one there — could only be done by
- * uploading elsewhere and pasting a link.
+ * BOTH hero/gallery images use the SHARED media field (`ImageUpload` for the
+ * still, `ImageListField` for the gallery), exactly like the product and about
+ * forms: upload a file or pick one from the library, see a preview, remove with
+ * ×. They were plain URL text inputs before, which meant the one thing an
+ * operator actually wants to do with a photo — put a new one there — could only
+ * be done by uploading elsewhere and pasting a link.
+ *
+ * The two sections UNDER the gallery each get their own photo and copy here
+ * instead of being read positionally out of the gallery. Every field is
+ * clearable, and empty means "keep using the gallery photo / its paragraph", so
+ * an untouched form saves nothing.
  *
  * The product relation reuses the SAME kit pattern Product's image manager
- * established for "a list of related rows inside one form": one ordered row
- * per entry with reorder/remove controls plus an add-select.
- * `ProductsUsedField` is that component for `productIds` (joined rows instead
- * of image rows), so no new sub-form pattern is invented here.
+ * established for "a list of related rows inside one form": one ordered row per
+ * entry with reorder/remove controls plus an add control. `ProductsUsedField` is
+ * that component for `productIds`, and it adds a category step so the product
+ * menu only ever lists one category.
  */
 export function ProjectForm({
   detail,
@@ -83,6 +87,10 @@ export function ProjectForm({
       moreDescription: [],
       credits: [],
       portfolioImages: [],
+      textImageUrl: "",
+      textImageText: { en: "", fa: "" },
+      fullImageUrl: "",
+      fullImageCaption: { en: "", fa: "" },
       sortOrder: 0,
       productIds: [],
     },
@@ -163,10 +171,19 @@ export function ProjectForm({
             textarea
             rows={3}
           />
-          <MixedListField
+          {/*
+            Credits are ALWAYS an EN/FA pair. They used to be a mixed
+            string-or-pair list behind a toggle, which made the ordinary case —
+            type the credit in both languages — a two-step dance and left a plain
+            string with no per-language editing at all. The repository widens a
+            legacy plain string into a pair on read, so this field can assume
+            pairs without a migration.
+          */}
+          <LocalizedListField
             name="credits"
             label={t("admin.project.field.credits")}
             hint={t("admin.project.field.creditsHint")}
+            addLabel={t("admin.crud.add")}
           />
         </FormCard>
 
@@ -185,6 +202,59 @@ export function ProjectForm({
               hint={t("admin.project.field.portfolioImagesHint")}
               folder="projects"
               addLabel={t("admin.crud.add")}
+            />
+          </div>
+        </FormCard>
+
+        {/*
+          The two sections that render UNDER the gallery. Each used to be
+          positional — the first always took `portfolioImages[0]` with
+          `moreDescription[0]`, the second `[1]` — so changing either photo meant
+          changing the gallery and changing either text meant editing the shared
+          "more description" list. They now own their photo and their copy.
+
+          Every field is CLEARABLE and empty means "keep using the gallery photo
+          / its paragraph", so an untouched form changes nothing and an existing
+          project keeps rendering exactly as it does today.
+        */}
+        <FormCard
+          title={t("admin.project.card.textImageSection")}
+          description={t("admin.project.card.textImageSectionHint")}
+        >
+          <div className="space-y-5">
+            <ImageUpload
+              name="textImageUrl"
+              label={t("admin.project.field.sectionImage")}
+              hint={t("admin.project.field.sectionImageHint")}
+              folder="projects"
+            />
+            <LocalizedField
+              name="textImageText"
+              label={t("admin.project.field.sectionText")}
+              hint={t("admin.project.field.sectionTextHint")}
+              textarea
+              rows={4}
+            />
+          </div>
+        </FormCard>
+
+        <FormCard
+          title={t("admin.project.card.fullImageSection")}
+          description={t("admin.project.card.fullImageSectionHint")}
+        >
+          <div className="space-y-5">
+            <ImageUpload
+              name="fullImageUrl"
+              label={t("admin.project.field.sectionImage")}
+              hint={t("admin.project.field.sectionImageHint")}
+              folder="projects"
+            />
+            <LocalizedField
+              name="fullImageCaption"
+              label={t("admin.project.field.sectionCaption")}
+              hint={t("admin.project.field.sectionCaptionHint")}
+              textarea
+              rows={3}
             />
           </div>
         </FormCard>

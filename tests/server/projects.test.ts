@@ -27,6 +27,7 @@ const describeDb = describe.skipIf(!hasDatabaseUrl);
 const PROJECT_KEYS = [
   "credits",
   "description",
+  "fullImageSection",
   "id",
   "i18nKey",
   "image",
@@ -36,6 +37,7 @@ const PROJECT_KEYS = [
   "paragraph",
   "portfolioImages",
   "productsUsed",
+  "textImageSection",
   "year",
 ];
 

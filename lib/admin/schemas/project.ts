@@ -1,10 +1,11 @@
 import { z } from "zod";
 import {
+  clearableImageRefSchema,
+  clearableLocalizedSchema,
   idSchema,
   imageRefSchema,
-  localizedSchema,
   localizedListSchema,
-  mixedLocalizedSchema,
+  localizedSchema,
   nameSchema,
   slugSchema,
   sortOrderSchema,
@@ -32,23 +33,48 @@ export const projectFormSchema = z.object({
   paragraph: localizedSchema,
   moreDescription: localizedListSchema,
   /**
-   * Mixed credit lines. Each entry is capped by `mixedLocalizedSchema`: a plain
-   * string by CREDIT_MAX (500), a localized pair by TEXT_MAX (2000) per half —
-   * a credit is a line of attribution, never a body of prose.
+   * Credit lines — ALWAYS an EN/FA pair.
+   *
+   * They used to be `mixedLocalizedSchema` (a plain string OR a pair) with a
+   * toggle in the form, because the source data was genuinely mixed. In practice
+   * that made the common case — type the credit in both languages — a two-step
+   * dance behind a toggle, and a plain string cannot be edited per language at
+   * all. The form now shows the pair directly, and the repository widens any
+   * legacy plain string into `{ en: s, fa: s }` on read, so the next save
+   * persists a real pair (see `creditsAsPairs`).
+   *
+   * Each half is capped by `TEXT_MAX`, like every other localized field.
    */
-  credits: z.array(mixedLocalizedSchema),
+  credits: localizedListSchema,
   /**
    * The project gallery — `ImageListField`, so a row the operator has added but
    * not filled yet holds "". The transform drops those AFTER the URL check, so
    * "+ add" then Save is a no-op instead of a validation error, and a genuinely
    * malformed entry is still reported on its own row.
    *
-   * An empty list is valid: the gallery renders nothing, and the two
-   * portfolio-image sections below it are skipped by the page.
+   * An empty list is valid: the gallery renders nothing.
    */
   portfolioImages: z
     .array(imageRefSchema.or(z.literal("")))
     .transform((list) => list.filter((image) => image !== "")),
+  /**
+   * The two sections that sit UNDER the gallery, each an OVERRIDE.
+   *
+   * They used to be purely positional: `ProjectTextImageSection` always took
+   * `portfolioImages[0]` + `moreDescription[0]`, and `ProjectFullImageSection`
+   * `[1]`. So the only way to change either photo was to change the gallery, and
+   * the only way to change the text was to edit the shared "more description"
+   * list. Each now owns its photo and its copy.
+   *
+   * Both are clearable: an empty value falls back to that positional default
+   * (`resolvePortfolioSections` in the repository), so an untouched form saves
+   * nothing and an existing project keeps rendering exactly as it does today —
+   * which is why these columns need no backfill.
+   */
+  textImageUrl: clearableImageRefSchema,
+  textImageText: clearableLocalizedSchema,
+  fullImageUrl: clearableImageRefSchema,
+  fullImageCaption: clearableLocalizedSchema,
   sortOrder: sortOrderSchema,
   /** Product ids in display order; synced with the join table on save. */
   productIds: z.array(idSchema),

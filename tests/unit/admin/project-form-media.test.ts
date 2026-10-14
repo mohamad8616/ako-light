@@ -23,11 +23,24 @@ import { describe, expect, it } from "vitest";
 const here = dirname(fileURLToPath(import.meta.url));
 const read = (relative: string) => readFileSync(join(here, relative), "utf8");
 
+/**
+ * Comments stripped before matching. The page's own comment NAMES the
+ * positional reads it no longer does (`portfolioImages[0]`), so a raw substring
+ * search would "find" the very thing the assertion is checking is gone.
+ */
+const stripComments = (source: string) =>
+  source
+    .replace(/\r\n/g, "\n")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+
 const FORM = read(
   "../../../components/admin/catalog/projects/ProjectForm.tsx",
 );
 const ACTION = read("../../../lib/admin/actions/projects.ts");
-const PROJECT_PAGE = read("../../../app/[locale]/(site)/projects/[id]/page.tsx");
+const PROJECT_PAGE = stripComments(
+  read("../../../app/[locale]/(site)/projects/[id]/page.tsx"),
+);
 
 describe("project form — the images use the shared media field", () => {
   it("the hero image is an ImageUpload bound to `image`", () => {
@@ -72,6 +85,18 @@ describe("project images — replaced uploads are garbage-collected", () => {
     expect(ACTION).toMatch(/function projectImageUrls\([\s\S]*?portfolioImages/);
   });
 
+  it("covers the two portfolio-SECTION overrides as well", () => {
+    // They became upload targets with the rest of the media fields, so a
+    // replaced section photo is a real orphan — leaving them out of the sweep
+    // leaks one object per replacement, silently.
+    const fn = ACTION.slice(
+      ACTION.indexOf("function projectImageUrls"),
+      ACTION.indexOf("}", ACTION.indexOf("function projectImageUrls")),
+    );
+    expect(fn).toMatch(/textImageUrl/);
+    expect(fn).toMatch(/fullImageUrl/);
+  });
+
   it("deletes the files of a DESTROYED project too", () => {
     // Ordering matters: capture the URLs, drop the row, then drop the files — a
     // failed delete leaves blobs referenced rather than deleting live files.
@@ -81,20 +106,27 @@ describe("project images — replaced uploads are garbage-collected", () => {
   });
 });
 
-describe("the public project page survives a shortened gallery", () => {
-  it("skips the positional sections when their photo is gone", () => {
-    // `next/image` THROWS on a missing `src`, and the gallery is now editable —
-    // so an unguarded index turned a removed photo into a 500 for the whole
-    // project page.
-    expect(PROJECT_PAGE).toMatch(/\{project\.portfolioImages\[0\] \? \(/);
-    expect(PROJECT_PAGE).toMatch(/\{project\.portfolioImages\[1\] \? \(/);
-  });
-
-  it("falls back to an empty caption rather than an undefined one", () => {
-    // `pick(undefined, lang)` throws; `pick("")` is a legal empty string.
-    expect(PROJECT_PAGE).toMatch(/text=\{project\.moreDescription\[0\] \?\? ""\}/);
+describe("the public project page reads the RESOLVED portfolio sections", () => {
+  it("renders each section from the repository's resolved value, not an index", () => {
+    // The sections used to be read positionally out of `portfolioImages`, so the
+    // only way to change either photo was to change the gallery. They now come
+    // resolved (an explicit override wins, otherwise the positional fallback),
+    // and a `null` section is skipped — `next/image` THROWS on a missing `src`,
+    // and the gallery is operator-editable.
     expect(PROJECT_PAGE).toMatch(
-      /caption=\{project\.moreDescription\[1\] \?\? ""\}/,
+      /\{project\.textImageSection \? \(/,
     );
+    expect(PROJECT_PAGE).toMatch(
+      /\{project\.fullImageSection \? \(/,
+    );
+    expect(PROJECT_PAGE).toMatch(
+      /image=\{project\.textImageSection\.image\}/,
+    );
+    expect(PROJECT_PAGE).toMatch(
+      /caption=\{project\.fullImageSection\.caption\}/,
+    );
+    // The positional reads must be gone, or the page would ignore the overrides.
+    expect(PROJECT_PAGE).not.toMatch(/portfolioImages\[0\]/);
+    expect(PROJECT_PAGE).not.toMatch(/portfolioImages\[1\]/);
   });
 });

@@ -39,17 +39,30 @@ import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
  */
 
 /**
- * Every image URL a project row references: the hero column plus the gallery.
+ * Every image URL a project row references: the hero column, the gallery, and
+ * the two portfolio-section overrides.
  *
  * Used to garbage-collect replaced uploads — see the cleanup note on
  * {@link updateProjectAction}. Without it, every image the operator swaps out in
- * the dashboard stays in the bucket forever, referenced by nothing.
+ * the dashboard stays in the bucket forever, referenced by nothing. The section
+ * overrides are included for exactly that reason: they became upload targets
+ * with the rest of the media fields, so a replaced one is a real orphan.
+ *
+ * Empty strings are harmless here: `removedUrls` drops falsy values and
+ * `deleteStorageUrls` derives no key from "".
  */
 function projectImageUrls(values: {
   image: string;
   portfolioImages: string[];
+  textImageUrl: string;
+  fullImageUrl: string;
 }): string[] {
-  return [values.image, ...values.portfolioImages];
+  return [
+    values.image,
+    ...values.portfolioImages,
+    values.textImageUrl,
+    values.fullImageUrl,
+  ];
 }
 
 /**

@@ -92,6 +92,10 @@ describeDb("slug renames preserve id-based FKs (repository writes)", () => {
       moreDescription: [],
       credits: [],
       portfolioImages: [],
+      textImageUrl: "",
+      textImageText: { en: "", fa: "" },
+      fullImageUrl: "",
+      fullImageCaption: { en: "", fa: "" },
       sortOrder: 0,
       productIds: [product.slug],
     };

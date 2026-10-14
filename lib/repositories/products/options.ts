@@ -8,15 +8,19 @@ export type ProductOption = {
   slug: string;
   name: Localized;
   categorySlug: string;
+  /** The parent category's display name, for the picker's category step. */
+  categoryName: Localized;
 };
 
 /**
  * Every product as a picker option: `id`, `slug`, localized `name` and the
- * parent category's slug (the `ProductsUsedField` group label). Ordered like
- * `getProducts` — category navigation order, then curated position.
+ * parent category's slug + localized name (the `ProductsUsedField` two-step
+ * picker's group label). Ordered like `getProducts` — category navigation
+ * order, then curated position — so the categories the picker derives from this
+ * list come out in nav order without a second query.
  *
- * Deliberately `select`-scoped to four columns: the picker renders a label, so
- * nothing else may cross the wire.
+ * Deliberately `select`-scoped: the picker renders labels, so nothing else may
+ * cross the wire.
  */
 export const getProductOptions = cache(async (): Promise<ProductOption[]> => {
   const rows = await prisma.product.findMany({
@@ -25,7 +29,7 @@ export const getProductOptions = cache(async (): Promise<ProductOption[]> => {
       id: true,
       slug: true,
       name: true,
-      category: { select: { slug: true } },
+      category: { select: { slug: true, name: true } },
     },
   });
 
@@ -34,5 +38,6 @@ export const getProductOptions = cache(async (): Promise<ProductOption[]> => {
     slug: row.slug,
     name: asLocalized(row.name),
     categorySlug: row.category.slug,
+    categoryName: asLocalized(row.category.name),
   }));
 });
