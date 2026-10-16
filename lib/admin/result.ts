@@ -34,8 +34,10 @@ export type AdminErrorCode =
   | "localizedPair"
   /** A `.max()` string cap was exceeded (lib/admin/schemas/common.ts). */
   | "tooLong"
-  /** An uploaded file exceeded the byte cap (lib/admin/actions/upload.ts). */
+  /** An image/video upload exceeded its existing byte cap. */
   | "tooLarge"
+  /** A catalogue document exceeded the 60 MB PDF/PPTX upload ceiling. */
+  | "documentTooLarge"
   /** An uploaded file is not a real image of a supported type. */
   | "notImage"
   /**
@@ -115,7 +117,11 @@ export function actionFail(
  * so a schema that names its own code gets the specific message in BOTH halves
  * of the contract, with neither half knowing about the other.
  */
-const SCHEMA_NAMED_CODES = ["invalidLink", "localizedPair"] as const;
+const SCHEMA_NAMED_CODES = [
+  "invalidLink",
+  "localizedPair",
+  "unsupportedType",
+] as const;
 
 function schemaNamedCode(code: string): AdminErrorCode | null {
   return (SCHEMA_NAMED_CODES as readonly string[]).includes(code)
@@ -127,10 +133,9 @@ export function errorCodeForType(type: unknown): AdminErrorCode {
   if (type === "invalid_type" || type === "too_small") return "required";
   if (type === "too_big") return "tooLong";
   // `clearableLinkSchema` / `clearableLocalizedSchema` name their own zod issue
-  // codes, and `zodResolver` copies an issue's `code` verbatim into the
-  // react-hook-form error `type` — so the specific message survives to the
-  // browser instead of degrading to "Invalid value." (verified against the
-  // installed resolver).
+  // codes; document schemas name `unsupportedType` as well. `zodResolver` copies
+  // an issue's `code` verbatim into the RHF `type`, so all three keep their
+  // specific message instead of degrading to "Invalid value.".
   const named = typeof type === "string" ? schemaNamedCode(type) : null;
   if (named) return named;
   return "invalid";
@@ -182,6 +187,7 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
       // Same idea: "fill in both languages" beats the blanket "Invalid value."
       localizedPair: 0,
       tooLarge: 0,
+      documentTooLarge: 0,
       notImage: 0,
       unsupportedType: 0,
       slugTaken: 0,

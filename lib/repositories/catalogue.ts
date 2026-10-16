@@ -15,6 +15,8 @@ export const getCatalogueItems = cache(async (): Promise<CatalogueItem[]> => {
     id: row.id,
     title: row.title,
     href: row.href,
+    pdfUrl: row.pdfUrl ?? undefined,
+    pdfName: row.pdfName ?? undefined,
     coverColor: row.coverColor,
     coverTextColor: row.coverTextColor ?? undefined,
   }));
@@ -28,6 +30,8 @@ export const getCatalogueItem = cache(
       id: row.id,
       title: row.title,
       href: row.href,
+      pdfUrl: row.pdfUrl ?? undefined,
+      pdfName: row.pdfName ?? undefined,
       coverColor: row.coverColor,
       coverTextColor: row.coverTextColor ?? undefined,
     };
@@ -37,7 +41,10 @@ export const getCatalogueItem = cache(
 export type CatalogueItemAdminRow = {
   id: string;
   title: string;
+  /** Retained for legacy/external catalogue rows; no longer editable. */
   href: string;
+  pdfUrl: string | null;
+  pdfName: string | null;
   coverColor: string;
   coverTextColor?: string;
   sortOrder: number;
@@ -46,10 +53,41 @@ export type CatalogueItemAdminRow = {
 export type CatalogueItemWriteInput = {
   id: string;
   title: string;
-  href: string;
+  /** Only set to `"#"` when removing an uploaded file should clear legacy href. */
+  href?: string;
+  pdfUrl: string | null;
+  pdfName: string | null;
   coverColor: string;
   coverTextColor: string | null;
   sortOrder: number;
+};
+
+export const getCatalogueItemAdminDetail = cache(
+  async (id: string): Promise<CatalogueItemAdminRow | null> => {
+    const row = await prisma.catalogueItem.findUnique({ where: { id } });
+    if (!row) return null;
+    return {
+      id: row.id,
+      title: row.title,
+      href: row.href,
+      pdfUrl: row.pdfUrl,
+      pdfName: row.pdfName,
+      coverColor: row.coverColor,
+      coverTextColor: row.coverTextColor ?? undefined,
+      sortOrder: row.sortOrder,
+    };
+  },
+);
+
+export const getCatalogueDocument = async (
+  id: string,
+): Promise<{ url: string; name: string } | null> => {
+  const row = await prisma.catalogueItem.findUnique({
+    where: { id },
+    select: { pdfUrl: true, pdfName: true },
+  });
+  if (!row?.pdfUrl) return null;
+  return { url: row.pdfUrl, name: row.pdfName ?? "" };
 };
 
 export const getCatalogueItemAdminRows = cache(
@@ -62,6 +100,8 @@ export const getCatalogueItemAdminRows = cache(
       id: row.id,
       title: row.title,
       href: row.href,
+      pdfUrl: row.pdfUrl,
+      pdfName: row.pdfName,
       coverColor: row.coverColor,
       coverTextColor: row.coverTextColor ?? undefined,
       sortOrder: row.sortOrder,
@@ -77,7 +117,11 @@ export const createCatalogueItem = async (
     data: {
       id: input.id,
       title: input.title,
-      href: input.href,
+      // Uploaded files supersede the old link field. New rows start with `#`
+      // because a link has never been provided by this form.
+      href: input.href ?? "#",
+      pdfUrl: input.pdfUrl,
+      pdfName: input.pdfName,
       coverColor: input.coverColor,
       coverTextColor: input.coverTextColor ?? null,
       sortOrder: input.sortOrder,
@@ -96,7 +140,9 @@ export const updateCatalogueItem = async (
     where: { id },
     data: {
       title: input.title,
-      href: input.href,
+      ...(input.href === undefined ? {} : { href: input.href }),
+      pdfUrl: input.pdfUrl,
+      pdfName: input.pdfName,
       coverColor: input.coverColor,
       coverTextColor: input.coverTextColor ?? null,
       sortOrder: input.sortOrder,

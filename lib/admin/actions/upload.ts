@@ -35,24 +35,58 @@
  * component stays a drop-in replacement for the old text inputs.
  */
 import { requireAdminAccess } from "@/lib/admin/access";
-import { actionFail, actionOk, type ActionResult } from "@/lib/admin/result";
 import {
-  PDF_MAX_BYTES,
-  safePdfFilename,
-  sniffPdfType,
-} from "@/lib/media/pdf-sniff";
+  actionFail,
+  actionOk,
+  zodIssuesToFieldIssues,
+  type ActionResult,
+} from "@/lib/admin/result";
+import {
+  DOCUMENT_MAX_BYTES,
+  DOCUMENT_SERVER_MAX_BYTES,
+  documentExtensionFor,
+  documentMimeForExtension,
+  safeDocumentFilename,
+  sniffDocumentType,
+} from "@/lib/media/document-sniff";
 import { MediaError, uploadMedia } from "@/lib/media/service";
-import { storageProvider } from "@/lib/media/storage";
+import { isLiaraStorageHost, storageProvider } from "@/lib/media/storage";
+import {
+  signLiaraUploadAuthorization,
+  verifyLiaraUploadAuthorization,
+} from "@/lib/media/storage/liara-upload-token";
 import { buildStorageKey } from "@/lib/media/validation";
+import { headers } from "next/headers";
+import { randomUUID } from "node:crypto";
+import { z } from "zod";
 
 /**
- * The storage folder the catalogue's CTA PDF lives under.
+ * The storage folder every catalogue document lives under.
  *
  * Deliberately NOT exported: a `"use server"` module may only export async
  * functions, and nothing outside this file needs the value — the client
  * component imports the ACTION, not the folder name.
  */
-const CATALOGUE_PDF_FOLDER = "catalogue";
+const CATALOGUE_DOCUMENT_FOLDER = "catalogue";
+
+/**
+ * A storage key whose LAST extension is the document's own.
+ *
+ * `storageProvider.upload({ addRandomSuffix: true })` appends the provider's
+ * random suffix to the WHOLE key — after the extension — producing
+ * `…/catalogue.pdf-a1b2c3d4`. That shape is not usable here: the public download
+ * route derives the response `Content-Type` from the last extension, and the
+ * form schema refuses a document URL that does not end in `.pdf`/`.pptx`. So
+ * uniqueness is put in the BASE NAME instead (which `buildStorageKey` sanitizes)
+ * and the provider suffix is switched off, which keeps the extension last.
+ */
+function documentStorageKey(name: string, extension: string): string {
+  return buildStorageKey({
+    folder: CATALOGUE_DOCUMENT_FOLDER,
+    baseName: `${name}-${randomUUID().replaceAll("-", "").slice(0, 12)}`,
+    extension,
+  });
+}
 
 /**
  * Uploads one image through the media layer and returns its public URL.
@@ -107,74 +141,276 @@ export async function uploadImageAction(
 }
 
 /**
- * Uploads the catalogue CTA's PDF (Pass C.4).
+ * Upload one catalogue-card document (PDF or PPTX) through the small-file path.
  *
- * ── Why this does not go through `uploadMedia` ──────────────────────────────
- *
- * The media library is deliberately IMAGE/VIDEO only: `validateMediaUpload`
- * accepts exactly two kinds, and a `Media` row carries the fields those kinds
- * need (dimensions, a poster). Widening that validator and that table to carry a
- * document would change the media architecture for one field. So a PDF is
- * stored through the SAME `storageProvider` abstraction and the SAME key
- * builder, under its own `catalogue/` folder, and no `Media` row is created —
- * the object is owned by the `CatalogueFeature.ctaPdfUrl` column, and
- * `deleteStorageUrls` already derives its key from the URL for cleanup.
- *
- * ── What is enforced, and in what order ────────────────────────────────────
- *
- * `requireAdminAccess()` FIRST — this is a server function reachable by a
- * direct POST, so the form is never the authorization.
- *
- * Then the size ceiling is checked BEFORE the body is buffered (a cheap
- * `file.size` comparison must not wait on reading megabytes into memory), and
- * the type is decided from the BYTES, never from the client's `File.type`
- * claim. A file that merely names itself `.pdf` is refused.
+ * The browser's `accept` hint is not a security rule: the server checks the
+ * filename extension, enforces the Server Action buffer ceiling BEFORE reading,
+ * then sniffs the actual bytes and requires them to agree with that extension.
+ * A document over four MiB uses the direct-upload path below instead.
  */
-export async function uploadCataloguePdfAction(
+export async function uploadCatalogueDocumentAction(
   formData: FormData,
-): Promise<ActionResult<{ url: string; name: string }>> {
+): Promise<ActionResult<{ url: string; name: string; extension: string }>> {
   await requireAdminAccess();
 
   const file = formData.get("file");
   if (!(file instanceof File) || file.size === 0) {
     return actionFail("required");
   }
-
-  // Cheap checks first: the ceiling and the declared type, before buffering.
-  if (file.size > PDF_MAX_BYTES) {
-    return actionFail("tooLarge");
+  if (file.size > DOCUMENT_MAX_BYTES) {
+    return actionFail("documentTooLarge");
   }
+  if (file.size > DOCUMENT_SERVER_MAX_BYTES) {
+    // A legitimate larger document must use the presigned path; never let an
+    // accidental caller buffer it through a Server Action.
+    return actionFail("documentTooLarge");
+  }
+
+  const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
+  const expectedMime = documentMimeForExtension(extension);
+  if (!expectedMime) return actionFail("unsupportedType");
 
   try {
     const bytes = await file.arrayBuffer();
-
-    // The AUTHORITATIVE type — read off the leading bytes, not asserted by the
-    // browser. `null` means "not a PDF", whatever the file was called.
-    const mimeType = sniffPdfType(new Uint8Array(bytes));
-    if (!mimeType) {
+    const mimeType = sniffDocumentType(new Uint8Array(bytes));
+    const actualExtension = mimeType ? documentExtensionFor(mimeType) : null;
+    if (!mimeType || !actualExtension || actualExtension !== extension) {
+      return actionFail("unsupportedType");
+    }
+    // File.type is only a claim. Reject a non-empty contradictory claim, but
+    // accept an empty one because several browsers do not identify .pptx files.
+    if (file.type && file.type !== expectedMime) {
       return actionFail("unsupportedType");
     }
 
-    const name = safePdfFilename(file.name);
-
+    const name = safeDocumentFilename(file.name, actualExtension);
     const stored = await storageProvider.upload({
-      key: buildStorageKey({
-        folder: CATALOGUE_PDF_FOLDER,
-        baseName: name,
-        extension: "pdf",
-      }),
+      key: documentStorageKey(name, actualExtension),
       bytes,
       contentType: mimeType,
-      // Two admins uploading "catalogue.pdf" must not collide; the provider's
-      // suffix is what guarantees it, so the returned key is the one that counts.
-      addRandomSuffix: true,
+      // NOT `addRandomSuffix`: the provider appends its suffix AFTER the
+      // extension, which would store `…catalogue.pdf-a1b2c3` — a URL the
+      // download route can no longer read a content type from, and which the
+      // form schema refuses. `documentStorageKey` puts the uniqueness in the
+      // base name instead.
+      addRandomSuffix: false,
+    });
+    return actionOk({ url: stored.url, name, extension: actualExtension });
+  } catch (error) {
+    console.error("[upload] catalogue document upload failed", error);
+    return actionFail("unknown");
+  }
+}
+
+const authorizeDocumentUploadSchema = z.object({
+  filename: z.string().min(1).max(255),
+  size: z.number().int().positive().max(DOCUMENT_MAX_BYTES),
+});
+
+/**
+ * Authorize one browser → Liara document upload (PDF/PPTX only).
+ *
+ * This used to be a Route Handler (`/api/admin/document/upload`). It is a
+ * Server Action now because it is a pure RPC: it returns data (a short-lived
+ * presigned PUT plus an HMAC token) and never streams a body, which is exactly
+ * what an action is for — and it removes a hand-rolled authorization +
+ * JSON-parsing layer that only had to re-implement what `requireAdminAccess()`
+ * and zod already do.
+ *
+ * Nothing in the request controls the storage key, the content type or the byte
+ * ceiling: all three are derived server-side from the filename's extension. The
+ * provider enforces them on the wire, and {@link registerCatalogueDocumentUploadAction}
+ * re-verifies the signed token and re-sniffs the stored bytes before the URL
+ * ever reaches a form.
+ */
+export async function authorizeCatalogueDocumentUploadAction(input: {
+  filename: string;
+  size: number;
+}): Promise<
+  ActionResult<{
+    url: string;
+    key: string;
+    contentType: string;
+    uploadToken: string;
+    size: number;
+  }>
+> {
+  await requireAdminAccess();
+
+  const parsed = authorizeDocumentUploadSchema.safeParse(input);
+  if (!parsed.success) {
+    return actionFail("invalid", zodIssuesToFieldIssues(parsed.error));
+  }
+
+  const { filename, size } = parsed.data;
+  // A filename is a NAME, never a path or a header value — and it is echoed
+  // back inside the signed token, so control characters are refused outright.
+  if (/[\u0000-\u001f\u007f]/.test(filename)) {
+    return actionFail("unsupportedType");
+  }
+
+  const extension = filename.split(".").pop()?.toLowerCase() ?? "";
+  const contentType = documentMimeForExtension(extension);
+  const allowedExtension = documentExtensionFor(contentType ?? "");
+  if (!contentType || !allowedExtension || allowedExtension !== extension) {
+    return actionFail("unsupportedType");
+  }
+
+  const key = documentStorageKey(
+    safeDocumentFilename(filename, allowedExtension),
+    allowedExtension,
+  );
+
+  try {
+    const incoming = await headers();
+    const authorized = await storageProvider.authorizeClientUpload!({
+      // The provider's own request body is not part of this contract; Liara
+      // derives everything from `constraints`.
+      body: null,
+      // Passed so a provider that verifies an origin/signature can honour it.
+      request: new Request("https://internal.invalid/admin/catalogue/document", {
+        method: "POST",
+        headers: new Headers(incoming),
+      }),
+      constraints: {
+        key,
+        allowedContentTypes: [contentType],
+        maximumSizeInBytes: DOCUMENT_MAX_BYTES,
+      },
     });
 
-    // Only the URL and a presentable name travel back to the form. The storage
-    // KEY stays server-side, exactly as the image upload path does.
-    return actionOk({ url: stored.url, name });
+    const presignedUrl = (authorized as { url?: unknown } | null)?.url;
+    if (typeof presignedUrl !== "string" || presignedUrl.length === 0) {
+      console.error("[upload] document authorization returned no url");
+      return actionFail("unknown");
+    }
+
+    return actionOk({
+      url: presignedUrl,
+      key,
+      contentType,
+      size,
+      uploadToken: signLiaraUploadAuthorization({
+        nonce: randomUUID(),
+        key,
+        filename,
+        size,
+        contentType,
+        expiresAt: Date.now() + 5 * 60 * 1000,
+      }),
+    });
   } catch (error) {
-    console.error("[upload] catalogue pdf upload failed", error);
+    console.error("[upload] document upload authorization failed", error);
+    return actionFail("unknown");
+  }
+}
+
+const registerDocumentUploadSchema = z.object({
+  filename: z.string().min(1).max(255),
+  reportedSize: z.number().int().positive().max(DOCUMENT_MAX_BYTES),
+  uploadToken: z.string().min(1).max(4096),
+});
+
+/**
+ * Finalize a document the browser PUT directly to Liara.
+ *
+ * The token is the server's signed record of exactly which key, name, type and
+ * size it authorized. The provider HEAD-check confirms the stored type and byte
+ * length; this action additionally downloads at most the hard 60 MiB ceiling
+ * and sniffs the actual bytes before returning a URL to the form. A renamed
+ * executable or a DOCX uploaded under a `.pptx` filename therefore fails the
+ * final registration check even if it claimed the permitted content type.
+ */
+export async function registerCatalogueDocumentUploadAction(input: {
+  filename: string;
+  reportedSize: number;
+  uploadToken: string;
+}): Promise<ActionResult<{ url: string; name: string; extension: string }>> {
+  await requireAdminAccess();
+
+  const parsed = registerDocumentUploadSchema.safeParse(input);
+  if (!parsed.success) {
+    return actionFail("invalid", zodIssuesToFieldIssues(parsed.error));
+  }
+
+  const authorization = verifyLiaraUploadAuthorization(parsed.data.uploadToken);
+  if (
+    !authorization ||
+    authorization.filename !== parsed.data.filename ||
+    authorization.size !== parsed.data.reportedSize ||
+    !authorization.key.startsWith("media/catalogue/")
+  ) {
+    return actionFail("unsupportedType");
+  }
+
+  const extension = parsed.data.filename.split(".").pop()?.toLowerCase() ?? "";
+  const expectedMime = documentMimeForExtension(extension);
+  if (!expectedMime || authorization.contentType !== expectedMime) {
+    return actionFail("unsupportedType");
+  }
+
+  const expectedExtension = documentExtensionFor(authorization.contentType);
+  if (!expectedExtension || expectedExtension !== extension) {
+    return actionFail("unsupportedType");
+  }
+
+  let stored: { key: string; url: string; size: number; contentType: string };
+  try {
+    stored = await storageProvider.verifyClientUpload!({
+      key: authorization.key,
+      contentType: authorization.contentType,
+      maximumSizeInBytes: DOCUMENT_MAX_BYTES,
+      reportedSize: authorization.size,
+    });
+
+    // The provider URL comes from server config and server-issued key; check it
+    // again before fetching so this route never acts as an arbitrary URL proxy.
+    const hostname = new URL(stored.url).hostname;
+    if (!isLiaraStorageHost(hostname)) {
+      await storageProvider.delete([stored.key]);
+      return actionFail("unsupportedType");
+    }
+
+    const response = await fetch(stored.url, {
+      cache: "no-store",
+      redirect: "error",
+    });
+    if (!response.ok || !response.body) {
+      await storageProvider.delete([stored.key]);
+      return actionFail("unknown");
+    }
+
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.byteLength !== stored.size || bytes.byteLength > DOCUMENT_MAX_BYTES) {
+      await storageProvider.delete([stored.key]);
+      return actionFail("documentTooLarge");
+    }
+
+    const mimeType = sniffDocumentType(bytes);
+    const actualExtension = mimeType ? documentExtensionFor(mimeType) : null;
+    if (
+      !mimeType ||
+      !actualExtension ||
+      actualExtension !== extension ||
+      mimeType !== authorization.contentType
+    ) {
+      await storageProvider.delete([stored.key]);
+      return actionFail("unsupportedType");
+    }
+
+    const name = safeDocumentFilename(parsed.data.filename, actualExtension);
+    return actionOk({ url: stored.url, name, extension: actualExtension });
+  } catch (error) {
+    console.error("[upload] catalogue document registration failed", error);
+    // A failed registration leaves no catalogue row pointing at this object.
+    // Best-effort cleanup avoids a direct-upload orphan where possible.
+    if (authorization.key.startsWith("media/catalogue/")) {
+      try {
+        await storageProvider.delete([authorization.key]);
+      } catch (deleteError) {
+        console.error("[upload] document cleanup after registration failure failed", deleteError);
+      }
+    }
     return actionFail("unknown");
   }
 }

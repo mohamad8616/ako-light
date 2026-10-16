@@ -7,7 +7,7 @@
  */
 export const catalogueEn = {
   "admin.catalogue.field.title": "Title",
-  "admin.catalogue.field.href": "Link",
+  "admin.catalogue.field.document": "Document",
   "admin.catalogue.field.coverColor": "Cover color",
   "admin.catalogue.field.coverTextColor": "Cover text color",
 
@@ -15,7 +15,7 @@ export const catalogueEn = {
 
 export const catalogueFa = {
   "admin.catalogue.field.title": "عنوان",
-  "admin.catalogue.field.href": "پیوند",
+  "admin.catalogue.field.document": "سند",
   "admin.catalogue.field.coverColor": "رنگ جلد",
   "admin.catalogue.field.coverTextColor": "رنگ متن جلد",
 

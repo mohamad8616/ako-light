@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { catalogueFormSchema } from "@/lib/admin/schemas/catalogue";
+import {
+  catalogueCreateFormSchema,
+  catalogueFormSchema,
+} from "@/lib/admin/schemas/catalogue";
 
 describe("catalogueFormSchema", () => {
   const validInput = {
     id: "s34-5",
     title: "S34/5",
-    href: "https://example.com/catalogue.pdf",
+    pdfUrl: "https://storage.example.com/media/catalogue/s34-5.pdf",
+    pdfName: "S34-5.pdf",
     coverColor: "#3a3530",
     coverTextColor: "#232323",
     sortOrder: 0,
@@ -22,14 +26,8 @@ describe("catalogueFormSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("accepts valid input with # href", () => {
-    const input = { ...validInput, href: "#" };
-    const result = catalogueFormSchema.safeParse(input);
-    expect(result.success).toBe(true);
-  });
-
-  it("accepts valid input with relative href", () => {
-    const input = { ...validInput, href: "/catalogue/s34-5.pdf" };
+  it("ignores a legacy href: the download is an uploaded document now", () => {
+    const input = { ...validInput, href: "https://example.com/legacy.pdf" };
     const result = catalogueFormSchema.safeParse(input);
     expect(result.success).toBe(true);
   });
@@ -68,17 +66,80 @@ describe("catalogueFormSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("rejects missing href", () => {
-    const input = { ...validInput };
-    delete (input as Record<string, unknown>).href;
+  it("accepts a PowerPoint document", () => {
+    const input = {
+      ...validInput,
+      pdfUrl: "https://storage.example.com/media/catalogue/deck.pptx",
+      pdfName: "deck.pptx",
+    };
+    const result = catalogueFormSchema.safeParse(input);
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an empty document on edit (a row not yet replaced)", () => {
+    const input = { ...validInput, pdfUrl: "", pdfName: "" };
+    const result = catalogueFormSchema.safeParse(input);
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a document URL that does not end in .pdf or .pptx", () => {
+    const input = {
+      ...validInput,
+      pdfUrl: "https://storage.example.com/media/catalogue/notes.docx",
+    };
     const result = catalogueFormSchema.safeParse(input);
     expect(result.success).toBe(false);
   });
 
-  it("rejects invalid href format", () => {
-    const input = { ...validInput, href: "invalid" };
+  it("rejects the OLD storage-key shape, where the random suffix hid the extension", () => {
+    // REGRESSION. The provider's `addRandomSuffix` appends its suffix to the
+    // WHOLE key — after the extension — so an upload used to store
+    // `…/catalogue.pdf-a1b2c3d4`. That URL failed this very rule, which blocked
+    // Save in the browser: react-hook-form never called the action, and the
+    // dialog had no invalid handler, so the button looked dead. The upload
+    // action now keeps the extension LAST (`documentStorageKey`); this case
+    // pins the shape that must never come back.
+    const input = {
+      ...validInput,
+      pdfUrl:
+        "https://storage.example.com/media/catalogue/1-henge-catalogue.pdf-a1b2c3d4e5f6",
+    };
     const result = catalogueFormSchema.safeParse(input);
     expect(result.success).toBe(false);
+  });
+
+  it("accepts the key shape the upload action actually produces", () => {
+    const input = {
+      ...validInput,
+      pdfUrl:
+        "https://storage.example.com/media/catalogue/1792139957847-henge-catalogue-a1b2c3d4e5f6.pdf",
+      pdfName: "henge-catalogue.pdf",
+    };
+    const result = catalogueFormSchema.safeParse(input);
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a document URL that is not a link at all", () => {
+    const input = { ...validInput, pdfUrl: "not-a-link.pdf" };
+    const result = catalogueFormSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a filename that would break the Content-Disposition header", () => {
+    const input = { ...validInput, pdfName: 'evil"name.pdf' };
+    const result = catalogueFormSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it("requires an uploaded document when creating a card", () => {
+    const input = { ...validInput, pdfUrl: "", pdfName: "" };
+    const result = catalogueCreateFormSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts a complete document when creating a card", () => {
+    const result = catalogueCreateFormSchema.safeParse(validInput);
+    expect(result.success).toBe(true);
   });
 
   it("rejects missing coverColor", () => {

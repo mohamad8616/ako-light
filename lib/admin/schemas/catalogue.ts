@@ -1,25 +1,40 @@
 import { z } from "zod";
 import {
+  clearableDocumentRefSchema,
+  documentFilenameSchema,
+  documentRefSchema,
   hexColorSchema,
-  linkSchema,
   nameSchema,
   slugSchema,
   sortOrderSchema,
 } from "./common";
 
 /**
- * The catalogue form's rules (mirrors `CatalogueItemWriteInput`).
+ * Shared fields for the catalogue form.
  *
  * There is NO slug column: `id` IS the route handle, so the editor supplies it.
- * `href` accepts "#" because several seeded catalogue cards are placeholders.
+ * `href` is deliberately absent: new catalogue cards use an uploaded PDF or
+ * PowerPoint file, not a pasted link. The database's old `href` column stays
+ * untouched for legacy/external rows — editing their other fields does not
+ * erase their existing download until a file is uploaded.
  */
-export const catalogueFormSchema = z.object({
+const catalogueFormFields = z.object({
   id: slugSchema,
   title: nameSchema,
-  href: linkSchema,
+  pdfUrl: clearableDocumentRefSchema,
+  pdfName: documentFilenameSchema,
   coverColor: hexColorSchema,
   coverTextColor: hexColorSchema.nullable(),
   sortOrder: sortOrderSchema,
+});
+
+/** Edit allows an older row with no uploaded file until the operator replaces it. */
+export const catalogueFormSchema = catalogueFormFields;
+
+/** A new catalogue card must have a real uploaded document. */
+export const catalogueCreateFormSchema = catalogueFormFields.extend({
+  pdfUrl: documentRefSchema.pipe(z.string().min(1)),
+  pdfName: documentFilenameSchema.pipe(z.string().min(1)),
 });
 
 export type CatalogueFormValues = z.infer<typeof catalogueFormSchema>;

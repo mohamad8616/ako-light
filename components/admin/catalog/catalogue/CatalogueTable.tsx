@@ -11,6 +11,7 @@ import {
   NumberField,
   TextField,
 } from "@/components/admin/catalog/fields/ScalarFields";
+import { DocumentUpload } from "@/components/admin/DocumentUpload";
 import { SlugField } from "@/components/admin/catalog/fields/SlugField";
 import { RowActions } from "@/components/admin/catalog/RowActions";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
@@ -38,15 +39,30 @@ import { useForm, useWatch } from "react-hook-form";
  * The catalogue list screen.
  *
  * CatalogueItem has NO slug column — `id` IS the route handle — so the form's id
- * field is user-supplied. `href` may be a real URL or "#" (several seeded cards
- * are placeholders), and `coverTextColor` is nullable: a switch flips it
- * between NULL and a colour so the schema never sees an impossible "".
+ * field is user-supplied. Its downloadable file is managed exclusively through an
+ * upload (never a pasted link), and `coverTextColor` is nullable: a switch flips
+ * it between NULL and a colour so the schema never sees an impossible "".
  */
 export function CatalogueTable({ rows }: { rows: CatalogueItemAdminRow[] }) {
   const { t, lang } = useLanguage();
   const { run } = useCrudSubmit();
   const [editingId, setEditingId] = React.useState<string | null>(null);
   const [isCreating, setIsCreating] = React.useState(false);
+  // Re-mounts the dialog after a save so it always opens on the freshly
+  // persisted row (and its just-uploaded document), not on stale props.
+  const [revision, setRevision] = React.useState(0);
+
+  const openCreate = () => {
+    setEditingId(null);
+    setIsCreating(true);
+    setRevision((n) => n + 1);
+  };
+
+  const openEdit = (id: string) => {
+    setIsCreating(false);
+    setEditingId(id);
+    setRevision((n) => n + 1);
+  };
 
   const destroy = (id: string) =>
     run(() => destroyCatalogueAction(id), {
@@ -60,9 +76,10 @@ export function CatalogueTable({ rows }: { rows: CatalogueItemAdminRow[] }) {
       access: (row: CatalogueItemAdminRow) => row.title,
     }),
     textColumn({
-      id: "href",
-      label: t("admin.catalogue.field.href"),
-      access: (row: CatalogueItemAdminRow) => row.href,
+      id: "document",
+      label: t("admin.catalogue.field.document"),
+      access: (row: CatalogueItemAdminRow) =>
+        row.pdfName ?? (row.pdfUrl ? row.pdfUrl.split("/").pop() ?? "" : ""),
       className: "font-mono text-xs",
     }),
     {
@@ -99,7 +116,7 @@ export function CatalogueTable({ rows }: { rows: CatalogueItemAdminRow[] }) {
       cell: (ctx: { row: { original: CatalogueItemAdminRow } }) => (
         <RowActions
           editHref=""
-          onEdit={() => setEditingId(ctx.row.original.id)}
+          onEdit={() => openEdit(ctx.row.original.id)}
           onDestroy={() => destroy(ctx.row.original.id)}
         />
       ),
@@ -117,7 +134,7 @@ export function CatalogueTable({ rows }: { rows: CatalogueItemAdminRow[] }) {
             className={cn(buttonVariants({ variant: "default", size: "sm" }))}
             onClick={(e) => {
               e.preventDefault();
-              setIsCreating(true);
+              openCreate();
             }}
           >
             + {t("admin.crud.new")}
@@ -127,8 +144,10 @@ export function CatalogueTable({ rows }: { rows: CatalogueItemAdminRow[] }) {
 
       {isCreating && (
         <CatalogueDialog
+          key={`create-${revision}`}
           open
           onClose={() => setIsCreating(false)}
+          isCreating
           onSave={async (values) => {
             const result = await run(() => createCatalogueAction(values), {
               successMessage: t("admin.crud.created"),
@@ -140,6 +159,7 @@ export function CatalogueTable({ rows }: { rows: CatalogueItemAdminRow[] }) {
 
       {editingId && (
         <CatalogueDialog
+          key={`edit-${editingId}-${revision}`}
           open
           initialData={rows.find((r) => r.id === editingId)}
           onClose={() => setEditingId(null)}
@@ -161,11 +181,13 @@ function CatalogueDialog({
   onClose,
   onSave,
   initialData,
+  isCreating = false,
 }: {
   open: boolean;
   onClose: () => void;
   onSave: (values: CatalogueFormValues) => Promise<boolean>;
   initialData?: CatalogueItemAdminRow;
+  isCreating?: boolean;
 }) {
   const { t } = useLanguage();
   const form = useForm<CatalogueFormValues>({
@@ -174,7 +196,8 @@ function CatalogueDialog({
       ? {
           id: initialData.id,
           title: initialData.title,
-          href: initialData.href,
+          pdfUrl: initialData.pdfUrl ?? "",
+          pdfName: initialData.pdfName ?? "",
           coverColor: initialData.coverColor,
           coverTextColor: initialData.coverTextColor ?? null,
           sortOrder: initialData.sortOrder,
@@ -182,7 +205,8 @@ function CatalogueDialog({
       : {
           id: "",
           title: "",
-          href: "#",
+          pdfUrl: "",
+          pdfName: "",
           coverColor: "#171719",
           coverTextColor: null,
           sortOrder: 0,
@@ -215,12 +239,12 @@ function CatalogueDialog({
         source="title"
         required
       />
-      <TextField
-        name="href"
-        label={t("admin.catalogue.field.href")}
-        required
-        placeholder="https://... or #"
-        mono
+      <DocumentUpload
+        urlName="pdfUrl"
+        nameName="pdfName"
+        label={t("admin.catalogue.field.document")}
+        hint={t("admin.upload.documentHint")}
+        required={isCreating}
       />
       <ColorField
         name="coverColor"

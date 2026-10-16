@@ -343,8 +343,14 @@ model CatalogueItem {
   id             String   @id
   /// Catalogue title (e.g. "S34/5").
   title          String
-  /// Direct link to the PDF file.
+  /// Direct link to a legacy/external document; retained for old catalogue cards.
+  /// New admin uploads are stored in pdfUrl/pdfName and take precedence.
   href           String
+  /// URL of the PDF or PPTX uploaded from the catalogue admin. NULL preserves
+  /// legacy rows, whose public link still uses `href` until they are edited.
+  pdfUrl         String?
+  /// Header-safe, presentable download name; NULL derives from the stored key.
+  pdfName        String?
   /// Cover background color (hex, e.g. "#3a3530").
   coverColor     String
   /// Cover text color (hex, optional, e.g. "#232323").

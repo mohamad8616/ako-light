@@ -20,6 +20,7 @@ export const errorEn = {
   "admin.error.tooLong": "This value is too long.",
   // Upload-specific codes (lib/admin/actions/upload.ts).
   "admin.error.tooLarge": "This file is too large (max 5 MB).",
+  "admin.error.documentTooLarge": "This document is too large (maximum 60 MB).",
   "admin.error.notImage": "The file is not a supported image.",
   "admin.error.unsupportedType": "This file type is not supported.",
   "admin.error.slugTaken": "This handle is already in use.",
@@ -55,6 +56,7 @@ export const errorFa = {
   "admin.error.tooLong": "این مقدار بیش از حد طولانی است.",
   // کدهای مخصوص آپلود (lib/admin/actions/upload.ts)
   "admin.error.tooLarge": "این فایل بسیار بزرگ است (حداکثر ۵ مگابایت).",
+  "admin.error.documentTooLarge": "حجم این سند بیش از حد است (حداکثر ۶۰ مگابایت).",
   "admin.error.notImage": "این فایل یک تصویر پشتیبانی‌شده نیست.",
   "admin.error.unsupportedType": "این نوع فایل پشتیبانی نمی‌شود.",
   "admin.error.slugTaken": "این شناسه قبلاً استفاده شده است.",

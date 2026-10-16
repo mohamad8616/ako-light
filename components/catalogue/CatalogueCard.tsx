@@ -6,10 +6,13 @@ import { cn } from "@/lib/utils";
 
 export default function CatalogueCard({ item }: { item: CatalogueItem }) {
   const { t, lang } = useLanguage();
+  const downloadHref = item.pdfUrl
+    ? `/api/catalogue/file/${encodeURIComponent(item.id)}`
+    : item.href;
   return (
     <div className="flex flex-col">
       <a
-        href={item.href}
+        href={downloadHref}
         target="_blank"
         rel="noopener noreferrer"
         download
@@ -38,7 +41,7 @@ export default function CatalogueCard({ item }: { item: CatalogueItem }) {
         {item.title}
       </span>
       <a
-        href={item.href}
+        href={downloadHref}
         target="_blank"
         rel="noopener noreferrer"
         download

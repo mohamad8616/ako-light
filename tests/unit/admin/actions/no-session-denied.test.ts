@@ -289,7 +289,8 @@ const fabricInput = {
 const catalogueInput = {
   id: "some-item",
   title: "Some Item",
-  href: "#",
+  pdfUrl: "https://storage.example.com/media/catalogue/some-item.pdf",
+  pdfName: "some-item.pdf",
   coverColor: "#3a3530",
   coverTextColor: null,
   sortOrder: 0,

@@ -1,8 +1,12 @@
 export interface CatalogueItem {
   id: string;
   title: string;
-  /** Direct link to the PDF. Swap the "#" placeholders for real files. */
+  /** Legacy/external document link, retained until an uploaded document replaces it. */
   href: string;
+  /** Uploaded PDF/PPTX source; public downloads go through the same-origin route. */
+  pdfUrl?: string;
+  /** Presentable filename for the download response. */
+  pdfName?: string;
   coverColor: string;
   coverTextColor?: string;
 }

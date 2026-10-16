@@ -1,5 +1,9 @@
 import { isLiaraStorageHost } from "@/lib/media/storage";
-import { PDF_MIME_TYPE, safePdfFilename } from "@/lib/media/pdf-sniff";
+import {
+  documentMimeForExtension,
+  safeDocumentFilename,
+} from "@/lib/media/document-sniff";
+import { PDF_MIME_TYPE } from "@/lib/media/pdf-sniff";
 import { getCatalogueCtaPdf } from "@/lib/repositories/homepage-features";
 import { NextResponse } from "next/server";
 
@@ -73,12 +77,33 @@ export async function GET(): Promise<Response> {
     });
   }
 
-  // A filename that is safe in a header, and always ends in `.pdf` so the
-  // browser knows what it just received.
-  const name = safePdfFilename(pdf.name);
+  /*
+    The document's own type, read from the extension of the stored key.
+
+    It is NOT hardcoded to PDF any more: the field accepts a PowerPoint deck
+    too, and serving a `.pptx` as `application/pdf` would hand the browser a file
+    it cannot open. The extension is the last one in the URL — which is exactly
+    why the upload action keeps it last (see `documentStorageKey` in
+    lib/admin/actions/upload.ts).
+
+    An UNRECOGNISED extension falls back to PDF: rows saved before the document
+    field existed carry the older `…catalogue.pdf-<random>` key shape, and
+    treating those as PDF is what they have always been served as.
+  */
+  const storedExtension =
+    new URL(pdf.url).pathname.split("/").pop()?.split(".").pop()?.toLowerCase() ??
+    "";
+  const extension = documentMimeForExtension(storedExtension)
+    ? storedExtension
+    : "pdf";
+  const mimeType = documentMimeForExtension(extension) ?? PDF_MIME_TYPE;
+
+  // A filename that is safe in a header, and always ends in the document's own
+  // extension so the browser knows what it just received.
+  const name = safeDocumentFilename(pdf.name, extension);
 
   const headers = new Headers({
-    "Content-Type": PDF_MIME_TYPE,
+    "Content-Type": mimeType,
     // `filename` for older clients, `filename*` (RFC 5987) so a Persian or
     // otherwise non-ASCII name survives intact.
     "Content-Disposition": `attachment; filename="${name}"; filename*=UTF-8''${encodeURIComponent(name)}`,

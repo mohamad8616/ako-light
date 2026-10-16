@@ -33,6 +33,16 @@ export const uploadEn = {
   "admin.upload.pdfDownloadHint":
     "The button downloads this file. Leave it empty to use the button link, or the catalogue's own PDF.",
 
+  // Catalogue-card files: a real uploaded PDF or PowerPoint presentation, never
+  // a pasted link. Downloads are served through a same-origin attachment route.
+  "admin.upload.documentPick": "Upload PDF or PowerPoint",
+  "admin.upload.documentReplace": "Replace document",
+  "admin.upload.documentEmpty": "No document uploaded",
+  "admin.upload.documentDone": "Document uploaded",
+  "admin.upload.documentSaving": "Verifying document…",
+  "admin.upload.documentCleared": "Removed from this form. Save to apply the change.",
+  "admin.upload.documentHint": "PDF or PowerPoint (.pptx) · up to 60 MB",
+
   // The VIDEO flavour of the same field (Pass D.1) — the hero video and the
   // video section. Its own keys for the same reason the PDF has its own: a
   // video is not an image, and being told an "image" was uploaded (or reading
@@ -71,6 +81,15 @@ export const uploadFa = {
   "admin.upload.pdfHint": "PDF · حداکثر ۵ مگابایت",
   "admin.upload.pdfDownloadHint":
     "دکمه همین فایل را دانلود می‌کند. اگر خالی بماند، پیوند دکمه یا فایل PDF خود کاتالوگ استفاده می‌شود.",
+
+  // فایل کارت کاتالوگ: PDF یا ارائهٔ PowerPoint که به‌صورت فایل آپلود شده است.
+  "admin.upload.documentPick": "آپلود PDF یا PowerPoint",
+  "admin.upload.documentReplace": "جایگزینی سند",
+  "admin.upload.documentEmpty": "سندی آپلود نشده است",
+  "admin.upload.documentDone": "سند آپلود شد",
+  "admin.upload.documentSaving": "در حال بررسی سند…",
+  "admin.upload.documentCleared": "از این فرم حذف شد. برای اعمال، ذخیره کنید.",
+  "admin.upload.documentHint": "PDF یا PowerPoint (.pptx) · حداکثر ۶۰ مگابایت",
 
   // نسخهٔ ویدیویی همان فیلد (پاس D.1) — ویدیوی هیرو و بخش ویدیو
   "admin.upload.pickVideo": "آپلود ویدیو",

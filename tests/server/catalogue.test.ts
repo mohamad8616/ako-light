@@ -18,7 +18,15 @@ import {
 
 const describeDb = describe.skipIf(!hasDatabaseUrl);
 
-const CATALOGUE_KEYS = ["coverColor", "coverTextColor", "href", "id", "title"];
+const CATALOGUE_KEYS = [
+  "coverColor",
+  "coverTextColor",
+  "href",
+  "id",
+  "pdfName",
+  "pdfUrl",
+  "title",
+];
 
 describeDb("catalogue repository", () => {
   beforeAll(async () => {

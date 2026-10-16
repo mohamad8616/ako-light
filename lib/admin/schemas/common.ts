@@ -144,6 +144,87 @@ export const imageRefSchema = z
   .refine((value) => /^https?:\/\//.test(value) || value.startsWith("/"));
 
 /**
+ * A document reference — a PDF or PowerPoint URL, clearable.
+ *
+ * The catalogue's downloadable cards hold one of these, and the operator does
+ * not type it: the value is whatever the upload action stored. So the policy
+ * inherits {@link imageRefSchema}'s (absolute http(s) or root-relative, `""` =
+ * not configured) and adds ONE rule the upload path cannot guarantee on its
+ * own — the URL must end in a document extension. A row whose URL names an
+ * `.exe`, or nothing at all, is either corruption or a value that did not come
+ * from the upload action, and the download proxy would then re-serve bytes
+ * under a `Content-Type` derived from that name. Refusing it here means the
+ * public route can trust the column by construction.
+ *
+ * The extension is allowed to carry a query string or a fragment: a CDN link
+ * with an access parameter is still the same document.
+ */
+export const documentRefSchema = z
+  .string()
+  .trim()
+  .max(URL_MAX)
+  .superRefine((value, ctx) => {
+    if (value === "" || imageRefSchema.safeParse(value).success) {
+      // "" is the deliberate "not configured" value; a plain media URL is
+      // further constrained by the extension check below.
+    } else {
+      ctx.addIssue({ code: "invalidLink" as "custom" });
+      return;
+    }
+    if (value === "") return;
+    if (!/\.(pdf|pptx)(\?|#|$)/i.test(value)) {
+      ctx.addIssue({ code: "unsupportedType" as "custom" });
+    }
+  });
+
+/** The clearable form: an empty string means "not configured". */
+export const clearableDocumentRefSchema = z.union([
+  documentRefSchema,
+  z.literal(""),
+]);
+
+/**
+ * The presentable filename of a stored document.
+ *
+ * It travels to `Content-Disposition`, which is a HEADER — so the length is
+ * capped (a header is not a place for an essay) and the characters that would
+ * break a quoted value are refused outright rather than stripped: a name that
+ * still contains a quote, a backslash or a control character did not come from
+ * the upload action and is not worth guessing at.
+ *
+ * A blank value is legal — `""` means "derive it from the storage key", which
+ * is what a legacy row or a hand-written migration produces.
+ */
+export const documentFilenameSchema = z
+  .string()
+  .max(NAME_MAX)
+  .refine((value) => value === "" || !isHeaderUnsafeName(value));
+
+/**
+ * Whether a value carries a character that cannot reach a
+ * `Content-Disposition` header: NUL through US (every control character, and
+ * therefore the whole header-injection class), DEL, the double quote that would
+ * close the value, and the backslash that would escape inside it.
+ *
+ * A codepoint loop rather than a regex class so the source carries no literal
+ * control characters - see the same rule in lib/media/document-sniff.ts.
+ */
+function isHeaderUnsafeName(value: string): boolean {
+  for (const character of value) {
+    const codePoint = character.codePointAt(0) ?? 0;
+    if (
+      codePoint <= 0x1f ||
+      codePoint === 0x7f ||
+      codePoint === 0x22 ||
+      codePoint === 0x5c
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/**
  * An override pair the admin can also CLEAR: both languages filled, or neither.
  *
  * ── Why "both or neither" and not `.nullable()` ─────────────────────────────

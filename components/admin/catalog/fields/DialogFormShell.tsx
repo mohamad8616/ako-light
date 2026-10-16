@@ -9,6 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { ADMIN_SHELL_DIR } from "@/lib/admin/sections";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import {
@@ -31,6 +32,16 @@ import * as React from "react";
  * The dialog content carries ADMIN_SHELL_DIR explicitly: it renders into
  * document.body, outside the shell's RTL wrapper, so under /en/admin it would
  * otherwise inherit the document's LTR.
+ *
+ * ── Why the invalid-submit handler is NOT optional ─────────────────────────
+ *
+ * `handleSubmit(onValid)` renders field errors but does NOT call the action when
+ * the BROWSER's own validation fails. Every dialog here would then look broken
+ * in exactly one way: a Save button that does nothing at all — no request, no
+ * pending state, no toast — which is indistinguishable from a dead button. That
+ * is what a catalogue card whose uploaded URL failed a schema rule looked like.
+ * `notifyInvalid` (the shared contract's "never a silent failure" rule) makes a
+ * blocked submit SAY so, and the field-level message renders beside the field.
  */
 export function DialogFormShell<TValues extends FieldValues>({
   open,
@@ -53,6 +64,7 @@ export function DialogFormShell<TValues extends FieldValues>({
   children: React.ReactNode;
 }) {
   const { t } = useLanguage();
+  const { notifyInvalid } = useCrudSubmit();
   const [pending, setPending] = React.useState(false);
 
   const submit = form.handleSubmit(async (values) => {
@@ -62,7 +74,7 @@ export function DialogFormShell<TValues extends FieldValues>({
     } finally {
       setPending(false);
     }
-  });
+  }, notifyInvalid);
 
   return (
     <Dialog open={open} onOpenChange={onClose}>

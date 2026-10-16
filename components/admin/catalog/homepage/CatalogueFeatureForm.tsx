@@ -18,7 +18,7 @@ import { LocalizedField, LocalizedListField } from "@/components/admin/catalog/f
 import { SelectField } from "@/components/admin/catalog/fields/SelectField";
 import { SwitchField, TextField } from "@/components/admin/catalog/fields/ScalarFields";
 import { ImageUpload } from "@/components/admin/ImageUpload";
-import { PdfUpload } from "@/components/admin/PdfUpload";
+import { DocumentUpload } from "@/components/admin/DocumentUpload";
 import { SectionFormActions } from "@/components/admin/catalog/page-sections/SectionFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import {
@@ -121,11 +121,11 @@ export function CatalogueFeatureForm({  detail,
             {/* The PDF is FIRST because it is the destination of record: an
                 uploaded file outranks a pasted link (see the repository's
                 resolution order). */}
-            <PdfUpload
+            <DocumentUpload
               urlName="ctaPdfUrl"
               nameName="ctaPdfName"
               label={t("admin.homepage.field.ctaPdf")}
-              hint={t("admin.upload.pdfDownloadHint")}
+              hint={t("admin.upload.documentHint")}
             />
             <LocalizedField
               name="ctaLabel"

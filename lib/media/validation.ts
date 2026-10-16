@@ -17,6 +17,7 @@ import {
   sniffImageType,
 } from "@/lib/admin/image-sniff";
 import { IMAGE_MAX_BYTES, VIDEO_MAX_BYTES } from "@/lib/media/limits";
+import { DOCUMENT_EXTENSIONS } from "@/lib/media/document-sniff";
 import { PDF_EXTENSIONS } from "@/lib/media/pdf-sniff";
 import {
   VIDEO_EXTENSIONS,
@@ -78,14 +79,17 @@ export type MediaValidationResult =
 const ALLOWED_EXTENSIONS: ReadonlySet<string> = new Set([
   ...Object.values(IMAGE_EXTENSIONS),
   ...Object.values(VIDEO_EXTENSIONS),
-  // The catalogue CTA's downloadable PDF (Pass C.4). Without this the key
-  // builder would degrade a legitimate `.pdf` to `.bin`, which the browser then
-  // offers as `…bin` on download.
+  // The catalogue's downloadable PDF and PowerPoint (the admin's two document
+  // types — see lib/media/document-sniff.ts). PDF is already reachable through
+  // PDF_EXTENSIONS below; DOCUMENT_EXTENSIONS additionally contributes "pptx",
+  // which the key builder would otherwise degrade to `.bin` — the browser then
+  // offers the file as `…bin` instead of opening it in PowerPoint.
   ...Object.values(PDF_EXTENSIONS),
+  ...Object.values(DOCUMENT_EXTENSIONS),
 ]);
 
 /** A trailing media extension on an already-sanitized base name. */
-const MEDIA_EXTENSION_SUFFIX = /\.(jpe?g|png|webp|avif|mp4|webm|pdf)$/;
+const MEDIA_EXTENSION_SUFFIX = /\.(jpe?g|png|webp|avif|mp4|webm|pdf|pptx)$/;
 
 /**
  * Validates an image upload against the shared rules, in the same order the

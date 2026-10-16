@@ -19,7 +19,8 @@ const describeDb = describe.skipIf(!hasDatabaseUrl);
 const makeCatalogueInput = (overrides: Partial<CatalogueItemWriteInput> = {}): CatalogueItemWriteInput => ({
   id: `test-catalogue-${randomUUID()}`,
   title: "Test Catalogue",
-  href: "https://example.com/catalogue.pdf",
+  pdfUrl: "https://storage.example.com/media/catalogue/test.pdf",
+  pdfName: "test.pdf",
   coverColor: "#3a3530",
   coverTextColor: "#232323",
   sortOrder: 0,
@@ -42,7 +43,8 @@ describeDb("catalogue repository — write", () => {
         expect(row).not.toBeNull();
         expect(row!.id).toBe(input.id);
         expect(row!.title).toBe(input.title);
-        expect(row!.href).toBe(input.href);
+        expect(row!.pdfUrl).toBe(input.pdfUrl);
+        expect(row!.pdfName).toBe(input.pdfName);
         expect(row!.coverColor).toBe(input.coverColor);
         expect(row!.coverTextColor).toBe(input.coverTextColor);
         expect(row!.sortOrder).toBe(input.sortOrder);
@@ -72,8 +74,8 @@ describeDb("catalogue repository — write", () => {
     expect(await prisma.catalogueItem.findUnique({ where: { id: createdId! } })).toBeNull();
   });
 
-  it("create accepts # href", async () => {
-    const input = makeCatalogueInput({ href: "#" });
+  it("create defaults the unused legacy href to #", async () => {
+    const input = makeCatalogueInput();
     let createdId: string;
 
     await expect(
@@ -90,8 +92,8 @@ describeDb("catalogue repository — write", () => {
     expect(await prisma.catalogueItem.findUnique({ where: { id: createdId! } })).toBeNull();
   });
 
-  it("create accepts relative href", async () => {
-    const input = makeCatalogueInput({ href: "/catalogue/test.pdf" });
+  it("create accepts a cleared document", async () => {
+    const input = makeCatalogueInput({ pdfUrl: null, pdfName: null });
     let createdId: string;
 
     await expect(
@@ -99,7 +101,8 @@ describeDb("catalogue repository — write", () => {
         createdId = await createCatalogueItem(input, tx);
         const row = await tx.catalogueItem.findUnique({ where: { id: createdId! } });
         expect(row).not.toBeNull();
-        expect(row!.href).toBe("/catalogue/test.pdf");
+        expect(row!.pdfUrl).toBeNull();
+        expect(row!.pdfName).toBeNull();
         throw new Error("intentional test rollback");
       },
       TX_OPTIONS),
@@ -132,7 +135,7 @@ describeDb("catalogue repository — write", () => {
         expect(row!.sortOrder).toBe(updatedInput.sortOrder);
         // Fields not in update should remain (id is not updated)
         expect(row!.id).toBe(input.id);
-        expect(row!.href).toBe(input.href);
+        expect(row!.href).toBe("#");
 
         throw new Error("intentional test rollback");
       },
