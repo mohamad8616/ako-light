@@ -1,9 +1,10 @@
 import { z } from "zod";
 import {
+  documentFilenameSchema,
+  documentRefSchema,
   ID_MAX,
   idSchema,
   imageRefSchema,
-  linkSchema,
   localizedSchema,
   nameSchema,
   slugSchema,
@@ -41,7 +42,22 @@ export const productFormSchema = z.object({
   description: localizedSchema,
   /** SQL NULL when the product has no extra info block. */
   moreInfo: localizedSchema.nullable(),
-  downloads: z.array(z.object({ label: localizedSchema, href: linkSchema })),
+  /**
+   * Download links (prisma `Product.downloads` jsonb).
+   *
+   * `href` is an UPLOADED document URL, so it is constrained the same way a
+   * catalogue card's `pdfUrl` is — a PDF/PowerPoint reference, not a free-form
+   * link. `name` is the presentable filename the download route echoes into
+   * `Content-Disposition`; it is OPTIONAL because a row saved before the upload
+   * field existed has none, and the route derives it from the storage key then.
+   */
+  downloads: z.array(
+    z.object({
+      label: localizedSchema,
+      href: documentRefSchema,
+      name: documentFilenameSchema.optional(),
+    }),
+  ),
   related: z.array(
     z.object({
       name: localizedSchema,

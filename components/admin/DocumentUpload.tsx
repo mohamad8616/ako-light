@@ -16,15 +16,80 @@ import { toast } from "sonner";
 import * as React from "react";
 
 /**
- * Upload/replace/remove a catalogue-card document (PDF or PowerPoint).
+ * Upload/replace/remove a catalogue-style document (PDF or PowerPoint).
  *
  * Edits the stored URL and presentable filename together. No URL text input and
- * no library picker: catalogue documents are uploads, not pasted links or Media
+ * no library picker: these documents are uploads, not pasted links or Media
  * rows. Remove is staged in the form; the save action clears the DB reference
  * first and deletes the previous object afterwards, so navigating away without
- * saving keeps the live card's file intact.
+ * saving keeps the live row's file intact.
+ *
+ * TWO MOUTHS, ONE IMPLEMENTATION. {@link DocumentUpload} is the standalone
+ * field with its own label (`/admin/catalogue` cards). {@link
+ * DocumentUploadControls} is the same machinery for a caller that supplies its
+ * own chrome — the product form's `downloads` rows, which are already inside a
+ * `ListRow`. Everything between the file input and the toast lives in one
+ * place; only the wrapper differs.
  */
-export function DocumentUpload({
+export interface DocumentUploadProps {
+  /** The form path holding the document URL. */
+  urlName: string;
+  /** The form path holding the presentable filename. */
+  nameName: string;
+  label: string;
+  hint?: string;
+  required?: boolean;
+  optional?: boolean;
+  className?: string;
+}
+
+/** The label + hint + controls shell, shared by both entries below. */
+function DocumentUploadView({
+  label,
+  hint,
+  required,
+  optional,
+  error,
+  className,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  required?: boolean;
+  optional?: boolean;
+  error?: FieldIssue;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <FieldRow
+      label={label}
+      hint={hint}
+      required={required}
+      optional={optional}
+      error={error}
+      className={className}
+    >
+      {children}
+    </FieldRow>
+  );
+}
+
+/** The standalone field: label + the upload controls. */
+export function DocumentUpload(props: DocumentUploadProps) {
+  return <DocumentUploadControls {...props} />;
+}
+
+/**
+ * The upload/replace/remove controls for one catalogue-style document, WITHOUT
+ * the surrounding `FieldRow`.
+ *
+ * Split out of {@link DocumentUpload} so the same controls can sit inside a
+ * repeatable row (the product form's `downloads` list) where the row chrome is
+ * already provided by the list field. Both callers share every line of the
+ * upload, progress and clear logic — there is no second implementation.
+ */
+export function DocumentUploadControls({
   urlName,
   nameName,
   label,
@@ -32,15 +97,7 @@ export function DocumentUpload({
   required,
   optional,
   className,
-}: {
-  urlName: string;
-  nameName: string;
-  label: string;
-  hint?: string;
-  required?: boolean;
-  optional?: boolean;
-  className?: string;
-}) {
+}: DocumentUploadProps) {
   const { t } = useLanguage();
   const { watch, setValue, formState } = useFormContext();
   const url = (watch(urlName) as string | undefined) ?? "";
@@ -95,13 +152,13 @@ export function DocumentUpload({
   const displayedName = name || url.split("/").pop() || "";
 
   return (
-    <FieldRow
+    <DocumentUploadView
       label={label}
       hint={hint}
       required={required}
       optional={optional}
-      error={error}
       className={className}
+      error={error}
     >
       <div className="flex flex-wrap items-center gap-2">
         <input
@@ -186,6 +243,6 @@ export function DocumentUpload({
           </div>
         </div>
       ) : null}
-    </FieldRow>
+    </DocumentUploadView>
   );
 }

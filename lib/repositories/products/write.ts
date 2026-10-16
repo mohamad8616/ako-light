@@ -32,7 +32,7 @@ export type ProductWriteInput = {
   quantity: number;
   description: Localized;
   moreInfo?: Localized | null;
-  downloads: { label: Localized; href: string }[];
+  downloads: { label: Localized; href: string; name?: string }[];
   related: { name: Localized; slug: string; category: string; image: string }[];
   sortOrder: number;
   categoryId: string;

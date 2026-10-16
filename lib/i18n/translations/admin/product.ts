@@ -30,8 +30,17 @@ export const productEn = {
   "admin.product.field.description": "Description",
   "admin.product.field.moreInfo": "More info",
   "admin.product.field.downloads": "Downloads",
+  "admin.product.field.downloadsHint":
+    "Upload a PDF or PowerPoint file — visitors download it from the product page.",
+  "admin.product.field.downloadLabel": "Download label",
   "admin.product.field.href": "Link",
   "admin.product.field.related": "Related products",
+  "admin.product.field.relatedHint":
+    "Search by category, then pick a product to feature next to this one.",
+  "admin.product.field.relatedCategory": "Choose a category",
+  "admin.product.field.relatedProduct": "Choose a product",
+  "admin.product.field.relatedCategoryEmpty":
+    "Every product in this category is already featured.",
   "admin.product.field.stock": "Stock",
   "admin.product.stock.in": "In stock",
   "admin.product.stock.out": "Out of stock",
@@ -65,8 +74,17 @@ export const productFa = {
   "admin.product.field.description": "توضیحات",
   "admin.product.field.moreInfo": "اطلاعات بیشتر",
   "admin.product.field.downloads": "دانلودها",
+  "admin.product.field.downloadsHint":
+    "یک فایل PDF یا پاورپوینت بارگذاری کنید — بازدیدکنندگان آن را از صفحه محصول دانلود می‌کنند.",
+  "admin.product.field.downloadLabel": "برچسب دانلود",
   "admin.product.field.href": "پیوند",
   "admin.product.field.related": "محصولات مرتبط",
+  "admin.product.field.relatedHint":
+    "ابتدا دسته‌بندی را انتخاب کنید، سپس محصولی را برای نمایش در کنار این محصول برگزینید.",
+  "admin.product.field.relatedCategory": "انتخاب دسته‌بندی",
+  "admin.product.field.relatedProduct": "انتخاب محصول",
+  "admin.product.field.relatedCategoryEmpty":
+    "همه محصولات این دسته‌بندی قبلاً نمایش داده شده‌اند.",
   "admin.product.field.stock": "موجودی",
   "admin.product.stock.in": "موجود",
   "admin.product.stock.out": "ناموجود",

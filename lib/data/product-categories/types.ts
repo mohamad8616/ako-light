@@ -10,6 +10,12 @@ export interface RelatedProduct {
 export interface DownloadLink {
   label: Localized;
   href: string;
+  /**
+   * The presentable filename of an UPLOADED document, echoed into the
+   * download route's `Content-Disposition`. Absent on legacy/hand-written rows,
+   * where the route derives it from the storage key instead.
+   */
+  name?: string;
 }
 
 export interface Product {

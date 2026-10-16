@@ -2,12 +2,10 @@
 
 import { DeleteDialog } from "@/components/admin/catalog/DeleteDialog";
 import { FormCard } from "@/components/admin/catalog/fields/form";
-import { LocalizedLabeledRowsField } from "@/components/admin/catalog/fields/ListFields";
+import { DocumentRowsField } from "@/components/admin/catalog/fields/DocumentRowsField";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
-import {
-  ProductImagesField,
-  RelatedField,
-} from "@/components/admin/catalog/fields/ProductFields";
+import { ProductImagesField } from "@/components/admin/catalog/fields/ProductFields";
+import { ProductsUsedField } from "@/components/admin/catalog/fields/ProductsUsedField";
 import {
   NumberField,
   SwitchField,
@@ -31,7 +29,7 @@ import { pick } from "@/lib/i18n/localized";
 import { getLocalizedPath } from "@/lib/i18n/routing";
 import type { DesignerOption } from "@/lib/repositories/designers";
 import type { ProductCategoryOption } from "@/lib/repositories/product-categories";
-import type { ProductAdminDetail } from "@/lib/repositories/products";
+import type { ProductAdminDetail, ProductOption } from "@/lib/repositories/products";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -47,10 +45,17 @@ export function ProductForm({
   detail,
   categories,
   designers,
+  products,
 }: {
   detail?: ProductAdminDetail | null;
   categories: ProductCategoryOption[];
   designers: DesignerOption[];
+  /**
+   * Picker options for the related-products field (`getProductOptions()`).
+   * Fetched server-side so the form never needs the whole catalog, and shared
+   * with the project form's `ProductsUsedField`.
+   */
+  products: ProductOption[];
 }) {
   const { t, lang } = useLanguage();
   const router = useRouter();
@@ -252,15 +257,27 @@ export function ProductForm({
 
         {/* EXTRAS_BLOCK */}
         <FormCard title={t("admin.product.card.extras")}>
-          <LocalizedLabeledRowsField
+          {/* Uploads, not pasted URLs: same file picker as /admin/catalogue,
+              accepting a PDF or a PowerPoint. The stored `href`/`name` pair is
+              what the public download route reads. */}
+          <DocumentRowsField
             name="downloads"
             label={t("admin.product.field.downloads")}
-            valueName="href"
-            valuePlaceholder={t("admin.product.field.href")}
+            hint={t("admin.product.field.downloadsHint")}
           />
-          <RelatedField
+          {/* Same two-step category → product picker the project form uses
+              (admin.project products-used pattern), in "snapshot" mode: the
+              product's `related` column is a denormalized jsonb array, so a
+              pick is expanded into name/slug/category/image on add. */}
+          <ProductsUsedField
             name="related"
+            mode="snapshot"
             label={t("admin.product.field.related")}
+            hint={t("admin.product.field.relatedHint")}
+            products={products}
+            categoryPlaceholderKey="admin.product.field.relatedCategory"
+            productPlaceholderKey="admin.product.field.relatedProduct"
+            emptyKey="admin.product.field.relatedCategoryEmpty"
           />
         </FormCard>
       </FormProvider>

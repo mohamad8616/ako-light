@@ -1,8 +1,8 @@
 "use client";
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
-import type { Product, RelatedProduct } from "@/lib/data/productCategories";
+import type { Product } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { productName } from "@/lib/i18n/localized";
+import { displayProductName } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
 import HomepageSection, { EASE } from "@/utility/HomepageSection";
 import { imageZoomClass } from "@/utility/animations";
@@ -13,7 +13,7 @@ import Link from "@/lib/i18n/Link";
 function getRelatedProducts(
   product: Product,
   sameCategoryProducts: Product[],
-): RelatedProduct[] {
+): Product[] {
   const seed = product.slug
     .split("")
     .reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -25,12 +25,7 @@ function getRelatedProducts(
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
 
-  return shuffled.slice(0, 3).map((p) => ({
-    name: p.name,
-    slug: p.slug,
-    category: p.category,
-    image: p.heroImage,
-  }));
+  return shuffled.slice(0, 3);
 }
 
 export default function RelatedProductsSection({
@@ -40,7 +35,7 @@ export default function RelatedProductsSection({
   product: Product;
   sameCategoryProducts: Product[];
 }) {
-  const { t,lang } = useLanguage();
+  const { t, lang } = useLanguage();
   const related = getRelatedProducts(product, sameCategoryProducts);
 
   return (
@@ -68,8 +63,8 @@ export default function RelatedProductsSection({
                 className="group relative mb-5 grid aspect-square w-full grid-cols-1 overflow-hidden lg:mb-0"
               >
                 <Image
-                  src={item.image}
-                  alt={productName(t, item.slug)}
+                  src={item.heroImage}
+                  alt={displayProductName(t, item, lang)}
                   fill
                   sizes="(max-width: 640px) 100vw, 33vw"
                   className={imageZoomClass({ scale: 105 })}
@@ -77,7 +72,7 @@ export default function RelatedProductsSection({
                 <div className="absolute inset-0 bg-black/20 transition-colors duration-500 group-hover:bg-black/40" />
               </Link>
               <PlusTextBtn
-                text={productName(t, item.slug)}
+                text={displayProductName(t, item, lang)}
                 className="text-background mt-10 lg:mt-5"
                 textColor="text-background"
               />

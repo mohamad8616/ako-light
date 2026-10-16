@@ -5,7 +5,7 @@ import { isLocale } from "@/lib/i18n/routing";
 import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import { getDesignerOptions } from "@/lib/repositories/designers";
 import { getProductCategoryOptions } from "@/lib/repositories/product-categories";
-import { getProductAdminDetail } from "@/lib/repositories/products";
+import { getProductAdminDetail, getProductOptions } from "@/lib/repositories/products";
 import { notFound } from "next/navigation";
 
 /**
@@ -23,10 +23,11 @@ export default async function EditProductPage({
   if (id === "new") notFound();
 
   const t = getAdminDictionary(locale);
-  const [detail, categories, designers] = await Promise.all([
+  const [detail, categories, designers, products] = await Promise.all([
     getProductAdminDetail(id),
     getProductCategoryOptions(),
     getDesignerOptions(),
+    getProductOptions(),
   ]);
   if (!detail) notFound();
 
@@ -48,6 +49,7 @@ export default async function EditProductPage({
           detail={detail}
           categories={categories}
           designers={designers}
+          products={products}
         />
       </div>
     </div>

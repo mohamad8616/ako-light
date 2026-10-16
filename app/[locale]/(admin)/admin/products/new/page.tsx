@@ -5,6 +5,7 @@ import { isLocale } from "@/lib/i18n/routing";
 import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import { getDesignerOptions } from "@/lib/repositories/designers";
 import { getProductCategoryOptions } from "@/lib/repositories/product-categories";
+import { getProductOptions } from "@/lib/repositories/products";
 import { notFound } from "next/navigation";
 
 /**
@@ -20,9 +21,10 @@ export default async function NewProductPage({
   if (!isLocale(locale)) notFound();
 
   const t = getAdminDictionary(locale);
-  const [categories, designers] = await Promise.all([
+  const [categories, designers, products] = await Promise.all([
     getProductCategoryOptions(),
     getDesignerOptions(),
+    getProductOptions(),
   ]);
 
   return (
@@ -39,7 +41,11 @@ export default async function NewProductPage({
             />
           }
         />
-        <ProductForm categories={categories} designers={designers} />
+        <ProductForm
+          categories={categories}
+          designers={designers}
+          products={products}
+        />
       </div>
     </div>
   );

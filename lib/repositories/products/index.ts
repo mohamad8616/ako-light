@@ -30,6 +30,7 @@ export type { ProductRow } from "./map";
 
 export {
   getProduct,
+  getProductDownload,
   getProducts,
   getProductsByCategory,
   getProductsByIdsOrSlugs,

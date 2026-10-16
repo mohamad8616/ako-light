@@ -3,7 +3,7 @@
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import type { ProductCategory } from "@/lib/data/product-categories/types";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { productName, type Localized } from "@/lib/i18n/localized";
+import { displayProductName, type Localized } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
 import HomepageSection from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
@@ -232,7 +232,7 @@ export default function ProductsInCollectionSection({
                         : "text-stone-400 hover:text-white"
                     }`}
                   >
-                    {productName(t, product.slug)}
+                    {displayProductName(t, product, lang)}
                   </Link>
                 ))}
               </div>

@@ -21,3 +21,5 @@
 export { StringListField } from "./StringListField";
 export { MixedListField } from "./MixedListField";
 export { LocalizedLabeledRowsField } from "./LocalizedLabeledRowsField";
+export { DocumentRowsField } from "./DocumentRowsField";
+export { ProductsUsedField } from "./ProductsUsedField";

@@ -51,8 +51,11 @@ describe("the products-used picker is a category → product cascade", () => {
   it("renders TWO selects: the category, then the product", () => {
     const selects = FIELD.match(/<Select\b/g) ?? [];
     expect(selects.length).toBe(2);
-    expect(FIELD).toMatch(/field\.productsCategory/);
-    expect(FIELD).toMatch(/field\.productsProduct/);
+    // The labels are i18n keys passed by the CALLER (the project form passes
+    // the `admin.project.field.products*` keys); the field keeps those as its
+    // defaults so the project form can omit them.
+    expect(FIELD).toMatch(/categoryPlaceholderKey[\s\S]{0,120}?productsCategory/);
+    expect(FIELD).toMatch(/productPlaceholderKey[\s\S]{0,120}?productsProduct/);
   });
 
   it("keeps the product menu shut until a category is chosen", () => {
@@ -88,8 +91,16 @@ describe("the products-used picker is a category → product cascade", () => {
     expect(OPTIONS).toMatch(/categoryName: asLocalized\(row\.category\.name\)/);
   });
 
-  it("still writes a plain id list — the form contract is unchanged", () => {
-    expect(FIELD).toMatch(/setValue\(name, \[\.\.\.ids, draft\]/);
+  it("keeps the upload-add control from ever submitting the form", () => {
+    // The picker lives inside the <form>; a bare <button> would submit it.
+    expect(FIELD).toMatch(/type="button"/);
+  });
+
+  it("adds the picked product through the shared field — the form contract is unchanged", () => {
+    // The project form still stores `productIds`, so the picker's id mode must
+    // remain the write path (`toStoredRow` returns the id in "ids" mode).
+    expect(FIELD).toMatch(/setValue\(name, \[\.\.\.rows, toStoredRow\(product\)\]/);
+    expect(FIELD).toMatch(/mode = "ids"/);
   });
 });
 

@@ -24,7 +24,12 @@ export default function ProductsGrid({
         key: product.slug,
         name: pick(product.name, lang),
         slug: product.slug,
-        images: [product.images[0], product.hoverImage].filter(Boolean),
+        // Card image pair is BASE + HOVER OVERLAY, in this order:
+        //   [0] = the product's hero image  → visible at first glance
+        //   [1] = the product's hover image → fades in on mouse-over
+        // `ProductCategoryCard` fades `images[0]` out and `images[1]` in, so
+        // this order is what makes "hero first, hover on hover" work.
+        images: [product.heroImage, product.hoverImage].filter(Boolean),
         // One currency only, per the active locale (EUR for en, Toman for fa).
         priceLabel: formatProductPrice(product, lang),
       }))

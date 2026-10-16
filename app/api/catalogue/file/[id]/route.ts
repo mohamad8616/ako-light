@@ -1,5 +1,6 @@
 import { getCatalogueDocument } from "@/lib/repositories/catalogue";
 import { storageKeyFromUrl } from "@/lib/admin/storage-cleanup";
+import { contentDispositionFilename } from "@/lib/media/content-disposition";
 import { isLiaraStorageHost } from "@/lib/media/storage";
 import {
   DOCUMENT_MAX_BYTES,
@@ -24,18 +25,6 @@ import { NextResponse } from "next/server";
  */
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-
-function contentDispositionFilename(name: string): string {
-  // The older filename parameter is ASCII-only. The UTF-8 extended parameter
-  // below retains the full Persian/Unicode name for modern browsers.
-  const fallback = name
-    .replace(/[^\x20-\x7e]/g, "_")
-    .replace(/["\\]/g, "_");
-  const encoded = encodeURIComponent(name).replace(/[!'()*]/g, (character) =>
-    `%${character.charCodeAt(0).toString(16).toUpperCase()}`,
-  );
-  return `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`;
-}
 
 export async function GET(
   _request: Request,

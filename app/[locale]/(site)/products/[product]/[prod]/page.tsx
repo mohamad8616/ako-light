@@ -7,7 +7,10 @@ import {
   getProductImages,
   getProductPrimaryImage,
 } from "@/lib/repositories/product-images";
-import { productDescription, productName } from "@/lib/i18n/localized";
+import {
+  displayProductDescription,
+  displayProductName,
+} from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
 import { siteName } from "@/lib/seo/config";
 import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
@@ -64,8 +67,12 @@ export async function generateMetadata({
   const dict = translations[lang] as Record<string, string>;
   const tFn = (key: string) => dict[key] ?? key;
 
-  const name = productName(tFn, productt.slug);
-  const description = trimDescription(productDescription(tFn, productt.slug));
+  // DB-first: the admin-entered name/description win; the dictionary
+  // templates are only a fallback for rows whose Localized pair is empty.
+  const name = displayProductName(tFn, productt, lang);
+  const description = trimDescription(
+    displayProductDescription(tFn, productt, lang),
+  );
   const url = absoluteUrl(`/products/${product}/${prod}`, lang);
 
   const homeLabel = lang === "fa" ? "خانه" : "Home";
@@ -132,8 +139,10 @@ export default async function ProductPage({ params }: PageProps) {
   const dict = translations[lang] as Record<string, string>;
   const tFn = (key: string) => dict[key] ?? key;
 
-  const name = productName(tFn, productt.slug);
-  const description = trimDescription(productDescription(tFn, productt.slug));
+  const name = displayProductName(tFn, productt, lang);
+  const description = trimDescription(
+    displayProductDescription(tFn, productt, lang),
+  );
   const url = absoluteUrl(`/products/${product}/${prod}`, lang);
 
   const homeLabel = lang === "fa" ? "خانه" : "Home";

@@ -1,6 +1,7 @@
 import { cache } from "react";
 import type { Product } from "@/lib/data/product-categories/types";
 import { prisma } from "@/lib/db/prisma";
+import { asDownloadLinks } from "../casting";
 import { mapProductRow, productInclude } from "./map";
 
 /**
@@ -78,6 +79,32 @@ export const getProductsByCategory = cache(
     return rows.map(mapProductRow);
   },
 );
+
+/**
+ * One download entry of one product, by the product's `id` and the entry's
+ * index within the `downloads` jsonb array.
+ *
+ * Backs the same-origin download route (`/api/products/[id]/download/[slot]`),
+ * which re-serves the stored object with `Content-Disposition: attachment`.
+ * A miss (unknown product, out-of-range index, empty URL) returns `null` so the
+ * route can 404 without guessing. Deliberately NOT `cache()`d and NOT part of
+ * `productInclude`: it reads one jsonb column and nothing else should pay for it.
+ */
+export const getProductDownload = async (
+  id: string,
+  index: number,
+): Promise<{ href: string; name: string } | null> => {
+  const row = await prisma.product.findUnique({
+    where: { id },
+    select: { downloads: true },
+  });
+  if (!row) return null;
+
+  const entries = asDownloadLinks(row.downloads);
+  const entry = entries[index];
+  if (!entry?.href) return null;
+  return { href: entry.href, name: entry.name ?? "" };
+};
 
 /**
  * Batch lookup for cart resolution: takes an array of `{ productId, slug }`

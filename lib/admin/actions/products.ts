@@ -44,23 +44,28 @@ import { updateWithSlugHistory } from "@/lib/repositories/slug-history";
  */
 
 /**
- * Every image URL a product row references: the two hero columns plus the
- * `product_images` rows and the denormalized `related` snapshots.
+ * Every stored object URL a product row references: the two hero columns, the
+ * `product_images` rows, the denormalized `related` snapshots, and the uploaded
+ * `downloads`.
  *
  * Used to garbage-collect replaced uploads — see the cleanup note on
- * {@link updateProductAction}.
+ * {@link updateProductAction}. Downloads are included because they are now
+ * UPLOADS (a PDF/PPTX picked in the admin), so replacing or removing one must
+ * drop the object it used to point at.
  */
 function productImageUrls(values: {
   hoverImage: string;
   heroImage: string;
   images: { url: string }[];
   related: { image: string }[];
+  downloads: { href: string }[];
 }): string[] {
   return [
     values.hoverImage,
     values.heroImage,
     ...values.images.map((image) => image.url),
     ...values.related.map((entry) => entry.image),
+    ...values.downloads.map((entry) => entry.href),
   ];
 }
 

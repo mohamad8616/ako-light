@@ -41,3 +41,36 @@ export function productDescription(
 ): string {
   return t("product.description").replace("{name}", productName(t, slug));
 }
+
+/**
+ * DB-first product display name.
+ *
+ * The admin panel is the source of truth: a product's `name` column wins when
+ * it carries text for the active language. The dictionary key derived from the
+ * slug (`products.<slug>`) is only a fallback for rows that were never filled
+ * in — without this precedence the public pages kept showing the seeded
+ * template even after the admin renamed a product.
+ */
+export function displayProductName(
+  t: (key: string) => string,
+  product: { name: Localized; slug: string },
+  lang: Language,
+): string {
+  return pick(product.name, lang).trim() || productName(t, product.slug);
+}
+
+/**
+ * DB-first product description, same precedence rule as
+ * {@link displayProductName}: `description` column first, dictionary template
+ * (`product.description` with `{name}` substituted) as the fallback.
+ */
+export function displayProductDescription(
+  t: (key: string) => string,
+  product: { name: Localized; slug: string; description: Localized },
+  lang: Language,
+): string {
+  return (
+    pick(product.description, lang).trim() ||
+    productDescription(t, product.slug)
+  );
+}

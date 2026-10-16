@@ -5,7 +5,10 @@ import LightboxModal from "@/components/ui/imageGalleryCarousel/LightboxModal";
 import { useCart } from "@/lib/cart/store";
 import type { Product } from "@/lib/data/productCategories";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { productDescription, productName } from "@/lib/i18n/localized";
+import {
+  displayProductDescription,
+  displayProductName,
+} from "@/lib/i18n/localized";
 import { formatProductPrice } from "@/lib/i18n/price";
 import { useLenis } from "@/lib/lenisStore";
 import { EASE } from "@/utility/HomepageSection";
@@ -96,7 +99,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
       {
         productId: product.id,
         slug: product.slug,
-        name: productName(t, product.slug),
+        name: displayProductName(t, product, lang),
         image: product.images[0],
         priceEur: product.priceEur,
         priceToman: product.priceToman,
@@ -172,7 +175,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
                     >
                       <Image
                         src={product.images[activeImage]}
-                        alt={productName(t, product.slug)}
+                        alt={displayProductName(t, product, lang)}
                         fill
                         className="object-cover"
                       />
@@ -222,7 +225,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
               <h2
                 className={`${fontClass} text-2xl font-medium text-stone-950`}
               >
-                {productName(t, product.slug)}
+                {displayProductName(t, product, lang)}
               </h2>
               <p className={`${fontClass} mt-2 text-lg text-stone-950`}>
                 {formatProductPrice(product, lang)}
@@ -250,7 +253,7 @@ export default function ProductModal({ product, open, onOpenChange }: Props) {
               <div
                 className={`${fontClass} mt-6 flex flex-col gap-4 text-sm leading-relaxed text-stone-600`}
               >
-                <p>{productDescription(t, product.slug)}</p>
+                <p>{displayProductDescription(t, product, lang)}</p>
               </div>
             </div>
           </div>

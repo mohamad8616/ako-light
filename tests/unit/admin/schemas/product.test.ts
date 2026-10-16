@@ -13,7 +13,13 @@ describe("productFormSchema", () => {
     quantity: 10,
     description: { en: "Description", fa: "توضیحات" },
     moreInfo: { en: "More info", fa: "اطلاعات بیشتر" },
-    downloads: [{ label: { en: "PDF", fa: "پی‌دی‌اف" }, href: "/downloads/test.pdf" }],
+    downloads: [
+      {
+        label: { en: "PDF", fa: "پی‌دی‌اف" },
+        href: "/media/products/catalogue-abc123.pdf",
+        name: "catalogue.pdf",
+      },
+    ],
     related: [
       { name: { en: "Related", fa: "مرتبط" }, slug: "related-product", category: "lighting", image: "/images/related.jpg" },
     ],
@@ -135,16 +141,83 @@ describe("productFormSchema", () => {
   it("rejects download with invalid href", () => {
     const input = {
       ...validInput,
-      downloads: [{ label: { en: "PDF", fa: "پی‌دی‌اف" }, href: "invalid" }],
+      downloads: [
+        { label: { en: "PDF", fa: "پی‌دی‌اف" }, href: "invalid" },
+      ],
     };
     const result = productFormSchema.safeParse(input);
     expect(result.success).toBe(false);
   });
 
-  it("accepts download with # href", () => {
+  it("rejects a download href that is not a PDF/PowerPoint document", () => {
+    // Downloads are UPLOADS now: the URL comes from the document upload action,
+    // so anything whose last extension is not .pdf/.pptx is either corruption
+    // or a value that did not come from that action.
+    const input = {
+      ...validInput,
+      downloads: [
+        {
+          label: { en: "Script", fa: "اسکریپت" },
+          href: "/media/products/payload.exe",
+        },
+      ],
+    };
+    const result = productFormSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a placeholder '#' download href", () => {
+    // A "#" link is not a downloadable document. The old link-based field
+    // allowed it; the upload-based field must not.
     const input = {
       ...validInput,
       downloads: [{ label: { en: "PDF", fa: "پی‌دی‌اف" }, href: "#" }],
+    };
+    const result = productFormSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts a download without a filename (legacy rows derive it from the key)", () => {
+    const input = {
+      ...validInput,
+      downloads: [
+        {
+          label: { en: "PDF", fa: "پی‌دی‌اف" },
+          href: "/media/products/legacy-row.pdf",
+        },
+      ],
+    };
+    const result = productFormSchema.safeParse(input);
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a download filename that would break the Content-Disposition header", () => {
+    // The name travels into a response header; a quote or a control character
+    // did not come from the upload action and is refused rather than sanitized.
+    const input = {
+      ...validInput,
+      downloads: [
+        {
+          label: { en: "PDF", fa: "پی‌دی‌اف" },
+          href: "/media/products/catalogue.pdf",
+          name: 'broken"name.pdf',
+        },
+      ],
+    };
+    const result = productFormSchema.safeParse(input);
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts a PowerPoint download", () => {
+    const input = {
+      ...validInput,
+      downloads: [
+        {
+          label: { en: "Deck", fa: "ارائه" },
+          href: "/media/products/deck-abc123.pptx",
+          name: "deck.pptx",
+        },
+      ],
     };
     const result = productFormSchema.safeParse(input);
     expect(result.success).toBe(true);
