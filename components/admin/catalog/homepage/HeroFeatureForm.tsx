@@ -19,7 +19,7 @@ import { FormCard } from "@/components/admin/catalog/fields/form";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
 import { SwitchField, TextField } from "@/components/admin/catalog/fields/ScalarFields";
 import { MediaField } from "@/components/admin/MediaField";
-import { HomepageFormActions } from "@/components/admin/catalog/homepage/HomepageFormParts";
+import { SectionFormActions } from "@/components/admin/catalog/page-sections/SectionFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { updateHeroFeatureAction } from "@/lib/admin/actions/homepage";
 import {
@@ -138,7 +138,7 @@ export function HeroFeatureForm({
           </div>
         </FormCard>
       </FormProvider>
-      <HomepageFormActions pending={pending} />
+      <SectionFormActions pending={pending} />
     </form>
   );
 }

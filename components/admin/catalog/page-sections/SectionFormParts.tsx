@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 /**
- * The submit row every page-section form ends with.
+ * The submit row every section form ends with.
  *
- * There is deliberately no cancel link: the section forms sit inline on their
- * page's section list and each keeps its own unsaved state, so "cancel" has
- * nowhere to navigate back to (the homepage slot forms cancel to their hub
- * because a slot owns a whole page).
+ * There is deliberately no cancel link: these forms sit inline on their page's
+ * section list — the About and S34 editors and, since it became one page, the
+ * homepage editor — and each keeps its own unsaved state, so "cancel" has
+ * nowhere to navigate back to.
  */
 export function SectionFormActions({ pending }: { pending: boolean }) {
   const { t } = useLanguage();

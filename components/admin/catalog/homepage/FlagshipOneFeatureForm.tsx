@@ -11,9 +11,9 @@
  * the banner keeps the flagship's own value, which is why the overrides are
  * clearable pairs/lists rather than required fields.
  *
- * A dedicated page (not a dialog) because the override card is a full form
- * section; the page shell lives at
- * app/[locale]/(admin)/admin/homepage/[slot]/page.tsx.
+ * An inline section (not a dialog) because the override card is a full form
+ * section; it is stacked on the single homepage editor page
+ * (app/[locale]/(admin)/admin/homepage/page.tsx).
  */
 import { FormCard } from "@/components/admin/catalog/fields/form";
 import {
@@ -22,10 +22,10 @@ import {
 } from "@/components/admin/catalog/fields/LocalizedField";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import {
-  HomepageFormActions,
   HomepageOverrideCard,
   HomepageSlotFields,
 } from "@/components/admin/catalog/homepage/HomepageFormParts";
+import { SectionFormActions } from "@/components/admin/catalog/page-sections/SectionFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { updateFlagshipOneFeatureAction } from "@/lib/admin/actions/homepage";
 import {
@@ -120,7 +120,7 @@ export function FlagshipOneFeatureForm({
           />
         </HomepageOverrideCard>
       </FormProvider>
-      <HomepageFormActions pending={pending} />
+      <SectionFormActions pending={pending} />
     </form>
   );
 }

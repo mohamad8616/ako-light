@@ -17,7 +17,7 @@
 import { FormCard } from "@/components/admin/catalog/fields/form";
 import { SwitchField } from "@/components/admin/catalog/fields/ScalarFields";
 import { MediaField } from "@/components/admin/MediaField";
-import { HomepageFormActions } from "@/components/admin/catalog/homepage/HomepageFormParts";
+import { SectionFormActions } from "@/components/admin/catalog/page-sections/SectionFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { updateVideoFeatureAction } from "@/lib/admin/actions/homepage";
 import {
@@ -97,7 +97,7 @@ export function VideoFeatureForm({
           </div>
         </FormCard>
       </FormProvider>
-      <HomepageFormActions pending={pending} />
+      <SectionFormActions pending={pending} />
     </form>
   );
 }

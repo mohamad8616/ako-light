@@ -16,10 +16,10 @@ import {
 } from "@/components/admin/catalog/fields/LocalizedField";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import {
-  HomepageFormActions,
   HomepageOverrideCard,
   HomepageSlotFields,
 } from "@/components/admin/catalog/homepage/HomepageFormParts";
+import { SectionFormActions } from "@/components/admin/catalog/page-sections/SectionFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { updateProjectDarkBackgroundFeatureAction } from "@/lib/admin/actions/homepage";
 import {
@@ -105,7 +105,7 @@ export function ProjectDarkBackgroundFeatureForm({
           />
         </HomepageOverrideCard>
       </FormProvider>
-      <HomepageFormActions pending={pending} />
+      <SectionFormActions pending={pending} />
     </form>
   );
 }

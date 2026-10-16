@@ -19,7 +19,7 @@ import { SelectField } from "@/components/admin/catalog/fields/SelectField";
 import { SwitchField, TextField } from "@/components/admin/catalog/fields/ScalarFields";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { PdfUpload } from "@/components/admin/PdfUpload";
-import { HomepageFormActions } from "@/components/admin/catalog/homepage/HomepageFormParts";
+import { SectionFormActions } from "@/components/admin/catalog/page-sections/SectionFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import {
   updateCatalogueFeatureAction,
@@ -142,7 +142,7 @@ export function CatalogueFeatureForm({  detail,
           </div>
         </FormCard>
       </FormProvider>
-      <HomepageFormActions pending={pending} />
+      <SectionFormActions pending={pending} />
     </form>
   );
 }

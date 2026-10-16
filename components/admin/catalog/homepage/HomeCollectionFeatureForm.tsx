@@ -13,7 +13,7 @@ import { FormCard } from "@/components/admin/catalog/fields/form";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
 import { SwitchField } from "@/components/admin/catalog/fields/ScalarFields";
 import { ImageUpload } from "@/components/admin/ImageUpload";
-import { HomepageFormActions } from "@/components/admin/catalog/homepage/HomepageFormParts";
+import { SectionFormActions } from "@/components/admin/catalog/page-sections/SectionFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { updateHomeCollectionFeatureAction } from "@/lib/admin/actions/homepage";
 import {
@@ -87,7 +87,7 @@ export function HomeCollectionFeatureForm({
           </div>
         </FormCard>
       </FormProvider>
-      <HomepageFormActions pending={pending} />
+      <SectionFormActions pending={pending} />
     </form>
   );
 }

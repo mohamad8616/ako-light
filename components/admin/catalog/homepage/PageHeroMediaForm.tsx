@@ -1,7 +1,7 @@
 "use client";
 
 import { FormCard } from "@/components/admin/catalog/fields/form";
-import { HomepageFormActions } from "@/components/admin/catalog/homepage/HomepageFormParts";
+import { SectionFormActions } from "@/components/admin/catalog/page-sections/SectionFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { MediaField } from "@/components/admin/MediaField";
 import { updatePageHeroMediaAction } from "@/lib/admin/actions/homepage";
@@ -72,7 +72,7 @@ export function PageHeroMediaForm({
           </div>
         </FormCard>
       </FormProvider>
-      <HomepageFormActions pending={pending} />
+      <SectionFormActions pending={pending} />
     </form>
   );
 }

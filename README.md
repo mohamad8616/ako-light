@@ -147,7 +147,7 @@ home-form/
 │   │   └── checkout.ts               # createPendingOrder (validates stock, creates order, calls ZarinPal)
 │   ├── admin/                        # Admin helpers
 │   │   ├── access.ts                 # requireAdminAccess / requireOwnerAccess
-│   │   ├── homepage.ts               # Homepage slot metadata + routing
+│   │   ├── homepage.ts               # Homepage section registry (render order + labels)
 │   │   └── sections.ts               # Admin shell direction (RTL always)
 │   ├── auth/                         # Authentication
 │   │   ├── auth.ts                   # betterAuth config (email/password + phone OTP via sms.ir)
@@ -162,7 +162,7 @@ home-form/
 │   │   └── price.ts                  # Dual-currency formatting (EUR for en, Toman for fa)
 │   ├── payments/zarinpal.ts          # ZarinPal v4 API (request + verify, Toman→Rial)
 │   ├── repositories/                 # Data access layer (server components)
-│   │   ├── homepage-features.ts      # getHomepageFeaturesOverview + slot editors
+│   │   ├── homepage-features/         # Homepage feature slots — one file per banner
 │   │   ├── about-page.ts             # About page sections
 │   │   ├── s34-page.ts               # S34 page sections
 │   │   ├── slug-history.ts           # Slug rename redirect history
@@ -308,18 +308,21 @@ Confirmation page (PaymentCallbackState)
 - **Flagships**: جزئیات کامل (آدرس، ساعت، ویدیو، گالری، الحاق قرار ملاقات)
 - **Categories**: سرتایپ، ترتیب نمایش
 
-### مدیریت اسلات‌های صفحه اصلی | Homepage Feature Slots
-خمسة اسلات سینگلتون در `/admin/homepage`:
-| Slot | Component | Mode | Referenced Entity |
-|---|---|---|---|
-| `flagship-one` | `FlagshipOneFeature` | reference / override | Flagship |
-| `project-banner` | `ProjectBannerFeature` | reference / override | Project |
-| `project-dark-background` | `ProjectDarkBackgroundFeature` | reference / override | Project |
-| `home-collection` | `HomeCollectionFeature` | standalone (no FK) | — |
-| `catalogue` | `CatalogueFeature` | reference (image in slot) | CatalogueItem |
+### مدیریت محتوای صفحه اصلی | Homepage Editor
+`/admin/homepage` یک صفحه واحد است، نه hub از کارت‌ها: فرم هر بخش به همان ترتیبی که صفحه اصلی آن‌ها نمایش می‌دهد زیر هم چیده شده — دقیقاً مثل `/admin/about`. هر فرم Save مستقل خودش را دارد.
 
-- **Reference mode**: kicker/title/paragraphs/image از موجودیت ارجاع‌داده می‌شوند
-- **Override mode**: فیلدهای nullable روی سطر فیچر اولویت دارند، اما **CTA همیشه به روت قانون‌اندازه موجودیت ارجاع می‌رود**
+| Section | Public component | Content |
+|---|---|---|
+| `hero` | `HeroSection` | standalone (no FK) |
+| `flagship-one` | `FlagshipOne` | reference / override → Flagship |
+| `video` | `VideoSection` | standalone (no FK) |
+| `catalogue` | `CatalogueSection` | reference → CatalogueItem |
+| `home-collection` | `HomeCollectionBanner` | standalone (no FK) |
+| `project-banner` | `ProjectBanner` | reference / override → Project |
+| `project-dark-background` | `ProjectWithDarkBackground` | reference / override → Project |
+
+- **Override**: فیلدهای nullable روی سدر فیچر اولویت دارند، اما **CTA همیشه به روت قانون‌اندازه موجودیت ارجاع می‌رود**
+- ویدیوی هیروی `/about` و `/s34` بخشی از صفحه اصلی نیست: در `/admin/about` و `/admin/s34` ویرایش می‌شوند
 
 ### مدیریت محتوای صفحات About و S34
 - اسلاس‌های ساختاریافته (`heroSection`, `brandStorySection`, `conceptSection`، …) در دیتابیس

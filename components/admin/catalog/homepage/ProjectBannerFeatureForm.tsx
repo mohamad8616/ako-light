@@ -12,10 +12,10 @@ import { FormCard } from "@/components/admin/catalog/fields/form";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import {
-  HomepageFormActions,
   HomepageOverrideCard,
   HomepageSlotFields,
 } from "@/components/admin/catalog/homepage/HomepageFormParts";
+import { SectionFormActions } from "@/components/admin/catalog/page-sections/SectionFormParts";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { updateProjectBannerFeatureAction } from "@/lib/admin/actions/homepage";
 import {
@@ -99,7 +99,7 @@ export function ProjectBannerFeatureForm({
           />
         </HomepageOverrideCard>
       </FormProvider>
-      <HomepageFormActions pending={pending} />
+      <SectionFormActions pending={pending} />
     </form>
   );
 }

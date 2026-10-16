@@ -3,24 +3,24 @@
  *
  * ── Why this tier ───────────────────────────────────────────────────────────
  *
- * The unit tests prove the schema and the routing helper; the server tests prove
- * the actions and the repository. Neither can catch the failure that matters
- * most here: a page that does not RENDER. A missing `case` in the slot switch,
- * a form importing something that is not a valid Server Action export, or a
- * label key that does not resolve all produce a broken admin screen while every
- * other tier stays green.
+ * The unit tests prove the schema, the routing helper and the page's static
+ * shape; the server tests prove the actions and the repository. Neither can
+ * catch the failure that matters most here: a page that does not RENDER. A
+ * section whose form is not wired up, a form importing something that is not a
+ * valid Server Action export, or a label key that does not resolve all produce
+ * a broken admin screen while every other tier stays green.
  *
  * ── What this file does NOT cover, and the measurement behind that ──────────
  *
- * It does not fetch the per-slot edit routes (`/admin/homepage/hero`,
- * `/admin/homepage/video`, …). Measured in this harness: EVERY `[slot]` route
- * answers **404 in ~700 ms** — including `/admin/homepage/catalogue`, which
- * existed long before this pass — while `/admin/users` answers **200** in the
- * same run. So the harness cannot exercise a two-dynamic-segment route at all,
- * and a test that asserted 200 there would fail for a reason that has nothing
- * to do with this pass. The slot pages are covered by `tsc` (the `[slot]` switch
- * is exhaustive over `HomepageSlotKey`), by the registry unit test, and by a
- * dev-server HTTP smoke test recorded in the pass report.
+ * `/admin/homepage` used to be a hub of cards, each linking to its own
+ * `/admin/homepage/[slot]` edit view. Those per-slot routes are GONE — the
+ * sections are stacked on the single page now — so this file no longer has any
+ * reason to reach for them. (It never could anyway: measured in this harness,
+ * EVERY two-dynamic-segment route answers 404 in ~700 ms while `/admin/users`
+ * answers 200 in the same run, so the harness cannot exercise such a route at
+ * all.) The stacked page's composition is covered by `tsc` (the section→form map
+ * is exhaustive over `HomepageSlotKey`) and by
+ * tests/unit/admin/homepage.test.ts, which scans the page statically.
  *
  * Status codes and structural markup only — the admin dictionary travels inside
  * the RSC payload, so asserting on visible COPY would pass even when the control
@@ -72,7 +72,7 @@ async function getPage(path: string, jar: CookieJar): Promise<Response> {
   return fetchPageWhenWarm(origin, path, jar);
 }
 
-describeAuth("Pass D.1 — the homepage hub and the admin shell navigation", () => {
+describeAuth("Pass D.1 — the homepage editor and the admin shell navigation", () => {
   beforeAll(async () => {
     await startAuthServer();
   });
@@ -87,19 +87,19 @@ describeAuth("Pass D.1 — the homepage hub and the admin shell navigation", () 
     await closeDb();
   });
 
-  it("renders the hub, now that it lists seven slots", async () => {
+  it("renders the single-page editor, which stacks all seven sections", async () => {
     const { jar } = await signInAsRole("admin");
     const response = await getPage("/admin/homepage", jar);
-    expect(response.status, `hub got ${response.status}`).toBe(200);
+    expect(response.status, `editor got ${response.status}`).toBe(200);
   });
 
-  it("renders the hub in Persian too", async () => {
+  it("renders the editor in Persian too", async () => {
     const { jar } = await signInAsRole("admin");
     const response = await getPage("/fa/admin/homepage", jar);
-    expect(response.status, `fa hub got ${response.status}`).toBe(200);
+    expect(response.status, `fa editor got ${response.status}`).toBe(200);
   });
 
-  it("lets an OWNER open the hub as well", async () => {
+  it("lets an OWNER open the editor as well", async () => {
     const { jar } = await signInAsRole("owner");
     const response = await getPage("/admin/homepage", jar);
     expect(response.status, `owner got ${response.status}`).toBe(200);
@@ -120,7 +120,7 @@ describeAuth("Pass D.1 — the homepage hub and the admin shell navigation", () 
   /* Authorization — the page is not reachable by typing the URL          */
   /* ------------------------------------------------------------------ */
 
-  it("does NOT let a CUSTOMER open the hub", async () => {
+  it("does NOT let a CUSTOMER open the editor", async () => {
     const { jar } = await signInAsRole("user");
     const response = await getPage("/admin/homepage", jar);
 

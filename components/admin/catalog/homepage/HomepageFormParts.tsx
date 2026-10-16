@@ -1,17 +1,21 @@
 "use client";
 
 /**
- * Building blocks shared by the five homepage slot forms.
+ * Building blocks shared by the homepage section forms.
  *
- * Three of the slots (FlagshipOne, ProjectBanner, ProjectDarkBackground) have
- * the exact same upper half — enabled switch, reference/override toggle, and an
- * entity picker — and all three wrap their override inputs in the same card,
- * so that shape lives here instead of being copied three times. The card is
- * ALWAYS rendered: the repository keeps the override columns when a slot returns
- * to reference mode, so hiding them would look like the edits were lost.
+ * Three of the sections (FlagshipOne, ProjectBanner, ProjectDarkBackground)
+ * have the exact same upper half — enabled switch and an entity picker — and
+ * all three wrap their override inputs in the same card, so that shape lives
+ * here instead of being copied three times. The card is ALWAYS rendered: the
+ * repository keeps the override columns when a slot returns to reference mode,
+ * so hiding them would look like the edits were lost.
  *
  * Every label/hint is an already-translated string passed in by the caller (or
  * looked up here through `useLanguage`) — this kit never holds raw copy.
+ *
+ * There is deliberately no action row here: the sections are stacked on ONE
+ * page (/admin/homepage), so "cancel" has nowhere to navigate back to — each
+ * form ends with the shared `SectionFormActions` instead.
  */
 import { FormCard } from "@/components/admin/catalog/fields/form";
 import {
@@ -19,11 +23,7 @@ import {
   type SelectOption,
 } from "@/components/admin/catalog/fields/SelectField";
 import { SwitchField } from "@/components/admin/catalog/fields/ScalarFields";
-import { Button, buttonVariants } from "@/components/ui/button";
-import { HOMEPAGE_HREF } from "@/lib/admin/homepage";
-import LocaleLink from "@/lib/i18n/Link";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { cn } from "@/lib/utils";
 
 /**
  * `enabled` + `mode` + the linked entity, for a slot that references one.
@@ -91,28 +91,5 @@ export function HomepageOverrideCard({
     >
       <div className="space-y-5">{children}</div>
     </FormCard>
-  );
-}
-
-/**
- * The save bar every slot form ends with: "cancel" returns to the homepage hub
- * (a slot is a singleton, so there is no list page behind it) and the submit
- * button reflects the shared `pending` flag from useCrudSubmit.
- */
-export function HomepageFormActions({ pending }: { pending: boolean }) {
-  const { t } = useLanguage();
-
-  return (
-    <div className="flex items-center justify-end gap-2">
-      <LocaleLink
-        href={HOMEPAGE_HREF}
-        className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
-      >
-        {t("admin.crud.cancel")}
-      </LocaleLink>
-      <Button type="submit" size="sm" disabled={pending}>
-        {pending ? t("admin.table.saving") : t("admin.crud.save")}
-      </Button>
-    </div>
   );
 }
