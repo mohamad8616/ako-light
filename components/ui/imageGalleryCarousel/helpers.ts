@@ -21,6 +21,7 @@ export function toCarouselItems(
       .filter((c) => Boolean(c.image))
       .map((c) => ({
         image: c.image,
+        i18nKey: c.i18nKey,
         name: c.name,
         link: c.link,
       }));
@@ -30,9 +31,21 @@ export function toCarouselItems(
     .map((src) => ({ image: src }));
 }
 
-/** Type guard: did this item come from a category (name + link guaranteed)? */
+/**
+ * Type guard: did this item come from a category (key + name + link present)?
+ *
+ * All three travel together on category tiles (see {@link CategoryItem}); a
+ * plain gallery slide carries only an image, so any one of them missing means
+ * "not a category item". The key is checked alongside name/link because the
+ * label resolution (`displayCategoryName`) needs it — a name without a key
+ * could never render a dictionary translation.
+ */
 export function isCategoryItem(
   item: CarouselItem,
 ): item is Required<CarouselItem> {
-  return item.name !== undefined && item.link !== undefined;
+  return (
+    item.i18nKey !== undefined &&
+    item.name !== undefined &&
+    item.link !== undefined
+  );
 }

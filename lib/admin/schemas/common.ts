@@ -300,7 +300,16 @@ export const hexColorSchema = z
 /** An opaque row id (cuid/uuid) — e.g. a product id inside a join list. */
 export const idSchema = z.string().min(1).max(ID_MAX);
 
-/** A translation-key prefix, e.g. "projects.hIstra". */
+/**
+ * A translation-key prefix, e.g. "products.coffeeTables".
+ *
+ * Retained even though no form schema consumes it any more: `Project.i18nKey`
+ * and `ProductCategory.i18nKey` are both NOT NULL columns, and both values are
+ * now DERIVED by their server actions rather than typed (see
+ * `withI18nKey` in lib/admin/actions/{projects,product-categories}.ts). It
+ * documents the shape those columns hold, so a future caller that does need to
+ * validate one has the rule to hand instead of re-inventing it.
+ */
 export const i18nKeySchema = z.string().min(1).max(ID_MAX);
 
 /** A display name / short label (names, titles, cities, categories, codes). */

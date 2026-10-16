@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  displayCategoryName,
   loc,
   pick,
   productDescription,
@@ -84,5 +85,32 @@ describe("productDescription", () => {
       key === "product.description" ? "The {name} is here." : key;
     const result = productDescription(t, "does-not-exist");
     expect(result).toBe("The products.doesNotExist is here.");
+  });
+});
+
+describe("displayCategoryName", () => {
+  const lighting = {
+    i18nKey: "products.lighting",
+    name: loc("Lighting", "نورپردازی"),
+  };
+
+  it("prefers the dictionary, so the seeded rows render exactly as before", () => {
+    // The column holds "Lighting"; the dictionary holds the styled "LIGHTING".
+    // The dictionary wins — flipping that precedence would silently re-case
+    // every category title on the site.
+    expect(displayCategoryName(makeT("en"), lighting, "en")).toBe("LIGHTING");
+    expect(displayCategoryName(makeT("fa"), lighting, "fa")).toBe("نورپردازی");
+  });
+
+  it("falls back to the row's own name when the derived key is not in the dictionary", () => {
+    // A brand-new category: the action derived `products.outdoor` from the
+    // slug, but no translation exists yet — so `t()` returns the RAW KEY.
+    // Without the fallback the page title would read "products.outdoor".
+    const outdoor = {
+      i18nKey: "products.outdoor",
+      name: loc("Outdoor", "فضای باز"),
+    };
+    expect(displayCategoryName(makeT("en"), outdoor, "en")).toBe("Outdoor");
+    expect(displayCategoryName(makeT("fa"), outdoor, "fa")).toBe("فضای باز");
   });
 });

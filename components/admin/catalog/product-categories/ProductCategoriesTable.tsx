@@ -7,10 +7,7 @@ import {
   textColumn,
 } from "@/components/admin/catalog/columns";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
-import {
-  NumberField,
-  TextField,
-} from "@/components/admin/catalog/fields/ScalarFields";
+import { NumberField } from "@/components/admin/catalog/fields/ScalarFields";
 import { SlugField } from "@/components/admin/catalog/fields/SlugField";
 import { RowActions } from "@/components/admin/catalog/RowActions";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
@@ -176,14 +173,12 @@ function CategoryDialog({
   onClose: () => void;
   onSave: (values: {
     slug: string;
-    i18nKey: string;
     name: { en: string; fa: string };
     sortOrder: number;
   }) => Promise<boolean>;
   initialData?: {
     id: string;
     slug: string;
-    i18nKey: string;
     name: { en: string; fa: string };
     sortOrder: number;
   };
@@ -192,14 +187,30 @@ function CategoryDialog({
   const [pending, setPending] = React.useState(false);
   const isEdit = Boolean(initialData);
 
+  /**
+   * The form's seed values, with a STABLE IDENTITY.
+   *
+   * `useForm({ values })` compares the prop DEEPLY (`deepEqual`) and re-runs
+   * `_reset` when the content differs — so this is not about identity churn,
+   * but about CONTENT: the old shape was `initialData ?? { … }`, which handed
+   * the form the whole admin row (i18nKey and productCount included) on edit
+   * and a bare literal on create, so the two modes seeded DIFFERENT objects.
+   * Building the three form fields explicitly means the seed describes exactly
+   * what the form owns, and `i18nKey` never reaches the payload — it is derived
+   * server-side (lib/admin/actions/product-categories.ts#withI18nKey).
+   */
+  const seed = React.useMemo(
+    () => ({
+      slug: initialData?.slug ?? "",
+      name: initialData?.name ?? { en: "", fa: "" },
+      sortOrder: initialData?.sortOrder ?? 0,
+    }),
+    [initialData],
+  );
+
   const form = useForm({
     resolver: zodResolver(productCategoryFormSchema),
-    values: initialData ?? {
-      slug: "",
-      i18nKey: "",
-      name: { en: "", fa: "" },
-      sortOrder: 0,
-    },
+    values: seed,
   });
 
   const handleSubmit = form.handleSubmit(async (raw) => {
@@ -216,7 +227,9 @@ function CategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent data-admin-shell="" className="sm:max-w-lg">
+      {/* `sm:max-w-2xl` rather than the old `sm:max-w-lg`: the name field is a
+          paired EN | FA row, and at 512px each half was squeezed to ~228px. */}
+      <DialogContent data-admin-shell="" className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? t("admin.product.edit") : t("admin.product.new")}
@@ -238,12 +251,6 @@ function CategoryDialog({
                 label={t("admin.product.field.slug")}
                 source="name.en"
                 required
-              />
-              <TextField
-                name="i18nKey"
-                label={t("admin.productCategory.field.i18nKey")}
-                required
-                placeholder="products.coffeeTables"
               />
               <NumberField
                 name="sortOrder"

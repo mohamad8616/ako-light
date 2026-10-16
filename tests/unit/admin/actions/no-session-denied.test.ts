@@ -216,7 +216,6 @@ const productInput = {
 
 const productCategoryInput = {
   slug: "lighting",
-  i18nKey: "products.lighting",
   name: PAIR,
   sortOrder: 0,
 };

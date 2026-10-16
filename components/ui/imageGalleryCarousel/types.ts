@@ -1,16 +1,35 @@
 /** Shared types for the ImageGalleryCarousel and its sub-components. */
 
-/** A category-tile item with a name + link (CTA below the image). */
+import type { Localized } from "@/lib/i18n/localized";
+
+/**
+ * A category-tile item — the shape the homepage builds from
+ * `getProductCategories()`.
+ *
+ * `i18nKey` and `name` are DELIBERATELY separate fields. The key is the
+ * dictionary lookup derived from the slug; the name is the row's own bilingual
+ * text — the words the admin typed. They used to be conflated: the tile carried
+ * the KEY as its `name`, and the slides fed that string into `t()`, which
+ * returns the RAW KEY on a dictionary miss — so a newly added category rendered
+ * literally "products.car" in both languages (tile label, image `alt` and
+ * `aria-label`). Both fields now travel together and are resolved at render
+ * time through `displayCategoryName` (dictionary-first, column fallback) —
+ * the same resolver the category page uses.
+ */
 export type CategoryItem = {
-  name: string;
+  i18nKey: string;
+  name: Localized;
   image: string;
   link: string;
 };
 
-/** A normalized carousel item — image is required, name/link are optional. */
+/** A normalized carousel item — image is required, the rest are optional. */
 export type CarouselItem = {
   image: string;
-  name?: string;
+  /** Category tiles only — see {@link CategoryItem}. */
+  i18nKey?: string;
+  /** Category tiles only — the row's own bilingual name. */
+  name?: Localized;
   link?: string;
 };
 

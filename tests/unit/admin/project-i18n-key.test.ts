@@ -19,13 +19,19 @@ import { describe, expect, it } from "vitest";
  * that can silently break: an update that forgets to carry the old value
  * through would blank a NOT NULL column, or churn it on every save.
  *
- * ── And the guard on the OTHER model ────────────────────────────────────────
+ * ── And the OTHER model, which is NOT the same case ─────────────────────────
  *
- * `ProductCategory` ALSO has an `i18nKey`, and that one IS read: the product
- * pages and the collection section translate a category's name through it
- * (`dict[category.i18nKey]`). `i18nKeySchema` is shared by both models, so the
- * last two tests here assert the category's half is untouched — removing the
- * project's field must not take the shared schema with it.
+ * `ProductCategory` ALSO has an `i18nKey`, but that one IS read at runtime: the
+ * product pages and the collection section translate a category's name through
+ * it (`t(category.i18nKey)`, `dict[category.i18nKey]`). So it could not simply
+ * be dropped — it had to be SUPPLIED. The admin stopped asking for it, and the
+ * category action derives it from the slug with the SAME `productKey` helper
+ * the public pages already build the key with, which reproduces the seeded
+ * convention exactly (`coffee-tables` → `products.coffeeTables`).
+ *
+ * The tests at the bottom pin that half of the story, so the two models'
+ * contracts stay visibly distinct: the project's key is inert and only has to
+ * SURVIVE, while the category's is live and has to stay CORRECT.
  */
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -60,6 +66,9 @@ const CATEGORY_DICT = read(
 const COMMON = read("../../../lib/admin/schemas/common.ts");
 const CATEGORY_SCHEMA = read(
   "../../../lib/admin/schemas/product-category.ts",
+);
+const CATEGORY_ACTION = read(
+  "../../../lib/admin/actions/product-categories.ts",
 );
 
 describe("project form — the i18n key is gone", () => {
@@ -100,15 +109,46 @@ describe("project actions — the i18n key is derived", () => {
   });
 });
 
-describe("product categories — the shared i18n key is untouched", () => {
-  it("still declares the field and its label", () => {
-    // That one IS read at runtime: `dict[category.i18nKey]` translates a
-    // category's name on the product pages.
-    expect(CATEGORY_SCHEMA).toMatch(/i18nKey: i18nKeySchema/);
+describe("product categories — the i18n key is derived, not typed", () => {
+  it("is not part of the form's schema either", () => {
+    // The dialog renders no field for it, so the schema must not require it.
+    expect(CATEGORY_SCHEMA).not.toMatch(/i18nKey/);
+  });
+
+  it("is derived from the slug with the SAME helper the public pages use", () => {
+    expect(CATEGORY_ACTION).toMatch(/function withI18nKey\(/);
+    expect(CATEGORY_ACTION).toMatch(
+      /i18nKey: previous \?\? productKey\(values\.slug\)/,
+    );
+    expect(CATEGORY_ACTION).toMatch(
+      /createProductCategory\(withI18nKey\(parsed\.data, null\), db\)/,
+    );
+  });
+
+  it("PRESERVES the stored key on UPDATE, so a rename cannot detach the translation", () => {
+    // The column is NOT NULL and the form does not own it: carrying the stored
+    // value through is what stops a slug rename from pointing the category at
+    // a dictionary entry that does not exist.
+    expect(CATEGORY_ACTION).toMatch(/getProductCategoryI18nKey\(id\)/);
+    expect(CATEGORY_ACTION).toMatch(
+      /withI18nKey\(parsed\.data, previousI18nKey\)/,
+    );
+    // ...and the read has to happen BEFORE the write for that to work.
+    const previousRead = CATEGORY_ACTION.indexOf(
+      "await getProductCategoryI18nKey(id)",
+    );
+    const updateCall = CATEGORY_ACTION.indexOf(
+      "withI18nKey(parsed.data, previousI18nKey)",
+    );
+    expect(previousRead).toBeGreaterThan(-1);
+    expect(previousRead).toBeLessThan(updateCall);
+  });
+
+  it("keeps the label, because the table column still shows the key", () => {
     expect(CATEGORY_DICT).toMatch(/admin\.productCategory\.field\.i18nKey/);
   });
 
-  it("still has the shared schema it depends on", () => {
+  it("still has the shared primitive the two models' columns share", () => {
     expect(COMMON).toMatch(/export const i18nKeySchema = z\.string\(\)/);
   });
 });

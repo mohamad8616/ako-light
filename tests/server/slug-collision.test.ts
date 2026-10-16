@@ -187,7 +187,6 @@ describeDb("slug collision — action tier (expects clean slugTaken, no P2002 le
         await createProductCategoryAction(
           {
             slug: slugA,
-            i18nKey: `products.catA-${suffix}`,
             name: { en: "Cat A", fa: "کت ا" },
             sortOrder: 0,
           },
@@ -196,7 +195,6 @@ describeDb("slug collision — action tier (expects clean slugTaken, no P2002 le
         await createProductCategoryAction(
           {
             slug: slugB,
-            i18nKey: `products.catB-${suffix}`,
             name: { en: "Cat B", fa: "کت ب" },
             sortOrder: 1,
           },
@@ -207,7 +205,6 @@ describeDb("slug collision — action tier (expects clean slugTaken, no P2002 le
           slugB,
           {
             slug: slugA,
-            i18nKey: `products.catB-${suffix}`,
             name: { en: "Cat B", fa: "کت ب" },
             sortOrder: 1,
           },

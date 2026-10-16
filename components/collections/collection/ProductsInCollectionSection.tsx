@@ -3,7 +3,11 @@
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
 import type { ProductCategory } from "@/lib/data/product-categories/types";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import { displayProductName, type Localized } from "@/lib/i18n/localized";
+import {
+  displayCategoryName,
+  displayProductName,
+  type Localized,
+} from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
 import HomepageSection from "@/utility/HomepageSection";
 import { AnimatePresence, motion } from "framer-motion";
@@ -208,7 +212,7 @@ export default function ProductsInCollectionSection({
                   lang === "fa" ? "font-noora" : "font-din",
                 )}
               >
-                {t(category.i18nKey)}
+                {displayCategoryName(t, category, lang)}
               </h2>
 
               <div className="mt-4 flex flex-col gap-2 lg:mt-0">

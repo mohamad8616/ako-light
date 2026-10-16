@@ -75,6 +75,13 @@ export default async function HomePage() {
   // hero image) and skip categories that have none. A missing tile reads far
   // better than a broken one, and `image` is guaranteed to be a non-empty
   // string for everything that survives.
+  //
+  // `i18nKey` and `name` travel TOGETHER — they are resolved at render time by
+  // `displayCategoryName` (dictionary-first, the row's own name as fallback),
+  // the same resolver the category page uses. Passing the KEY as the tile's
+  // `name` (what this code used to do) fed it into `t()`, which returns the
+  // RAW KEY on a miss — a newly added category rendered literally
+  // "products.car" in both languages.
   const productCategory = productCategories.flatMap((category) => {
     const preview = category.products
       .map((product) => product.images[0] ?? product.heroImage)
@@ -84,7 +91,8 @@ export default async function HomePage() {
 
     return [
       {
-        name: category.i18nKey,
+        i18nKey: category.i18nKey,
+        name: category.name,
         image: preview,
         link: `/products/${category.slug}`,
       },

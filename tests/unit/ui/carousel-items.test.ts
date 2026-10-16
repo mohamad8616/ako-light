@@ -13,27 +13,48 @@
  */
 import { describe, expect, it } from "vitest";
 
-import { isCategoryItem, toCarouselItems } from "@/components/ui/imageGalleryCarousel/helpers";
+import {
+  isCategoryItem,
+  toCarouselItems,
+} from "@/components/ui/imageGalleryCarousel/helpers";
+import { loc } from "@/lib/i18n/localized";
+
+/** A category tile in the shape the homepage builds (key + bilingual name). */
+const tile = (slug: string, en: string, fa: string) => ({
+  i18nKey: `products.${slug}`,
+  name: loc(en, fa),
+  image: `/${slug}.jpg`,
+  link: `/products/${slug}`,
+});
 
 describe("toCarouselItems — category branch", () => {
   it("maps category items and preserves their order", () => {
     const items = toCarouselItems(undefined, [
-      { name: "products.a", image: "/a.jpg", link: "/products/a" },
-      { name: "products.b", image: "/b.jpg", link: "/products/b" },
+      tile("a", "A", "الف"),
+      tile("b", "B", "ب"),
     ]);
 
     expect(items).toEqual([
-      { name: "products.a", image: "/a.jpg", link: "/products/a" },
-      { name: "products.b", image: "/b.jpg", link: "/products/b" },
+      tile("a", "A", "الف"),
+      tile("b", "B", "ب"),
     ]);
+  });
+
+  it("keeps the i18nKey alongside the bilingual name", () => {
+    // The label resolution (`displayCategoryName`) needs the key AND the
+    // name column — the key for the dictionary, the column as fallback.
+    const items = toCarouselItems(undefined, [tile("a", "A", "الف")]);
+
+    expect(items[0].i18nKey).toBe("products.a");
+    expect(items[0].name).toEqual({ en: "A", fa: "الف" });
   });
 
   it("DROPS a category whose image is an empty string", () => {
     // The exact shape the homepage used to produce when a category's first
     // product had no gallery images: `image` came through as ""/undefined.
     const items = toCarouselItems(undefined, [
-      { name: "products.a", image: "", link: "/products/a" },
-      { name: "products.b", image: "/b.jpg", link: "/products/b" },
+      { ...tile("a", "A", "الف"), image: "" },
+      tile("b", "B", "ب"),
     ]);
 
     expect(items).toHaveLength(1);
@@ -43,9 +64,8 @@ describe("toCarouselItems — category branch", () => {
   it("DROPS a category whose image is undefined", () => {
     const items = toCarouselItems(undefined, [
       {
-        name: "products.a",
+        ...tile("a", "A", "الف"),
         image: undefined as unknown as string,
-        link: "/products/a",
       },
     ]);
 
@@ -53,9 +73,7 @@ describe("toCarouselItems — category branch", () => {
   });
 
   it("takes precedence over `images` when it has usable entries", () => {
-    const items = toCarouselItems(["/plain.jpg"], [
-      { name: "products.a", image: "/a.jpg", link: "/products/a" },
-    ]);
+    const items = toCarouselItems(["/plain.jpg"], [tile("a", "A", "الف")]);
 
     expect(items).toHaveLength(1);
     expect(items[0].link).toBe("/products/a");
@@ -66,9 +84,10 @@ describe("toCarouselItems — category branch", () => {
     // modes, and mixing them would make the result depend on which happened to
     // survive filtering. The carousel already renders nothing for 0 items, so
     // "no usable tiles" is a supported outcome.
-    const items = toCarouselItems(["/plain.jpg"], [
-      { name: "products.a", image: "", link: "/products/a" },
-    ]);
+    const items = toCarouselItems(
+      ["/plain.jpg"],
+      [{ ...tile("a", "A", "الف"), image: "" }],
+    );
 
     expect(items).toEqual([]);
   });
@@ -97,7 +116,7 @@ describe("toCarouselItems — images branch", () => {
   it("never yields an item with an empty image", () => {
     const items = toCarouselItems(
       ["", "/ok.jpg", ""],
-      [{ name: "products.x", image: "", link: "/products/x" }],
+      [{ ...tile("x", "X", "ایکس"), image: "" }],
     );
 
     for (const item of items) {
@@ -107,18 +126,23 @@ describe("toCarouselItems — images branch", () => {
 });
 
 describe("isCategoryItem", () => {
-  it("recognises a category item (name + link present)", () => {
-    expect(
-      isCategoryItem({ name: "products.a", image: "/a.jpg", link: "/products/a" }),
-    ).toBe(true);
+  it("recognises a category item (key + name + link present)", () => {
+    expect(isCategoryItem(tile("a", "A", "الف"))).toBe(true);
   });
 
   it("rejects a plain image slide", () => {
     expect(isCategoryItem({ image: "/a.jpg" })).toBe(false);
   });
 
-  it("rejects an item missing either half of the category pair", () => {
-    expect(isCategoryItem({ name: "products.a", image: "/a.jpg" })).toBe(false);
-    expect(isCategoryItem({ image: "/a.jpg", link: "/products/a" })).toBe(false);
+  it("rejects an item missing any one of key/name/link", () => {
+    expect(
+      isCategoryItem({ ...tile("a", "A", "الف"), i18nKey: undefined }),
+    ).toBe(false);
+    expect(
+      isCategoryItem({ ...tile("a", "A", "الف"), name: undefined }),
+    ).toBe(false);
+    expect(isCategoryItem({ ...tile("a", "A", "الف"), link: undefined })).toBe(
+      false,
+    );
   });
 });

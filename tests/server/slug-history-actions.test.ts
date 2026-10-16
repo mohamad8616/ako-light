@@ -191,7 +191,6 @@ describeDb("slug history — recorded by the real admin update actions", () => {
 
       const result = await updateProductCategoryAction(id, {
         slug: newSlug,
-        i18nKey: `products.c2-${s}`,
         name: PAIR,
         sortOrder: 0,
       });

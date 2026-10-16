@@ -195,6 +195,28 @@ export const getProductCategoryAdminRows = cache(
   },
 );
 
+/**
+ * The stored `i18nKey` for one category, or null when the row is gone.
+ *
+ * A targeted `select` rather than a lookup in {@link getProductCategoryAdminRows}
+ * because the update action needs exactly this one string. The admin form no
+ * longer carries `i18nKey` (it is derived — see
+ * `lib/admin/actions/product-categories.ts#withI18nKey`), and the column is NOT
+ * NULL, so a save has to carry the EXISTING value through. Reading the whole
+ * admin table — with a product count per row — to recover one column would put
+ * a needless round-trip on every category save.
+ */
+export const getProductCategoryI18nKey = cache(
+  async (id: string): Promise<string | null> => {
+    const row = await prisma.productCategory.findUnique({
+      where: { id },
+      select: { i18nKey: true },
+    });
+
+    return row?.i18nKey ?? null;
+  },
+);
+
 export const createProductCategory = async (
   input: ProductCategoryWriteInput,
   db: Prisma.TransactionClient = prisma,

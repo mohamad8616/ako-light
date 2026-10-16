@@ -180,6 +180,7 @@ export default function ImageGalleryCarousel({
                 multiWidth={multiWidth}
                 hasCategoryCta={hasCategoryCta}
                 fontClass={lang === "fa" ? "font-noora" : "font-din"}
+                lang={lang}
                 t={t}
                 cta={isCategoryItem(item) ? item : null}
                 href={purpose === "link" ? (item.link ?? href) : undefined}

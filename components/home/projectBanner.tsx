@@ -51,7 +51,7 @@ export default function ProjectBanner({ data }: ProjectBannerProps) {
             src={data.image}
             alt={title}
             fill
-            className="object-cover transition-transform duration-3000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+            className="object-cover z-999 transition-transform duration-3000 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
           />
         </motion.div>
 

@@ -84,3 +84,36 @@ export function displayProductDescription(
     productDescription(t, product.slug)
   );
 }
+
+/**
+ * Display name for a product category — dictionary-FIRST, with the row's own
+ * `name` column as the fallback.
+ *
+ * ── Why the dictionary wins here, unlike a product ──────────────────────────
+ *
+ * A category's name has always been resolved through its `i18nKey` column, and
+ * the two sources are NOT interchangeable: the seeded column holds "Lighting"
+ * while the dictionary holds the styled "LIGHTING". Letting the column win would
+ * silently re-case every category title on the site, so the dictionary stays
+ * first and the column is only a fallback.
+ *
+ * ── Why the fallback is needed at all ───────────────────────────────────────
+ *
+ * `i18nKey` is no longer typed by the admin — the category action derives it
+ * from the slug (lib/admin/actions/product-categories.ts#withI18nKey). A
+ * brand-new category therefore gets a key that may not exist in the dictionary
+ * yet, and `t()` returns the RAW KEY on a miss — which would render
+ * "products.outdoor" as a page title. Falling back to `name` (the column the
+ * admin did fill in) keeps that case readable without changing a single byte of
+ * what the seeded rows render.
+ */
+export function displayCategoryName(
+  t: (key: string) => string,
+  category: { i18nKey: string; name: Localized },
+  lang: Language,
+): string {
+  const translated = t(category.i18nKey);
+  return translated !== category.i18nKey
+    ? translated
+    : pick(category.name, lang);
+}

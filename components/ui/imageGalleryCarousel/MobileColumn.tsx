@@ -1,6 +1,7 @@
 "use client";
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import { displayCategoryName } from "@/lib/i18n/localized";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import Image from "next/image";
@@ -36,7 +37,11 @@ export default function MobileColumn({ items, purpose, href, onOpen }: Props) {
       <div className="grid grid-cols-1 gap-2">
         {items.map((item, i) => {
           const cta = isCategoryItem(item) ? item : null;
-          const alt = hasCategoryCta && cta ? t(cta.name) : "";
+          // Dictionary-first, column fallback — see `displayCategoryName`.
+          // Calling `t()` on `cta.name` is what rendered the raw key
+          // ("products.car") for a category with no dictionary entry yet.
+          const alt =
+            hasCategoryCta && cta ? displayCategoryName(t, cta, lang) : "";
           const slideHref =
             purpose === "link" ? (item.link ?? href) : undefined;
 
@@ -62,7 +67,9 @@ export default function MobileColumn({ items, purpose, href, onOpen }: Props) {
             <motion.div
               // Position + identifier, never the image alone — two slides may
               // share an image (or have none), which made the key non-unique.
-              key={`${i}:${item.link ?? item.image ?? item.name ?? ""}`}
+              // The identifier is the link for category tiles (their slug path)
+              // — `name` is a bilingual object, so it is never stringified here.
+              key={`${i}:${item.link ?? item.image ?? item.i18nKey ?? ""}`}
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
@@ -95,7 +102,7 @@ export default function MobileColumn({ items, purpose, href, onOpen }: Props) {
               )}
               {cta && (
                 <PlusTextBtn
-                  text={t(cta.name)}
+                  text={displayCategoryName(t, cta, lang)}
                   href={cta.link}
                   className={fontClass}
                 />

@@ -1,6 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { displayCategoryName } from "@/lib/i18n/localized";
+import type { Language } from "@/lib/i18n/translations";
 import Image from "next/image";
 import Link from "@/lib/i18n/Link";
 import { type CSSProperties } from "react";
@@ -21,6 +23,8 @@ export type SlideProps = {
   multiWidth: boolean;
   hasCategoryCta: boolean;
   fontClass: string;
+  /** Active locale — needed to resolve the category label. */
+  lang: Language;
   t: (key: string) => string;
   cta: Required<CarouselItem> | null;
   href?: string;
@@ -40,6 +44,7 @@ export default function Slide({
   multiWidth,
   hasCategoryCta,
   fontClass,
+  lang,
   t,
   cta,
   href,
@@ -57,7 +62,12 @@ export default function Slide({
       ? "(min-width: 1280px) 46vw, (min-width: 1024px) 48vw, (min-width: 768px) 64vw, (min-width: 640px) 90vw, 100vw"
       : "(min-width: 1280px) 23vw, (min-width: 1024px) 24vw, (min-width: 768px) 32vw, (min-width: 640px) 45vw, 60vw";
   const heightClass = multiWidth ? MULTI_HEIGHT : DEFAULT_HEIGHT;
-  const alt = hasCategoryCta && cta ? t(cta.name) : "";
+  // Dictionary-first, with the row's own bilingual `name` as the fallback —
+  // see `displayCategoryName`. Feeding the raw `cta.name` into `t()` is what
+  // used to render a brand-new category as its translation key
+  // ("products.car") on the tile, in `alt` and in `aria-label`.
+  const alt =
+    hasCategoryCta && cta ? displayCategoryName(t, cta, lang) : "";
 
   const style: CSSProperties = {
     transitionDelay: `${(index % 6) * 0.06}s`,
@@ -119,7 +129,7 @@ export default function Slide({
       {clickable}
       {cta && (
         <PlusTextBtn
-          text={t(cta.name)}
+          text={displayCategoryName(t, cta, lang)}
           href={cta.link}
           className={cn(fontClass, "text-background text-sm lg:text-base")}
           textColor="text-background"
