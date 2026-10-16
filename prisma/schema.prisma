@@ -366,6 +366,48 @@ model CatalogueItem {
   @@map("catalogue_item")
 }
 
+/// A registry of every PDF/PowerPoint uploaded through the admin.
+///
+/// ── Why this is NOT a `Media` row ───────────────────────────────────────────
+///
+/// The `media` table is the IMAGE/VIDEO library: `lib/media/library.ts` types
+/// `MediaKind` as exactly those two, and the picker/library UI is built around
+/// previewing them. Documents are a different species — they are never
+/// previewed, they carry a filename that must reach `Content-Disposition`, and
+/// they are validated by content sniffing rather than by an image decoder.
+///
+/// Before this table the ONLY record of an uploaded document was the URL column
+/// on whichever row referenced it (`CatalogueItem.pdfUrl`,
+/// `Product.downloads[].href`). That made two things impossible: offering
+/// "choose an already-uploaded document" (there was nothing to list) and
+/// refusing a duplicate upload (there was nothing to compare against). This is
+/// that missing record.
+///
+/// The row is a REGISTRY, not an owner: deleting it does not delete the stored
+/// object, and many rows may reference one document. `storageKey` is unique so
+/// the same object can never be registered twice.
+model CatalogueDocument {
+  id          String   @id @default(uuid())
+  /// The presentable, header-safe filename the operator uploaded.
+  filename    String
+  /// Byte length as recorded at upload time. Pairs with `filename` for the
+  /// duplicate guard (both must match to count as the same file).
+  size        Int
+  /// Public URL of the stored object.
+  url         String
+  /// Provider storage key — unique, so re-registering the same object is a
+  /// no-op rather than a second row.
+  storageKey  String   @unique
+  /// Lowercase extension ("pdf" | "pptx"), derived from the sniffed type.
+  extension   String
+  createdAt   DateTime @default(now())
+
+  /// Lookups for the duplicate guard (filename + size) and the picker's search.
+  @@index([filename, size])
+  @@index([createdAt])
+  @@map("catalogue_document")
+}
+
 /// lib/data/flagships.ts -> Flagship (+ FlagshipDetail)
 model Flagship {
   id        String   @id
@@ -939,12 +981,36 @@ model SiteSettings {
   email           String?
   /// Localized { en, fa }
   address         Json?
+  /// Localized { en, fa } — the catalogue block's heading on the product page
+  /// (`components/products/prod/CatalogueDownloadSection.tsx`). NULL = fall back
+  /// to the `products.catalogue.label` dictionary string, so a fresh row still
+  /// renders copy. Editable at /admin/settings.
+  catalogueTitle  Json?
+  /// Localized { en, fa } — the catalogue block's body paragraph. NULL = fall
+  /// back to `s34.concept.p1`.
+  catalogueText   Json?
+  /// Localized { en, fa } — the label on the catalogue CTA button. NULL = fall
+  /// back to `products.catalogue.download`, so a fresh row still renders a label.
+  catalogueCtaLabel Json?
+  /// Optional catalogue cover image. NULL = fall back to the bundled
+  /// `public/photos/downloadCatalogue.jpg`.
+  catalogueMediaId String?
+  /// Where the catalogue cover / CTA points. NULL = fall back to the
+  /// dictionary-driven default. A plain link (root-relative or absolute), not a
+  /// document upload: this is the catalogue CTA, not a per-product sheet.
+  catalogueHref   String?
+  /// The presentable filename of the catalogue CTA's document (paired with
+  /// `catalogueHref`) — needed by the download route for `Content-Disposition`.
+  /// NULL when no document has been chosen.
+  catalogueName   String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
   // SetNull, never Cascade: deleting a Media row must not delete the settings.
   logoMedia    Media? @relation("SiteLogoMedia", fields: [logoMediaId], references: [id], onDelete: SetNull)
   faviconMedia Media? @relation("SiteFaviconMedia", fields: [faviconMediaId], references: [id], onDelete: SetNull)
+  /// SetNull for the same reason as the two above.
+  catalogueMedia Media? @relation("SiteCatalogueMedia", fields: [catalogueMediaId], references: [id], onDelete: SetNull)
 
   @@map("site_settings")
 }
@@ -1010,6 +1076,8 @@ model Media {
   // Pass 13.5D brand assets.
   siteLogos      SiteSettings[]  @relation("SiteLogoMedia")
   siteFavicons   SiteSettings[]  @relation("SiteFaviconMedia")
+  /// The catalogue cover on the product page (see SiteSettings.catalogueMedia).
+  siteCatalogues SiteSettings[]  @relation("SiteCatalogueMedia")
 
   @@index([mediaType])
   @@index([createdAt])

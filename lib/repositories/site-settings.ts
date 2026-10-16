@@ -46,6 +46,22 @@ export interface SiteSettingsDto {
   phone: string | null;
   email: string | null;
   address: Localized | null;
+  /**
+   * The product page's catalogue block. Every field is nullable and null means
+   * "use the component's built-in fallback", exactly like the brand assets —
+   * so an un-edited row renders the same copy it always did.
+   */
+  catalogueTitle: Localized | null;
+  catalogueText: Localized | null;
+  /** The CTA button's label; null = the dictionary's default label. */
+  catalogueCtaLabel: Localized | null;
+  /** Resolved cover image URL (Media relation); null = bundled default. */
+  catalogueUrl: string | null;
+  catalogueMediaId: string | null;
+  /** The CTA / cover link target. null = dictionary-driven default. */
+  catalogueHref: string | null;
+  /** Presentable filename of the CTA document; null when none chosen. */
+  catalogueName: string | null;
   updatedAt: string;
 }
 
@@ -68,10 +84,60 @@ const SETTINGS_SELECT = {
   phone: true,
   email: true,
   address: true,
+  catalogueTitle: true,
+  catalogueText: true,
+  catalogueCtaLabel: true,
+  catalogueMediaId: true,
+  catalogueHref: true,
+  catalogueName: true,
   updatedAt: true,
   logoMedia: { select: { url: true } },
   faviconMedia: { select: { url: true } },
+  catalogueMedia: { select: { url: true } },
 } satisfies Prisma.SiteSettingsSelect;
+
+/** A settings row after {@link SETTINGS_SELECT} has been applied. */
+type SiteSettingsRow = Prisma.SiteSettingsGetPayload<{
+  select: typeof SETTINGS_SELECT;
+}>;
+
+/**
+ * Row → DTO, in ONE place.
+ *
+ * Read and upsert used to inline the same twelve-field object literal, so every
+ * new column had to be added twice. Both now go through this.
+ */
+function toSiteSettingsDto(row: SiteSettingsRow): SiteSettingsDto {
+  return {
+    id: row.id,
+    siteName: asJson<Localized>(row.siteName),
+    siteDescription: asJson<Localized>(row.siteDescription),
+    logoUrl: row.logoMedia?.url ?? null,
+    faviconUrl: row.faviconMedia?.url ?? null,
+    logoMediaId: row.logoMediaId,
+    faviconMediaId: row.faviconMediaId,
+    phone: row.phone,
+    email: row.email,
+    address: row.address === null ? null : asJson<Localized>(row.address),
+    catalogueTitle: optionalLocalized(row.catalogueTitle),
+    catalogueText: optionalLocalized(row.catalogueText),
+    catalogueCtaLabel: optionalLocalized(row.catalogueCtaLabel),
+    catalogueUrl: row.catalogueMedia?.url ?? null,
+    catalogueMediaId: row.catalogueMediaId,
+    catalogueHref: row.catalogueHref,
+    catalogueName: row.catalogueName,
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+/** jsonb -> Localized | null. A missing/blank pair stays null (= "use default"). */
+function optionalLocalized(value: Prisma.JsonValue | null): Localized | null {
+  if (value === null) return null;
+  const parsed = asJson<Localized>(value);
+  return parsed.en?.trim() === "" && parsed.fa?.trim() === ""
+    ? null
+    : parsed;
+}
 
 const SOCIAL_SELECT = {
   id: true,
@@ -98,19 +164,7 @@ export const getSiteSettings = cache(async (): Promise<SiteSettingsDto | null> =
   });
   if (!row) return null;
 
-  return {
-    id: row.id,
-    siteName: asJson<Localized>(row.siteName),
-    siteDescription: asJson<Localized>(row.siteDescription),
-    logoUrl: row.logoMedia?.url ?? null,
-    faviconUrl: row.faviconMedia?.url ?? null,
-    logoMediaId: row.logoMediaId,
-    faviconMediaId: row.faviconMediaId,
-    phone: row.phone,
-    email: row.email,
-    address: row.address === null ? null : asJson<Localized>(row.address),
-    updatedAt: row.updatedAt.toISOString(),
-  };
+  return toSiteSettingsDto(row);
 });
 
 /**
@@ -164,6 +218,13 @@ export interface SiteSettingsWriteInput {
   phone: string | null;
   email: string | null;
   address: Localized | null;
+  /** Product-page catalogue block; null = keep using the component fallback. */
+  catalogueTitle: Localized | null;
+  catalogueText: Localized | null;
+  catalogueCtaLabel: Localized | null;
+  catalogueMediaId: string | null;
+  catalogueHref: string | null;
+  catalogueName: string | null;
 }
 
 /**
@@ -188,6 +249,12 @@ export async function upsertSiteSettings(
       phone: input.phone,
       email: input.email,
       address: asNullableJsonInput(input.address),
+      catalogueTitle: asNullableJsonInput(input.catalogueTitle),
+      catalogueText: asNullableJsonInput(input.catalogueText),
+      catalogueCtaLabel: asNullableJsonInput(input.catalogueCtaLabel),
+      catalogueMediaId: input.catalogueMediaId,
+      catalogueHref: input.catalogueHref,
+      catalogueName: input.catalogueName,
     },
     update: {
       siteName: asJsonInput(input.siteName),
@@ -197,23 +264,17 @@ export async function upsertSiteSettings(
       phone: input.phone,
       email: input.email,
       address: asNullableJsonInput(input.address),
+      catalogueTitle: asNullableJsonInput(input.catalogueTitle),
+      catalogueText: asNullableJsonInput(input.catalogueText),
+      catalogueCtaLabel: asNullableJsonInput(input.catalogueCtaLabel),
+      catalogueMediaId: input.catalogueMediaId,
+      catalogueHref: input.catalogueHref,
+      catalogueName: input.catalogueName,
     },
     select: SETTINGS_SELECT,
   });
 
-  return {
-    id: row.id,
-    siteName: asJson<Localized>(row.siteName),
-    siteDescription: asJson<Localized>(row.siteDescription),
-    logoUrl: row.logoMedia?.url ?? null,
-    faviconUrl: row.faviconMedia?.url ?? null,
-    logoMediaId: row.logoMediaId,
-    faviconMediaId: row.faviconMediaId,
-    phone: row.phone,
-    email: row.email,
-    address: row.address === null ? null : asJson<Localized>(row.address),
-    updatedAt: row.updatedAt.toISOString(),
-  };
+  return toSiteSettingsDto(row);
 }
 
 export interface SocialLinkWriteInput {

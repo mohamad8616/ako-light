@@ -68,14 +68,41 @@ export async function updateSiteSettingsAction(
     ) {
       issues.push({ field: "faviconMediaId", code: "notFound" });
     }
+    if (
+      parsed.data.catalogueMediaId &&
+      !(await mediaExists(parsed.data.catalogueMediaId))
+    ) {
+      issues.push({ field: "catalogueMediaId", code: "notFound" });
+    }
     if (issues.length > 0) return actionFail("invalid", issues);
 
-    await upsertSiteSettings(parsed.data);
+    await upsertSiteSettings({
+      ...parsed.data,
+      // The form's clearable shapes are normalised to SQL NULL here — the ONE
+      // representation of "not configured" the repository and the render
+      // fallback both depend on. A blank pair / empty href is not a value.
+      catalogueTitle: pairOrNull(parsed.data.catalogueTitle),
+      catalogueText: pairOrNull(parsed.data.catalogueText),
+      catalogueCtaLabel: pairOrNull(parsed.data.catalogueCtaLabel),
+      catalogueHref: parsed.data.catalogueHref.trim() === "" ? null : parsed.data.catalogueHref,
+      catalogueName:
+        parsed.data.catalogueName?.trim() === "" || parsed.data.catalogueName === null
+          ? null
+          : parsed.data.catalogueName.trim(),
+    });
     revalidateSiteSettings();
     return actionOk(undefined);
   } catch (error) {
     return toActionResult(error);
   }
+}
+
+/** A cleared bilingual pair (both halves blank) becomes SQL NULL. */
+function pairOrNull(pair: { en: string; fa: string }): {
+  en: string;
+  fa: string;
+} | null {
+  return pair.en.trim() === "" && pair.fa.trim() === "" ? null : pair;
 }
 
 function mediaExists(id: string): Promise<{ id: string } | null> {

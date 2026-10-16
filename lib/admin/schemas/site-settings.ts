@@ -2,7 +2,10 @@ import { z } from "zod";
 import {
   EMAIL_MAX,
   ID_MAX,
+  NAME_MAX,
   PHONE_MAX,
+  clearableLinkSchema,
+  clearableLocalizedSchema,
   idSchema,
   linkSchema,
   localizedSchema,
@@ -60,6 +63,37 @@ export const siteSettingsFormSchema = z.object({
   phone: optionalText(PHONE_MAX),
   email: optionalText(EMAIL_MAX),
   address: localizedSchema.nullable(),
+
+  // ── Product-page catalogue block ──────────────────────────────────────────
+  /**
+   * The heading + paragraph are CLEARABLE pairs: either both languages are
+   * filled or neither is. A half-filled pair renders a blank line on the
+   * Persian page (`pick` resolves `value[lang] ?? value.en`, and "" is not
+   * nullish), so it is refused here — see `clearableLocalizedSchema`.
+   */
+  catalogueTitle: clearableLocalizedSchema,
+  catalogueText: clearableLocalizedSchema,
+  /**
+   * The CTA button's own label. CLEARABLE for the same reason as the copy
+   * above: a blank pair keeps the dictionary label
+   * (`products.catalogue.download`), which is what every un-edited site shows.
+   */
+  catalogueCtaLabel: clearableLocalizedSchema,
+  /** Media id of the cover image; null = the bundled default photo. */
+  catalogueMediaId: idSchema.nullable(),
+  /**
+   * Where the cover and the CTA point. CLEARABLE: "" = keep the built-in
+   * default. Uses the project's shared link policy, so `javascript:` and
+   * friends are rejected by allow-list.
+   */
+  catalogueHref: clearableLinkSchema,
+  /**
+   * The presentable filename of the chosen document, kept beside the URL
+   * because the download route needs it for `Content-Disposition` — the same
+   * pair `/admin/catalogue` stores per card. It is NEVER a pasted link, so it
+   * is a plain optional string (not a link).
+   */
+  catalogueName: z.string().max(NAME_MAX).nullable(),
 });
 
 export type SiteSettingsFormValues = z.infer<typeof siteSettingsFormSchema>;

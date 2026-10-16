@@ -1,12 +1,18 @@
 "use client";
 
 import { MediaPickerField } from "@/components/admin/settings/MediaPickerField";
+import { DocumentPickerField } from "@/components/admin/settings/DocumentPickerField";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { updateSiteSettingsAction } from "@/lib/admin/actions/site-settings";
-import { EMAIL_MAX, NAME_MAX, PHONE_MAX, TEXT_MAX } from "@/lib/admin/schemas/common";
+import {
+  EMAIL_MAX,
+  NAME_MAX,
+  PHONE_MAX,
+  TEXT_MAX,
+} from "@/lib/admin/schemas/common";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import type { SiteSettingsDto } from "@/lib/repositories/site-settings";
 import * as React from "react";
@@ -60,6 +66,35 @@ export function SiteSettingsForm({
   const [phone, setPhone] = React.useState(settings?.phone ?? "");
   const [email, setEmail] = React.useState(settings?.email ?? "");
 
+  // Product-page catalogue block. Every field defaults to EMPTY (not to the
+  // rendered fallback copy): the inputs must show what the admin actually
+  // stored, and blank is the honest representation of "nothing overridden yet".
+  // The placeholder hint spells out what will render instead.
+  const [catalogueTitle, setCatalogueTitle] = React.useState({
+    en: settings?.catalogueTitle?.en ?? "",
+    fa: settings?.catalogueTitle?.fa ?? "",
+  });
+  const [catalogueText, setCatalogueText] = React.useState({
+    en: settings?.catalogueText?.en ?? "",
+    fa: settings?.catalogueText?.fa ?? "",
+  });
+  const [catalogueCtaLabel, setCatalogueCtaLabel] = React.useState({
+    en: settings?.catalogueCtaLabel?.en ?? "",
+    fa: settings?.catalogueCtaLabel?.fa ?? "",
+  });
+  const [catalogueMediaId, setCatalogueMediaId] = React.useState<string | null>(
+    settings?.catalogueMediaId ?? null,
+  );
+  const [catalogueUrl, setCatalogueUrl] = React.useState<string | null>(
+    settings?.catalogueUrl ?? null,
+  );
+  const [catalogueHref, setCatalogueHref] = React.useState(
+    settings?.catalogueHref ?? "",
+  );
+  const [catalogueName, setCatalogueName] = React.useState(
+    settings?.catalogueName ?? "",
+  );
+
   /** A bilingual pair is stored as null when both locales are blank. */
   const pairOrNull = (pair: { en: string; fa: string }) =>
     pair.en.trim() === "" && pair.fa.trim() === "" ? null : pair;
@@ -75,6 +110,12 @@ export function SiteSettingsForm({
         phone: phone.trim() === "" ? null : phone,
         email: email.trim() === "" ? null : email,
         address: pairOrNull(address),
+        catalogueTitle,
+        catalogueText,
+        catalogueCtaLabel,
+        catalogueMediaId,
+        catalogueHref,
+        catalogueName: catalogueName.trim() === "" ? null : catalogueName,
       }),
     );
   };
@@ -172,6 +213,72 @@ export function SiteSettingsForm({
         />
       </section>
 
+      {/* Product-page catalogue block */}
+      <section className="border-border bg-card space-y-5 rounded-lg border p-4 md:p-5">
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold">
+            {t("admin.settings.catalogue")}
+          </h3>
+          <p className="text-muted-foreground text-xs">
+            {t("admin.settings.catalogueHint")}
+          </p>
+        </div>
+
+        <LocalizedInput
+          label={t("admin.settings.field.catalogueTitle")}
+          value={catalogueTitle}
+          onChange={setCatalogueTitle}
+          maxLength={NAME_MAX}
+          disabled={pending}
+          placeholder={t("admin.settings.field.catalogueTitleFallback")}
+        />
+
+        <LocalizedInput
+          label={t("admin.settings.field.catalogueText")}
+          value={catalogueText}
+          onChange={setCatalogueText}
+          maxLength={TEXT_MAX}
+          disabled={pending}
+          multiline
+          placeholder={t("admin.settings.field.catalogueTextFallback")}
+        />
+
+        <LocalizedInput
+          label={t("admin.settings.field.catalogueCtaLabel")}
+          value={catalogueCtaLabel}
+          onChange={setCatalogueCtaLabel}
+          maxLength={NAME_MAX}
+          disabled={pending}
+          placeholder={t("admin.settings.field.catalogueCtaLabelFallback")}
+        />
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <MediaPickerField
+            label={t("admin.settings.field.catalogueImage")}
+            hint={t("admin.settings.field.catalogueImageHint")}
+            fallbackHint={t("admin.settings.field.catalogueImageFallback")}
+            mediaId={catalogueMediaId}
+            previewUrl={catalogueUrl}
+            mediaType="image"
+            onChange={(next) => {
+              setCatalogueMediaId(next.mediaId);
+              setCatalogueUrl(next.url);
+            }}
+          />
+
+          <DocumentPickerField
+            label={t("admin.settings.field.catalogueHref")}
+            hint={t("admin.settings.field.catalogueHrefHint")}
+            disabled={pending}
+            value={{ url: catalogueHref, name: catalogueName }}
+            onChange={(next) => {
+              setCatalogueHref(next.url);
+              setCatalogueName(next.name);
+            }}
+          />
+        </div>
+      </section>
+
       <div className="flex justify-end">
         <Button type="submit" size="sm" disabled={pending}>
           {t("admin.crud.save")}
@@ -195,6 +302,7 @@ function LocalizedInput({
   maxLength,
   disabled,
   multiline,
+  placeholder,
 }: {
   label: string;
   value: { en: string; fa: string };
@@ -202,6 +310,8 @@ function LocalizedInput({
   maxLength: number;
   disabled?: boolean;
   multiline?: boolean;
+  /** Shown when the field is blank — the copy that renders as a fallback. */
+  placeholder?: string;
 }) {
   return (
     <fieldset className="space-y-2">
@@ -214,6 +324,7 @@ function LocalizedInput({
             value: value[locale],
             maxLength,
             disabled,
+            placeholder,
             dir: locale === "fa" ? ("rtl" as const) : ("ltr" as const),
           };
           return (

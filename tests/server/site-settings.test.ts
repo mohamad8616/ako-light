@@ -105,12 +105,27 @@ describeDb("site settings repository", () => {
   });
 
   describe("upsertSiteSettings", () => {
+    /**
+     * The catalogue-block fields a write now carries. These tests are about the
+     * settings row, not the catalogue block, so they spread this base in and
+     * override only what they assert on — "cleared" is the neutral default.
+     */
+    const clearedCatalogue = {
+      catalogueTitle: null,
+      catalogueText: null,
+      catalogueCtaLabel: null,
+      catalogueMediaId: null,
+      catalogueHref: null,
+      catalogueName: null,
+    };
+
     it("updates the EXISTING row rather than inserting a second one", async () => {
       await inRollback(async (tx) => {
         const before = await tx.siteSettings.count();
 
         await upsertSiteSettings(
           {
+            ...clearedCatalogue,
             siteName: { en: "Test", fa: "تست" },
             siteDescription: { en: "d", fa: "د" },
             logoMediaId: null,
@@ -136,6 +151,7 @@ describeDb("site settings repository", () => {
       await inRollback(async (tx) => {
         await upsertSiteSettings(
           {
+            ...clearedCatalogue,
             siteName: { en: "Test", fa: "تست" },
             siteDescription: { en: "d", fa: "د" },
             logoMediaId: null,
@@ -149,6 +165,7 @@ describeDb("site settings repository", () => {
 
         await upsertSiteSettings(
           {
+            ...clearedCatalogue,
             siteName: { en: "Test", fa: "تست" },
             siteDescription: { en: "d", fa: "د" },
             logoMediaId: null,

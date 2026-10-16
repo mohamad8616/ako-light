@@ -102,7 +102,14 @@ export default function ProductInfoSection({ product }: { product: Product }) {
                   initial={{ opacity: 0.6, y: 0 }}
                   animate={{ opacity: 1, y: 90 }}
                   transition={{ duration: 0.8 }}
-                  className="font-din mt-4 mb-24 max-w-2xl text-sm leading-relaxed text-stone-600"
+                  // The font follows the ACTIVE LOCALE, not a fixed family:
+                  // `font-din` is the Latin face and renders Persian in a
+                  // fallback (Tahoma), which is why the more-info text ignored
+                  // Noora. Same lang-conditional switch as Paragraph/SectionTitle.
+                  className={cn(
+                    "mt-4 mb-24 max-w-2xl text-sm leading-relaxed text-stone-600",
+                    lang === "fa" ? "font-noora" : "font-din",
+                  )}
                 >
                   {displayMoreInfo}
                 </motion.p>

@@ -5,6 +5,7 @@ import RelatedProductsSection from "@/components/products/prod/RelatedProdSectio
 import ImageGalleryCarousel from "@/components/ui/imageGalleryCarousel";
 import PictureHero from "@/components/ui/PictureHero";
 import type { Product } from "@/lib/data/product-categories/types";
+import type { SiteSettingsDto } from "@/lib/repositories/site-settings";
 import CatalogueDownloadSection from "./CatalogueDownloadSection";
 
 interface ProductPageClientProps {
@@ -13,6 +14,8 @@ interface ProductPageClientProps {
   sameCategoryProducts: Product[];
   /** Gallery image URLs (DB-sourced ProductImage rows, sortOrder order). */
   galleryImages: string[];
+  /** The admin-editable catalogue block (see /admin/settings). */
+  settings: SiteSettingsDto | null;
 }
 
 export default function ProductPageClient({
@@ -20,6 +23,7 @@ export default function ProductPageClient({
   link,
   sameCategoryProducts,
   galleryImages,
+  settings,
 }: ProductPageClientProps) {
   // Pass the bilingual name straight through: PictureHero resolves it against
   // the active language (reactively), so it follows the page locale instead of
@@ -38,7 +42,7 @@ export default function ProductPageClient({
         product={productt}
         sameCategoryProducts={sameCategoryProducts}
       />
-      <CatalogueDownloadSection link={link} />
+      <CatalogueDownloadSection link={link} settings={settings} />
     </main>
   );
 }

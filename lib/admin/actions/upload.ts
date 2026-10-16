@@ -56,9 +56,40 @@ import {
   verifyLiaraUploadAuthorization,
 } from "@/lib/media/storage/liara-upload-token";
 import { buildStorageKey } from "@/lib/media/validation";
+import {
+  findDocumentByFilenameAndSize,
+  registerCatalogueDocument,
+} from "@/lib/repositories/catalogue-documents";
 import { headers } from "next/headers";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
+
+/**
+ * Registers an uploaded document, swallowing a registry failure.
+ *
+ * NOT exported: a `"use server"` module may only export async functions, and
+ * this is an internal helper, not an endpoint. An `export` here would also turn
+ * it into a remotely-callable action, which it must not be.
+ *
+ * The registry is a convenience layer (it powers the picker and the duplicate
+ * guard), never the reason an upload succeeds. Once the bytes are in storage
+ * the form needs the URL, so a registry hiccup is logged and the upload still
+ * reports success — the alternative, failing the request, would leave the
+ * operator with a stored file they cannot reference.
+ */
+async function registerDocumentQuietly(input: {
+  filename: string;
+  size: number;
+  url: string;
+  storageKey: string;
+  extension: string;
+}): Promise<void> {
+  try {
+    await registerCatalogueDocument(input);
+  } catch (error) {
+    console.error("[upload] document registry write failed", error);
+  }
+}
 
 /**
  * The storage folder every catalogue document lives under.
@@ -170,6 +201,25 @@ export async function uploadCatalogueDocumentAction(
   const expectedMime = documentMimeForExtension(extension);
   if (!expectedMime) return actionFail("unsupportedType");
 
+  // ── Duplicate guard ────────────────────────────────────────────────────────
+  // Refused BEFORE a byte reaches storage, exactly like the image library: a
+  // registered document already has this filename AND this byte size, so the
+  // operator is about to store the same file a second time. The filename is
+  // COMPARED as sanitized (what would actually be stored and listed), not as
+  // typed, so "My Catalogue.pdf" and "My  Catalogue.pdf" collide as they should.
+  // Renaming the file is the documented way past this.
+  const duplicateName = safeDocumentFilename(file.name, extension);
+  const alreadyThere = await findDocumentByFilenameAndSize(
+    duplicateName,
+    file.size,
+  );
+  if (alreadyThere) {
+    console.warn(
+      `[upload] refusing duplicate document: ${duplicateName} (${file.size} bytes) already registered as ${alreadyThere.id}`,
+    );
+    return actionFail("duplicate");
+  }
+
   try {
     const bytes = await file.arrayBuffer();
     const mimeType = sniffDocumentType(new Uint8Array(bytes));
@@ -195,6 +245,19 @@ export async function uploadCatalogueDocumentAction(
       // base name instead.
       addRandomSuffix: false,
     });
+
+    // Register the upload so it can be re-chosen from the picker instead of
+    // re-uploaded, and so the duplicate guard has something to compare against.
+    // A registry failure must not fail the upload — the file IS stored and the
+    // form needs its URL — so it is logged, not thrown.
+    await registerDocumentQuietly({
+      filename: name,
+      size: file.size,
+      url: stored.url,
+      storageKey: stored.key,
+      extension: actualExtension,
+    });
+
     return actionOk({ url: stored.url, name, extension: actualExtension });
   } catch (error) {
     console.error("[upload] catalogue document upload failed", error);
@@ -254,6 +317,21 @@ export async function authorizeCatalogueDocumentUploadAction(input: {
   const allowedExtension = documentExtensionFor(contentType ?? "");
   if (!contentType || !allowedExtension || allowedExtension !== extension) {
     return actionFail("unsupportedType");
+  }
+
+  // ── Duplicate guard, BEFORE authorizing the transfer ───────────────────────
+  // For a large file this is the LAST point the server sees the filename and
+  // size before the browser PUTs the bytes straight to storage — the finalize
+  // action only sees a signed token. Checking here is what stops a 20 MB
+  // duplicate from being uploaded at all. The finalize path re-checks too, so
+  // losing this race just means the object is cleaned up rather than registered.
+  const duplicateName = safeDocumentFilename(filename, allowedExtension);
+  const alreadyThere = await findDocumentByFilenameAndSize(duplicateName, size);
+  if (alreadyThere) {
+    console.warn(
+      `[upload] refusing duplicate document authorization: ${duplicateName} (${size} bytes) already registered as ${alreadyThere.id}`,
+    );
+    return actionFail("duplicate");
   }
 
   const key = documentStorageKey(
@@ -399,6 +477,13 @@ export async function registerCatalogueDocumentUploadAction(input: {
     }
 
     const name = safeDocumentFilename(parsed.data.filename, actualExtension);
+    await registerDocumentQuietly({
+      filename: name,
+      size: stored.size,
+      url: stored.url,
+      storageKey: stored.key,
+      extension: actualExtension,
+    });
     return actionOk({ url: stored.url, name, extension: actualExtension });
   } catch (error) {
     console.error("[upload] catalogue document registration failed", error);

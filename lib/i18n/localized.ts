@@ -10,8 +10,18 @@ export interface Localized {
  * Resolve a Localized value (or plain string) for a language.
  * Plain strings pass through unchanged, so data can migrate to
  * Localized field-by-field without breaking consumers.
+ *
+ * `null`/`undefined` resolve to "" so a caller can treat "the admin never
+ * filled this in" and "the value is blank" identically and fall back to a
+ * default in one expression (`pick(row.field, lang).trim() || fallback`).
+ * The parameter is widened rather than guarded at each call site because
+ * optional overrides are now the common shape across these columns.
  */
-export function pick(value: Localized | string, lang: Language): string {
+export function pick(
+  value: Localized | string | null | undefined,
+  lang: Language,
+): string {
+  if (value === null || value === undefined) return "";
   if (typeof value === "string") return value;
   return value[lang] ?? value.en;
 }

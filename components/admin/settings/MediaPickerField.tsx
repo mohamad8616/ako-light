@@ -240,6 +240,7 @@ export function MediaPickerField({
   mediaId,
   previewUrl,
   onChange,
+  mediaType,
 }: {
   label: string;
   hint?: string;
@@ -248,6 +249,8 @@ export function MediaPickerField({
   mediaId: string | null;
   previewUrl: string | null;
   onChange: (next: { mediaId: string | null; url: string | null }) => void;
+  /** Restrict the chooser to one kind — an image field must not offer videos. */
+  mediaType?: MediaKind;
 }) {
   const { t } = useLanguage();
   const [open, setOpen] = React.useState(false);
@@ -307,6 +310,7 @@ export function MediaPickerField({
         open={open}
         onOpenChange={setOpen}
         selectedId={mediaId}
+        mediaType={mediaType}
         onSelect={(item) => onChange({ mediaId: item.id, url: item.url })}
       />
     </div>

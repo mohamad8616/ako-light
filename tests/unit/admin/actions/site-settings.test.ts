@@ -69,6 +69,14 @@ const validSettings = {
   phone: null,
   email: null,
   address: null,
+  // The catalogue block: cleared pairs / no media / no override. This is the
+  // "nothing edited yet" shape the action must render-fallback on.
+  catalogueTitle: { en: "", fa: "" },
+  catalogueText: { en: "", fa: "" },
+  catalogueCtaLabel: { en: "", fa: "" },
+  catalogueMediaId: null,
+  catalogueHref: "",
+  catalogueName: null,
 };
 
 const validLink = {

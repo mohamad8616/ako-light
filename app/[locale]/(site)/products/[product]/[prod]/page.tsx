@@ -12,6 +12,7 @@ import {
   displayProductName,
 } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
+import { getSiteSettings } from "@/lib/repositories/site-settings";
 import { siteName } from "@/lib/seo/config";
 import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
 import {
@@ -129,6 +130,11 @@ export default async function ProductPage({ params }: PageProps) {
   const productImages = await getProductImages(productt.id);
   const primaryPageImage = await getProductPrimaryImage(productt.id);
 
+  // The admin-editable catalogue block at the bottom of the page. It is a
+  // React-`cache()`d singleton read shared with the navbar/footer of this same
+  // request, so this costs no extra query when the layout already read it.
+  const settings = await getSiteSettings();
+
   // Same-category candidates for the related-products section (self
   // excluded); fetched server-side so the client never needs the catalog.
   const sameCategoryProducts = (await getProductsByCategory(product)).filter(
@@ -176,6 +182,7 @@ export default async function ProductPage({ params }: PageProps) {
         link="link"
         sameCategoryProducts={sameCategoryProducts}
         galleryImages={productImages.map((img) => img.url)}
+        settings={settings}
       />
     </>
   );
