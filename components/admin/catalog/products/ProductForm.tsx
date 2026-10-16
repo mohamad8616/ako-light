@@ -12,7 +12,6 @@ import {
 } from "@/components/admin/catalog/fields/ScalarFields";
 import { SelectField } from "@/components/admin/catalog/fields/SelectField";
 import { SlugField } from "@/components/admin/catalog/fields/SlugField";
-import { useOptionalProductModalClose } from "@/components/admin/catalog/products/ProductEditModalShell";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -63,40 +62,63 @@ export function ProductForm({
   const [confirming, setConfirming] = React.useState(false);
   const isEdit = Boolean(detail);
 
-  // When this form is rendered inside the intercepted edit modal, the shell
-  // publishes its close action here so a successful save returns to the
-  // Products list. On the dedicated [id] page the context is undefined and an
-  // inline edit keeps the pre-existing behaviour (stays on the page).
-  const closeModal = useOptionalProductModalClose();
+  /**
+   * The form's seed values, with a STABLE IDENTITY.
+   *
+   * This memo is load-bearing, not a micro-optimisation. `useForm({ values })`
+   * is a REACTIVE prop: react-hook-form watches it and calls `control._reset()`
+   * whenever it changes by deep-equality against the previous value. A fresh
+   * object literal here would therefore reset the form on every parent render —
+   * and a reset DISCARDS anything the operator added with `setValue` but never
+   * registered as an input. That is exactly the "related products" and
+   * "downloads" arrays: they are driven purely by `setValue`, so a save right
+   * after adding a related product persisted the ORIGINAL empty array while
+   * toasting success. (Verified against react-hook-form 7.88's
+   * `useForm` effect: `if (props.values && !deepEqual(props.values, _values.current)) control._reset(...)`.)
+   *
+   * `values` is kept over `defaultValues` so the form still follows server
+   * truth when the row genuinely changes; the memo just stops the identity from
+   * changing when it should not.
+   */
+  const seed = React.useMemo(
+    () =>
+      detail
+        ? {
+            ...detail,
+            // The server detail maps SQL NULL to `undefined`; the schema's input
+            // needs `Localized | null`, so normalize it to match (same pattern
+            // as `DesignersTable`).
+            moreInfo: detail.moreInfo ?? null,
+          }
+        : {
+            slug: "",
+            name: { en: "", fa: "" },
+            hoverImage: "",
+            heroImage: "",
+            priceEur: 0,
+            priceToman: 0,
+            existsInStore: false,
+            quantity: 0,
+            description: { en: "", fa: "" },
+            moreInfo: null,
+            downloads: [],
+            related: [],
+            sortOrder: 0,
+            categoryId: categories[0]?.id ?? "",
+            designerId: null,
+            images: [],
+          },
+    // `detail` IS the row: the repository returns a fresh object per read, so
+    // its identity alone decides when to re-seed. (Re-seeding on every render
+    // is exactly the bug this memo exists to prevent.) `categories` only feeds
+    // the new-row default `categoryId`; a re-seed after the picker list
+    // refreshes is harmless and keeps the default valid.
+    [detail, categories],
+  );
 
   const form = useForm({
     resolver: zodResolver(productFormSchema),
-    values: detail
-      ? {
-          ...detail,
-          // The server detail maps SQL NULL to `undefined`; the schema's input
-          // needs `Localized | null`, so normalize it to match (same pattern
-          // as `DesignersTable`).
-          moreInfo: detail.moreInfo ?? null,
-        }
-      : {
-          slug: "",
-          name: { en: "", fa: "" },
-          hoverImage: "",
-          heroImage: "",
-          priceEur: 0,
-          priceToman: 0,
-          existsInStore: false,
-          quantity: 0,
-          description: { en: "", fa: "" },
-          moreInfo: null,
-          downloads: [],
-          related: [],
-          sortOrder: 0,
-          categoryId: categories[0]?.id ?? "",
-          designerId: null,
-          images: [],
-        },
+    values: seed,
   });
 
   const categoryOptions = categories.map((category) => ({
@@ -136,8 +158,12 @@ export function ProductForm({
               router.push(getLocalizedPath(`/admin/products/${id}`, lang));
               return;
             }
-            // Edit saved inside the modal: close it, revealing the list again.
-            if (detail) closeModal?.();
+            // Edit saved on the dedicated page: stay here. `revalidateCatalog`
+            // in the action has already expired the list page server-side; the
+            // explicit refresh makes sure the operator sees fresh data the
+            // moment they navigate back to it (the Router Cache would
+            // otherwise serve the pre-edit render).
+            if (detail) router.refresh();
           },
         },
       );

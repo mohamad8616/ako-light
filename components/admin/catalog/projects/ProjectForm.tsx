@@ -74,26 +74,46 @@ export function ProjectForm({
   const [confirming, setConfirming] = React.useState(false);
   const isEdit = Boolean(id && detail);
 
+  /**
+   * The form's seed values, with a STABLE IDENTITY — see the long note in
+   * `ProductForm`. `useForm({ values })` is REACTIVE: react-hook-form resets
+   * the form whenever the `values` prop changes by deep-equality, and a fresh
+   * literal here changes identity on every render. A reset discards anything
+   * written only through `setValue` — which is exactly how `moreDescription`,
+   * `credits`, `portfolioImages` (`ImageListField` / the list helpers) and
+   * `productIds` (`ProductsUsedField`) are stored. Without this memo a save
+   * right after editing one of those arrays persisted the ORIGINAL server
+   * value while toasting success.
+   */
+  const seed = React.useMemo<ProjectFormValues>(
+    () =>
+      detail ?? {
+        slug: "",
+        name: { en: "", fa: "" },
+        location: "",
+        year: "",
+        image: "",
+        description: { en: "", fa: "" },
+        paragraph: { en: "", fa: "" },
+        moreDescription: [],
+        credits: [],
+        portfolioImages: [],
+        textImageUrl: "",
+        textImageText: { en: "", fa: "" },
+        fullImageUrl: "",
+        fullImageCaption: { en: "", fa: "" },
+        sortOrder: 0,
+        productIds: [],
+      },
+    // `detail` IS the row: a new row arrives as a fresh object from the server,
+    // so it alone decides the seed. `id` is read outside the memo (isEdit), and
+    // listing it here would only re-seed needlessly.
+    [detail],
+  );
+
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
-    values: detail ?? {
-      slug: "",
-      name: { en: "", fa: "" },
-      location: "",
-      year: "",
-      image: "",
-      description: { en: "", fa: "" },
-      paragraph: { en: "", fa: "" },
-      moreDescription: [],
-      credits: [],
-      portfolioImages: [],
-      textImageUrl: "",
-      textImageText: { en: "", fa: "" },
-      fullImageUrl: "",
-      fullImageCaption: { en: "", fa: "" },
-      sortOrder: 0,
-      productIds: [],
-    },
+    values: seed,
   });
 
   const onSubmit = form.handleSubmit(async (values) => {

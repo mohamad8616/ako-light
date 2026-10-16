@@ -61,16 +61,29 @@ export function FlagshipForm({
   const [confirming, setConfirming] = React.useState(false);
   const isEdit = Boolean(id && detail);
 
+  /**
+   * Stable seed — see the long note in `ProductForm`. `useForm({ values })` is
+   * REACTIVE and resets the form whenever the prop's identity changes, which
+   * would silently discard the `detail` block toggled via `setValue` below.
+   */
+  const seed = React.useMemo<FlagshipFormValues>(
+    () =>
+      detail ?? {
+        slug: "",
+        name: { en: "", fa: "" },
+        city: { en: "", fa: "" },
+        image: "",
+        detail: null,
+        sortOrder: 0,
+      },
+    // `detail` IS the row; `id` is read outside the memo (isEdit) — see the
+    // matching note in ProjectForm.
+    [detail],
+  );
+
   const form = useForm<FlagshipFormValues>({
     resolver: zodResolver(flagshipFormSchema),
-    values: detail ?? {
-      slug: "",
-      name: { en: "", fa: "" },
-      city: { en: "", fa: "" },
-      image: "",
-      detail: null,
-      sortOrder: 0,
-    },
+    values: seed,
   });
 
   const hasDetail = useWatch({ control: form.control, name: "detail" }) != null;

@@ -31,6 +31,7 @@ import { loc, pick, type Localized } from "@/lib/i18n/localized";
 import type { ProjectDarkBackgroundFeatureWriteInput } from "@/lib/repositories/homepage-features";
 import type { ProjectAdminRow } from "@/lib/repositories/projects";
 import { zodResolver } from "@hookform/resolvers/zod";
+import * as React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
 /** What a cleared override pair looks like in the form (saved as SQL NULL). */
@@ -48,16 +49,28 @@ export function ProjectDarkBackgroundFeatureForm({
   const { t, lang } = useLanguage();
   const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
 
-  const form = useForm<ProjectDarkBackgroundFeatureFormValues>({
-    resolver: zodResolver(projectDarkBackgroundFeatureFormSchema),
-    values: {
+  // `values` (not `defaultValues`) keeps the form on server truth whenever the
+  // action's revalidation re-renders this page. It MUST be a stable object:
+  // react-hook-form treats `values` as a reactive prop and calls
+  // `control._reset(props.values, …)` whenever its identity changes, which
+  // discards anything written only through `setValue` — `paragraphs`
+  // (`LocalizedListField` keeps its rows in local state and writes them back
+  // with `setValue`, with no registered `<input>` to survive a reset).
+  const seed = React.useMemo<ProjectDarkBackgroundFeatureFormValues>(
+    () => ({
       enabled: detail?.enabled ?? true,
       mode: detail?.mode ?? "reference",
       projectId: detail?.projectId ?? projects[0]?.id ?? "",
       title: detail?.title ?? CLEARED,
       paragraphs: detail?.paragraphs ?? [],
       image: detail?.image ?? "",
-    },
+    }),
+    [detail, projects],
+  );
+
+  const form = useForm<ProjectDarkBackgroundFeatureFormValues>({
+    resolver: zodResolver(projectDarkBackgroundFeatureFormSchema),
+    values: seed,
   });
 
   const onSubmit = form.handleSubmit(

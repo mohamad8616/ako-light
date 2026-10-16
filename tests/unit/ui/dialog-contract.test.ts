@@ -67,15 +67,16 @@ function classBlockOf(source: string, slot: string): string {
  * content at all (the title and description carry every word), so wrapping an
  * empty region in a DialogBody would be dead markup. It is asserted separately
  * below for the one thing it does need — a padded, pinned action row.
+ *
+ * ProductEditModalShell is also gone from this list, and the FILE is gone with
+ * it: product editing is a dedicated page now
+ * (`/admin/products/[id]`, see tests/unit/admin/product-form-seed.test.ts), so
+ * there is no product edit dialog to audit.
  */
 const ADMIN_DIALOGS: Array<{ name: string; path: string }> = [
   {
     name: "DialogFormShell",
     path: "../../../components/admin/catalog/fields/DialogFormShell.tsx",
-  },
-  {
-    name: "ProductEditModalShell",
-    path: "../../../components/admin/catalog/products/ProductEditModalShell.tsx",
   },
   {
     name: "DeleteDialog",

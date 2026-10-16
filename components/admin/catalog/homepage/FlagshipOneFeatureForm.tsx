@@ -37,6 +37,7 @@ import { loc, pick, type Localized } from "@/lib/i18n/localized";
 import type { FlagshipAdminRow } from "@/lib/repositories/flagships";
 import type { FlagshipOneFeatureWriteInput } from "@/lib/repositories/homepage-features";
 import { zodResolver } from "@hookform/resolvers/zod";
+import * as React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
 /** What a cleared override pair looks like in the form (saved as SQL NULL). */
@@ -54,11 +55,17 @@ export function FlagshipOneFeatureForm({
   const { t, lang } = useLanguage();
   const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
 
-  const form = useForm<FlagshipOneFeatureFormValues>({
-    resolver: zodResolver(flagshipOneFeatureFormSchema),
-    // `values` (not `defaultValues`) keeps the form on server truth whenever the
-    // action's revalidation re-renders this page.
-    values: {
+  // `values` (not `defaultValues`) keeps the form on server truth whenever the
+  // action's revalidation re-renders this page. It MUST be a stable object:
+  // react-hook-form treats `values` as a reactive prop and calls
+  // `control._reset(props.values, …)` whenever its identity changes, which
+  // discards anything written only through `setValue` — `paragraphs`
+  // (`LocalizedListField` keeps its rows in local state and writes them back
+  // with `setValue`, with no registered `<input>` to survive a reset).
+  // Memoising on `detail`/`flagships` gives the literal a stable identity while
+  // still following a genuinely different row.
+  const seed = React.useMemo<FlagshipOneFeatureFormValues>(
+    () => ({
       enabled: detail?.enabled ?? true,
       mode: detail?.mode ?? "reference",
       // A slot that was never seeded pre-selects the first flagship so the form
@@ -68,7 +75,13 @@ export function FlagshipOneFeatureForm({
       title: detail?.title ?? CLEARED,
       paragraphs: detail?.paragraphs ?? [],
       image: detail?.image ?? "",
-    },
+    }),
+    [detail, flagships],
+  );
+
+  const form = useForm<FlagshipOneFeatureFormValues>({
+    resolver: zodResolver(flagshipOneFeatureFormSchema),
+    values: seed,
   });
 
   const onSubmit = form.handleSubmit(

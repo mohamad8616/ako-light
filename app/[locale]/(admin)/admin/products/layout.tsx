@@ -1,28 +1,22 @@
 import * as React from "react";
 
 /**
- * The products segment's parallel-route layout.
+ * The products segment's layout — a pure passthrough.
  *
- * Adding the @modal slot here is what turns the intercepted
- * /admin/products/<id> soft navigation into a modal OVER the list: on a soft
- * navigation the list (children) stays mounted and the intercepted page
- * renders into this slot; on a hard navigation default.tsx renders instead, so
- * the modal never appears on its own.
+ * HISTORY: this segment used to declare a `@modal` parallel-route slot, so a
+ * soft navigation to `/admin/products/<id>` rendered the edit form as a MODAL
+ * over the list. The edit screen is now a real PAGE: the modal slot, its
+ * intercepted `(.)[id]` route and the `ProductEditModalShell` are gone, which
+ * is why this layout no longer takes a `modal` prop.
  *
- * The layout deliberately renders nothing itself — it is a pure passthrough
- * whose only job is to accept the slot.
+ * It is kept (rather than deleted) because the segment may want a shared
+ * layout again, and an explicit passthrough documents that there is
+ * deliberately no chrome here.
  */
 export default function ProductsLayout({
   children,
-  modal,
 }: {
   children: React.ReactNode;
-  modal: React.ReactNode;
 }) {
-  return (
-    <>
-      {children}
-      {modal}
-    </>
-  );
+  return <>{children}</>;
 }

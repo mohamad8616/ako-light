@@ -33,6 +33,7 @@ import { loc, type Localized } from "@/lib/i18n/localized";
 import type { CatalogueItemAdminRow } from "@/lib/repositories/catalogue";
 import type { CatalogueFeatureWriteInput } from "@/lib/repositories/homepage-features";
 import { zodResolver } from "@hookform/resolvers/zod";
+import * as React from "react";
 import { FormProvider, useForm } from "react-hook-form";
 
 /** What a cleared localized pair looks like in the form (saved as SQL NULL). */
@@ -49,9 +50,14 @@ export function CatalogueFeatureForm({  detail,
   const { t } = useLanguage();
   const { run, pending, applyFieldIssues, notifyInvalid } = useCrudSubmit();
 
-  const form = useForm<CatalogueFeatureFormValues>({
-    resolver: zodResolver(catalogueFeatureFormSchema),
-    values: {
+  /**
+   * Stable seed — see the long note in `ProductForm`. `useForm({ values })` is
+   * REACTIVE and resets the form whenever this prop's identity changes, and a
+   * reset discards rows the operator appended through `LocalizedListField`
+   * (`paragraphs`). Memoizing the seed stops that.
+   */
+  const seed = React.useMemo<CatalogueFeatureFormValues>(
+    () => ({
       enabled: detail?.enabled ?? true,
       // The FK is required, so an unseeded slot pre-selects the first item.
       catalogueItemId: detail?.catalogueItemId ?? catalogueItems[0]?.id ?? "",
@@ -61,7 +67,13 @@ export function CatalogueFeatureForm({  detail,
       ctaHref: detail?.ctaHref ?? "",
       ctaPdfUrl: detail?.ctaPdfUrl ?? "",
       ctaPdfName: detail?.ctaPdfName ?? "",
-    },
+    }),
+    [detail, catalogueItems],
+  );
+
+  const form = useForm<CatalogueFeatureFormValues>({
+    resolver: zodResolver(catalogueFeatureFormSchema),
+    values: seed,
   });
 
   const onSubmit = form.handleSubmit(
