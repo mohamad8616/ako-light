@@ -167,14 +167,8 @@ export default function ImageGalleryCarousel({
           >
             {items.map((item, i) => (
               <Slide
-                // Keyed on position PLUS whatever stable identifier the item
-                // has. Keying on `item.image` alone was unsafe: two slides can
-                // legitimately share an image, and a plain image gallery whose
-                // caller passed a gap in the array produces `undefined` — which
-                // React reports as "each child in a list should have a unique
-                // key". The index makes it unique regardless; the identifier
-                // keeps it stable when the list itself is stable.
-                key={item.image}
+                // Include position because distinct slides can share an image.
+                key={`${i}:${item.link ?? item.image}`}
                 index={i}
                 image={item.image}
                 multiWidth={multiWidth}

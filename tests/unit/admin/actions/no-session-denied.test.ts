@@ -38,6 +38,17 @@ const repoMocks = vi.hoisted(() => ({
   createMaterial: vi.fn(),
   updateMaterial: vi.fn(),
   deleteMaterial: vi.fn(),
+  createMaterialCategory: vi.fn(),
+  updateMaterialCategory: vi.fn(),
+  deleteMaterialCategory: vi.fn(),
+  getMaterialCategoryImageUrls: vi.fn(),
+  getMaterialCategoryItemCount: vi.fn(),
+  materialCategorySlugTaken: vi.fn(),
+  createMaterialItem: vi.fn(),
+  updateMaterialItem: vi.fn(),
+  deleteMaterialItem: vi.fn(),
+  getMaterialItemImageUrls: vi.fn(),
+  materialItemSlugTaken: vi.fn(),
   createFlagship: vi.fn(),
   updateFlagship: vi.fn(),
   deleteFlagship: vi.fn(),
@@ -98,6 +109,21 @@ vi.mock("@/lib/repositories/materials", () => ({
   createMaterial: repoMocks.createMaterial,
   updateMaterial: repoMocks.updateMaterial,
   deleteMaterial: repoMocks.deleteMaterial,
+}));
+vi.mock("@/lib/repositories/material-categories", () => ({
+  createMaterialCategory: repoMocks.createMaterialCategory,
+  updateMaterialCategory: repoMocks.updateMaterialCategory,
+  deleteMaterialCategory: repoMocks.deleteMaterialCategory,
+  getMaterialCategoryImageUrls: repoMocks.getMaterialCategoryImageUrls,
+  getMaterialCategoryItemCount: repoMocks.getMaterialCategoryItemCount,
+  materialCategorySlugTaken: repoMocks.materialCategorySlugTaken,
+}));
+vi.mock("@/lib/repositories/material-items", () => ({
+  createMaterialItem: repoMocks.createMaterialItem,
+  updateMaterialItem: repoMocks.updateMaterialItem,
+  deleteMaterialItem: repoMocks.deleteMaterialItem,
+  getMaterialItemImageUrls: repoMocks.getMaterialItemImageUrls,
+  materialItemSlugTaken: repoMocks.materialItemSlugTaken,
 }));
 vi.mock("@/lib/repositories/flagships", () => ({
   createFlagship: repoMocks.createFlagship,
@@ -162,6 +188,16 @@ import {
   destroyMaterialAction,
   updateMaterialAction,
 } from "@/lib/admin/actions/materials";
+import {
+  createMaterialCategoryAction,
+  destroyMaterialCategoryAction,
+  updateMaterialCategoryAction,
+} from "@/lib/admin/actions/material-categories";
+import {
+  createMaterialItemAction,
+  destroyMaterialItemAction,
+  updateMaterialItemAction,
+} from "@/lib/admin/actions/material-items";
 import {
   createFlagshipAction,
   destroyFlagshipAction,
@@ -245,6 +281,23 @@ const materialInput = {
   type: "stone",
   image: "/images/material.jpg",
   description: PAIR,
+  sortOrder: 0,
+};
+
+const materialCategoryInput = {
+  slug: "stone-category",
+  name: { en: "Stone", fa: "سنگ" },
+  image: "/images/stone-category.jpg",
+  sortOrder: 0,
+};
+
+const materialItemInput = {
+  slug: "stone-item",
+  name: { en: "Stone Item", fa: "آیتم سنگ" },
+  categoryId: "material-category-stone",
+  image: "/images/stone-item.jpg",
+  code: "",
+  swatchColor: "",
   sortOrder: 0,
 };
 
@@ -421,6 +474,16 @@ describe("admin actions called directly with no session", () => {
     await expectDenied(createMaterialAction(materialInput as never), repoMocks.createMaterial);
     await expectDenied(updateMaterialAction("x", materialInput as never), repoMocks.updateMaterial);
     await expectDenied(destroyMaterialAction("x"), repoMocks.deleteMaterial);
+    expectNothingTouched();
+  });
+
+  it("material groups and linked items reject with no session", async () => {
+    await expectDenied(createMaterialCategoryAction(materialCategoryInput), repoMocks.createMaterialCategory);
+    await expectDenied(updateMaterialCategoryAction("x", materialCategoryInput), repoMocks.updateMaterialCategory);
+    await expectDenied(destroyMaterialCategoryAction("x"), repoMocks.deleteMaterialCategory);
+    await expectDenied(createMaterialItemAction(materialItemInput), repoMocks.createMaterialItem);
+    await expectDenied(updateMaterialItemAction("x", materialItemInput), repoMocks.updateMaterialItem);
+    await expectDenied(destroyMaterialItemAction("x"), repoMocks.deleteMaterialItem);
     expectNothingTouched();
   });
 

@@ -2,7 +2,7 @@
 import MaterialsHeader from "@/components/materials/MaterialsHeader";
 import MaterialsList from "@/components/materials/MaterialsList";
 import { translations } from "@/lib/i18n/translations";
-import { getMaterials } from "@/lib/repositories/materials";
+import { getMaterialCategories } from "@/lib/repositories/material-categories";
 import { buildLocalizedMetadata, resolveLocale } from "@/lib/seo/metadata";
 import { JsonLdRenderer } from "@/lib/seo/JsonLdRenderer";
 import { absoluteUrl, webPageJsonLd } from "@/lib/seo/structuredData";
@@ -42,7 +42,7 @@ export default async function MaterialsPage({
   const { locale } = await params;
   const lang = resolveLocale(locale);
   const t = translations[lang];
-  const materials = await getMaterials();
+  const categories = await getMaterialCategories();
 
   const jsonLdData = [
     webPageJsonLd(
@@ -57,7 +57,7 @@ export default async function MaterialsPage({
       <JsonLdRenderer data={jsonLdData} />
       <main className="w-full ">
         <MaterialsHeader />
-        <MaterialsList materials={materials} />
+        <MaterialsList categories={categories} />
       </main>
     </>
   );

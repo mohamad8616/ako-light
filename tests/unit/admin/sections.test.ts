@@ -36,6 +36,17 @@ describe("admin nav registry", () => {
     expect(isAdminNavItemActive("/admin", "/fa/admin")).toBe(true);
   });
 
+  it("routes material sections through their canonical URLs and Persian labels", () => {
+    expect(getAdminNavItem("/admin/material-items")?.labelKey).toBe(
+      "admin.nav.materialItems",
+    );
+    expect(getAdminNavItem("/fa/admin/material-items/legacy")?.labelKey).toBe(
+      "admin.nav.materialItems",
+    );
+    expect(adminTranslations.fa["admin.nav.materials"]).toBe("متریال ها");
+    expect(adminTranslations.fa["admin.nav.materialItems"]).toBe("آیتم های متریال");
+  });
+
   it("treats a trailing slash as the same route", () => {
     expect(getAdminNavItem("/admin/designers/")?.labelKey).toBe(
       "admin.nav.designers",

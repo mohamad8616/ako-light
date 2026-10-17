@@ -17,7 +17,7 @@ import { prisma } from "@/lib/db/prisma";
 
 export type CatalogModelType =
   | "product" | "productCategory" | "collection" | "designer"
-  | "material" | "flagship" | "project";
+  | "material" | "materialCategory" | "flagship" | "project";
 type Db = Prisma.TransactionClient;
 
 /** The Prisma client surface these helpers accept (client or tx). */
@@ -117,6 +117,7 @@ async function findEntity(modelType: CatalogModelType, where: { id: string } | {
     case "collection": return db.collection.findUnique({ where, select });
     case "designer": return db.designer.findUnique({ where, select });
     case "material": return db.material.findUnique({ where, select });
+    case "materialCategory": return db.materialCategory.findUnique({ where, select });
     case "flagship": return db.flagship.findUnique({ where, select });
     case "project": return db.project.findUnique({ where, select });
   }
@@ -134,7 +135,7 @@ async function resolveEntity(modelType: CatalogModelType, slug: string, db: Db) 
 
 const paths = {
   productCategory: "products", collection: "collections", designer: "designers",
-  material: "materials", flagship: "flagship", project: "projects",
+  material: "materials", materialCategory: "materials", flagship: "flagship", project: "projects",
 } as const;
 
 /** Resolve directly to the latest URL (no history chains or self redirects).

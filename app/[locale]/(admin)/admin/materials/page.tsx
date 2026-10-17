@@ -1,6 +1,6 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
-import { MaterialsTable } from "@/components/admin/catalog/materials/MaterialsTable";
-import { getMaterialAdminRows } from "@/lib/repositories/materials";
+import { MaterialCategoriesTable } from "@/components/admin/catalog/materials/MaterialCategoriesTable";
+import { getMaterialCategoryAdminRows } from "@/lib/repositories/material-categories";
 
 export default async function MaterialsPage({
   params,
@@ -8,7 +8,7 @@ export default async function MaterialsPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const rows = await getMaterialAdminRows();
+  const rows = await getMaterialCategoryAdminRows();
 
   return (
     <div className="@container/main flex flex-1 flex-col">
@@ -18,7 +18,7 @@ export default async function MaterialsPage({
           titleKey="admin.nav.materials"
           descriptionKey="admin.section.materials.description"
         />
-        <MaterialsTable rows={rows} />
+        <MaterialCategoriesTable rows={rows} />
       </div>
     </div>
   );

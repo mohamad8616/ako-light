@@ -1,25 +1,12 @@
-import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
-import { FabricsTable } from "@/components/admin/catalog/fabrics/FabricsTable";
-import { getFabricItemAdminRows } from "@/lib/repositories/fabrics";
+import { redirect } from "next/navigation";
+import { getLocalizedPath } from "@/lib/i18n/routing";
+import { resolveLocale } from "@/lib/seo/metadata";
 
-export default async function FabricsPage({
+export default async function LegacyFabricsPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const rows = await getFabricItemAdminRows();
-
-  return (
-    <div className="@container/main flex flex-1 flex-col">
-      <div className="flex flex-1 flex-col gap-6 p-4 md:gap-8 md:p-6 lg:px-8">
-        <AdminPageHeader
-          locale={locale}
-          titleKey="admin.nav.fabrics"
-          descriptionKey="admin.section.fabrics.description"
-        />
-        <FabricsTable rows={rows} />
-      </div>
-    </div>
-  );
+  redirect(getLocalizedPath("/admin/material-items", resolveLocale(locale)));
 }

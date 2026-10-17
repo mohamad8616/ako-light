@@ -300,13 +300,23 @@ describeDb("slug history — recorded by the real admin update actions", () => {
     const id = `act-mat-${s}`;
     const oldSlug = `act-old-mat-${s}`;
     const newSlug = `act-new-mat-${s}`;
+    const categoryId = `act-mat-category-${s}`;
+    const categorySlug = `act-mat-category-${s}`;
     try {
+      await prisma.materialCategory.create({
+        data: {
+          id: categoryId,
+          slug: categorySlug,
+          name: { en: "stone", fa: "سنگ" },
+        },
+      });
       await prisma.material.create({
         data: {
           id,
           slug: oldSlug,
           name: PAIR,
           category: "stone",
+          categoryId,
           type: "stone",
           image: "/t.jpg",
           description: PAIR,
@@ -337,6 +347,7 @@ describeDb("slug history — recorded by the real admin update actions", () => {
     } finally {
       await prisma.slugHistory.deleteMany({ where: { entityId: id } });
       await prisma.material.deleteMany({ where: { id } });
+      await prisma.materialCategory.deleteMany({ where: { id: categoryId } });
     }
   });
 

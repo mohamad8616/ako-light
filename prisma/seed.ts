@@ -35,6 +35,7 @@ import {
   type S34SectionKey,
 } from "@/lib/repositories/s34-page";
 import { prisma } from "@/lib/db/prisma";
+import { asLocalized } from "@/lib/repositories/casting";
 
 /** A source record that could not be mapped 1:1 onto the schema. */
 interface MappingIssue {
@@ -162,15 +163,102 @@ async function seedCollections(): Promise<void> {
   }
 }
 
+const MATERIAL_CATEGORY_FA: Record<string, string> = {
+  stone: "سنگ",
+  metal: "فلز",
+  glass: "شیشه",
+  wood: "چوب",
+  fabric: "پارچه‌ها",
+  fabrics: "پارچه‌ها",
+  leather: "چرم",
+  marble: "مرمر",
+  "stone-composite": "سنگ ترکیبی",
+};
+
+function materialCategoryBaseSlug(label: string): string {
+  return label
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || `legacy-${label.length}`;
+}
+
+/** Create missing category rows only; never overwrite admin-owned copy/images. */
+async function seedMaterialCategories(): Promise<void> {
+  const candidates = new Map<string, { label: string; image: string | null }>();
+  for (const material of materials) {
+    const key = material.category.trim().toLowerCase();
+    if (!candidates.has(key)) {
+      candidates.set(key, { label: material.category.trim(), image: material.image });
+    }
+  }
+  for (const fabric of fabrics) {
+    const key = fabric.category.trim().toLowerCase();
+    if (!candidates.has(key)) {
+      candidates.set(key, { label: fabric.category.trim(), image: null });
+    }
+  }
+
+  const [existingItems, existingCategories] = await Promise.all([
+    prisma.material.findMany({ select: { slug: true } }),
+    prisma.materialCategory.findMany({ select: { id: true, slug: true, name: true } }),
+  ]);
+  const reservedSlugs = new Set([
+    ...existingItems.map((item) => item.slug),
+    ...fabrics.map((fabric) => fabric.id),
+    ...existingCategories.map((existing) => existing.slug),
+  ]);
+  const knownCategories = [...existingCategories];
+
+  for (const [key, category] of candidates) {
+    const existing = knownCategories.find(
+      (row) => asLocalized(row.name).en.trim().toLowerCase() === category.label.toLowerCase(),
+    );
+    if (existing) continue;
+
+    const baseSlug = materialCategoryBaseSlug(category.label);
+    const slug = reservedSlugs.has(baseSlug) ? `${baseSlug}-materials` : baseSlug;
+    await prisma.materialCategory.upsert({
+      where: { slug },
+      create: {
+        id: `material-category-${slug}`,
+        slug,
+        name: asJson({
+          en: category.label,
+          fa: MATERIAL_CATEGORY_FA[key] ?? "",
+        }),
+        image: category.image,
+        sortOrder: [...candidates.keys()].indexOf(key),
+      },
+      update: {},
+    });
+    reservedSlugs.add(slug);
+  }
+}
+
 async function seedMaterials(): Promise<void> {
+  const categories = await prisma.materialCategory.findMany({
+    select: { id: true, name: true },
+  });
+
   for (const [sortOrder, material] of materials.entries()) {
     const type = MATERIAL_TYPES[material.type];
     if (!type) {
       note("Material", material.id, `unmapped type "${material.type}"`);
       continue;
     }
-    // The source only has `id`; it is already URL-safe so it doubles as slug.
     const slug = material.id;
+    const category = categories.find(
+      (candidate) => asLocalized(candidate.name).en.trim().toLowerCase() === material.category.trim().toLowerCase(),
+    );
+    const categoryId = category?.id;
+    if (!categoryId) {
+      note("Material", material.id, `category "${material.category}" has no MaterialCategory row (skipped: FK)`);
+      continue;
+    }
+
+    // Seed is now create-only for these admin-managed rows. Re-running it may
+    // add a missing source record, but never overwrites edits made in admin.
     await prisma.material.upsert({
       where: { slug },
       create: {
@@ -178,19 +266,13 @@ async function seedMaterials(): Promise<void> {
         slug,
         name: asJson(material.name),
         category: material.category,
+        categoryId,
         type,
         image: material.image,
         description: asJson(material.description),
         sortOrder,
       },
-      update: {
-        name: asJson(material.name),
-        category: material.category,
-        type,
-        image: material.image,
-        description: asJson(material.description),
-        sortOrder,
-      },
+      update: {},
     });
   }
 }
@@ -418,30 +500,6 @@ async function seedProductImages(): Promise<void> {
     }));
 
     await prisma.productImage.createMany({ data: rows });
-  }
-}
-
-/** lib/data/materials.ts `fabrics[]` → FabricItem rows. Idempotent on `id`. */
-async function seedFabricItems(): Promise<void> {
-  for (const [sortOrder, fabric] of fabrics.entries()) {
-    await prisma.fabricItem.upsert({
-      where: { id: fabric.id },
-      create: {
-        id: fabric.id,
-        name: fabric.name,
-        code: fabric.code,
-        category: fabric.category,
-        swatchColor: fabric.swatchColor,
-        sortOrder,
-      },
-      update: {
-        name: fabric.name,
-        code: fabric.code,
-        category: fabric.category,
-        swatchColor: fabric.swatchColor,
-        sortOrder,
-      },
-    });
   }
 }
 
@@ -681,8 +739,8 @@ async function main(): Promise<void> {
   await seedProducts();
   await seedProductImages();   // depends on products (productId = product.slug)
   await seedCollections();
+  await seedMaterialCategories();
   await seedMaterials();
-  await seedFabricItems();
   await seedCatalogueItems();
   await seedFlagships();
   await seedProjects();

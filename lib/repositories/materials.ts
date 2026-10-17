@@ -37,10 +37,22 @@ function mapMaterialRow(row: MaterialRow): Material {
     id: row.id,
     name: asLocalized(row.name),
     category: row.category,
-    image: row.image,
+    image: row.image ?? "",
     description: asLocalized(row.description),
     type: MATERIAL_TYPES[row.type],
   };
+}
+
+async function findMaterialCategoryId(
+  categoryLabel: string,
+  db: Prisma.TransactionClient,
+): Promise<string> {
+  const rows = await db.materialCategory.findMany({ select: { id: true, name: true } });
+  const match = rows.find(
+    (row) => asLocalized(row.name).en.trim().toLowerCase() === categoryLabel.trim().toLowerCase(),
+  );
+  if (!match) throw new Error(`Material category not found: ${categoryLabel}`);
+  return match.id;
 }
 
 /**
@@ -105,7 +117,7 @@ export const getMaterialAdminRows = cache(
       name: asLocalized(row.name),
       category: row.category,
       type: MATERIAL_TYPES[row.type],
-      image: row.image,
+      image: row.image ?? "",
       description: asLocalized(row.description),
       sortOrder: row.sortOrder,
     }));
@@ -125,7 +137,7 @@ export const getMaterialImageUrls = cache(
       where: { id },
       select: { image: true },
     });
-    return row ? [row.image] : [];
+    return row?.image ? [row.image] : [];
   },
 );
 
@@ -133,12 +145,14 @@ export const createMaterial = async (
   input: MaterialWriteInput,
   db: Prisma.TransactionClient = prisma,
 ): Promise<string> => {
+  const categoryId = await findMaterialCategoryId(input.category, db);
   const row = await db.material.create({
     data: {
       id: input.slug,
       slug: input.slug,
       name: asJsonInput(input.name),
       category: input.category,
+      categoryId,
       type: MaterialType[input.type === "stone-composite" ? "stone_composite" : input.type],
       image: input.image,
       description: asJsonInput(input.description),
@@ -154,12 +168,14 @@ export const updateMaterial = async (
   input: MaterialWriteInput,
   db: Prisma.TransactionClient = prisma,
 ): Promise<void> => {
+  const categoryId = await findMaterialCategoryId(input.category, db);
   await db.material.update({
     where: { id },
     data: {
       slug: input.slug,
       name: asJsonInput(input.name),
       category: input.category,
+      categoryId,
       type: MaterialType[input.type === "stone-composite" ? "stone_composite" : input.type],
       image: input.image,
       description: asJsonInput(input.description),

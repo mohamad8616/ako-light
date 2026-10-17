@@ -11,6 +11,7 @@ export type AdminSection =
   | "designers"
   | "collections"
   | "materials"
+  | "materialItems"
   | "flagships"
   | "projects"
   | "fabrics"
@@ -23,8 +24,8 @@ export type AdminSection =
 /**
  * The public route-file pattern each section feeds, so a dashboard edit also
  * expires the public list/detail pages that render the same rows. `null` when
- * a section has no dedicated public page of its own (categories and fabrics
- * render through the products / materials routes).
+ * a section has no dedicated public page of its own (categories and material
+ * items render through the products / materials routes).
  */
 const PUBLIC_ROUTES: Record<AdminSection, readonly string[]> = {
   // The homepage feature slots are singleton configuration rows, not list rows:
@@ -64,6 +65,10 @@ const PUBLIC_ROUTES: Record<AdminSection, readonly string[]> = {
     "/[locale]/(site)/projects/[id]",
   ],
   fabrics: [
+    "/[locale]/(site)/materials",
+    "/[locale]/(site)/materials/[material]",
+  ],
+  materialItems: [
     "/[locale]/(site)/materials",
     "/[locale]/(site)/materials/[material]",
   ],
@@ -124,9 +129,10 @@ export function revalidateCatalog(
   section: AdminSection,
   options: { id?: string } = {},
 ): void {
-  revalidatePath(`/[locale]/(admin)/admin/${section}`, "page");
+  const adminRoute = section === "materialItems" ? "material-items" : section;
+  revalidatePath(`/[locale]/(admin)/admin/${adminRoute}`, "page");
   if (options.id) {
-    revalidatePath(`/[locale]/(admin)/admin/${section}/[id]`, "page");
+    revalidatePath(`/[locale]/(admin)/admin/${adminRoute}/[id]`, "page");
   }
   // The overview's stat cards read the same rows — keep them honest too.
   revalidatePath("/[locale]/(admin)/admin", "page");

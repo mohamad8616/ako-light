@@ -359,7 +359,13 @@ html.scroll-locked body {
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    /* `none`, NOT `translateY(0)`: with `animation-fill-mode: forwards` the
+       final value persists after the animation ends, and ANY transform other
+       than `none` keeps the element a stacking context forever. That trap
+       silently contained every section's z-indexed children (it is what hid
+       the project banner's image where it bleeds over the dark section
+       below). The end state is visually identical — both are the identity. */
+    transform: none;
   }
 }
 

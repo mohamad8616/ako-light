@@ -3,7 +3,7 @@ import { getLocalizedPath, locales, type Locale } from "@/lib/i18n/routing";
 import { getCollections } from "@/lib/repositories/collections";
 import { getDesigners } from "@/lib/repositories/designers";
 import { getFlagshipsWithDetail } from "@/lib/repositories/flagships";
-import { getMaterials } from "@/lib/repositories/materials";
+import { getMaterialCategories } from "@/lib/repositories/material-categories";
 import { getProductCategories } from "@/lib/repositories/product-categories";
 import { getProjects } from "@/lib/repositories/projects";
 import { siteBlocked, siteUrl } from "@/lib/seo/config";
@@ -59,14 +59,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     collections,
     productCategories,
     designers,
-    materials,
+    materialCategories,
     flagshipsWithDetail,
     projects,
   ] = await Promise.all([
     getCollections(),
     getProductCategories(),
     getDesigners(),
-    getMaterials(),
+    getMaterialCategories(),
     getFlagshipsWithDetail(),
     getProjects(),
   ]);
@@ -96,8 +96,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
     // Designer pages
     ...designers.map((d) => `/designers/${d.slug}`),
-    // Material pages
-    ...materials.map((m) => `/materials/${m.id}`),
+    // Managed material-group detail pages (items themselves are display-only).
+    ...materialCategories.map((category) => `/materials/${category.slug}`),
     // Flagship detail pages — only the ones that exist (have detail content)
     ...flagshipsWithDetail.map((f) => `/flagship/${f.slug}`),
     // Project pages

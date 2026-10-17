@@ -85,9 +85,9 @@ export const ADMIN_CATALOG_NAV: readonly AdminNavItem[] = [
   { href: "/admin/designers", labelKey: "admin.nav.designers" },
   { href: "/admin/collections", labelKey: "admin.nav.collections" },
   { href: "/admin/materials", labelKey: "admin.nav.materials" },
+  { href: "/admin/material-items", labelKey: "admin.nav.materialItems" },
   { href: "/admin/flagships", labelKey: "admin.nav.flagships" },
   { href: "/admin/projects", labelKey: "admin.nav.projects" },
-  { href: "/admin/fabrics", labelKey: "admin.nav.fabrics" },
   { href: "/admin/catalogue", labelKey: "admin.nav.catalogue" },
   // The media library is not a catalog entity: it is the shared store every
   // other section's image fields will eventually reference (Pass 13.5C). It

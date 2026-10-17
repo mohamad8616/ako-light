@@ -221,12 +221,21 @@ describe.skipIf(!hasDatabaseUrl)("slug history", () => {
     await expect(
       prisma.$transaction(
         async (tx) => {
+          const categoryId = `material-category-${id}`;
+          await tx.materialCategory.create({
+            data: {
+              id: categoryId,
+              slug: `category-${slug}`,
+              name: { en: "Stone", fa: "سنگ" },
+            },
+          });
           await tx.material.create({
             data: {
               id,
               slug,
               name: { en: "Test", fa: "Test" },
               category: "stone",
+              categoryId,
               type: "stone",
               image: "/test.jpg",
               description: { en: "Test", fa: "Test" },

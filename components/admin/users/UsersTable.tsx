@@ -4,7 +4,7 @@ import { updatedColumn } from "@/components/admin/catalog/columns";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { DataTable } from "@/components/admin/data-table/DataTable";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -326,14 +326,13 @@ export function UsersTable({
         </span>
         <div className="flex items-center gap-2">
           {page > 1 ? (
-            <Button
-              variant="outline"
-              size="sm"
-              render={<Link href={pageHref(page - 1)} />}
+            <Link
+              href={pageHref(page - 1)}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
             >
               <ChevronLeft className="h-3.5 w-3.5" />
               {t("admin.users.pager.prev")}
-            </Button>
+            </Link>
           ) : (
             <Button variant="outline" size="sm" disabled>
               <ChevronLeft className="h-3.5 w-3.5" />
@@ -341,14 +340,13 @@ export function UsersTable({
             </Button>
           )}
           {page < totalPages ? (
-            <Button
-              variant="outline"
-              size="sm"
-              render={<Link href={pageHref(page + 1)} />}
+            <Link
+              href={pageHref(page + 1)}
+              className={buttonVariants({ variant: "outline", size: "sm" })}
             >
               {t("admin.users.pager.next")}
               <ChevronRight className="h-3.5 w-3.5" />
-            </Button>
+            </Link>
           ) : (
             <Button variant="outline" size="sm" disabled>
               {t("admin.users.pager.next")}

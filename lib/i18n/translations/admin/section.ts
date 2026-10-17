@@ -15,8 +15,10 @@ export const sectionEn = {
   "admin.section.collections.description":
     "Curate seasonal and capsule collections.",
   "admin.section.materials.description":
-    "Review finish and material inventory.",
-  "admin.section.fabrics.description": "Track textile and fabric references.",
+    "Manage material groups and their customer-facing cover images.",
+  "admin.section.materialItems.description":
+    "Manage the named, photographed items inside each material group.",
+  "admin.section.fabrics.description": "Manage the named, photographed items inside each material group.",
   "admin.section.catalogue.description":
     "Manage catalogue entries and downloadable assets.",
   "admin.section.media.description":
@@ -46,8 +48,9 @@ export const sectionFa = {
   "admin.section.designers.description": "نگهداری پروفایل طراحان و ارجاع‌ها.",
   "admin.section.collections.description":
     "هم‌زمان‌سازی مجموعه‌های فصلی و کپسولی.",
-  "admin.section.materials.description": "بازبینی موجودی مواد و رنگ‌بندی‌ها.",
-  "admin.section.fabrics.description": "پیگیری مرجع پارچه‌ها و بافت‌ها.",
+  "admin.section.materials.description": "مدیریت گروه‌های متریال و تصویر شاخص آن‌ها برای مشتریان.",
+  "admin.section.materialItems.description": "مدیریت آیتم‌های تصویردار و نام‌گذاری‌شده در هر گروه متریال.",
+  "admin.section.fabrics.description": "مدیریت آیتم‌های تصویردار و نام‌گذاری‌شده در هر گروه متریال.",
   "admin.section.catalogue.description":
     "مدیریت ورودی‌های کاتالوگ و فایل‌های قابل‌دانلود.",
   "admin.section.media.description":

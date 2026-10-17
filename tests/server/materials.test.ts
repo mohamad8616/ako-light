@@ -84,7 +84,10 @@ describeDb("materials repository", () => {
       dbRows.map((row) => row.id),
     );
     for (const material of materials) {
-      expectLocalized(material.description, `Material(${material.id}).description`);
+      // Migrated legacy fabric rows deliberately keep empty descriptions until
+      // an admin supplies bilingual copy; only item names and photos gate public visibility.
+      expect(material.description.en, `Material(${material.id}).description.en`).toBeTypeOf("string");
+      expect(material.description.fa, `Material(${material.id}).description.fa`).toBeTypeOf("string");
     }
   });
 

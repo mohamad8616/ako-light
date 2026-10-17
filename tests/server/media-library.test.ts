@@ -237,11 +237,21 @@ describeDb("media references — findMediaReferences", () => {
   });
 
   /** A material pointing at `url`, created inside the caller's transaction. */
-  const material = (url: string) => ({
+  const materialCategory = (tx: Prisma.TransactionClient) =>
+    tx.materialCategory.create({
+      data: {
+        id: `lib-ref-${RUN}-category`,
+        slug: `lib-ref-${RUN}-category`,
+        name: { en: "Reference category", fa: "گروه ارجاعی" },
+      },
+    });
+
+  const material = (url: string, categoryId: string) => ({
     id: `lib-ref-${RUN}-material`,
     slug: `lib-ref-${RUN}-material`,
     name: { en: "Ref material", fa: "ماده ارجاعی" },
     category: "Stone",
+    categoryId,
     type: MaterialType.stone,
     image: url,
     description: { en: "d", fa: "د" },
@@ -251,7 +261,8 @@ describeDb("media references — findMediaReferences", () => {
     const url = `https://homeform-media.storage.iran.liara.site/media/lib-${RUN}/referenced.png`;
 
     await inRollback(async (tx) => {
-      await tx.material.create({ data: material(url) });
+      const category = await materialCategory(tx);
+      await tx.material.create({ data: material(url, category.id) });
 
       const references = await findMediaReferences(url, tx);
 
@@ -263,9 +274,10 @@ describeDb("media references — findMediaReferences", () => {
     const url = `https://homeform-media.storage.iran.liara.site/media/lib-${RUN}/twice.png`;
 
     await inRollback(async (tx) => {
-      await tx.material.create({ data: material(url) });
+      const category = await materialCategory(tx);
+      await tx.material.create({ data: material(url, category.id) });
       await tx.material.create({
-        data: { ...material(url), id: `${material(url).id}-b`, slug: `${material(url).slug}-b` },
+        data: { ...material(url, category.id), id: `${material(url, category.id).id}-b`, slug: `${material(url, category.id).slug}-b` },
       });
 
       const references = await findMediaReferences(url, tx);
@@ -289,7 +301,8 @@ describeDb("media references — findMediaReferences", () => {
     const url = `https://homeform-media.storage.iran.liara.site/media/lib-${RUN}/cleared.png`;
 
     await inRollback(async (tx) => {
-      const created = await tx.material.create({ data: material(url) });
+      const category = await materialCategory(tx);
+      const created = await tx.material.create({ data: material(url, category.id) });
       expect(await findMediaReferences(url, tx)).toHaveLength(1);
 
       await tx.material.update({

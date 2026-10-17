@@ -21,7 +21,13 @@ interface SplitBannerProps {
   reverse?: boolean;
   badge?: React.ReactNode;
   stretch?: boolean;
-  children?: React.ReactNode;
+  /**
+   * A section label (e.g. the "H-Life" word on the dark-background banner).
+   * When provided it renders in its own narrow LEFT column, top-aligned with
+   * the photo — both start at the section's first point, instead of the label
+   * sitting full-width above the grid and pushing the photo down.
+   */
+  label?: React.ReactNode;
   page?: string;
   /** Text color class forwarded to the Paragraphs (defaults to Paragraph's own). */
   paragraphTextColor?: string;
@@ -43,20 +49,34 @@ export default function SplitBanner({
   reverse = false,
   badge,
   stretch = false,
-  children,
+  label,
   paragraphTextColor,
   titleTextColor,
 }: SplitBannerProps) {
-  const imageCol = reverse ? "lg:col-span-7" : "lg:col-span-5";
-  const textCol = reverse ? "lg:col-span-5" : "lg:col-span-7";
+  // With a label the grid is three columns (label + photo + text, 3+4+5);
+  // without one it stays the classic two (photo + text, 5+7 or 7+5 reversed).
+  const labelCol = "lg:col-span-3";
+  const imageCol = label
+    ? "lg:col-span-4"
+    : reverse
+      ? "lg:col-span-7"
+      : "lg:col-span-5";
+  const textCol = label
+    ? "lg:col-span-5"
+    : reverse
+      ? "lg:col-span-5"
+      : "lg:col-span-7";
 
   return (
     <HomepageSection className={`bg-background-secondary ${sectionClassName}`}>
       <div>
-        {children}
         <div
           className={`grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14 ${stretch ? "lg:items-stretch" : ""}`}
         >
+          {/* Section label — its own column, sharing the grid's first row so
+              its top edge aligns with the photo's (and the text's). */}
+          {label && <div className={labelCol}>{label}</div>}
+
           {/* Mobile only: kicker/subtitle row above the image */}
           <div className="lg:hidden">
             {page && <SectionSubTitle>{page}</SectionSubTitle>}
@@ -73,9 +93,9 @@ export default function SplitBanner({
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 1.1, ease: EASE }}
-              className={`group relative mx-auto aspect-4/5 h-125.75 max-h-125.75 w-full overflow-hidden lg:aspect-3/4 lg:w-3/4 ${imageClassName ?? ""}`}
+              className={`group relative mx-auto aspect-4/5 h-125.75 max-h-125.75 w-full overflow-hidden lg:aspect-3/4 ${label ? "lg:w-full" : "lg:w-3/4"} ${imageClassName ?? ""}`}
             >
-              <Image  
+              <Image
                 src={image}
                 alt={imageAlt}
                 fill

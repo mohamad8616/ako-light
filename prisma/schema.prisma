@@ -277,25 +277,50 @@ model Collection {
   @@map("collection")
 }
 
-/// lib/data/materials.ts -> Material
+/// Customer-facing material group (e.g. Leather, Stone).
+/// `id` is the stable FK target; `slug` is only the public route handle.
+model MaterialCategory {
+  id        String   @id
+  slug      String   @unique
+  /// Localized { en, fa }.
+  name      Json
+  /// NULL only for legacy groups awaiting an admin-provided cover image.
+  image     String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items Material[]
+
+  @@index([sortOrder])
+  @@map("material_category")
+}
+
+/// Customer-facing material item, assigned to one group by its stable id.
 model Material {
   id          String       @id
-  /// Added on top of the source `id` (already URL-safe) so materials have a
-  /// stable route param like every other entity.
+  /// Retained for legacy item URLs and slug history; item pages redirect to their group.
   slug        String       @unique
-  /// Localized { en, fa }
+  /// Localized { en, fa }; empty legacy Persian names remain private until completed.
   name        Json
-  /// Free-form display group ("Stone", "Metal", ...).
+  /// Legacy display label retained during cutover; categoryId is authoritative.
   category    String
-  type        MaterialType
-  image       String
-  /// Localized { en, fa }
+  categoryId  String
+  type        MaterialType @default(fabric)
+  /// NULL only for migrated FabricItem rows awaiting a real customer-facing photo.
+  image       String?
+  /// Localized { en, fa }; retained for existing catalog records.
   description Json
-  /// Display position (matches the order of `materials`).
+  /// Preserved metadata from legacy fabric swatches.
+  code        String?
+  swatchColor String?
   sortOrder   Int          @default(0)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
+  materialCategory MaterialCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([categoryId, sortOrder])
   @@index([category])
   @@map("material")
 }
