@@ -7,6 +7,7 @@ import {
   imageRefSchema,
   localizedSchema,
   nameSchema,
+  relatedProductsSchema,
   slugSchema,
   sortOrderSchema,
 } from "./common";
@@ -58,15 +59,12 @@ export const productFormSchema = z.object({
       name: documentFilenameSchema.optional(),
     }),
   ),
-  related: z.array(
-    z.object({
-      name: localizedSchema,
-      slug: slugSchema,
-      /** The related product's category slug. */
-      category: slugSchema,
-      image: imageRefSchema,
-    }),
-  ),
+  /**
+   * Related products — the denormalized jsonb snapshot the product page
+   * renders. Floored at ONE (see `relatedProductsSchema` in ./common): the
+   * section is a required input, like every other necessary form input.
+   */
+  related: relatedProductsSchema,
   sortOrder: sortOrderSchema,
   /** ProductCategory.id */
   categoryId: idSchema,

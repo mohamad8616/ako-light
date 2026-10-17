@@ -4,6 +4,7 @@ import { CollectionForm } from "@/components/admin/catalog/collections/Collectio
 import { isLocale } from "@/lib/i18n/routing";
 import { getAdminDictionary } from "@/lib/i18n/admin-translations";
 import { getCollectionAdminDetail } from "@/lib/repositories/collections";
+import { getProductOptions } from "@/lib/repositories/products";
 import { notFound } from "next/navigation";
 
 /**
@@ -19,7 +20,10 @@ export default async function EditCollectionPage({
   if (id === "new") notFound();
 
   const t = getAdminDictionary(locale);
-  const detail = await getCollectionAdminDetail(id);
+  const [detail, products] = await Promise.all([
+    getCollectionAdminDetail(id),
+    getProductOptions(),
+  ]);
   if (!detail) notFound();
 
   return (
@@ -36,7 +40,7 @@ export default async function EditCollectionPage({
             />
           }
         />
-        <CollectionForm detail={detail} id={id} />
+        <CollectionForm detail={detail} id={id} products={products} />
       </div>
     </div>
   );

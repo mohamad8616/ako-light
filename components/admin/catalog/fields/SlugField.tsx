@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  FieldMessage,
   FieldRow,
   useFieldMessage,
   type FieldIssue,
@@ -99,11 +100,7 @@ export function SlugField({
           {t("admin.crud.slugWarning")}
         </p>
       ) : null}
-      {message ? (
-        <p role="alert" className="text-destructive text-xs font-medium">
-          {message}
-        </p>
-      ) : null}
+      {message ? <FieldMessage>{message}</FieldMessage> : null}
     </FieldRow>
   );
 

@@ -33,6 +33,11 @@ export const crudEn = {
   // it the button simply did nothing: no request, no pending state, no toast —
   // indistinguishable from a broken form.
   "admin.crud.checkFields": "Check the highlighted fields, then save again.",
+  // The same block, naming WHICH fields — the operator should not have to hunt
+  // for the one empty input. `{fields}` is a comma-separated list of the
+  // unfilled fields' labels (see lib/admin/field-labels.ts).
+  "admin.crud.checkFieldsNamed":
+    "Please complete the required fields: {fields}.",
 
   // Image upload (components/admin/ImageUpload.tsx + actions/upload.ts)
 } as const;
@@ -64,6 +69,11 @@ export const crudFa = {
     "با این کار {count} مورد مرتبط هم حذف می‌شود.",
   "admin.crud.checkFields":
     "فیلدهای مشخص‌شده را بررسی کنید و دوباره ذخیره کنید.",
+  // همان پیام، اما با نام فیلدهای ناقص — کاربر نباید بگردد که کدام input خالی
+  // مانده است. `{fields}` فهرستی جدا‌شده با ویرگول برچسب فیلدهای الزامی
+  // ناقص است (به lib/admin/field-labels.ts نگاه کنید).
+  "admin.crud.checkFieldsNamed":
+    "لطفاً فیلدهای الزامی زیر را تکمیل کنید: {fields}.",
 
   // آپلود تصویر (components/admin/ImageUpload.tsx و actions/upload.ts)
 } as const;

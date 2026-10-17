@@ -3,7 +3,6 @@ import { UsersTable } from "@/components/admin/users/UsersTable";
 import { getAdminIdentity, requireAdminAccess } from "@/lib/admin/access";
 import { defaultLocale, isLocale } from "@/lib/i18n/routing";
 import { getUserDirectoryPage } from "@/lib/repositories/user-directory";
-import { notFound } from "next/navigation";
 
 /**
  * The SHARED user directory — `/admin/users`.
@@ -25,16 +24,18 @@ import { notFound } from "next/navigation";
  *
  * ── Search & pagination (server-side) ────────────────────────────────────────
  *
- * `searchParams` drive the query, so the ROW SET is filtered and paged in
- * Postgres; the whole user table never reaches the browser. `?q=` narrows by
- * name/email and `?page=` selects a page of `USER_DIRECTORY_PAGE_SIZE`.
+ * `?q=` drives the query, so the ROW SET is filtered in Postgres; the whole
+ * user table never reaches the browser. This page renders PAGE 1 only
+ * (`USER_DIRECTORY_PAGE_SIZE` = 20 rows); the table's infinite scroll fetches
+ * the following pages through `loadMoreUserDirectoryPage`, so there is no
+ * `?page=` any more.
  */
 export default async function UsersPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ q?: string; page?: string }>;
+  searchParams: Promise<{ q?: string }>;
 }) {
   const { locale } = await params;
   const activeLocale = isLocale(locale) ? locale : defaultLocale;
@@ -42,20 +43,11 @@ export default async function UsersPage({
 
   const sp = await searchParams;
   const search = typeof sp.q === "string" ? sp.q : undefined;
-  const requestedPage = Number.parseInt(sp.page ?? "1", 10);
 
   const [directory, identity] = await Promise.all([
-    getUserDirectoryPage({
-      search,
-      page: Number.isFinite(requestedPage) ? requestedPage : 1,
-    }),
+    getUserDirectoryPage({ search, page: 1 }),
     getAdminIdentity(),
   ]);
-
-  // A page number beyond the last one is a dead URL, not an empty table — the
-  // same "unknown id 404s" convention the product edit page uses. Page 1 is
-  // always valid (an empty directory renders the empty state instead).
-  if (directory.page > 1 && directory.rows.length === 0) notFound();
 
   return (
     <div className="@container/main flex flex-1 flex-col">
@@ -66,10 +58,11 @@ export default async function UsersPage({
           descriptionKey="admin.section.users.description"
         />
         <UsersTable
+          // A new query is a NEW table: remounting resets the pages the
+          // infinite scroll had accumulated for the previous search.
+          key={search ?? ""}
           rows={directory.rows}
           total={directory.total}
-          page={directory.page}
-          pageSize={directory.pageSize}
           search={search ?? ""}
           currentUserId={identity?.id}
           currentRole={identity?.role}

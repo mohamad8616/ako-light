@@ -44,7 +44,9 @@ import {
 } from "@/lib/admin/user-directory-permissions";
 import { ROLES, type AppRole } from "@/lib/auth/permissions";
 import {
+  getUserDirectoryPage,
   getUserDirectoryTarget,
+  type UserDirectoryPage,
   type UserDirectoryRow,
 } from "@/lib/repositories/user-directory";
 import { setUserBanned, setUserRole } from "@/lib/repositories/admin-users";
@@ -87,6 +89,39 @@ async function loadTarget(
   const target = await getUserDirectoryTarget(userId);
   if (!target) return { ok: false, result: actionFail("notFound") };
   return { ok: true, target };
+}
+
+/**
+ * The NEXT page of the directory — the users table's infinite scroll.
+ *
+ * The page component server-renders page 1 (20 rows, `USER_DIRECTORY_PAGE_SIZE`);
+ * as the operator scrolls to the table's foot, the client calls this action for
+ * page 2, 3, … and appends. The query stays SERVER-side exactly as before (the
+ * whole user table still never reaches the browser at once) — only the pager's
+ * link-and-page-number UI is replaced by scroll.
+ *
+ * Read-only, so the only gate that matters is `requireAdminAccess()`: no target
+ * is loaded, no role is decided — the rows carry exactly what the initial page
+ * render already exposes.
+ */
+export async function loadMoreUserDirectoryPage(
+  input: { search?: string; page: number },
+): Promise<ActionResult<UserDirectoryPage>> {
+  await requireAdminAccess();
+
+  const page = Number.isFinite(input.page)
+    ? Math.max(1, Math.trunc(input.page))
+    : 1;
+
+  try {
+    const result = await getUserDirectoryPage({
+      search: input.search,
+      page,
+    });
+    return actionOk(result);
+  } catch (error) {
+    return toActionResult(error);
+  }
 }
 
 /**

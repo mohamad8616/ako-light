@@ -26,6 +26,23 @@ const makeCollectionInput = (overrides: Partial<CollectionWriteInput> = {}): Col
     p2: { en: "Paragraph 2", fa: "پاراگراف 2" },
     p3: { en: "Paragraph 3", fa: "پاراگراف 3" },
   },
+  // The form floors the gallery at five; the repository stores whatever it is
+  // handed, so five rows here mirror what a real save looks like.
+  gallery: [
+    "/gallery/1.jpg",
+    "/gallery/2.jpg",
+    "/gallery/3.jpg",
+    "/gallery/4.jpg",
+    "/gallery/5.jpg",
+  ],
+  usedProducts: [
+    {
+      name: { en: "Sisma", fa: "سیزما" },
+      slug: "sisma",
+      category: "tables",
+      image: "/products/sisma.jpg",
+    },
+  ],
   sortOrder: 0,
   ...overrides,
 });
@@ -49,6 +66,8 @@ describeDb("collections repository — write", () => {
         expect(row!.year).toBe(input.year);
         expect(row!.image).toBe(input.image);
         expect(row!.description).toEqual(input.description);
+        expect(row!.gallery).toEqual(input.gallery);
+        expect(row!.usedProducts).toEqual(input.usedProducts);
         expect(row!.sortOrder).toBe(input.sortOrder);
         throw new Error("intentional test rollback");
       },

@@ -144,6 +144,53 @@ export const imageRefSchema = z
   .refine((value) => /^https?:\/\//.test(value) || value.startsWith("/"));
 
 /**
+ * A denormalized product snapshot row — the shape BOTH `Product.related` (the
+ * product form's related products) and `Collection.usedProducts` (the
+ * collection form's products used) store as jsonb. One schema because it is
+ * one shape: a pick through the shared `ProductsUsedField` is expanded into
+ * name/slug/category/image on add, and the public page renders it without a
+ * join.
+ */
+export const relatedProductSnapshotSchema = z.object({
+  name: localizedSchema,
+  slug: slugSchema,
+  /** The related product's category slug. */
+  category: slugSchema,
+  image: imageRefSchema,
+});
+
+/** The minimum number of gallery photos a collection is saved with. */
+export const COLLECTION_GALLERY_MIN = 5;
+
+/**
+ * The collection gallery — `ImageListField` output (a plain `string[]`) with a
+ * FLOOR. Its own issue code, like `invalidLink`: a bare `.min(5)` degrades to
+ * the blanket "Invalid value.", while "add at least five photos" is the one
+ * thing the operator needs to hear. The floor lives here (not in the form) so
+ * the server action re-validates it too.
+ */
+export const collectionGallerySchema = z
+  .array(imageRefSchema)
+  .superRefine((value, ctx) => {
+    if (value.length < COLLECTION_GALLERY_MIN) {
+      ctx.addIssue({ code: "tooFewImages" as "custom" });
+    }
+  });
+
+/**
+ * The product form's related products — the same snapshot list, floored at
+ * ONE so a saved product always has at least one related product, per the
+ * admin convention that a required section is a required section.
+ */
+export const relatedProductsSchema = z
+  .array(relatedProductSnapshotSchema)
+  .superRefine((value, ctx) => {
+    if (value.length < 1) {
+      ctx.addIssue({ code: "tooFewRelated" as "custom" });
+    }
+  });
+
+/**
  * A document reference — a PDF or PowerPoint URL, clearable.
  *
  * The catalogue's downloadable cards hold one of these, and the operator does

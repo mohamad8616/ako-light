@@ -130,7 +130,14 @@ const productInput = {
   description: PAIR,
   moreInfo: null,
   downloads: [],
-  related: [],
+  related: [
+    {
+      name: PAIR,
+      slug: "related-product",
+      category: "lighting",
+      image: "/images/related.jpg",
+    },
+  ],
   sortOrder: 0,
   categoryId: "lighting",
   designerId: null,

@@ -5,11 +5,11 @@ import Image from "next/image";
 import { motion, type Variants } from "framer-motion";
 import HomepageSection from "@/utility/HomepageSection";
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
-import { collectionGalleryImages } from "@/lib/data/imageGalleries";
+import { collectionGalleryImages, type GalleryImage } from "@/lib/data/imageGalleries";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 
 
-const images = collectionGalleryImages;
+const fallbackImages = collectionGalleryImages;
 
 const rowVariants: Variants = {
   hidden: { opacity: 0, y: 70 },
@@ -126,15 +126,23 @@ function useRandomMobileCount(min: number, max: number) {
   return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 }
 
-export default function ImageGallery() {
+export default function ImageGallery({ images }: { images?: GalleryImage[] }) {
   const { t } = useLanguage();
   const [expanded, setExpanded] = useState(false);
   const mobileInitialCount = useRandomMobileCount(MOBILE_RANDOM_MIN, MOBILE_RANDOM_MAX);
 
+  /**
+   * The collection's OWN gallery when the admin has filled it, the legacy
+   * placeholder set otherwise — so the two collections seeded before the
+   * gallery column existed keep rendering exactly as they always did, and the
+   * moment an operator uploads photos the section follows the database.
+   */
+  const photos = images && images.length > 0 ? images : fallbackImages;
+
   const desktopRows = buildDesktopRows(
-    expanded ? images.length : Math.min(images.length, INITIAL_DESKTOP_COUNT)
+    expanded ? photos.length : Math.min(photos.length, INITIAL_DESKTOP_COUNT)
   );
-  const mobileImages = expanded ? images : images.slice(0, mobileInitialCount);
+  const mobileImages = expanded ? photos : photos.slice(0, mobileInitialCount);
 
   return (
     <HomepageSection>
@@ -153,8 +161,8 @@ export default function ImageGallery() {
             {row.cells.map((cell, cellIndex) => (
               <GalleryCell
                 key={cell.index}
-                src={images[cell.index].src}
-                alt={images[cell.index].alt}
+                src={photos[cell.index].src}
+                alt={photos[cell.index].alt}
                 span={cell.span}
                 variant={cell.variant}
                 index={rowIndex * 3 + cellIndex}

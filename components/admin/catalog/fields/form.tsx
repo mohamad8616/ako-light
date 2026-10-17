@@ -20,6 +20,32 @@ export function useFieldMessage(issue: FieldIssue): string | null {
 }
 
 /**
+ * The inline message under a necessary input: POLITE, red, and rendered in
+ * the Noora Persian face when the admin shell is in Persian.
+ *
+ * One component so every field kit renders the identical message styling —
+ * the shell already switches its body font through `html[dir="rtl"] body`,
+ * and this class states it explicitly at the element that carries it, so the
+ * Persian message is Noora whatever inherits down the tree. English messages
+ * keep the shell's Latin face: Noora on English text would be a downgrade.
+ */
+export function FieldMessage({ children }: { children: React.ReactNode }) {
+  const { lang } = useLanguage();
+  return (
+    <p
+      role="alert"
+      dir="auto"
+      className={cn(
+        "text-destructive text-xs font-medium",
+        lang === "fa" && "font-noora",
+      )}
+    >
+      {children}
+    </p>
+  );
+}
+
+/**
  * Card that groups one form section (identity, relations, images…).
  *
  * `title`/`description` are already-translated strings passed by the entity's
@@ -115,15 +141,7 @@ export function FieldRow({
         ) : null}
       </div>
       {children}
-      {message ? (
-        <p
-          role="alert"
-          dir="auto"
-          className="text-destructive text-xs font-medium"
-        >
-          {message}
-        </p>
-      ) : null}
+      {message ? <FieldMessage>{message}</FieldMessage> : null}
     </div>
   );
 }
@@ -187,11 +205,7 @@ export function ListRow({
         </div>
       </div>
       {children}
-      {message ? (
-        <p role="alert" className="text-destructive text-xs font-medium">
-          {message}
-        </p>
-      ) : null}
+      {message ? <FieldMessage>{message}</FieldMessage> : null}
     </li>
   );
 }

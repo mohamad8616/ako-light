@@ -68,15 +68,21 @@ export async function updateCollectionAction(
 
   try {
     // Read before writing, delete after: an upload the admin replaced is only
-    // garbage-collected once the new URL is safely persisted.
+    // garbage-collected once the new URL is safely persisted. `usedProducts`
+    // snapshots point at PRODUCT hero images (owned by the product row), so
+    // only the collection's own image + gallery are ours to sweep.
     const previous = await getCollectionAdminDetail(id);
-    const beforeUrls = previous ? [previous.image] : [];
+    const beforeUrls = previous
+      ? [previous.image, ...previous.gallery]
+      : [];
 
     await updateWithSlugHistory("collection", id, parsed.data.slug, (tx) =>
       updateCollection(id, parsed.data, tx),
     );
 
-    await deleteStorageUrls(removedUrls(beforeUrls, [parsed.data.image]));
+    await deleteStorageUrls(
+      removedUrls(beforeUrls, [parsed.data.image, ...parsed.data.gallery]),
+    );
     revalidateCatalog("collections", { id });
     return actionOk(undefined);
   } catch (error) {
@@ -91,7 +97,11 @@ export async function destroyCollectionAction(
 
   try {
     const previous = await getCollectionAdminDetail(id);
-    const beforeUrls = previous ? [previous.image] : [];
+    // The collection's own uploads only: `usedProducts` holds product hero
+    // snapshots, which belong to the product rows and must survive.
+    const beforeUrls = previous
+      ? [previous.image, ...previous.gallery]
+      : [];
 
     await deleteCollection(id);
 

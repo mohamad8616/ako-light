@@ -12,24 +12,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { loadMoreMediaAction } from "@/lib/admin/actions/media";
 import { ADMIN_SHELL_DIR } from "@/lib/admin/sections";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import {
-  MEDIA_LIBRARY_PAGE_SIZE,
   MEDIA_SORTS,
   MEDIA_TYPE_FILTERS,
   hasMediaFilters,
   mediaListQueryString,
-  mediaPageCount,
   type MediaLibraryItem,
   type MediaListParams,
   type MediaSort,
   type MediaTypeFilter,
 } from "@/lib/media/library";
 import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight, ImageOff, Search } from "lucide-react";
-import NextLink from "next/link";
+import { ImageOff, Loader2, Search } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
+import { toast } from "sonner";
 import * as React from "react";
 
 /** Sort name -> dictionary key. Explicit so a rename cannot silently 404 a label. */
@@ -52,14 +51,16 @@ const TYPE_LABEL_KEY: Record<MediaTypeFilter, string> = {
 /**
  * The media library grid.
  *
- * The page (server) has already read ONE page of rows; this component never
- * holds the whole table, and every filter change is a URL change that makes the
- * server read again. That is the difference between a library that scales and a
- * client-side filter that would have to be handed every record first.
+ * The page (server) has already read the FIRST page of rows; this component
+ * appends the following pages as the operator scrolls to the foot of the grid
+ * (`loadMoreMediaAction`), so the whole table is never handed to the browser at
+ * once — and there is no pager to click. A spinner and a message show while
+ * each next page is in flight.
  *
- * State lives in the URL (`page` / `search` / `type` / `sort`), so a refresh, a
- * bookmark or the back button all restore exactly what the admin was looking
- * at — nothing here is component state except the in-progress search text.
+ * Filters still live in the URL (`search` / `type` / `sort`), so a refresh, a
+ * bookmark or the back button restore exactly what the admin was looking at.
+ * A filter change is a NEW list: the page remounts the grid with a
+ * filter-derived `key`, which discards the pages accumulated for the old query.
  */
 export function MediaLibrary({
   items,
@@ -108,19 +109,70 @@ export function MediaLibrary({
     return () => clearTimeout(id);
   }, [term, params.search, navigate]);
 
-  const pageCount = mediaPageCount(total, MEDIA_LIBRARY_PAGE_SIZE);
-  const firstShown = total === 0 ? 0 : (params.page - 1) * MEDIA_LIBRARY_PAGE_SIZE + 1;
-  const lastShown = Math.min(params.page * MEDIA_LIBRARY_PAGE_SIZE, total);
   const filtered = hasMediaFilters(params);
 
-  // Only the ID is held, and the item is DERIVED from the current props. That
-  // is what keeps the panel honest after a save: the action revalidates, the
-  // server re-renders with fresh rows, and the open dialog picks up the new
-  // values because it never kept its own copy. It also closes the panel for
-  // free when the asset it was showing gets deleted.
+  /**
+   * Pages 2…n, appended by the scroll loader, plus the page the last
+   * successful load returned. Page 1 arrives as the items prop from the
+   * server render; the grid renders BOTH lists so an appended tile is
+   * indistinguishable from a server-rendered one.
+   */
+  const [extraItems, setExtraItems] = React.useState<MediaLibraryItem[]>([]);
+  const [loadedPage, setLoadedPage] = React.useState(1);
+  const [loadingMore, setLoadingMore] = React.useState(false);
+
+  const allItems = React.useMemo(
+    () => [...items, ...extraItems],
+    [items, extraItems],
+  );
+  const hasMore = allItems.length < total;
+
+  /** Synchronous guard: the observer may fire again before state settles. */
+  const loadingRef = React.useRef(false);
+  const sentinelRef = React.useRef<HTMLDivElement | null>(null);
+
+  const loadNextPage = React.useCallback(async () => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setLoadingMore(true);
+    try {
+      const result = await loadMoreMediaAction({
+        search: params.search || undefined,
+        type: params.type,
+        sort: params.sort,
+        page: loadedPage + 1,
+      });
+      if (result.ok && result.data.items.length > 0) {
+        setExtraItems((current) => [...current, ...result.data.items]);
+        setLoadedPage(result.data.page);
+      }
+    } catch {
+      toast.error(t("admin.error.unknown"));
+    } finally {
+      setLoadingMore(false);
+      loadingRef.current = false;
+    }
+  }, [loadedPage, params.search, params.sort, params.type, t]);
+
+  React.useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) void loadNextPage();
+      },
+      { rootMargin: "240px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loadNextPage]);
+
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
+  // Derived from the COMBINED list so the details panel also opens for a tile
+  // that arrived by scrolling.
   const selected = selectedId
-    ? (items.find((item) => item.id === selectedId) ?? null)
+    ? (allItems.find((item) => item.id === selectedId) ?? null)
     : null;
 
   const typeItems = Object.fromEntries(
@@ -192,7 +244,7 @@ export function MediaLibrary({
         </div>
       </div>
 
-      {items.length === 0 ? (
+      {allItems.length === 0 ? (
         <EmptyState filtered={filtered} onClear={clearFilters} />
       ) : (
         <ul
@@ -202,7 +254,7 @@ export function MediaLibrary({
             isPending && "opacity-60",
           )}
         >
-          {items.map((item) => (
+          {allItems.map((item) => (
             <li key={item.id}>
               <MediaCard item={item} onSelect={(next) => setSelectedId(next.id)} />
             </li>
@@ -210,45 +262,32 @@ export function MediaLibrary({
         </ul>
       )}
 
-      {total > 0 ? (
-        <nav
-          aria-label={t("admin.nav.media")}
-          className="flex flex-wrap items-center justify-between gap-2"
-        >
-          <p className="text-muted-foreground text-xs">
-            {t("admin.media.showing")}{" "}
-            <span className="tabular-nums">
-              {firstShown}–{lastShown}
-            </span>{" "}
-            / <span className="tabular-nums">{total}</span>
+      {/*
+        Infinite scroll: the grid shows the page-1 tiles the server rendered,
+        then appends the next page each time the sentinel below scrolls into
+        view — with a spinner and a message while the read is in flight.
+      */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="text-muted-foreground text-xs">
+          {t("admin.media.showing")}{" "}
+          <span className="tabular-nums">{allItems.length}</span> /{" "}
+          <span className="tabular-nums">{total}</span>
+        </p>
+        {loadingMore ? (
+          <p
+            role="status"
+            aria-live="polite"
+            className="text-muted-foreground flex items-center gap-2 text-xs"
+          >
+            <Loader2 aria-hidden="true" className="size-3.5 animate-spin" />
+            {t("admin.table.loadingMore")}
           </p>
-
-          <div className="flex items-center gap-2">
-            <PagerLink
-              disabled={params.page <= 1}
-              href={`${pathname}${mediaListQueryString(params, { page: params.page - 1 })}`}
-            >
-              <ChevronLeft aria-hidden="true" />
-              {t("admin.media.previous")}
-            </PagerLink>
-
-            <span className="text-muted-foreground text-xs">
-              {t("admin.media.page")}{" "}
-              <span className="tabular-nums">{params.page}</span>{" "}
-              {t("admin.media.of")}{" "}
-              <span className="tabular-nums">{pageCount}</span>
-            </span>
-
-            <PagerLink
-              disabled={params.page >= pageCount}
-              href={`${pathname}${mediaListQueryString(params, { page: params.page + 1 })}`}
-            >
-              {t("admin.media.next")}
-              <ChevronRight aria-hidden="true" />
-            </PagerLink>
-          </div>
-        </nav>
+        ) : null}
+      </div>
+      {hasMore ? (
+        <div ref={sentinelRef} aria-hidden="true" className="h-px w-full" />
       ) : null}
+
 
       {selected ? (
         <MediaDetailsDialog
@@ -271,34 +310,6 @@ export function MediaLibrary({
  * rather than one anchor with `aria-disabled`, which is still focusable and
  * still navigable from the keyboard.
  */
-function PagerLink({
-  href,
-  disabled,
-  children,
-}: {
-  href: string;
-  disabled: boolean;
-  children: React.ReactNode;
-}) {
-  if (disabled) {
-    return (
-      <Button variant="outline" size="sm" disabled aria-disabled="true">
-        {children}
-      </Button>
-    );
-  }
-
-  return (
-    <Button
-      variant="outline"
-      size="sm"
-      render={<NextLink href={href} scroll={false} />}
-    >
-      {children}
-    </Button>
-  );
-}
-
 /**
  * Two distinct empty states, because they need different actions.
  *

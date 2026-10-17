@@ -2,6 +2,7 @@
 
 import {
   AddRowButton,
+  FieldMessage,
   FieldRow,
   ListRow,
   useFieldMessage,
@@ -37,6 +38,7 @@ export function LocalizedField({
   optional,
   textarea,
   rows = 4,
+  textareaClassName,
   className,
 }: {
   name: string;
@@ -47,6 +49,12 @@ export function LocalizedField({
   /** Renders textareas (descriptions, paragraphs) instead of inputs. */
   textarea?: boolean;
   rows?: number;
+  /**
+   * Extra classes for the TEXTAREA controls only — e.g. `text-sm` where the
+   * text runs long (the collection paragraphs) and the default size reads
+   * oversized. The inputs are unaffected.
+   */
+  textareaClassName?: string;
   className?: string;
 }) {
   const { register, formState } = useFormContext();
@@ -57,8 +65,14 @@ export function LocalizedField({
 
   const control = (path: string, dir: "ltr" | "rtl") => {
     const tint = dir === "ltr" ? EN_FIELD_CLASS : FA_FIELD_CLASS;
+    const size = textarea ? textareaClassName : undefined;
     return textarea ? (
-      <Textarea dir={dir} rows={rows} className={tint} {...register(path)} />
+      <Textarea
+        dir={dir}
+        rows={rows}
+        className={size ? `${tint} ${size}` : tint}
+        {...register(path)}
+      />
     ) : (
       <Input dir={dir} className={tint} {...register(path)} />
     );
@@ -78,22 +92,14 @@ export function LocalizedField({
             EN
           </span>
           {control(`${name}.en`, "ltr")}
-          {enMessage ? (
-            <p role="alert" className="text-destructive text-xs font-medium">
-              {enMessage}
-            </p>
-          ) : null}
+          {enMessage ? <FieldMessage>{enMessage}</FieldMessage> : null}
         </div>
         <div className="space-y-1">
           <span className="text-muted-foreground text-[10px] font-semibold tracking-widest uppercase">
             FA
           </span>
           {control(`${name}.fa`, "rtl")}
-          {faMessage ? (
-            <p role="alert" className="text-destructive text-xs font-medium">
-              {faMessage}
-            </p>
-          ) : null}
+          {faMessage ? <FieldMessage>{faMessage}</FieldMessage> : null}
         </div>
       </div>
     </FieldRow>

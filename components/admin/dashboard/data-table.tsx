@@ -5,7 +5,6 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
   type ColumnFiltersState,
@@ -24,14 +23,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Table,
   TableBody,
   TableCell,
@@ -41,15 +32,12 @@ import {
 } from "@/components/ui/table";
 import {
   ArrowDown01Icon,
-  ArrowLeft01Icon,
-  ArrowLeftDoubleIcon,
-  ArrowRight01Icon,
-  ArrowRightDoubleIcon,
   Cancel01Icon,
   CheckmarkCircle01Icon,
   LeftToRightListBulletIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { Loader2 } from "lucide-react";
 
 import LocaleLink from "@/lib/i18n/Link";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
@@ -72,6 +60,13 @@ export interface DashboardProductRow {
 }
 
 const columnHelper = createColumnHelper<DashboardProductRow>();
+
+/**
+ * Infinite-scroll window: 20 rows to start, 20 more per reveal. The spinner
+ * stays visible for `REVEAL_DELAY_MS` so a reveal reads as a load, not a jump.
+ */
+const REVEAL_COUNT = 20;
+const REVEAL_DELAY_MS = 350;
 
 /** Icon per stock state — view-layer concern, like the nav icons. */
 const STOCK_ICONS = {
@@ -145,7 +140,9 @@ function buildColumns(t: (key: string) => string, lang: Language) {
 
 /**
  * The dashboard's product overview: real repository rows with sorting,
- * pagination, column visibility and per-language labels.
+ * column visibility and per-language labels — and INFINITE SCROLL instead of
+ * the old pager (20 rows, +20 each time the foot scrolls into view, with a
+ * spinner and a message while the next chunk is revealed).
  *
  * Read-only by design — row-level editing/deleting lives on the dedicated
  * /admin/products screen, so this table has no inline editor, no fake tabs,
@@ -162,24 +159,58 @@ export function DataTable({ data }: { data: DashboardProductRow[] }) {
     [],
   );
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [pagination, setPagination] = React.useState({
-    pageIndex: 0,
-    pageSize: 10,
-  });
+  /** Rows revealed so far — the infinite-scroll window over the full set. */
+  const [visibleCount, setVisibleCount] = React.useState(REVEAL_COUNT);
+  const [loadingMore, setLoadingMore] = React.useState(false);
 
   const table = useReactTable({
     data,
     columns,
-    state: { sorting, columnVisibility, columnFilters, pagination },
+    state: { sorting, columnVisibility, columnFilters },
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onPaginationChange: setPagination,
   });
+
+  const allRows = table.getRowModel().rows;
+  const visibleRows = allRows.slice(0, visibleCount);
+  const hasMore = visibleCount < allRows.length;
+
+  const revealingRef = React.useRef(false);
+  const timerRef = React.useRef<number | null>(null);
+  const sentinelRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries[0]?.isIntersecting || revealingRef.current) return;
+        revealingRef.current = true;
+        setLoadingMore(true);
+        timerRef.current = window.setTimeout(() => {
+          setVisibleCount((count) => count + REVEAL_COUNT);
+          setLoadingMore(false);
+          revealingRef.current = false;
+        }, REVEAL_DELAY_MS);
+      },
+      { rootMargin: "240px" },
+    );
+    observer.observe(sentinel);
+
+    return () => {
+      observer.disconnect();
+      if (timerRef.current !== null) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+        revealingRef.current = false;
+      }
+    };
+  }, [hasMore]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -257,8 +288,8 @@ export function DataTable({ data }: { data: DashboardProductRow[] }) {
               ))}
             </TableHeader>
             <TableBody className="**:data-[slot=table-cell]:first:w-8">
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
+              {visibleRows.length ? (
+                visibleRows.map((row) => (
                   <TableRow
                     key={row.id}
                     className="odd:bg-emerald-500/[0.04] hover:bg-violet-500/[0.06] transition-colors"
@@ -286,90 +317,31 @@ export function DataTable({ data }: { data: DashboardProductRow[] }) {
             </TableBody>
           </Table>
         </div>
-        <div className="flex items-center justify-end px-4">
-          <div className="flex w-full items-center gap-8 lg:w-fit">
-            <div className="hidden items-center gap-2 lg:flex">
-              <Label htmlFor="rows-per-page" className="text-sm font-medium">
-                {t("admin.table.rowsPerPage")}
-              </Label>
-              <Select
-                value={`${table.getState().pagination.pageSize}`}
-                onValueChange={(value) => {
-                  table.setPageSize(Number(value));
-                }}
-                items={[10, 20, 30, 40, 50].map((pageSize) => ({
-                  label: `${pageSize}`,
-                  value: `${pageSize}`,
-                }))}
-              >
-                <SelectTrigger size="sm" className="w-20" id="rows-per-page">
-                  <SelectValue
-                    placeholder={table.getState().pagination.pageSize}
-                  />
-                </SelectTrigger>
-                <SelectContent side="top">
-                  <SelectGroup>
-                    {[10, 20, 30, 40, 50].map((pageSize) => (
-                      <SelectItem key={pageSize} value={`${pageSize}`}>
-                        {pageSize}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex w-fit items-center justify-center text-sm font-medium">
-              {t("admin.table.page")}{" "}
-              {numberFormat.format(
-                table.getState().pagination.pageIndex + 1,
-              )}{" "}
-              {t("admin.table.of")} {numberFormat.format(table.getPageCount())}
-            </div>
-            <div className="ms-auto flex items-center gap-2 lg:ms-0">
-              <Button
-                variant="outline"
-                className="hidden h-8 w-8 p-0 lg:flex"
-                onClick={() => table.setPageIndex(0)}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">{t("admin.table.goToFirstPage")}</span>
-                <HugeiconsIcon icon={ArrowLeftDoubleIcon} strokeWidth={2} />
-              </Button>
-              <Button
-                variant="outline"
-                className="size-8"
-                size="icon"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-              >
-                <span className="sr-only">
-                  {t("admin.table.goToPreviousPage")}
-                </span>
-                <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} />
-              </Button>
-              <Button
-                variant="outline"
-                className="size-8"
-                size="icon"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">{t("admin.table.goToNextPage")}</span>
-                <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} />
-              </Button>
-              <Button
-                variant="outline"
-                className="hidden size-8 lg:flex"
-                size="icon"
-                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                disabled={!table.getCanNextPage()}
-              >
-                <span className="sr-only">{t("admin.table.goToLastPage")}</span>
-                <HugeiconsIcon icon={ArrowRightDoubleIcon} strokeWidth={2} />
-              </Button>
-            </div>
-          </div>
+        <div className="flex items-center justify-between px-4">
+          <p className="text-muted-foreground text-xs">
+            {t("admin.table.itemCount").replace(
+              "{count}",
+              numberFormat.format(allRows.length),
+            )}
+          </p>
+          {loadingMore ? (
+            <p
+              role="status"
+              aria-live="polite"
+              className="text-muted-foreground flex items-center gap-2 text-xs"
+            >
+              <Loader2 aria-hidden className="size-3.5 animate-spin" />
+              {t("admin.table.loadingMore")}
+            </p>
+          ) : visibleCount > REVEAL_COUNT && !hasMore ? (
+            <p className="text-muted-foreground text-xs">
+              {t("admin.table.allLoaded")}
+            </p>
+          ) : null}
         </div>
+        {hasMore ? (
+          <div ref={sentinelRef} aria-hidden className="h-px w-full" />
+        ) : null}
       </div>
     </div>
   );

@@ -220,7 +220,14 @@ describeDb("slug collision — action tier (expects clean slugTaken, no P2002 le
       description: { en: "Description", fa: "توضیح" },
       moreInfo: null,
       downloads: [],
-      related: [],
+      related: [
+        {
+          name: { en: "Related", fa: "مرتبط" },
+          slug: "related-product",
+          category: "lighting",
+          image: "/images/related.jpg",
+        },
+      ],
       sortOrder: 0,
       categoryId,
       designerId: null,

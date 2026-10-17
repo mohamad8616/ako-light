@@ -7,6 +7,7 @@ import type { Collection as CollectionRow, Prisma } from "@/generated/prisma/cli
 import type {
   Collection,
   CollectionDescription,
+  CollectionUsedProduct,
 } from "@/lib/data/collections";
 import type { Localized } from "@/lib/i18n/localized";
 import { prisma } from "@/lib/db/prisma";
@@ -27,6 +28,10 @@ function mapCollectionRow(row: CollectionRow): Collection {
     image: row.image,
     // `description` is a jsonb column holding the { p1, p2, p3 } block.
     description: asJson<CollectionDescription>(row.description),
+    // The gallery is a real TEXT[] column; `usedProducts` is the snapshot
+    // jsonb (same shape as `Product.related`).
+    gallery: row.gallery,
+    usedProducts: asJson<CollectionUsedProduct[]>(row.usedProducts),
   };
 }
 
@@ -74,6 +79,10 @@ export type CollectionWriteInput = {
     p2: Localized;
     p3: Localized;
   };
+  /** Gallery photos, in display order (the form enforces at least five). */
+  gallery: string[];
+  /** Denormalized snapshot rows, picked in the collection form. */
+  usedProducts: CollectionUsedProduct[];
   sortOrder: number;
 };
 
@@ -105,6 +114,8 @@ export const getCollectionAdminDetail = cache(
       year: row.year,
       image: row.image,
       description: asJson<{ p1: Localized; p2: Localized; p3: Localized }>(row.description),
+      gallery: row.gallery,
+      usedProducts: asJson<CollectionUsedProduct[]>(row.usedProducts),
       sortOrder: row.sortOrder,
     };
   },
@@ -122,6 +133,8 @@ export const createCollection = async (
       year: input.year,
       image: input.image,
       description: asJsonInput(input.description),
+      gallery: input.gallery,
+      usedProducts: asJsonInput(input.usedProducts),
       sortOrder: input.sortOrder,
     },
   });
@@ -142,6 +155,8 @@ export const updateCollection = async (
       year: input.year,
       image: input.image,
       description: asJsonInput(input.description),
+      gallery: input.gallery,
+      usedProducts: asJsonInput(input.usedProducts),
       sortOrder: input.sortOrder,
     },
   });

@@ -3,10 +3,12 @@ import { BackLink } from "@/components/admin/catalog/BackLink";
 import { CollectionForm } from "@/components/admin/catalog/collections/CollectionForm";
 import { isLocale } from "@/lib/i18n/routing";
 import { getAdminDictionary } from "@/lib/i18n/admin-translations";
+import { getProductOptions } from "@/lib/repositories/products";
 import { notFound } from "next/navigation";
 
 /**
- * Create-collection page.
+ * Create-collection page. The used-products picker needs the catalog options
+ * (`getProductOptions()`) — the same server-side list the product form uses.
  */
 export default async function NewCollectionPage({
   params,
@@ -17,6 +19,7 @@ export default async function NewCollectionPage({
   if (!isLocale(locale)) notFound();
 
   const t = getAdminDictionary(locale);
+  const products = await getProductOptions();
 
   return (
     <div className="@container/main flex flex-1 flex-col">
@@ -32,7 +35,7 @@ export default async function NewCollectionPage({
             />
           }
         />
-        <CollectionForm />
+        <CollectionForm products={products} />
       </div>
     </div>
   );

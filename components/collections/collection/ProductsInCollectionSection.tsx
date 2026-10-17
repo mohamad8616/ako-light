@@ -1,7 +1,6 @@
 "use client";
 
 import PlusTextBtn from "@/components/ui/PlusTextBtn";
-import type { ProductCategory } from "@/lib/data/product-categories/types";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import {
   displayCategoryName,
@@ -25,9 +24,33 @@ const PHOTO_HEIGHT = 200;
 // How far (px) the photo slides in/out on its first appearance/disappearance.
 const ENTER_EXIT_OFFSET = 500;
 
+/**
+ * The subset of a product this section renders.
+ *
+ * Deliberately NARROWER than the catalog `Product`: the project page passes
+ * full catalog products (which satisfy this structurally), while the
+ * collection page builds the same shape from the collection's denormalized
+ * `usedProducts` snapshot — which carries no prices, gallery or store state.
+ * Typing on what is actually read keeps both callers honest.
+ */
+export interface SectionProduct {
+  name: Localized;
+  slug: string;
+  /** The hover/tracking photo (the collection snapshot's hero image). */
+  hoverImage: string;
+}
+
+/** A category group as this section consumes it (label + its products). */
+export interface SectionCategory {
+  name: Localized;
+  slug: string;
+  i18nKey: string;
+  products: SectionProduct[];
+}
+
 interface Props {
   /** Categories to render — always provided by the parent page (server-fetched). */
-  categories: ProductCategory[];
+  categories: SectionCategory[];
   /**
    * Heading text. Defaults to the "collections.productsInCollection" translation.
    * Either a `Localized` object, a plain string, or (preferred for UI labels)

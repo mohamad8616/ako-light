@@ -20,7 +20,16 @@ import {
 
 const describeDb = describe.skipIf(!hasDatabaseUrl);
 
-const COLLECTION_KEYS = ["description", "id", "image", "name", "slug", "year"];
+const COLLECTION_KEYS = [
+  "description",
+  "gallery",
+  "id",
+  "image",
+  "name",
+  "slug",
+  "usedProducts",
+  "year",
+];
 
 describeDb("collections repository", () => {
   beforeAll(async () => {
@@ -52,6 +61,15 @@ describeDb("collections repository", () => {
     for (const paragraph of ["p1", "p2", "p3"] as const) {
       expectLocalized(description[paragraph], `Collection.description.${paragraph}`);
     }
+
+    // The two sections the admin now owns: a photo list and a product snapshot
+    // list. Seeded rows may legitimately be empty — the public page falls back
+    // — but the SHAPE must always be the repository's, never undefined.
+    expect(Array.isArray(collection!.gallery), "Collection.gallery").toBe(true);
+    expect(
+      Array.isArray(collection!.usedProducts),
+      "Collection.usedProducts",
+    ).toBe(true);
   });
 
   it("returns null (not undefined, not an error) for an unknown slug", async () => {

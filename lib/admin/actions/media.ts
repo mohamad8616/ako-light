@@ -48,7 +48,11 @@ import {
   uploadMedia,
   type MediaErrorCode,
 } from "@/lib/media/service";
-import type { MediaKind } from "@/lib/media/library";
+import type { MediaKind, MediaListParams, MediaSort } from "@/lib/media/library";
+import {
+  readMediaLibraryPage,
+  type MediaLibraryPage,
+} from "@/lib/media/library-page";
 import { findMediaIdsByUrl } from "@/lib/repositories/media";
 import { z } from "zod";
 
@@ -209,6 +213,42 @@ export async function listMediaForPickerAction(input: {
     });
   } catch (error) {
     return toMediaActionResult(error);
+  }
+}
+
+/**
+ * The NEXT page of the library grid — the infinite scroll's data source.
+ *
+ * Page 1 is server-rendered by `/admin/media`; as the operator scrolls to the
+ * foot of the grid this action reads page 2, 3, … for the SAME filters and the
+ * client appends them. It goes through `readMediaLibraryPage`, the exact read
+ * the page itself uses, so a page-2 tile is identical to a page-1 tile.
+ *
+ * Read-only: `requireAdminAccess()` is the only gate needed, and no filter can
+ * widen what the initial render already exposes.
+ */
+export async function loadMoreMediaAction(input: {
+  search?: string;
+  type?: MediaListParams["type"];
+  sort?: MediaSort;
+  page: number;
+}): Promise<ActionResult<MediaLibraryPage>> {
+  await requireAdminAccess();
+
+  const page = Number.isFinite(input.page)
+    ? Math.max(1, Math.trunc(input.page))
+    : 1;
+
+  try {
+    const result = await readMediaLibraryPage({
+      search: input.search,
+      type: input.type,
+      sort: input.sort,
+      page,
+    });
+    return actionOk(result);
+  } catch (error) {
+    return toActionResult(error);
   }
 }
 

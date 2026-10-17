@@ -6,6 +6,21 @@ export interface CollectionDescription {
   p3: Localized;
 }
 
+/**
+ * One product in a collection's "products used" section — a DENORMALIZED
+ * snapshot, exactly the shape `Product.related` stores (same jsonb pattern):
+ * the public page renders it without a join, so a renamed or deleted product
+ * leaves the section intact. Picked through the shared category → product
+ * picker (`ProductsUsedField`, snapshot mode) in the collection form.
+ */
+export interface CollectionUsedProduct {
+  name: Localized;
+  slug: string;
+  /** The product's category SLUG (the grouping key on the public page). */
+  category: string;
+  image: string;
+}
+
 export interface Collection {
   slug: string;
   id: string;
@@ -13,6 +28,15 @@ export interface Collection {
   year: string;
   image: string;
   description: CollectionDescription;
+  /**
+   * The gallery photos, in display order. Optional so the legacy placeholder
+   * rows below compile unchanged; the repository always returns the column's
+   * value (default `[]`), and an empty array means "use the legacy gallery
+   * images" on the public page.
+   */
+  gallery?: string[];
+  /** Products picked in the collection form. Empty/absent = every category. */
+  usedProducts?: CollectionUsedProduct[];
 }
 
 export const collections: Collection[] = [

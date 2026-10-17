@@ -269,6 +269,14 @@ model Collection {
   image       String
   /// CollectionDescription — { p1: Localized, p2: Localized, p3: Localized }
   description Json
+  /// The public gallery photos, in display order. The admin enforces at least
+  /// five (`collectionFormSchema`), mirroring `Project.portfolioImages`.
+  gallery    String[] @default([])
+  /// CollectionUsedProduct[] — a denormalized snapshot of the products shown
+  /// in the collection's "products in collection" section, exactly like
+  /// `Product.related`: the public page renders it without a join. Empty =
+  /// fall back to every category (the historical behaviour).
+  usedProducts Json     @default("[]")
   /// Display position (matches the order of `collections`).
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())

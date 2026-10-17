@@ -24,6 +24,11 @@ export const tableEn = {
   "admin.table.goToNextPage": "Go to next page",
   "admin.table.goToLastPage": "Go to last page",
 
+  // Infinite scroll (the shared DataTable renders 20 rows, then +20 on scroll)
+  "admin.table.itemCount": "{count} items",
+  "admin.table.loadingMore": "Loading more items…",
+  "admin.table.allLoaded": "All items loaded.",
+
   // Chart (orders)
 } as const;
 
@@ -45,6 +50,11 @@ export const tableFa = {
   "admin.table.goToPreviousPage": "رفتن به صفحه قبل",
   "admin.table.goToNextPage": "رفتن به صفحه بعد",
   "admin.table.goToLastPage": "رفتن به صفحه آخر",
+
+  // اسکرول بی‌نهایت (جدول مشترک ۲۰ ردیف نشان می‌دهد، سپس با اسکرول ۲۰ تای بعدی)
+  "admin.table.itemCount": "{count} مورد",
+  "admin.table.loadingMore": "در حال بارگذاری موارد بیشتر…",
+  "admin.table.allLoaded": "همه موارد بارگذاری شد.",
 
   // نمودار (سفارش‌ها)
 } as const;

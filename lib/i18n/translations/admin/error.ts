@@ -16,7 +16,14 @@ export const errorEn = {
   // made a blocked Save look like a broken button.
   "admin.error.localizedPair":
     "Fill in both languages, or leave both empty to keep the built-in text.",
-  "admin.error.required": "This field is required.",
+  // A list below its floor. The named count is the point: "this field is
+  // required" does not tell the operator HOW MANY rows are missing.
+  "admin.error.tooFewImages":
+    "Add at least 5 photos to the gallery, then save again.",
+  "admin.error.tooFewRelated":
+    "Select at least one related product, then save again.",
+  // Polite rather than stern — the operator is mid-edit, not at fault.
+  "admin.error.required": "Please fill in this field.",
   "admin.error.tooLong": "This value is too long.",
   // Upload-specific codes (lib/admin/actions/upload.ts).
   "admin.error.tooLarge": "This file is too large (max 5 MB).",
@@ -52,7 +59,13 @@ export const errorFa = {
     "یک نشانی کامل که با https:// شروع شود وارد کنید، یا مسیری از همین سایت که با / شروع شود.",
   "admin.error.localizedPair":
     "هر دو زبان را پر کنید، یا هر دو را خالی بگذارید تا متن پیش‌فرض باقی بماند.",
-  "admin.error.required": "این فیلد الزامی است.",
+  // فهرستی کمتر از حد مجاز. تعداد نام‌برده شده مهم است: «این فیلد الزامی است»
+  // نمی‌گوید چند مورد کم است.
+  "admin.error.tooFewImages": "حداقل ۵ عکس به گالری اضافه کنید و دوباره ذخیره کنید.",
+  "admin.error.tooFewRelated":
+    "حداقل یک محصول مرتبط انتخاب کنید و دوباره ذخیره کنید.",
+  // مؤدبانه به‌جای رسمی — کاربر در میانه ویرایش است، نه متهم.
+  "admin.error.required": "لطفاً این فیلد را پر کنید.",
   "admin.error.tooLong": "این مقدار بیش از حد طولانی است.",
   // کدهای مخصوص آپلود (lib/admin/actions/upload.ts)
   "admin.error.tooLarge": "این فایل بسیار بزرگ است (حداکثر ۵ مگابایت).",

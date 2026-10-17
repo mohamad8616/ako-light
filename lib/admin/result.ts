@@ -32,6 +32,14 @@ export type AdminErrorCode =
    * Pass D.1 — see `clearableLocalizedSchema` (lib/admin/schemas/homepage.ts).
    */
   | "localizedPair"
+  /**
+   * A list below its floor: the collection gallery needs at least five photos
+   * (`collectionGallerySchema`), the product form's related products at least
+   * one (`relatedProductsSchema`). Two codes because the messages differ —
+   * a named count is the whole point of not using the blanket `invalid`.
+   */
+  | "tooFewImages"
+  | "tooFewRelated"
   /** A `.max()` string cap was exceeded (lib/admin/schemas/common.ts). */
   | "tooLong"
   /** An image/video upload exceeded its existing byte cap. */
@@ -121,6 +129,8 @@ const SCHEMA_NAMED_CODES = [
   "invalidLink",
   "localizedPair",
   "unsupportedType",
+  "tooFewImages",
+  "tooFewRelated",
 ] as const;
 
 function schemaNamedCode(code: string): AdminErrorCode | null {
@@ -186,6 +196,10 @@ export function zodIssuesToFieldIssues(error: z.ZodError): AdminFieldIssue[] {
       invalidLink: 0,
       // Same idea: "fill in both languages" beats the blanket "Invalid value."
       localizedPair: 0,
+      // A below-floor list is the strongest statement about that field, so it
+      // beats a blanket invalid when both land on it.
+      tooFewImages: 1,
+      tooFewRelated: 1,
       tooLarge: 0,
       documentTooLarge: 0,
       notImage: 0,

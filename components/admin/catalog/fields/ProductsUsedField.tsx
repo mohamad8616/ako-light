@@ -4,6 +4,7 @@ import {
   FieldRow,
   ListRow,
   swapAt,
+  type FieldIssue,
 } from "@/components/admin/catalog/fields/form";
 import { Button } from "@/components/ui/button";
 import {
@@ -67,6 +68,14 @@ type RelatedSnapshotRow = {
  *
  * The label/placeholder keys are overridable too: the project form talks about
  * "products used", the product form about "related products".
+ *
+ * ── Rows carry a THUMBNAIL ──────────────────────────────────────────────────
+ *
+ * Both the picker's product items and the picked rows render the product's
+ * hero image beside the name, so the operator recognizes an entry at a glance
+ * instead of reading slugs. The image rides along on `ProductOption.image`
+ * (ids mode) and inside the snapshot row (snapshot mode), so no extra query
+ * is needed in either.
  */
 export function ProductsUsedField({
   name,
@@ -101,11 +110,20 @@ export function ProductsUsedField({
   emptyKey?: string;
 }) {
   const { t, lang } = useLanguage();
-  const { control, setValue } = useFormContext();
+  const { control, setValue, formState } = useFormContext();
   const watched = useWatch({ control, name }) as
     | (string | RelatedSnapshotRow)[]
     | undefined;
-  const rows = watched ?? [];
+  // Memoised so the empty fallback is not a NEW array each render — every
+  // useMemo below keys off `rows`, and a fresh [] would invalidate them all.
+  const rows = React.useMemo(() => watched ?? [], [watched]);
+  /**
+   * The field's own error (a below-floor list, or a row-level issue). The
+   * rows are driven by `setValue` and never registered, so without reading
+   * `formState.errors` here a refused save would show NOTHING under this
+   * section — the "identically generic toast" problem in visual form.
+   */
+  const error = formState.errors[name] as FieldIssue | undefined;
   const [category, setCategory] = React.useState("");
   const [draft, setDraft] = React.useState("");
 
@@ -171,6 +189,12 @@ export function ProductsUsedField({
     return pick(row.name, locale);
   };
 
+  /** The row's thumbnail: the option's hero image, whichever storage shape. */
+  const imageForRow = (row: string | RelatedSnapshotRow): string | null => {
+    if (typeof row === "string") return byId.get(row)?.image ?? null;
+    return row.image || null;
+  };
+
   const sublabelForRow = (row: string | RelatedSnapshotRow): string | null => {
     if (typeof row === "string") {
       const product = byId.get(row);
@@ -188,10 +212,12 @@ export function ProductsUsedField({
       className={className}
       required={required}
       optional={optional}
+      error={error}
     >
       <ul className="space-y-2">
         {rows.map((row, index) => {
           const sublabel = sublabelForRow(row);
+          const image = imageForRow(row);
           return (
             <ListRow
               key={typeof row === "string" ? row : row.slug}
@@ -220,14 +246,37 @@ export function ProductsUsedField({
                   : undefined
               }
             >
-              <p className="text-foreground truncate text-sm">
-                {labelForRow(row)}
-              </p>
-              {sublabel ? (
-                <p className="text-muted-foreground truncate text-[11px]">
-                  {sublabel}
-                </p>
-              ) : null}
+              {/* A small thumbnail beside the name: the product's hero image,
+                  so the operator recognizes the row at a glance. A plain
+                  <img> on purpose — the value can be ANY https URL the
+                  catalog holds, like the media previews elsewhere in the
+                  admin. */}
+              <div className="flex items-center gap-3">
+                {image ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={image}
+                    alt=""
+                    loading="lazy"
+                    className="border-border bg-muted size-8 shrink-0 rounded-md border object-cover"
+                  />
+                ) : (
+                  <span
+                    aria-hidden
+                    className="border-border bg-muted text-muted-foreground size-8 shrink-0 rounded-md border"
+                  />
+                )}
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground truncate text-sm">
+                    {labelForRow(row)}
+                  </p>
+                  {sublabel ? (
+                    <p className="text-muted-foreground truncate text-[11px]">
+                      {sublabel}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
             </ListRow>
           );
         })}
@@ -274,7 +323,23 @@ export function ProductsUsedField({
             <SelectContent dir={ADMIN_SHELL_DIR}>
               {inCategory.map((product) => (
                 <SelectItem key={product.id} value={product.id}>
-                  {pick(product.name, locale)}
+                  {/* Thumbnail beside the name in the dropdown — the product's
+                      hero image, same source as the row's. */}
+                  {product.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={product.image}
+                      alt=""
+                      loading="lazy"
+                      className="border-border bg-muted size-6 shrink-0 rounded object-cover"
+                    />
+                  ) : (
+                    <span
+                      aria-hidden
+                      className="border-border bg-muted size-6 shrink-0 rounded border"
+                    />
+                  )}
+                  <span className="truncate">{pick(product.name, locale)}</span>
                 </SelectItem>
               ))}
             </SelectContent>

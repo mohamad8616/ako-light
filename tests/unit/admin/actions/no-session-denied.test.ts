@@ -218,6 +218,15 @@ import { updateOrderFulfillmentAction } from "@/lib/admin/actions/orders";
 
 const PAIR = { en: "Test", fa: "تست" };
 
+/** Five gallery photos — the minimum collectionGallerySchema accepts. */
+const COLLECTION_GALLERY = [
+  "/gallery/1.jpg",
+  "/gallery/2.jpg",
+  "/gallery/3.jpg",
+  "/gallery/4.jpg",
+  "/gallery/5.jpg",
+];
+
 const productInput = {
   slug: "valid-product",
   name: PAIR,
@@ -230,7 +239,14 @@ const productInput = {
   description: PAIR,
   moreInfo: null,
   downloads: [],
-  related: [],
+  related: [
+    {
+      name: PAIR,
+      slug: "related-product",
+      category: "lighting",
+      image: "/images/related.jpg",
+    },
+  ],
   sortOrder: 0,
   categoryId: "lighting",
   designerId: null,
@@ -258,6 +274,8 @@ const collectionInput = {
   year: "2026",
   image: "/images/collection.jpg",
   description: { p1: PAIR, p2: PAIR, p3: PAIR },
+  gallery: COLLECTION_GALLERY,
+  usedProducts: [],
   sortOrder: 0,
 };
 

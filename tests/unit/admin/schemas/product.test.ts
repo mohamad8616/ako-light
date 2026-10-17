@@ -232,6 +232,17 @@ describe("productFormSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects an EMPTY related list (the section is a necessary input)", () => {
+    const input = { ...validInput, related: [] };
+    const result = productFormSchema.safeParse(input);
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path.includes("related"));
+      // Named code so the field says "select at least one related product".
+      expect(issue?.code).toBe("tooFewRelated");
+    }
+  });
+
   it("rejects missing categoryId", () => {
     const input = { ...validInput };
     delete (input as Record<string, unknown>).categoryId;

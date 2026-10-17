@@ -12,12 +12,79 @@ describe("collectionFormSchema", () => {
       p2: { en: "Paragraph 2", fa: "پاراگراف 2" },
       p3: { en: "Paragraph 3", fa: "پاراگراف 3" },
     },
+    gallery: [
+      "/images/gallery-1.jpg",
+      "/images/gallery-2.jpg",
+      "/images/gallery-3.jpg",
+      "/images/gallery-4.jpg",
+      "/images/gallery-5.jpg",
+    ],
+    usedProducts: [
+      {
+        name: { en: "Sisma", fa: "سیزما" },
+        slug: "sisma",
+        category: "tables",
+        image: "/images/sisma.jpg",
+      },
+    ],
     sortOrder: 0,
   };
 
   it("accepts valid input", () => {
     const result = collectionFormSchema.safeParse(validInput);
     expect(result.success).toBe(true);
+  });
+
+  it("accepts an empty used-products list (the section is optional)", () => {
+    const result = collectionFormSchema.safeParse({
+      ...validInput,
+      usedProducts: [],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a gallery with fewer than five photos", () => {
+    const result = collectionFormSchema.safeParse({
+      ...validInput,
+      gallery: validInput.gallery.slice(0, 4),
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const issue = result.error.issues.find((i) => i.path.includes("gallery"));
+      // Its own code so the field can say "add at least 5 photos" instead of
+      // the blanket "Invalid value." (see lib/admin/result.ts).
+      expect(issue?.code).toBe("tooFewImages");
+    }
+  });
+
+  it("rejects a gallery entry that is not an image reference", () => {
+    const result = collectionFormSchema.safeParse({
+      ...validInput,
+      gallery: [...validInput.gallery.slice(0, 4), "not-a-url"],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(
+        result.error.issues.some((i) => i.path.join(".") === "gallery.4"),
+      ).toBe(true);
+    }
+  });
+
+  it("rejects a used-products row missing its image", () => {
+    const result = collectionFormSchema.safeParse({
+      ...validInput,
+      usedProducts: [
+        { name: { en: "Sisma", fa: "سیزما" }, slug: "sisma", category: "tables" },
+      ],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(
+        result.error.issues.some((i) =>
+          i.path.join(".").startsWith("usedProducts.0"),
+        ),
+      ).toBe(true);
+    }
   });
 
   it("rejects missing required slug", () => {

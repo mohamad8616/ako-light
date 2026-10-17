@@ -24,7 +24,17 @@ const validProduct = {
   description: { en: "Description", fa: "توضیحات" },
   moreInfo: null,
   downloads: [],
-  related: [],
+  // One related product: the section is a necessary input (`tooFewRelated`
+  // otherwise), so the baseline fixture must satisfy it for the mutations below
+  // to be the only failures.
+  related: [
+    {
+      name: { en: "Related", fa: "مرتبط" },
+      slug: "related-product",
+      category: "lighting",
+      image: "/related.jpg",
+    },
+  ],
   sortOrder: 0,
   categoryId: "lighting",
   designerId: null,
@@ -70,6 +80,9 @@ describe("errorCodeForType", () => {
     // A schema that names its own code keeps its specific message (Pass D.1).
     expect(errorCodeForType("invalidLink")).toBe("invalidLink");
     expect(errorCodeForType("localizedPair")).toBe("localizedPair");
+    // A below-floor list names how many are missing, not "Invalid value.".
+    expect(errorCodeForType("tooFewImages")).toBe("tooFewImages");
+    expect(errorCodeForType("tooFewRelated")).toBe("tooFewRelated");
   });
 });
 

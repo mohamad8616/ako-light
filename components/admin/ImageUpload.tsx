@@ -61,6 +61,7 @@ export function ImageListField({
   name,
   label,
   hint,
+  required,
   optional,
   folder,
   addLabel,
@@ -69,6 +70,8 @@ export function ImageListField({
   name: string;
   label: string;
   hint?: string;
+  /** Marks the list as a necessary input (the form schema still enforces it). */
+  required?: boolean;
   optional?: boolean;
   folder?: string;
   addLabel?: string;
@@ -80,6 +83,7 @@ export function ImageListField({
     <FieldRow
       label={label}
       hint={hint}
+      required={required}
       optional={optional}
       error={error}
       className={className}

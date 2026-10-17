@@ -294,13 +294,16 @@ export function ProductForm({
           {/* Same two-step category → product picker the project form uses
               (admin.project products-used pattern), in "snapshot" mode: the
               product's `related` column is a denormalized jsonb array, so a
-              pick is expanded into name/slug/category/image on add. */}
+              pick is expanded into name/slug/category/image on add. The
+              section is REQUIRED (`relatedProductsSchema` floors it at one)
+              — the asterisk here matches the schema that refuses the save. */}
           <ProductsUsedField
             name="related"
             mode="snapshot"
             label={t("admin.product.field.related")}
             hint={t("admin.product.field.relatedHint")}
             products={products}
+            required
             categoryPlaceholderKey="admin.product.field.relatedCategory"
             productPlaceholderKey="admin.product.field.relatedProduct"
             emptyKey="admin.product.field.relatedCategoryEmpty"

@@ -4,7 +4,7 @@ import { updatedColumn } from "@/components/admin/catalog/columns";
 import { useCrudSubmit } from "@/components/admin/catalog/useCrudSubmit";
 import { DataTable } from "@/components/admin/data-table/DataTable";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  loadMoreUserDirectoryPage,
   setDirectoryBannedAction,
   setDirectoryRoleAction,
 } from "@/lib/admin/actions/user-directory";
@@ -33,10 +34,10 @@ import {
 } from "@/lib/admin/user-directory-permissions";
 import type { AppRole } from "@/lib/auth/permissions";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
-import Link from "@/lib/i18n/Link";
 import type { UserDirectoryRow } from "@/lib/repositories/user-directory";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import * as React from "react";
 
 /**
@@ -55,21 +56,27 @@ import * as React from "react";
  * boundary.
  *
  * Search and pagination are SERVER-side (the page reads `searchParams`); this
- * component only navigates and never filters the full table in the browser.
+ * component only fetches and never filters the full table in the browser.
+ *
+ * ── Infinite scroll, not a pager ────────────────────────────────────────────
+ *
+ * The page server-renders page 1 (20 rows); when the sentinel at the table's
+ * foot scrolls into view, this component calls `loadMoreUserDirectoryPage` for
+ * the next page and APPENDS it — a spinner and a message show while the round
+ * trip is in flight. The query stays in Postgres: the browser accumulates the
+ * pages the operator actually scrolled to, never the whole user table. A new
+ * search (or a changed total) is a NEW list, so the accumulated pages reset.
  */
 export function UsersTable({
   rows,
   total,
-  page,
-  pageSize,
   search,
   currentUserId,
   currentRole,
 }: {
+  /** Page 1, server-rendered. Later pages arrive through the action below. */
   rows: UserDirectoryRow[];
   total: number;
-  page: number;
-  pageSize: number;
   search: string;
   currentUserId?: string;
   currentRole?: AppRole;
@@ -82,8 +89,65 @@ export function UsersTable({
     role: AppRole;
   } | null>(null);
 
+  /**
+   * Pages 2…n, appended by the scroll loader. `loadedPage` is the page the
+   * LAST successful load returned, so the next request is always +1.
+   *
+   * A NEW search remounts this component (`key={search}` on the page) rather
+   * than resetting these in an effect: the accumulated pages belong to the old
+   * query, and a remount is the one reset React's compiler rules allow.
+   */
+  const [extraRows, setExtraRows] = React.useState<UserDirectoryRow[]>([]);
+  const [loadedPage, setLoadedPage] = React.useState(1);
+  const [loadingMore, setLoadingMore] = React.useState(false);
+
+  const allRows = React.useMemo(
+    () => [...rows, ...extraRows],
+    [rows, extraRows],
+  );
+
+  const hasMore = allRows.length < total;
+  /** Synchronous guard: the observer can fire again before state settles. */
+  const loadingRef = React.useRef(false);
+  const sentinelRef = React.useRef<HTMLDivElement | null>(null);
+
+  const loadNextPage = React.useCallback(async () => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setLoadingMore(true);
+    try {
+      const result = await loadMoreUserDirectoryPage({
+        search: search || undefined,
+        page: loadedPage + 1,
+      });
+      if (result.ok && result.data.rows.length > 0) {
+        setExtraRows((current) => [...current, ...result.data.rows]);
+        setLoadedPage(result.data.page);
+      }
+    } catch {
+      toast.error(t("admin.error.unknown"));
+    } finally {
+      setLoadingMore(false);
+      loadingRef.current = false;
+    }
+  }, [loadedPage, search, t]);
+
+  React.useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !hasMore) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) void loadNextPage();
+      },
+      // Prefetch a little before the foot is on screen.
+      { rootMargin: "240px" },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loadNextPage]);
+
   const scope = directoryScope(currentRole);
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   const roleLabels: Record<string, string> = {
     user: t("admin.users.role.user"),
@@ -271,15 +335,6 @@ export function UsersTable({
   const pendingRoleLabel = pendingRole ? roleLabels[pendingRole.role] : "";
   const pendingUserName = pendingRole?.row.name ?? "";
 
-  /** Builds a href preserving the search while changing the page. */
-  const pageHref = (nextPage: number) => {
-    const sp = new URLSearchParams();
-    if (query.trim()) sp.set("q", query.trim());
-    if (nextPage > 1) sp.set("page", String(nextPage));
-    const qs = sp.toString();
-    return `/admin/users${qs ? `?${qs}` : ""}`;
-  };
-
   return (
     <>
       <p className="text-muted-foreground text-xs">
@@ -311,7 +366,7 @@ export function UsersTable({
         </Button>
       </form>
 
-      <DataTable columns={columns} data={rows} pageSize={pageSize} />
+      <DataTable columns={columns} data={allRows} />
 
       {rows.length === 0 ? (
         <p className="text-muted-foreground text-xs">
@@ -321,40 +376,23 @@ export function UsersTable({
 
       <div className="flex items-center justify-between gap-3">
         <span className="text-muted-foreground text-xs">
-          {t("admin.users.pager.page")} {page} {t("admin.users.pager.of")}{" "}
-          {totalPages} · {total} {t("admin.users.pager.total")}
+          {allRows.length} {t("admin.users.pager.of")} {total}{" "}
+          {t("admin.users.pager.total")}
         </span>
-        <div className="flex items-center gap-2">
-          {page > 1 ? (
-            <Link
-              href={pageHref(page - 1)}
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-              {t("admin.users.pager.prev")}
-            </Link>
-          ) : (
-            <Button variant="outline" size="sm" disabled>
-              <ChevronLeft className="h-3.5 w-3.5" />
-              {t("admin.users.pager.prev")}
-            </Button>
-          )}
-          {page < totalPages ? (
-            <Link
-              href={pageHref(page + 1)}
-              className={buttonVariants({ variant: "outline", size: "sm" })}
-            >
-              {t("admin.users.pager.next")}
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
-          ) : (
-            <Button variant="outline" size="sm" disabled>
-              {t("admin.users.pager.next")}
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Button>
-          )}
-        </div>
+        {loadingMore ? (
+          <span
+            role="status"
+            aria-live="polite"
+            className="text-muted-foreground flex items-center gap-2 text-xs"
+          >
+            <Loader2 aria-hidden className="size-3.5 animate-spin" />
+            {t("admin.table.loadingMore")}
+          </span>
+        ) : null}
       </div>
+      {hasMore ? (
+        <div ref={sentinelRef} aria-hidden className="h-px w-full" />
+      ) : null}
 
       <Dialog
         open={pendingRole !== null}

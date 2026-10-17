@@ -1,9 +1,10 @@
 "use client";
 
 import { DeleteDialog } from "@/components/admin/catalog/DeleteDialog";
-import { ImageUpload } from "@/components/admin/ImageUpload";
+import { ImageListField, ImageUpload } from "@/components/admin/ImageUpload";
 import { FormCard } from "@/components/admin/catalog/fields/form";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
+import { ProductsUsedField } from "@/components/admin/catalog/fields/ProductsUsedField";
 import {
   NumberField,
   TextField,
@@ -21,6 +22,7 @@ import {
   type CollectionFormValues,
 } from "@/lib/admin/schemas/collection";
 import type { CollectionWriteInput } from "@/lib/repositories/collections";
+import type { ProductOption } from "@/lib/repositories/products";
 import LocaleLink from "@/lib/i18n/Link";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { getLocalizedPath } from "@/lib/i18n/routing";
@@ -36,14 +38,23 @@ import * as React from "react";
  *
  * `description` is written as ONE jsonb value, never per-paragraph patches, and
  * `year` stays a string because the source data uses "2026".
+ *
+ * The gallery and the used-products list are the two sections the public page
+ * used to render statically; both are now operator-editable. The products
+ * picker is the SAME shared component the product form uses for related
+ * products (`ProductsUsedField`, snapshot mode) — one implementation, two
+ * storage shapes.
  */
 export function CollectionForm({
   detail,
   id,
+  products,
 }: {
   detail?: CollectionWriteInput | null;
   /** Present on the edit page (the row's id, used by update/delete). */
   id?: string;
+  /** Picker options for the used-products field (`getProductOptions()`). */
+  products: ProductOption[];
 }) {
   const { t, lang } = useLanguage();
   const router = useRouter();
@@ -63,6 +74,8 @@ export function CollectionForm({
         p2: { en: "", fa: "" },
         p3: { en: "", fa: "" },
       },
+      gallery: [],
+      usedProducts: [],
       sortOrder: 0,
     },
   });
@@ -138,6 +151,9 @@ export function CollectionForm({
             required
             textarea
             rows={4}
+            // The narrative paragraphs are long; the default textarea size
+            // made them read oversized against every other field.
+            textareaClassName="text-sm"
           />
           <LocalizedField
             name="description.p2"
@@ -145,6 +161,7 @@ export function CollectionForm({
             required
             textarea
             rows={4}
+            textareaClassName="text-sm"
           />
           <LocalizedField
             name="description.p3"
@@ -152,6 +169,38 @@ export function CollectionForm({
             required
             textarea
             rows={4}
+            textareaClassName="text-sm"
+          />
+        </FormCard>
+
+        {/* GALLERY_CARD — the public gallery section's photos. At least five
+            (enforced by `collectionGallerySchema`); add as many as needed.
+            The field's own label + hint carry the heading, so the section is
+            not named twice. */}
+        <FormCard>
+          <ImageListField
+            name="gallery"
+            label={t("admin.collection.field.gallery")}
+            hint={t("admin.collection.field.galleryHint")}
+            folder="collections"
+            required
+          />
+        </FormCard>
+
+        {/* PRODUCTS_CARD — the "products in collection" section's contents.
+            The shared picker (same one the product form uses for related
+            products), snapshot mode: each pick is expanded into
+            name/slug/category/image, exactly like `Product.related`. */}
+        <FormCard>
+          <ProductsUsedField
+            name="usedProducts"
+            mode="snapshot"
+            label={t("admin.collection.field.productsUsed")}
+            hint={t("admin.collection.field.productsUsedHint")}
+            products={products}
+            categoryPlaceholderKey="admin.product.field.relatedCategory"
+            productPlaceholderKey="admin.product.field.relatedProduct"
+            emptyKey="admin.product.field.relatedCategoryEmpty"
           />
         </FormCard>
 

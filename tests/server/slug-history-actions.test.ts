@@ -80,6 +80,15 @@ const describeDb = describe.skipIf(!hasDatabaseUrl);
 /** Localized pair used by every form below. */
 const PAIR = { en: "Test", fa: "تست" };
 
+/** Five gallery photos — the minimum collectionGallerySchema accepts. */
+const COLLECTION_GALLERY = [
+  "/gallery/1.jpg",
+  "/gallery/2.jpg",
+  "/gallery/3.jpg",
+  "/gallery/4.jpg",
+  "/gallery/5.jpg",
+];
+
 /** Ids touched by the suite, so `afterAll` can guarantee a clean database. */
 const createdDesignerIds: string[] = [];
 const createdDesignerSlugs: string[] = [];
@@ -129,7 +138,14 @@ describeDb("slug history — recorded by the real admin update actions", () => {
           priceToman: 50_000,
           description: PAIR,
           downloads: [],
-          related: [],
+          related: [
+            {
+              name: PAIR,
+              slug: "related-product",
+              category: "lighting",
+              image: "/images/related.jpg",
+            },
+          ],
           categoryId: catId,
         },
       });
@@ -146,7 +162,14 @@ describeDb("slug history — recorded by the real admin update actions", () => {
         description: PAIR,
         moreInfo: null,
         downloads: [],
-        related: [],
+        related: [
+          {
+            name: PAIR,
+            slug: "related-product",
+            category: "lighting",
+            image: "/images/related.jpg",
+          },
+        ],
         sortOrder: 0,
         categoryId: catId,
         designerId: null,
@@ -275,6 +298,8 @@ describeDb("slug history — recorded by the real admin update actions", () => {
         year: "2026",
         image: "/t.jpg",
         description,
+        gallery: COLLECTION_GALLERY,
+        usedProducts: [],
         sortOrder: 0,
       });
       expect(result.ok).toBe(true);
@@ -531,6 +556,8 @@ describeDb("slug history — recorded by the real admin update actions", () => {
         year: "2026",
         image: "/t.jpg",
         description: { p1: PAIR, p2: PAIR, p3: PAIR },
+        gallery: COLLECTION_GALLERY,
+        usedProducts: [],
         sortOrder: 0,
       });
 

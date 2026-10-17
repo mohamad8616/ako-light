@@ -2,6 +2,11 @@
 
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import type { ActionResult } from "@/lib/admin/result";
+import {
+  formFillIssueLabelKeys,
+  formatFieldLabelList,
+  labelKeysForFormErrors,
+} from "@/lib/admin/field-labels";
 import { useRouter } from "next/navigation";
 import type {
   FieldPath,
@@ -23,9 +28,19 @@ import * as React from "react";
  *     `revalidateCatalog()` already refreshes the current page — callers that
  *     must NAVIGATE (create -> detail page, delete from a detail page) do it in
  *     their `onSuccess`.
+ *
+ * ── The failure toast NAMES the fields ──────────────────────────────────────
+ *
+ * A blocked save used to produce the same sentence every time, so the operator
+ * had to hunt the page for the empty input. Both failure paths now resolve the
+ * failing paths through the shared label registry (lib/admin/field-labels.ts):
+ * "Please complete the required fields: Name, Slug, Image gallery." When
+ * nothing resolves — a server-born code like slugTaken, or a path no label
+ * knows — the specific code message (or the generic one) is shown instead, so
+ * a message is never WORSE than before.
  */
 export function useCrudSubmit() {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
 
@@ -47,6 +62,18 @@ export function useCrudSubmit() {
           options.onSuccess?.(result.data);
           return result;
         }
+        // Plain form-fill failures (unfilled inputs, a below-floor list) are
+        // better said as a LIST of field names than as one blanket sentence…
+        const labelKeys = formFillIssueLabelKeys(result.issues);
+        if (labelKeys.length > 0) {
+          const fields = formatFieldLabelList(t, labelKeys, lang);
+          toast.error(
+            t("admin.crud.checkFieldsNamed").replace("{fields}", fields),
+          );
+          return result;
+        }
+        // …but a server-born code (slugTaken, notFound, inUse…) already has a
+        // specific sentence of its own — keep it.
         const code = result.issues[0]?.code ?? result.formError;
         toast.error(t(`admin.error.${code}`));
         return result;
@@ -59,7 +86,7 @@ export function useCrudSubmit() {
         setPending(false);
       }
     },
-    [t],
+    [t, lang],
   );
 
   /** Field issues -> react-hook-form errors, with translated messages. */
@@ -82,16 +109,31 @@ export function useCrudSubmit() {
    * Pass to `form.handleSubmit(onValid, notifyInvalid)`.
    *
    * react-hook-form renders the field errors but does NOT call the action when
-   * the BROWSER's own validation fails — so without this the operator sees a
-   * button that did nothing at all: no request, no pending state, no toast,
-   * indistinguishable from a broken form. Pass D.1 hit exactly that (a
-   * half-filled localized pair blocked the hero's Save), and the hook's own
-   * documented contract is "toast on success and on failure (never a silent
-   * failure)" — a blocked submit is a failure.
+   * the browser's (or the zodResolver's) validation fails — so without this the
+   * operator sees a button that did nothing at all: no request, no pending
+   * state, no toast, indistinguishable from a broken form. Pass D.1 hit exactly
+   * that (a half-filled localized pair blocked the hero's Save), and the hook's
+   * own documented contract is "toast on success and on failure (never a
+   * silent failure)" — a blocked submit is a failure.
+   *
+   * The toast now NAMES the unfilled fields (resolved through the label
+   * registry); the generic message remains the fallback for paths no label
+   * covers — their inline red message still points at them.
    */
-  const notifyInvalid = React.useCallback((): void => {
-    toast.error(t("admin.crud.checkFields"));
-  }, [t]);
+  const notifyInvalid = React.useCallback(
+    (errors?: unknown): void => {
+      const labelKeys = labelKeysForFormErrors(errors);
+      if (labelKeys.length > 0) {
+        const fields = formatFieldLabelList(t, labelKeys, lang);
+        toast.error(
+          t("admin.crud.checkFieldsNamed").replace("{fields}", fields),
+        );
+        return;
+      }
+      toast.error(t("admin.crud.checkFields"));
+    },
+    [t, lang],
+  );
 
   return { run, pending, applyFieldIssues, notifyInvalid, router, t };
 }

@@ -2,6 +2,7 @@ import AboutCollection from "@/components/collections/collection/AboutCollection
 import CollectionHero from "@/components/collections/collection/CollectionHero";
 import ImageGallery from "@/components/collections/collection/ImageGallery";
 import ProductsInCollectionSection from "@/components/collections/collection/ProductsInCollectionSection";
+import { groupProductsByCategory } from "@/components/collections/collection/product-groups";
 import { pick } from "@/lib/i18n/localized";
 import { translations } from "@/lib/i18n/translations";
 import { getCollection } from "@/lib/repositories/collections";
@@ -100,7 +101,33 @@ const page = async ({ params }: PageProps) => {
     ),
   ];
 
-  const groupedCategories = await getProductCategories();
+  /**
+   * The two sections the admin now owns.
+   *
+   * `usedProducts` empty means "every category" — the behaviour this page had
+   * before the section became editable, so the rows seeded before the column
+   * existed keep rendering unchanged. A filled list is grouped by its category
+   * slug through the SAME helper the project page uses.
+   */
+  const usedProducts = collection.usedProducts ?? [];
+  const groupedCategories =
+    usedProducts.length > 0
+      ? await groupProductsByCategory(usedProducts, (product) => ({
+          name: product.name,
+          slug: product.slug,
+          hoverImage: product.image,
+        }))
+      : await getProductCategories();
+
+  /**
+   * The operator's gallery, in its saved order. An empty column falls back to
+   * the legacy placeholder set inside `ImageGallery`; `alt` stays empty because
+   * the gallery is decorative and the column stores URLs only.
+   */
+  const galleryImages = (collection.gallery ?? []).map((src) => ({
+    src,
+    alt: "",
+  }));
 
   return (
     <>
@@ -108,7 +135,7 @@ const page = async ({ params }: PageProps) => {
       <main className="bg-background-secondary w-full space-y-48">
         <CollectionHero collection={collection} />
         <AboutCollection collection={collection} />
-        <ImageGallery />
+        <ImageGallery images={galleryImages} />
         <ProductsInCollectionSection categories={groupedCategories} />
       </main>
     </>
