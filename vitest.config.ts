@@ -41,7 +41,7 @@ export default defineConfig({
   },
   test: {
     reporters: [new AIReporter()],
-    // DB-tier serialization (fabric_item 11-vs-10 drift + product-categories
+    // DB-tier serialization (a legacy fabric-row count drift + product-categories
     // count race): the `server` and `integration` projects share one dev
     // database, and Vitest schedules projects/files concurrently by default.
     // Even with every write rolled back, a count-assertion in one project can

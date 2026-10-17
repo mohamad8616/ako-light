@@ -12,10 +12,10 @@ const MATERIAL_PAGE = read("../../../app/[locale]/(site)/materials/page.tsx");
 const CATEGORY_PAGE = read("../../../app/[locale]/(site)/materials/[material]/page.tsx");
 
 describe("materials catalog experience", () => {
-  it("does not expose incomplete migrated fabric records publicly", () => {
-    expect(isMaterialItemPubliclyReady({ name: { en: "Fabric 1", fa: "" }, image: null })).toBe(false);
-    expect(isMaterialItemPubliclyReady({ name: { en: "Fabric 1", fa: "پارچه ۱" }, image: null })).toBe(false);
-    expect(isMaterialItemPubliclyReady({ name: { en: "Fabric 1", fa: "پارچه ۱" }, image: "/fabric.jpg" })).toBe(true);
+  it("does not expose incomplete items publicly", () => {
+    expect(isMaterialItemPubliclyReady({ name: { en: "Item 1", fa: "" }, image: null })).toBe(false);
+    expect(isMaterialItemPubliclyReady({ name: { en: "Item 1", fa: "آیتم ۱" }, image: null })).toBe(false);
+    expect(isMaterialItemPubliclyReady({ name: { en: "Item 1", fa: "آیتم ۱" }, image: "/item.jpg" })).toBe(true);
   });
 
   it("uses database categories for the index and resolves category detail pages", () => {

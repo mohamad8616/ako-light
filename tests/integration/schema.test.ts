@@ -25,7 +25,7 @@ import { catalogueItems } from "@/lib/data/catalogue";
 import { collections } from "@/lib/data/collections";
 import { designers } from "@/lib/data/designers";
 import { flagships } from "@/lib/data/flagships";
-import { fabrics, materials } from "@/lib/data/materials";
+import { materials } from "@/lib/data/materials";
 import { productCategories } from "@/lib/data/productCategories";
 import { projects } from "@/lib/data/projects";
 import { prisma } from "@/lib/db/prisma";
@@ -112,7 +112,6 @@ describeDb("catalog schema & seed integrity (dev database)", () => {
       ],
       ["collection", collections.length, () => prisma.collection.count()],
       ["material", materials.length, () => prisma.material.count()],
-      ["fabric_item", fabrics.length, () => prisma.fabricItem.count()],
       ["catalogue_item", catalogueItems.length, () => prisma.catalogueItem.count()],
       ["flagship", flagships.length, () => prisma.flagship.count()],
       ["project", projects.length, () => prisma.project.count()],

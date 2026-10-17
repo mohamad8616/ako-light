@@ -42,7 +42,6 @@ import { productEn, productFa } from "./product";
 import { collectionEn, collectionFa } from "./collection";
 import { designerEn, designerFa } from "./designer";
 import { materialEn, materialFa } from "./material";
-import { fabricEn, fabricFa } from "./fabric";
 import { catalogueEn, catalogueFa } from "./catalogue";
 import { productCategoryEn, productCategoryFa } from "./productCategory";
 import { crudEn, crudFa } from "./crud";
@@ -77,7 +76,6 @@ export const adminEn = {
   ...collectionEn,
   ...designerEn,
   ...materialEn,
-  ...fabricEn,
   ...catalogueEn,
   ...productCategoryEn,
   ...crudEn,
@@ -113,7 +111,6 @@ export const adminFa = {
   ...collectionFa,
   ...designerFa,
   ...materialFa,
-  ...fabricFa,
   ...catalogueFa,
   ...productCategoryFa,
   ...crudFa,

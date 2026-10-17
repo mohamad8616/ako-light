@@ -2,8 +2,9 @@
  * Material reads — Prisma-backed replacement for the `materials` array in
  * `lib/data/materials.ts`.
  *
- * Only the material records move; `materialCategories` and `fabrics` from the
- * same module stay static because they are consumed by client components.
+ * The public materials experience is built on the managed groups and items
+ * (`lib/repositories/material-categories.ts` / `material-items.ts`); this
+ * module keeps the legacy per-material read/write surface.
  */
 import { cache } from "react";
 import {
@@ -60,9 +61,7 @@ async function findMaterialCategoryId(
  *
  * The source data had no slug — `id` was already URL-safe and became the slug
  * when seeding, so a `/materials/<id>` route param resolves here either way
- * (slug first, then `id` fallback). A param that is a materials *category*
- * ("fabrics", "metals", ...) finds nothing, which is how those category views
- * were reached before too.
+ * (slug first, then `id` fallback).
  */
 export const getMaterial = cache(
   async (slug: string): Promise<Material | null> => {

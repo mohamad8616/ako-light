@@ -17,7 +17,7 @@ import { collections } from "@/lib/data/collections";
 import { designers } from "@/lib/data/designers";
 import { flagshipDetails, flagships } from "@/lib/data/flagships";
 import { homepageSections } from "@/lib/data/homepage";
-import { fabrics, materials, type Material } from "@/lib/data/materials";
+import { materials, type Material } from "@/lib/data/materials";
 import { productCategories } from "@/lib/data/productCategories";
 import { projects } from "@/lib/data/projects";
 import { loc } from "@/lib/i18n/localized";
@@ -168,8 +168,6 @@ const MATERIAL_CATEGORY_FA: Record<string, string> = {
   metal: "فلز",
   glass: "شیشه",
   wood: "چوب",
-  fabric: "پارچه‌ها",
-  fabrics: "پارچه‌ها",
   leather: "چرم",
   marble: "مرمر",
   "stone-composite": "سنگ ترکیبی",
@@ -192,12 +190,6 @@ async function seedMaterialCategories(): Promise<void> {
       candidates.set(key, { label: material.category.trim(), image: material.image });
     }
   }
-  for (const fabric of fabrics) {
-    const key = fabric.category.trim().toLowerCase();
-    if (!candidates.has(key)) {
-      candidates.set(key, { label: fabric.category.trim(), image: null });
-    }
-  }
 
   const [existingItems, existingCategories] = await Promise.all([
     prisma.material.findMany({ select: { slug: true } }),
@@ -205,7 +197,6 @@ async function seedMaterialCategories(): Promise<void> {
   ]);
   const reservedSlugs = new Set([
     ...existingItems.map((item) => item.slug),
-    ...fabrics.map((fabric) => fabric.id),
     ...existingCategories.map((existing) => existing.slug),
   ]);
   const knownCategories = [...existingCategories];
@@ -809,7 +800,6 @@ async function main(): Promise<void> {
     ["product_image", () => prisma.productImage.count()],
     ["collection", () => prisma.collection.count()],
     ["material", () => prisma.material.count()],
-    ["fabric_item", () => prisma.fabricItem.count()],
     ["catalogue_item", () => prisma.catalogueItem.count()],
     ["flagship", () => prisma.flagship.count()],
     ["project", () => prisma.project.count()],
@@ -831,7 +821,7 @@ async function main(): Promise<void> {
   console.log(
     `source arrays: ${productCategories.length} categories, ${allProducts.length} products, ` +
       `${collections.length} collections, ${designers.length} designers, ` +
-      `${materials.length} materials, ${fabrics.length} fabrics, ` +
+      `${materials.length} materials, ` +
       `${catalogueItems.length} catalogue items, ${flagships.length} flagships, ` +
       `${projects.length} projects (${Object.keys(flagshipDetails).length} with detail content)`,
   );

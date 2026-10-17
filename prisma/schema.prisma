@@ -307,13 +307,10 @@ model Material {
   category    String
   categoryId  String
   type        MaterialType @default(fabric)
-  /// NULL only for migrated FabricItem rows awaiting a real customer-facing photo.
+  /// NULL keeps an item private until the admin supplies a real photo.
   image       String?
   /// Localized { en, fa }; retained for existing catalog records.
   description Json
-  /// Preserved metadata from legacy fabric swatches.
-  code        String?
-  swatchColor String?
   sortOrder   Int          @default(0)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
@@ -323,35 +320,6 @@ model Material {
   @@index([categoryId, sortOrder])
   @@index([category])
   @@map("material")
-}
-
-/// lib/data/materials.ts `fabrics[]` -> FabricItem
-///
-/// FabricItem is a separate entity from Material — materials cover stone/metal/
-/// glass/wood/etc., while fabric items are upholstery textile swatches with
-/// codes and colors. They are NOT merged.
-///
-/// Source: the `fabrics: FabricItem[]` array in lib/data/materials.ts. Preserves
-/// existing identifiers/slugs, ordering, and the category field from the static data.
-model FabricItem {
-  /// Stable identifier matching the static data's `id` (e.g. "abarth-26").
-  /// Also serves as the slug for any future `/fabrics/<id>` route.
-  id          String   @id
-  /// Fabric name from the static data (plain string, not localized in the source).
-  name        String
-  /// Fabric code from the static data (e.g. "26").
-  code        String
-  /// Category grouping from the static data (e.g. "Fabrics").
-  category    String
-  /// Swatch color from the static data (hex, e.g. "#726A50"). Placeholder until
-  /// real photography is available.
-  swatchColor String
-  /// Display position (matches the order of the `fabrics` array in the static data).
-  sortOrder   Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@map("fabric_item")
 }
 
 /// lib/data/catalogue.ts -> CatalogueItem

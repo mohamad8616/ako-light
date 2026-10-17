@@ -17,7 +17,7 @@
  *   3. a chained rename keeps every historical slug resolvable      (A → B → C)
  *   4. a failed update leaves no orphaned history row
  *
- * ISOLATION: only products / productCategories / fabrics accept an optional
+ * ISOLATION: only products / productCategories accept an optional
  * `db`; the remaining actions call `updateWithSlugHistory` with no `db`, which
  * opens its OWN `prisma.$transaction`. An outer rollback transaction therefore
  * cannot contain their writes (the inner transaction commits independently).

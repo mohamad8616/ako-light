@@ -26,8 +26,6 @@ describe("materialItemFormSchema", () => {
     name: { en: "Leather 001", fa: "چرم ۰۰۱" },
     categoryId: "material-category-leather",
     image: "/materials/leather-001.jpg",
-    code: "",
-    swatchColor: "",
     sortOrder: 0,
   };
 

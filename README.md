@@ -27,12 +27,12 @@ Home Form is a storefront and product-showcase website built with Next.js — fe
   **Bilingual (Persian/English)** — built-in i18n system supporting `en` and `fa`
 - **انیمیشن و تجربه کاربری** — اسکرول نرم (Lenis)، ترنزیشن صفحات، پری‌لودر و انیمیشن‌های GSAP/Framer Motion
   **Motion & UX** — smooth scrolling (Lenis), page transitions, preloader and GSAP/Framer Motion animations
-- **دیتابیس و مدیریت محتوا** — PostgreSQL + Prisma با مدل‌های Product، Collection، Designer، Project، Material، FabricItem، CatalogueItem و ProductImage
-  **Database & content management** — PostgreSQL + Prisma with models for Product, Collection, Designer, Project, Material, FabricItem, CatalogueItem and ProductImage
+- **دیتابیس و مدیریت محتوا** — PostgreSQL + Prisma با مدل‌های Product، Collection، Designer، Project، Material، MaterialCategory، CatalogueItem و ProductImage
+  **Database & content management** — PostgreSQL + Prisma with models for Product, Collection, Designer, Project, Material, MaterialCategory, CatalogueItem and ProductImage
 - **احراز هویت و دسترسی** — better-auth با ایمیل/رمز و OTP پیامکی (sms.ir)، نقش‌های `user` / `admin` / `owner`، و گارد‌های سمت سرور/مدله
   **Authentication & access** — better-auth with email/password and phone OTP (sms.ir), roles `user` / `admin` / `owner`, server + edge guards
-- **داشبورد ادمین کامل** — CRUD برای محصولات، کالکشن‌ها، طراحان، پروژه‌ها، متریال‌ها، فبریک‌ها، کاتالوگ‌ها، فلگ‌شیپ‌ها، دسته‌بندی‌ها + مدیریت اسلات‌های صفحه اصلی (Flagship One، Project Banner، Project Dark Background، Home Collection، Catalogue) و مدیریت محتوای صفحات About و S34
-  **Full admin dashboard** — CRUD for products, collections, designers, projects, materials, fabrics, catalogues, flagships, categories + homepage feature-slot management (Flagship One, Project Banner, Project Dark Background, Home Collection, Catalogue) + About/S34 page content management
+- **داشبورد ادمین کامل** — CRUD برای محصولات، کالکشن‌ها، طراحان، پروژه‌ها، متریال‌ها، آیتم‌های متریال، کاتالوگ‌ها، فلگ‌شیپ‌ها، دسته‌بندی‌ها + مدیریت اسلات‌های صفحه اصلی (Flagship One، Project Banner، Project Dark Background، Home Collection، Catalogue) و مدیریت محتوای صفحات About و S34
+  **Full admin dashboard** — CRUD for products, collections, designers, projects, materials, material items, catalogues, flagships, categories + homepage feature-slot management (Flagship One, Project Banner, Project Dark Background, Home Collection, Catalogue) + About/S34 page content management
 - **تسویه‌حساب و پرداخت** — زارین‌پال (Sandbox/Production)، قیمت‌گذاری دو واحد EUR (نمایشی en) / تومان (واحد واقعی پرداخت)، تبدیل تومان→ریال در لایه گیت‌وی
   **Checkout & payment** — ZarinPal (Sandbox/Production), dual EUR (display-only) / Toman (charged unit) pricing, Toman→Rial conversion at gateway boundary
 
@@ -85,7 +85,7 @@ home-form/
 │   │           ├── categories/       # Product categories CRUD
 │   │           ├── collections/      # Collections CRUD
 │   │           ├── designers/        # Designers CRUD
-│   │           ├── fabrics/          # Fabric items CRUD
+│   │           ├── material-items/   # Material items CRUD
 │   │           ├── flagships/        # Flagship stores CRUD
 │   │           ├── homepage/         # Homepage feature slots editor
 │   │           ├── materials/        # Materials CRUD
@@ -116,8 +116,7 @@ home-form/
 │   │   │   ├── collections/          # Collections table + form
 │   │   │   ├── designers/            # Designers table + form
 │   │   │   ├── projects/             # Projects table + form
-│   │   │   ├── materials/            # Materials table + form
-│   │   │   ├── fabrics/              # Fabrics table + form
+│   │   │   ├── materials/            # Material groups + items tables and forms
 │   │   │   ├── flagships/            # Flagships table + form
 │   │   │   ├── catalogue/            # Catalogue table + form
 │   │   │   ├── product-categories/   # Categories table + form
@@ -302,8 +301,7 @@ Confirmation page (PaymentCallbackState)
 - **Collections**: مدیریت سال، تصاویر، توضیحات محلی
 - **Designers**: بیوگرافی، وب‌سایت، تصاویر
 - **Projects**: محصولات استفاده‌شده، پورتفولیو، توضیحات غنی
-- **Materials**: انواع (stone/metal/glass/...), دسته‌بندی، توضیحات
-- **Fabrics**: کد، رنگ سوچ، دسته‌بندی
+- **Materials**: گروه‌های متریال و آیتم‌های تصویردار هر گروه
 - **Catalogues**: عنوان، PDF href، رنگ کاور
 - **Flagships**: جزئیات کامل (آدرس، ساعت، ویدیو، گالری، الحاق قرار ملاقات)
 - **Categories**: سرتایپ، ترتیب نمایش
@@ -341,7 +339,7 @@ Confirmation page (PaymentCallbackState)
 - [x] اتصال کامل داده‌ها به PostgreSQL (مهاجرت از `lib/data`)
 - [x] احراز هویت (credentials + phone OTP via sms.ir)
 - [x] داشبورد ادمین مبتنی بر نقش (owner/admin/user)
-- [x] CRUD کامل کاتالوگ (محصولات، کالکشن‌ها، طراحان، پروژه‌ها، متریال‌ها، فبریک‌ها، کاتالوگ‌ها، فلگ‌شیپ‌ها، دسته‌بندی‌ها)
+- [x] CRUD کامل کاتالوگ (محصولات، کالکشن‌ها، طراحان، پروژه‌ها، متریال‌ها، آیتم‌های متریال، کاتالوگ‌ها، فلگ‌شیپ‌ها، دسته‌بندی‌ها)
 - [x] مدیریت اسلات‌های ویژگی صفحه اصلی
 - [x] مدیریت محتوای صفحات About و S34
 - [x] فلو تسویه‌حساب و پرداخت (ZarinPal، قیمت‌گذاری دو واحد EUR/Toman-Rial)

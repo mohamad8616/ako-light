@@ -8,7 +8,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const read = (relative: string) => readFileSync(join(here, relative), "utf8");
 
 const MATERIAL_ITEMS_TABLE = read(
-  "../../../components/admin/catalog/fabrics/MaterialItemsTable.tsx",
+  "../../../components/admin/catalog/materials/MaterialItemsTable.tsx",
 );
 
 /**

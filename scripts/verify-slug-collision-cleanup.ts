@@ -25,12 +25,9 @@ const cat = await prisma.productCategory.count({
 const product = await prisma.product.count({
   where: { id: { startsWith: "product-collision-" } },
 });
-const fabric = await prisma.fabricItem.count({
-  where: { id: { startsWith: "fab-" } },
-});
 
 await prisma.$disconnect();
 
 // Space-separated so the burst loop can parse it easily.
-console.log(`CAT=${cat} PRODUCT=${product} FABRIC=${fabric}`);
+console.log(`CAT=${cat} PRODUCT=${product}`);
 process.exit(0);

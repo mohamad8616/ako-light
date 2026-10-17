@@ -21,8 +21,6 @@ export type MaterialItemAdminRow = {
   categoryName: Localized;
   image: string | null;
   sortOrder: number;
-  code: string | null;
-  swatchColor: string | null;
   isReady: boolean;
 };
 
@@ -31,8 +29,6 @@ export type MaterialItemWriteInput = {
   name: Localized;
   categoryId: string;
   image: string;
-  code: string;
-  swatchColor: string;
   sortOrder: number;
 };
 
@@ -82,8 +78,6 @@ export const getMaterialItemAdminRows = cache(async (): Promise<MaterialItemAdmi
       categoryName: asLocalized(row.materialCategory.name),
       image: row.image,
       sortOrder: row.sortOrder,
-      code: row.code,
-      swatchColor: row.swatchColor,
       isReady: isMaterialItemPubliclyReady({ name, image: row.image }),
     };
   });
@@ -156,8 +150,6 @@ export const createMaterialItem = async (
       categoryId: input.categoryId,
       type: MaterialType.fabric,
       image: input.image,
-      code: input.code || null,
-      swatchColor: input.swatchColor || null,
       description: asJsonInput({ en: "", fa: "" }),
       sortOrder: input.sortOrder,
     },
@@ -179,8 +171,6 @@ export const updateMaterialItem = async (
       category: categoryLabel,
       categoryId: input.categoryId,
       image: input.image,
-      code: input.code || null,
-      swatchColor: input.swatchColor || null,
       sortOrder: input.sortOrder,
     },
   });

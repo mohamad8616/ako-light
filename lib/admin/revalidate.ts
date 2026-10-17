@@ -14,7 +14,6 @@ export type AdminSection =
   | "materialItems"
   | "flagships"
   | "projects"
-  | "fabrics"
   | "catalogue"
   | "orders"
   | "admins"
@@ -63,10 +62,6 @@ const PUBLIC_ROUTES: Record<AdminSection, readonly string[]> = {
   projects: [
     "/[locale]/(site)/projects",
     "/[locale]/(site)/projects/[id]",
-  ],
-  fabrics: [
-    "/[locale]/(site)/materials",
-    "/[locale]/(site)/materials/[material]",
   ],
   materialItems: [
     "/[locale]/(site)/materials",

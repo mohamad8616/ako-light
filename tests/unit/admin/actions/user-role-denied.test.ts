@@ -34,9 +34,6 @@ const repoMocks = vi.hoisted(() => ({
   createProject: vi.fn(),
   updateProject: vi.fn(),
   deleteProject: vi.fn(),
-  createFabricItem: vi.fn(),
-  updateFabricItem: vi.fn(),
-  deleteFabricItem: vi.fn(),
   createCatalogueItem: vi.fn(),
   updateCatalogueItem: vi.fn(),
   deleteCatalogueItem: vi.fn(),
@@ -98,11 +95,6 @@ vi.mock("@/lib/repositories/projects", () => ({
   updateProject: repoMocks.updateProject,
   deleteProject: repoMocks.deleteProject,
 }));
-vi.mock("@/lib/repositories/fabrics", () => ({
-  createFabricItem: repoMocks.createFabricItem,
-  updateFabricItem: repoMocks.updateFabricItem,
-  deleteFabricItem: repoMocks.deleteFabricItem,
-}));
 vi.mock("@/lib/repositories/catalogue", () => ({
   createCatalogueItem: repoMocks.createCatalogueItem,
   updateCatalogueItem: repoMocks.updateCatalogueItem,
@@ -158,11 +150,6 @@ import {
   destroyProjectAction,
   updateProjectAction,
 } from "@/lib/admin/actions/projects";
-import {
-  createFabricAction,
-  destroyFabricAction,
-  updateFabricAction,
-} from "@/lib/admin/actions/fabrics";
 import {
   createCatalogueAction,
   destroyCatalogueAction,
@@ -261,15 +248,6 @@ const projectInput = {
   productIds: [],
 };
 
-const fabricInput = {
-  id: "some-fabric",
-  name: "Some Fabric",
-  code: "01",
-  category: "Fabrics",
-  swatchColor: "#726A50",
-  sortOrder: 0,
-};
-
 const catalogueInput = {
   id: "some-item",
   title: "Some Item",
@@ -355,7 +333,6 @@ describe("admin actions called directly as plain user", () => {
     repoMocks.createMaterial.mockResolvedValue("new-id");
     repoMocks.createFlagship.mockResolvedValue("new-id");
     repoMocks.createProject.mockResolvedValue("new-id");
-    repoMocks.createFabricItem.mockResolvedValue("new-id");
     repoMocks.createCatalogueItem.mockResolvedValue("new-id");
   });
 
@@ -420,13 +397,6 @@ describe("admin actions called directly as plain user", () => {
     await expectDenied(createProjectAction(projectInput as never), repoMocks.createProject);
     await expectDenied(updateProjectAction("x", projectInput as never), repoMocks.updateProject);
     await expectDenied(destroyProjectAction("x"), repoMocks.deleteProject);
-    expectNothingTouched();
-  });
-
-  it("fabrics create/update/delete reject a user session", async () => {
-    await expectDenied(createFabricAction(fabricInput), repoMocks.createFabricItem);
-    await expectDenied(updateFabricAction("x", fabricInput), repoMocks.updateFabricItem);
-    await expectDenied(destroyFabricAction("x"), repoMocks.deleteFabricItem);
     expectNothingTouched();
   });
 

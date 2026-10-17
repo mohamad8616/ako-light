@@ -1,5 +1,5 @@
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
-import { MaterialItemsTable } from "@/components/admin/catalog/fabrics/MaterialItemsTable";
+import { MaterialItemsTable } from "@/components/admin/catalog/materials/MaterialItemsTable";
 import { getMaterialCategoryAdminRows } from "@/lib/repositories/material-categories";
 import { getMaterialItemAdminRows } from "@/lib/repositories/material-items";
 

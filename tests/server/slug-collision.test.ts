@@ -3,7 +3,7 @@
  *
  * The existing slug-change-fk.test.ts proves rename-success preserves FKs.
  * This file proves the converse: renaming an entity to a slug that ALREADY
- * exists on another row of the SAME type is rejected with a CLEAR validation
+ * exists on another row of the SAME type is rejected with a CLEAN validation
  * error (`slugTaken`), not a raw Postgres unique-constraint violation
  * (P2002) that would leak to the admin UI.
  *
@@ -19,11 +19,12 @@
  *      and asserts NO P2002 code/message leaks into the result. The rollback
  *      — not a `finally` + `deleteMany` — is what guarantees cleanup: the
  *      previous `finally` pattern leaked a committed row on every 30s timeout
- *      (the cleanup query itself could not run), which is exactly the
- *      fabric_item 11-vs-10 drift and the cross-tier product-count race.
+ *      (the cleanup query itself could not run), which is exactly the old
+ *      fabric-row count drift and the cross-tier product-count race.
  *
- * Covers one slug-entity (product-category, `field:"slug"`) and one id-entity
- * (fabric, `field:"id"`) to pin both branches of `toActionResult`.
+ * Covers both branches of `toActionResult`: product-category renames pin the
+ * `field:"slug"` branch, and products (whose write uses `id = slug`) pin the
+ * `field:"id"` branch.
  *
  * Server tier: needs DATABASE_URL (skipIf guard). Every write in this file
  * runs inside a rolled-back transaction, so the dev database is never
@@ -70,14 +71,12 @@ import {
   createProductCategory,
   updateProductCategory,
 } from "@/lib/repositories/product-categories";
-import { createFabricItem } from "@/lib/repositories/fabrics";
 import {
   createProductCategoryAction,
   updateProductCategoryAction,
 } from "@/lib/admin/actions/product-categories";
 import { createProductAction } from "@/lib/admin/actions/products";
 import type { ProductFormValues } from "@/lib/admin/schemas/product";
-import { createFabricAction } from "@/lib/admin/actions/fabrics";
 
 describeDb("slug collision — repository tier (expects P2002)", () => {
   afterAll(async () => {
@@ -114,29 +113,6 @@ describeDb("slug collision — repository tier (expects P2002)", () => {
       }, TX_OPTIONS),
     ).rejects.toBe(rollback);
   });
-
-  it("creating a fabric with another fabric's existing id throws P2002", async () => {
-    const id = `fab-${randomUUID()}`;
-    const rollback = new Error("intentional test rollback");
-
-    await expect(
-      prisma.$transaction(async (tx) => {
-        await createFabricItem(
-          { id, name: "Fab A", code: "A1", category: "Test", swatchColor: "#3a3530", sortOrder: 0 },
-          tx,
-        );
-
-        await expect(
-          createFabricItem(
-            { id, name: "Fab B", code: "B1", category: "Test", swatchColor: "#726A50", sortOrder: 1 },
-            tx,
-          ),
-        ).rejects.toMatchObject({ code: "P2002" });
-
-        throw rollback;
-      }, TX_OPTIONS),
-    ).rejects.toBe(rollback);
-  });
 });
 
 describeDb("slug collision — action tier (expects clean slugTaken, no P2002 leak)", () => {
@@ -152,9 +128,6 @@ describeDb("slug collision — action tier (expects clean slugTaken, no P2002 le
           { id: { startsWith: "cat-product-" } },
         ],
       },
-    });
-    await prisma.fabricItem.deleteMany({
-      where: { id: { startsWith: "fab-" } },
     });
   });
 
@@ -220,7 +193,7 @@ describeDb("slug collision — action tier (expects clean slugTaken, no P2002 le
 
         throw rollback;
       }, TX_OPTIONS),
-    ).rejects.toBe(rollback);
+    ).rejects.toThrow(rollback);
 
     // Nothing survived the rollback — the assertion that used to need a
     // `finally` + deleteMany (which leaked on timeout).
@@ -283,55 +256,9 @@ describeDb("slug collision — action tier (expects clean slugTaken, no P2002 le
 
         throw rollback;
       }, TX_OPTIONS),
-    ).rejects.toBe(rollback);
+    ).rejects.toThrow(rollback);
 
     expect(await prisma.product.findUnique({ where: { id: productSlug } })).toBeNull();
     expect(await prisma.productCategory.findUnique({ where: { id: categoryId } })).toBeNull();
   });
-
-  it("createFabricAction with colliding id returns slugTaken (field is 'id'), no P2002 leak", async () => {
-    const id = `fab-${randomUUID()}`;
-    const rollback = new Error("intentional test rollback");
-
-    await expect(
-      prisma.$transaction(async (tx) => {
-        const first = await createFabricAction(
-          {
-            id,
-            name: "Fab A",
-            code: "A1",
-            category: "Test",
-            swatchColor: "#3a3530",
-            sortOrder: 0,
-          },
-          tx,
-        );
-        expect(first).toEqual({ ok: true, data: id });
-
-        const result = await createFabricAction(
-          {
-            id,
-            name: "Fab B",
-            code: "B1",
-            category: "Test",
-            swatchColor: "#726A50",
-            sortOrder: 1,
-          },
-          tx,
-        );
-
-        expect(result).toEqual({
-          ok: false,
-          formError: "invalid",
-          issues: [{ field: "id", code: "slugTaken" }],
-        });
-        expect(JSON.stringify(result)).not.toContain("P2002");
-
-        throw rollback;
-      }, TX_OPTIONS),
-    ).rejects.toBe(rollback);
-
-    expect(await prisma.fabricItem.findUnique({ where: { id } })).toBeNull();
-  });
-
 });

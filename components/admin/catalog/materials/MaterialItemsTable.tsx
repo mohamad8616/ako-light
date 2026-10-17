@@ -6,7 +6,7 @@ import { useForm } from "react-hook-form";
 import { localizedColumn, numberColumn, slugColumn, textColumn } from "@/components/admin/catalog/columns";
 import { DialogFormShell } from "@/components/admin/catalog/fields/DialogFormShell";
 import { LocalizedField } from "@/components/admin/catalog/fields/LocalizedField";
-import { ColorField, NumberField, TextField } from "@/components/admin/catalog/fields/ScalarFields";
+import { NumberField } from "@/components/admin/catalog/fields/ScalarFields";
 import { SelectField } from "@/components/admin/catalog/fields/SelectField";
 import { SlugField } from "@/components/admin/catalog/fields/SlugField";
 import { RowActions } from "@/components/admin/catalog/RowActions";
@@ -42,8 +42,6 @@ export function MaterialItemsTable({
   const columns = [
     localizedColumn({ lang, label: t("admin.product.field.name"), access: (row: MaterialItemAdminRow) => row.name }),
     localizedColumn({ id: "category", lang, label: t("admin.material.field.category"), access: (row: MaterialItemAdminRow) => row.categoryName }),
-    textColumn({ id: "code", label: t("admin.fabric.field.code"), access: (row: MaterialItemAdminRow) => row.code ?? "" }),
-    textColumn({ id: "swatchColor", label: t("admin.fabric.field.swatchColor"), access: (row: MaterialItemAdminRow) => row.swatchColor ?? "" }),
     slugColumn({ label: t("admin.product.field.slug"), access: (row: MaterialItemAdminRow) => row.slug }),
     textColumn({ id: "status", label: t("admin.material.field.readiness"), access: (row: MaterialItemAdminRow) => row.isReady ? t("admin.material.ready") : t("admin.material.incomplete") }),
     numberColumn({ id: "sortOrder", label: t("admin.product.field.sortOrder"), lang, access: (row: MaterialItemAdminRow) => row.sortOrder }),
@@ -118,8 +116,6 @@ function MaterialItemDialog({
     name: initialData?.name ?? { en: "", fa: "" },
     categoryId: initialData?.categoryId ?? categories[0]?.value ?? "",
     image: initialData?.image ?? "",
-    code: initialData?.code ?? "",
-    swatchColor: initialData?.swatchColor ?? "",
     sortOrder: initialData?.sortOrder ?? 0,
   }), [initialData, categories]);
   const form = useForm<MaterialItemFormValues>({ resolver: zodResolver(materialItemFormSchema), values: seed });
@@ -143,10 +139,6 @@ function MaterialItemDialog({
         placeholder={t("admin.material.field.category")}
       />
       <ImageUpload name="image" label={t("admin.designer.field.image")} required folder="materials/items" />
-      <div className="grid gap-4 sm:grid-cols-2">
-        <TextField name="code" label={t("admin.fabric.field.code")} optional />
-        <ColorField name="swatchColor" label={t("admin.fabric.field.swatchColor")} optional />
-      </div>
       <NumberField name="sortOrder" label={t("admin.product.field.sortOrder")} min={0} />
     </DialogFormShell>
   );
