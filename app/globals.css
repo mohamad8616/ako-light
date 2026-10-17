@@ -13,7 +13,11 @@
   --font-jetbrains: var(--font-jetbrains-mono), monospace;
   --font-din: var(--font-dinnext), "Arial Narrow", sans-serif;
   --font-heading: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --font-oswald: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  /* English display pair (see app/[locale]/layout.tsx). `font-oswald` used to
+     be a Segoe UI placeholder; it is now the real condensed gothic, and
+     `font-serif` is the editorial serif. Persian keeps `font-noora`. */
+  --font-oswald: var(--font-oswald-var), "Arial Narrow", sans-serif;
+  --font-serif: var(--font-playfair-var), Georgia, serif;
   --font-vazirmatn: "Tahoma", "Noto Sans Arabic", sans-serif;
   --font-noora: "Noora", sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);

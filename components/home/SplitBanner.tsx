@@ -23,9 +23,9 @@ interface SplitBannerProps {
   stretch?: boolean;
   /**
    * A section label (e.g. the "H-Life" word on the dark-background banner).
-   * When provided it renders in its own narrow LEFT column, top-aligned with
-   * the photo — both start at the section's first point, instead of the label
-   * sitting full-width above the grid and pushing the photo down.
+   * It renders INSIDE the photo's column, directly above the photo, so the two
+   * share one vertical axis (same left edge) and stack instead of sitting in
+   * separate columns.
    */
   label?: React.ReactNode;
   page?: string;
@@ -53,19 +53,10 @@ export default function SplitBanner({
   paragraphTextColor,
   titleTextColor,
 }: SplitBannerProps) {
-  // With a label the grid is three columns (label + photo + text, 3+4+5);
-  // without one it stays the classic two (photo + text, 5+7 or 7+5 reversed).
-  const labelCol = "lg:col-span-3";
-  const imageCol = label
-    ? "lg:col-span-4"
-    : reverse
-      ? "lg:col-span-7"
-      : "lg:col-span-5";
-  const textCol = label
-    ? "lg:col-span-5"
-    : reverse
-      ? "lg:col-span-5"
-      : "lg:col-span-7";
+  // Two columns: photo + text. The optional label sits in its OWN full-width
+  // row above them (see below).
+  const imageCol = reverse ? "lg:col-span-7" : "lg:col-span-5";
+  const textCol = reverse ? "lg:col-span-5" : "lg:col-span-7";
 
   return (
     <HomepageSection className={`bg-background-secondary ${sectionClassName}`}>
@@ -73,17 +64,20 @@ export default function SplitBanner({
         <div
           className={`grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-14 ${stretch ? "lg:items-stretch" : ""}`}
         >
-          {/* Section label — its own column, sharing the grid's first row so
-              its top edge aligns with the photo's (and the text's). */}
-          {label && <div className={labelCol}>{label}</div>}
+          {/* Section label — its OWN row, spanning the grid, directly above the
+              photo. Deliberately NOT inside the photo's column: the title lives
+              at the top of the TEXT column, and if the label shared that column
+              the two would land on one row (label level with the title). On its
+              own row the label sits above both, so the title starts level with
+              the photo — the reference layout. Its left edge still lines up with
+              the photo's, since both start at the section's first gutter. */}
+          {label && <div className="lg:col-span-12">{label}</div>}
 
           {/* Mobile only: kicker/subtitle row above the image */}
           <div className="lg:hidden">
             {page && <SectionSubTitle>{page}</SectionSubTitle>}
             {
-              <SectionTitle className="font-noora" textColor={titleTextColor}>
-                {title}
-              </SectionTitle>
+              <SectionTitle textColor={titleTextColor}>{title}</SectionTitle>
             }
           </div>
 
@@ -114,9 +108,7 @@ export default function SplitBanner({
                 {kicker && (
                   <div className="font-noora overflow-hidden">{kicker}</div>
                 )}
-                <SectionTitle className="font-noora" textColor={titleTextColor}>
-                  {title}
-                </SectionTitle>{" "}
+                <SectionTitle textColor={titleTextColor}>{title}</SectionTitle>{" "}
               </div>
 
               <div className="mt-10 grid grid-cols-1 gap-8 lg:grid-cols-2 sm:gap-10">

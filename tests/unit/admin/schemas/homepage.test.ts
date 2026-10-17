@@ -109,6 +109,7 @@ describe("homepage slot schemas", () => {
       enabled: true,
       mode: "reference",
       projectId: "vocla-2026",
+      label: { en: "", fa: "" },
       title: { en: "", fa: "" },
       paragraphs: [],
       image: "",
@@ -120,6 +121,14 @@ describe("homepage slot schemas", () => {
       projectDarkBackgroundFeatureFormSchema.safeParse({
         ...cleared,
         title: { en: "Vocla", fa: "" },
+      }).success,
+    ).toBe(false);
+    // The label above the photo follows the same "both languages or neither"
+    // rule as every other clearable pair.
+    expect(
+      projectDarkBackgroundFeatureFormSchema.safeParse({
+        ...cleared,
+        label: { en: "H-Life", fa: "" },
       }).success,
     ).toBe(false);
   });

@@ -12,6 +12,13 @@ export type ResolvedProjectDarkBackgroundFeature = {
   title: Localized;
   paragraphs: Localized[];
   image: string;
+  /**
+   * The word above the photo ("H-Life"). `null` = no override saved, and the
+   * component prints its built-in `vocla.hLife` dictionary word. Unlike every
+   * other field here it is NOT project-derived, so it is not resolved against
+   * the project in reference mode.
+   */
+  label: Localized | null;
   /** Canonical route of the linked project (`/projects/<slug>`). */
   ctaHref: string;
 };
@@ -23,6 +30,7 @@ export type ProjectDarkBackgroundFeatureWriteInput = {
   /** Project.id */
   projectId: string;
   title: Localized | null;
+  label: Localized | null;
   paragraphs: Localized[] | null;
   image: string | null;
 };
@@ -63,6 +71,8 @@ export const getProjectDarkBackgroundFeature = cache(
         ],
       ),
       image: resolveField(isOverride, row.image, row.project.image),
+      // Never resolved against the project: the word is the banner's own.
+      label: asOptionalLocalized(row.label) ?? null,
       ctaHref: projectHref(row.project.slug),
     };
   },
@@ -81,6 +91,7 @@ export const getProjectDarkBackgroundFeatureAdminDetail = cache(
       mode: row.mode,
       projectId: row.projectId,
       title: asOptionalLocalized(row.title) ?? null,
+      label: asOptionalLocalized(row.label) ?? null,
       paragraphs: asOptionalLocalizedList(row.paragraphs),
       image: row.image,
     };
@@ -97,6 +108,7 @@ export const updateProjectDarkBackgroundFeature = async (
     mode: input.mode,
     projectId: input.projectId,
     title: asNullableJsonInput(input.title),
+    label: asNullableJsonInput(input.label),
     paragraphs: asNullableJsonInput(input.paragraphs),
     image: input.image,
   };

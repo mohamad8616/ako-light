@@ -172,6 +172,7 @@ export async function updateProjectDarkBackgroundFeatureAction(
       mode: parsed.data.mode,
       projectId: parsed.data.projectId,
       title: clearedToNull(parsed.data.title),
+      label: clearedToNull(parsed.data.label),
       paragraphs: listToNull(parsed.data.paragraphs),
       image,
     });

@@ -3,7 +3,6 @@
 import { pick } from "@/lib/i18n/localized";
 import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import type { ResolvedProjectDarkBackgroundFeature } from "@/lib/repositories/homepage-features";
-import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { EASE } from "../../utility/HomepageSection";
 import PlusTextBtn from "../ui/PlusTextBtn";
@@ -25,6 +24,9 @@ export default function ProjectWithDarkBackground({
   if (!data || !data.enabled) return null;
 
   const title = pick(data.title, lang);
+  // Admin-editable in /admin/homepage → "Project (dark background)"; an empty
+  // override keeps the built-in dictionary word.
+  const label = data.label ? pick(data.label, lang) : t("vocla.hLife");
 
   return (
     <SplitBanner
@@ -44,19 +46,31 @@ export default function ProjectWithDarkBackground({
       }
       imageClassName="bg-[#1c1c1e]"
       ctaDelay={0.45}
-    >
-      <motion.span
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.7, ease: EASE }}
-        className={cn(
-          "font-din mb-12 block text-3xl text-white md:mb-16 md:text-5xl",
-          lang === "fa" ? "font-noora" : "font-din",
-        )}
-      >
-        {t("vocla.hLife")}
-      </motion.span>
-    </SplitBanner>
+      /**
+       * `label`, NOT `children`: SplitBanner gives it its own row above the
+       * photo, so the label sits above the whole content row while the title
+       * starts level with the photo. Passing it as `children` (as this
+       * component used to) is silently dropped, because SplitBanner no longer
+       * has a `children` prop at all.
+       *
+       * Typography follows the reference brand: a high-contrast serif for the
+       * "H-Life" word in English, Noora in Persian. The grid's row gap supplies
+       * the space below it, so no margin here.
+       */
+      label={
+        <motion.span
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className={[
+            "block text-3xl text-background-secondary md:text-5xl",
+            lang === "fa" ? "font-noora" : "font-serif font-semibold tracking-tight",
+          ].join(" ")}
+        >
+          {label}
+        </motion.span>
+      }
+    />
   );
 }

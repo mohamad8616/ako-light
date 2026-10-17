@@ -67,6 +67,12 @@ export const projectDarkBackgroundFeatureFormSchema = z.object({
   mode: featureModeSchema,
   /** Project.id */
   projectId: idSchema,
+  /**
+   * The word above the photo ("H-Life"). Clearable → empty pair = the built-in
+   * `vocla.hLife` dictionary word. It is the slot's OWN word, not an override of
+   * the project, so it is not tied to `mode`.
+   */
+  label: clearableLocalizedSchema,
   title: clearableLocalizedSchema,
   paragraphs: clearableLocalizedListSchema,
   image: clearableImageRefSchema,

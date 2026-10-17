@@ -37,6 +37,9 @@ export const homepageEn = {
   "admin.homepage.field.ctaHint":
     "The call to action always links to this entity's public page.",
   "admin.homepage.field.kicker": "Kicker",
+  "admin.homepage.field.label": "Section label",
+  "admin.homepage.field.labelHint":
+    "The word printed above the photo, e.g. “H-Life”. Leave it empty to keep the built-in word.",
   "admin.homepage.field.title": "Title",
   "admin.homepage.field.paragraphs": "Paragraphs",
   "admin.homepage.field.text": "Text",
@@ -135,6 +138,9 @@ export const homepageFa = {
   "admin.homepage.field.ctaHint":
     "دکمهٔ فراخوان همیشه به صفحهٔ عمومی این موجودیت پیوند می‌خورد.",
   "admin.homepage.field.kicker": "پیش‌عنوان",
+  "admin.homepage.field.label": "برچسب بخش",
+  "admin.homepage.field.labelHint":
+    "واژه‌ای که بالای تصویر چاپ می‌شود، مانند «H-Life». خالی بماند، واژهٔ پیش‌فرض استفاده می‌شود.",
   "admin.homepage.field.title": "عنوان",
   "admin.homepage.field.paragraphs": "پاراگراف‌ها",
   "admin.homepage.field.text": "متن",

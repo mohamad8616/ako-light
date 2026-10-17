@@ -52,6 +52,41 @@ const dinNextLTPro = localFont({
   variable: "--font-dinnext",
 });
 
+/**
+ * ── ENGLISH DISPLAY PAIR ────────────────────────────────────────────────────
+ *
+ * The reference brand typography pairs a condensed gothic for headings with a
+ * high-contrast serif for editorial accents, over DIN for body copy (the site
+ * already ships DIN Next LT Pro — see `--font-din`).
+ *
+ * The originals on the reference site are commercial: `DINNextLTPro Condensed`
+ * and `Larish Neue`. Neither can be redistributed, so these are the closest
+ * openly licensed (SIL OFL) equivalents, self-hosted here — no network call at
+ * build or run time, exactly like the Noora/DIN files above.
+ *
+ *   Oswald            ← DIN Next Condensed  (condensed display, headings)
+ *   Playfair Display  ← Larish Neue         (serif accent, e.g. "H-Life")
+ *
+ * Both are VARIABLE fonts, so one file covers the whole weight axis
+ * (`weight` is declared as a range; a single number would pin the browser to
+ * the font's default instance instead).
+ *
+ * Persian never uses these — `font-noora` stays the fa typeface.
+ */
+const oswald = localFont({
+  src: "../../public/fonts/en/oswald-latin-var.woff2",
+  weight: "200 700",
+  style: "normal",
+  variable: "--font-oswald-var",
+});
+
+const playfairDisplay = localFont({
+  src: "../../public/fonts/en/playfair-display-latin-var.woff2",
+  weight: "400 900",
+  style: "normal",
+  variable: "--font-playfair-var",
+});
+
 const noora = localFont({
   src: [
     {
@@ -233,6 +268,8 @@ export default async function LocaleLayout({
         "antialiased",
         jetBrainsMono.variable,
         dinNextLTPro.variable,
+        oswald.variable,
+        playfairDisplay.variable,
         "font-sans",
         noora.variable,
       )}

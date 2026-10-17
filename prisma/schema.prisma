@@ -738,6 +738,12 @@ model ProjectDarkBackgroundFeature {
   /// Override-mode content — all NULL while `mode = reference`.
   /// Localized { en, fa } — override title.
   title      Json?
+  /// Localized { en, fa } — the word printed ABOVE the photo ("H-Life").
+  ///
+  /// The one column here that is NOT derived from the linked project, so NULL
+  /// means the built-in dictionary word (`vocla.hLife`) and the admin can edit
+  /// it in reference mode as well.
+  label      Json?
   /// Localized[] — override paragraphs.
   paragraphs Json?
   /// Override image URL/path (reference mode reads Project.image).

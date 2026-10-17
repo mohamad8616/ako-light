@@ -125,7 +125,7 @@ describeDb("homepage-features repository — reads", () => {
     expect(row, "seeded project-dark-background slot").not.toBeNull();
     expectKeys(
       data,
-      ["ctaHref", "enabled", "image", "paragraphs", "title"],
+      ["ctaHref", "enabled", "image", "label", "paragraphs", "title"],
       "ResolvedProjectDarkBackgroundFeature",
     );
     expect(data!.ctaHref).toBe(`/projects/${row!.project.slug}`);

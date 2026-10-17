@@ -61,6 +61,7 @@ export function ProjectDarkBackgroundFeatureForm({
       enabled: detail?.enabled ?? true,
       mode: detail?.mode ?? "reference",
       projectId: detail?.projectId ?? projects[0]?.id ?? "",
+      label: detail?.label ?? CLEARED,
       title: detail?.title ?? CLEARED,
       paragraphs: detail?.paragraphs ?? [],
       image: detail?.image ?? "",
@@ -99,6 +100,14 @@ export function ProjectDarkBackgroundFeatureForm({
           />
         </FormCard>
         <HomepageOverrideCard>
+          {/* The word above the photo. It belongs to the banner, not to the
+              project, so an empty pair keeps the built-in "H-Life". */}
+          <LocalizedField
+            name="label"
+            label={t("admin.homepage.field.label")}
+            hint={t("admin.homepage.field.labelHint")}
+            optional
+          />
           <LocalizedField
             name="title"
             label={t("admin.homepage.field.title")}
