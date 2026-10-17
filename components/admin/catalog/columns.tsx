@@ -17,15 +17,23 @@ import type { ReactNode } from "react";
  * admins read the fa line first, English admins the en line, from one row.
  */
 
-/** Localized name column — sortable by the active locale's text. */
+/**
+ * Localized name column — sortable by the active locale's text.
+ *
+ * `id` defaults to "name" (every existing caller uses it for the row's own
+ * name) but MUST be supplied when a table shows TWO localized columns: TanStack
+ * derives `cell.id` from the column id, and duplicate ids make React keys
+ * collide inside `DataTable`'s `<td>` map.
+ */
 export function localizedColumn<TData>(args: {
+  id?: string;
   lang: Locale;
   label: string;
   access: (row: TData) => Localized | null | undefined;
 }): ColumnDef<TData, unknown> {
   const other: Locale = args.lang === "fa" ? "en" : "fa";
   return {
-    id: "name",
+    id: args.id ?? "name",
     accessorFn: (row) => {
       const value = args.access(row);
       return value ? pick(value, args.lang) : "";

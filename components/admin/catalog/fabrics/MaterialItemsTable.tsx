@@ -41,7 +41,7 @@ export function MaterialItemsTable({
   const destroy = (id: string) => run(() => destroyMaterialItemAction(id), { successMessage: t("admin.crud.deleted") });
   const columns = [
     localizedColumn({ lang, label: t("admin.product.field.name"), access: (row: MaterialItemAdminRow) => row.name }),
-    localizedColumn({ lang, label: t("admin.material.field.category"), access: (row: MaterialItemAdminRow) => row.categoryName }),
+    localizedColumn({ id: "category", lang, label: t("admin.material.field.category"), access: (row: MaterialItemAdminRow) => row.categoryName }),
     textColumn({ id: "code", label: t("admin.fabric.field.code"), access: (row: MaterialItemAdminRow) => row.code ?? "" }),
     textColumn({ id: "swatchColor", label: t("admin.fabric.field.swatchColor"), access: (row: MaterialItemAdminRow) => row.swatchColor ?? "" }),
     slugColumn({ label: t("admin.product.field.slug"), access: (row: MaterialItemAdminRow) => row.slug }),
